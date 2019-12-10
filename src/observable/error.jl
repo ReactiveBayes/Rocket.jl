@@ -6,6 +6,7 @@ end
 
 function on_subscribe!(observable::ErrorObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
     error!(actor, observable.error)
+    return VoidTeardown()
 end
 
 throwError(error, T = Any) = ErrorObservable{T}(error)

@@ -27,7 +27,7 @@ function on_subscribe!(observable::ArrayObservable{D}, actor::A) where { A <: Ab
         next!(actor, value)
     end
     complete!(actor)
-    return nothing
+    return VoidTeardown()
 end
 
 from(x)                      = from(as_array(x))

@@ -1,5 +1,9 @@
 module Rx
 
+include("teardown.jl")
+include("teardown/void.jl")
+
+
 include("actor.jl")
 include("subscribable.jl")
 
