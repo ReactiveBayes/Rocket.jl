@@ -1,4 +1,4 @@
-module Rx2
+module Rx
 
 greet() = print("Hello World!")
 
