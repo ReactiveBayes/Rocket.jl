@@ -15,5 +15,7 @@ include("observable/proxy.jl")
 include("operator.jl")
 include("operators/map.jl")
 include("operators/filter.jl")
+include("operators/count.jl")
+include("operators/enumerate.jl")
 
 end # module
