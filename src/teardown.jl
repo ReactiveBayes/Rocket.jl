@@ -11,7 +11,8 @@ struct UndefinedTeardownLogic      <: TeardownLogic end
 
 abstract type Teardown end
 
-as_teardown(::Type) = UndefinedTeardownLogic()
+as_teardown(::Type)             = UndefinedTeardownLogic()
+as_teardown(::Type{<:Function}) = CallableTeardownLogic()
 
 unsubscribe!(o::T) where T = teardown!(as_teardown(T), o)
 
