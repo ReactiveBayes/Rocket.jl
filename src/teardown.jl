@@ -1,5 +1,5 @@
 export TeardownLogic, UnsubscribableTeardown, CallableTeardown, VoidTeardown, UndefinedTeardown
-export AbstractTeardown, NothingTeardownSingleton, as_teardown
+export Teardown, as_teardown
 export unsubscribe!, teardown!, on_unsubscribe!
 
 abstract type TeardownLogic end
@@ -9,7 +9,7 @@ struct CallableTeardownLogic       <: TeardownLogic end
 struct VoidTeardownLogic           <: TeardownLogic end
 struct UndefinedTeardownLogic      <: TeardownLogic end
 
-abstract type AbstractTeardown end
+abstract type Teardown end
 
 as_teardown(::Type) = UndefinedTeardownLogic()
 

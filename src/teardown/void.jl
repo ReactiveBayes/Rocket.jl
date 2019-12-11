@@ -1,3 +1,3 @@
-struct VoidTeardown <: AbstractTeardown end
+struct VoidTeardown <: Teardown end
 
 as_teardown(::Type{<:VoidTeardown}) = VoidTeardownLogic()

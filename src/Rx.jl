@@ -11,5 +11,9 @@ include("subscribable.jl")
 
 include("observable/array.jl")
 include("observable/error.jl")
+include("observable/proxy.jl")
+
+include("operator.jl")
+include("operators/map.jl")
 
 end # module
