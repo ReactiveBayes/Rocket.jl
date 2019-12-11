@@ -1,6 +1,8 @@
+import Base: |>
+
 export OperatorTrait, ValidOperator, InvalidOperator
 export Operator, as_operator, call_operator!
-export |
+export |>
 
 abstract type OperatorTrait{T, R} end
 
@@ -26,4 +28,4 @@ function call_operator!(::ValidOperator{T, R}, operator, source::S) where { S <:
     on_call!(operator, source)
 end
 
-|(source::S, operator) where { S <: Subscribable{T} } where T = call_operator!(operator, source)
+Base.:|>(source::S, operator) where { S <: Subscribable{T} } where T = call_operator!(operator, source)
