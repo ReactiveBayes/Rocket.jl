@@ -6,6 +6,7 @@ include("teardown/void.jl")
 include("actor.jl")
 include("actor/lambda.jl")
 include("actor/logger.jl")
+include("actor/void.jl")
 
 include("subscribable.jl")
 
@@ -16,6 +17,7 @@ include("observable/subject.jl")
 
 include("operator.jl")
 include("operators/map.jl")
+include("operators/reduce.jl")
 include("operators/filter.jl")
 include("operators/count.jl")
 include("operators/enumerate.jl")

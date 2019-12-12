@@ -31,38 +31,39 @@ on_next!(m::MapActor{T, R},  data::T) where T where R = next!(m.actor, Base.invo
 on_error!(m::MapActor{T, R}, error)   where T where R = error!(m.actor, error)
 on_complete!(m::MapActor{T, R})       where T where R = complete!(m.actor)
 
-macro CreateMapOperator(name, T, R, mappingFn)
+
+# Make generic operator?
+macro CreateMapOperator(name, mappingFn)
     operatorName   = Symbol(name, "MapOperator")
     proxyName      = Symbol(name, "MapProxy")
     actorName      = Symbol(name, "MapActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Operator{$T, $R} end
+        struct $operatorName{T, R} <: Operator{T, R} end
 
-        function Rx.on_call!(operator::($operatorName), source::S) where { S <: Subscribable{$T} }
-            return ProxyObservable{$R}(source, ($proxyName)())
+        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Subscribable{T} } where T where R
+            return ProxyObservable{R}(source, ($proxyName){T, R}())
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName <: Proxy end
+        struct $proxyName{T, R} <: ActorProxy end
 
-        Rx.proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$R} } = ($actorName)(actor)
+        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName{ A <: Rx.AbstractActor{$R} } <: Rx.Actor{$T}
-            actor::A
+        struct $actorName{T, R} <: Rx.Actor{T}
+            actor
         end
 
-        Rx.on_next!(a::($actorName), data::($T)) = begin
+        Rx.on_next!(a::($actorName){T, R}, data::(T)) where T where R = begin
             __inlined_lambda = $mappingFn
             next!(a.actor, __inlined_lambda(data))
         end
 
-        Rx.on_error!(a::($actorName), error) = error!(a.actor, error)
-
-        Rx.on_complete!(a::($actorName)) = complete!(a.actor)
+        Rx.on_error!(a::($actorName){T, R}, error) where T where R = error!(a.actor, error)
+        Rx.on_complete!(a::($actorName){T, R})     where T where R = complete!(a.actor)
     end
 
     generated = quote
