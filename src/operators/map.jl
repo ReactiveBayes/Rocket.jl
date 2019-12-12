@@ -1,6 +1,6 @@
 export map
-export MapOperator
-export MapProxy, proxy!, on_call!
+export MapOperator, on_call!
+export MapProxy, actor_proxy!
 export MapActor, on_next!, on_error!, on_complete!
 export @CreateMapOperator
 
@@ -16,11 +16,11 @@ function on_call!(operator::MapOperator{T, R}, source::S) where { S <: Subscriba
     return ProxyObservable{R}(source, MapProxy{T, R}(operator.mappingFn))
 end
 
-struct MapProxy{T, R} <: Proxy
+struct MapProxy{T, R} <: ActorProxy
     mappingFn::Function
 end
 
-proxy!(proxy::MapProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = MapActor{T, R}(proxy.mappingFn, actor)
+actor_proxy!(proxy::MapProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = MapActor{T, R}(proxy.mappingFn, actor)
 
 struct MapActor{T, R} <: Actor{T}
     mappingFn  :: Function

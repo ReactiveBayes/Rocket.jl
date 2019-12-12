@@ -1,6 +1,6 @@
 export enumerate
 export EnumerateOperator, on_call!
-export EnumerateProxy, proxy!
+export EnumerateProxy, actor_proxy!
 export EnumerateActor, on_next!, on_error!, on_complete!
 
 import Base: enumerate
@@ -13,9 +13,9 @@ function on_call!(operator::EnumerateOperator{T}, source::S) where { S <: Subscr
     return ProxyObservable{Tuple{T, Int}}(source, EnumerateProxy{T}())
 end
 
-struct EnumerateProxy{T} <: Proxy end
+struct EnumerateProxy{T} <: ActorProxy end
 
-proxy!(proxy::EnumerateProxy{T}, actor::A) where { A <: AbstractActor{Tuple{T, Int}} } where T = EnumerateActor{T}(actor)
+actor_proxy!(proxy::EnumerateProxy{T}, actor::A) where { A <: AbstractActor{Tuple{T, Int}} } where T = EnumerateActor{T}(actor)
 
 mutable struct EnumerateActor{T} <: Actor{T}
     current :: Int

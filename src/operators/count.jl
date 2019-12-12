@@ -1,6 +1,6 @@
 export count
 export CountOperator, on_call!
-export CountProxy, proxy!
+export CountProxy, actor_proxy!
 export CountActor, on_next!, on_error!, on_complete!
 
 import Base: count
@@ -13,9 +13,9 @@ function on_call!(operator::CountOperator{T}, source::S) where { S <: Subscribab
     return ProxyObservable{Int}(source, CountProxy{T}())
 end
 
-struct CountProxy{T} <: Proxy end
+struct CountProxy{T} <: ActorProxy end
 
-proxy!(proxy::CountProxy{T}, actor::A) where { A <: AbstractActor{Int} } where T = CountActor{T}(actor)
+actor_proxy!(proxy::CountProxy{T}, actor::A) where { A <: AbstractActor{Int} } where T = CountActor{T}(actor)
 
 mutable struct CountActor{T} <: Actor{T}
     current :: Int

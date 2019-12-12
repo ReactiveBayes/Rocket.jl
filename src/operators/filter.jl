@@ -1,6 +1,6 @@
 export filter
 export FilterOperator, on_call!
-export FilterProxy, proxy!
+export FilterProxy, actor_proxy!
 export FilterActor, on_next!, on_error!, on_complete!
 export @CreateFilterOperator
 
@@ -16,11 +16,11 @@ function on_call!(operator::FilterOperator{T}, source::S) where { S <: Subscriba
     return ProxyObservable{T}(source, FilterProxy{T}(operator.filterFn))
 end
 
-struct FilterProxy{T} <: Proxy
+struct FilterProxy{T} <: ActorProxy
     filterFn::Function
 end
 
-proxy!(proxy::FilterProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = FilterActor{T}(proxy.filterFn, actor)
+actor_proxy!(proxy::FilterProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = FilterActor{T}(proxy.filterFn, actor)
 
 
 struct FilterActor{T} <: Actor{T}
@@ -52,9 +52,9 @@ macro CreateFilterOperator(name, T, filterFn)
     end
 
     proxyDefinition = quote
-        struct $proxyName <: Proxy end
+        struct $proxyName <: ActorProxy end
 
-        Rx.proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$T} } = ($actorName)(actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$T} } = ($actorName)(actor)
     end
 
     actorDefintion = quote

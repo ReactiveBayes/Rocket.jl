@@ -1,24 +1,39 @@
-export Proxy
+export ActorProxy, SourceProxy, ActorSourceProxy
 export ProxyTrait, ValidProxy, InvalidProxy
-export as_proxy, call_proxy!
+export as_proxy, call_actor_proxy!, call_source_proxy!
 export ProxyObservable, on_subscribe!
 
 import Base: show
 
-abstract type Proxy end
+abstract type ActorProxy       end
+abstract type SourceProxy      end
+abstract type ActorSourceProxy end
 
 abstract type ProxyTrait end
 
-struct ValidProxy   <: ProxyTrait end
-struct InvalidProxy <: ProxyTrait end
+struct ValidActorProxy        <: ProxyTrait end
+struct ValidSourceProxy       <: ProxyTrait end
+struct ValidActorSourceProxy  <: ProxyTrait end
+struct InvalidProxy           <: ProxyTrait end
 
-as_proxy(::Type)          = InvalidProxy()
-as_proxy(::Type{<:Proxy}) = ValidProxy()
+as_proxy(::Type)                     = InvalidProxy()
+as_proxy(::Type{<:ActorProxy})       = ValidActorProxy()
+as_proxy(::Type{<:SourceProxy})      = ValidSourceProxy()
+as_proxy(::Type{<:ActorSourceProxy}) = ValidActorSourceProxy()
 
-call_proxy!(proxy::T, actor) where T = call_proxy!(as_proxy(T), proxy, actor)
+call_actor_proxy!(proxy::T, actor) where T = call_actor_proxy!(as_proxy(T), proxy, actor)
 
-call_proxy!(::InvalidProxy, proxy, actor) = error("Type $(typeof(proxy)) is not a valid proxy type. Consider extending your type with Proxy abstract type.")
-call_proxy!(::ValidProxy,   proxy, actor) = proxy!(proxy, actor)
+call_actor_proxy!(::InvalidProxy,          proxy, actor) = error("Type $(typeof(proxy)) is not a valid proxy type. Consider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types.")
+call_actor_proxy!(::ValidActorProxy,       proxy, actor) = actor_proxy!(proxy, actor)
+call_actor_proxy!(::ValidSourceProxy,      proxy, actor) = actor
+call_actor_proxy!(::ValidActorSourceProxy, proxy, actor) = actor_proxy!(proxy, actor)
+
+call_source_proxy!(proxy::T, source) where T = call_source_proxy!(as_proxy(T), proxy, source)
+
+call_source_proxy!(::InvalidProxy,          proxy, source) = error("Type $(typeof(proxy)) is not a valid proxy type. Consider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types.")
+call_source_proxy!(::ValidActorProxy,       proxy, source) = source
+call_source_proxy!(::ValidSourceProxy,      proxy, source) = source_proxy!(proxy, source)
+call_source_proxy!(::ValidActorSourceProxy, proxy, source) = source_proxy!(proxy, source)
 
 struct ProxyObservable{D} <: Subscribable{D}
     source
@@ -26,5 +41,7 @@ struct ProxyObservable{D} <: Subscribable{D}
 end
 
 function on_subscribe!(observable::ProxyObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
-    return subscribe!(observable.source, call_proxy!(observable.proxy, actor))
+    proxied_source = call_source_proxy!(observable.proxy, observable.source)
+    proxied_actor  = call_actor_proxy!(observable.proxy, actor)
+    return subscribe!(proxied_source, proxied_actor)
 end
