@@ -22,6 +22,11 @@ include("operators/filter.jl")
 include("operators/count.jl")
 include("operators/enumerate.jl")
 include("operators/take.jl")
+include("operators/first.jl")
+include("operators/last.jl")
 include("operators/tap.jl")
+include("operators/sum.jl")
+include("operators/max.jl")
+include("operators/min.jl")
 
 end # module
