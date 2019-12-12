@@ -5,12 +5,14 @@ include("teardown/void.jl")
 
 include("actor.jl")
 include("actor/lambda.jl")
+include("actor/log.jl")
 
 include("subscribable.jl")
 
 include("observable/array.jl")
 include("observable/error.jl")
 include("observable/proxy.jl")
+include("observable/subject.jl")
 
 include("operator.jl")
 include("operators/map.jl")

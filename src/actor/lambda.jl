@@ -10,18 +10,18 @@ end
 
 function on_next!(actor::LambdaActor{D}, data::D) where D
     if actor.on_next != nothing
-        actor.on_next(data)
+        Base.invokelatest(actor.on_next, data)
     end
 end
 
 function on_error!(actor::LambdaActor{D}, error) where D
     if actor.on_error != nothing
-        actor.on_error(error)
+        Base.invokelatest(actor.on_error, error)
     end
 end
 
 function on_complete!(actor::LambdaActor{D}) where D
     if actor.on_complete != nothing
-        actor.on_complete()
+        Base.invokelatest(actor.on_complete)
     end
 end

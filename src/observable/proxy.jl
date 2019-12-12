@@ -3,6 +3,8 @@ export ProxyTrait, ValidProxy, InvalidProxy
 export as_proxy, call_proxy!
 export ProxyObservable, on_subscribe!
 
+import Base: show
+
 abstract type Proxy end
 
 abstract type ProxyTrait end

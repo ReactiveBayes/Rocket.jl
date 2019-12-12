@@ -29,7 +29,7 @@ struct FilterActor{T} <: Actor{T}
 end
 
 function on_next!(f::FilterActor{T}, data::T) where T
-    if (f.filterFn(data))
+    if (Base.invokelatest(f.filterFn, data))
         next!(f.actor, data)
     end
 end

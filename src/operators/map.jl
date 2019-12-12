@@ -27,7 +27,7 @@ struct MapActor{T, R} <: Actor{T}
     actor
 end
 
-on_next!(m::MapActor{T, R},  data::T) where T where R = next!(m.actor, m.mappingFn(data))
+on_next!(m::MapActor{T, R},  data::T) where T where R = next!(m.actor, Base.invokelatest(m.mappingFn, data))
 on_error!(m::MapActor{T, R}, error)   where T where R = error!(m.actor, error)
 on_complete!(m::MapActor{T, R})       where T where R = complete!(m.actor)
 
