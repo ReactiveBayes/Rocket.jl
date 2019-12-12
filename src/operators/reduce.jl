@@ -1,4 +1,8 @@
 export reduce
+export ReduceOperator, on_call!
+export ReduceProxy, actor_proxy!
+export ReduceActor, on_next!, on_error!, on_complete!
+export @CreateReduceOperator
 
 import Base: reduce
 
@@ -33,3 +37,51 @@ end
 
 on_error!(r::ReduceActor{T, R}, error) where T where R = error!(r.actor, error)
 on_complete!(r::ReduceActor{T, R})     where T where R = complete!(r.actor)
+
+macro CreateReduceOperator(name, reduceFn)
+    operatorName   = Symbol(name, "ReduceOperator")
+    proxyName      = Symbol(name, "ReduceProxy")
+    actorName      = Symbol(name, "ReduceActor")
+
+    operatorDefinition = quote
+        struct $operatorName{T, R} <: Operator{T, R}
+            initial :: R
+        end
+
+        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Subscribable{T} } where T where R
+            return ProxyObservable{R}(source, ($proxyName){T, R}(operator.initial))
+        end
+    end
+
+    proxyDefinition = quote
+        struct $proxyName{T, R} <: ActorProxy
+            initial :: R
+        end
+
+        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R}(copy(proxy.initial), actor)
+    end
+
+    actorDefinition = quote
+        mutable struct $actorName{T, R} <: Rx.Actor{T}
+            current :: R
+            actor
+        end
+
+        Rx.on_next!(actor::($actorName){T, R}, data::T) where T where R = begin
+            __inlined_lambda = $reduceFn
+            actor.current = __inlined_lambda(data, actor.current)
+            next!(actor.actor, actor.current)
+        end
+
+        Rx.on_error!(actor::($actorName){T, R}, error) where T where R = error!(actor.actor, error)
+        Rx.on_complete!(actor::($actorName){T, R})     where T where R = complete!(actor.actor)
+    end
+
+    generated = quote
+        $operatorDefinition
+        $proxyDefinition
+        $actorDefinition
+    end
+
+    return esc(generated)
+end

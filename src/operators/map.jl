@@ -32,7 +32,6 @@ on_error!(m::MapActor{T, R}, error)   where T where R = error!(m.actor, error)
 on_complete!(m::MapActor{T, R})       where T where R = complete!(m.actor)
 
 
-# Make generic operator?
 macro CreateMapOperator(name, mappingFn)
     operatorName   = Symbol(name, "MapOperator")
     proxyName      = Symbol(name, "MapProxy")
