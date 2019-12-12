@@ -20,5 +20,6 @@ include("operators/filter.jl")
 include("operators/count.jl")
 include("operators/enumerate.jl")
 include("operators/take.jl")
+include("operators/tap.jl")
 
 end # module
