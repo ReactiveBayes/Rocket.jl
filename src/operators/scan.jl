@@ -4,14 +4,14 @@ export ScanProxy, actor_proxy!
 export ScanActor, on_next!, on_error!, on_complete!
 export @CreateScanOperator
 
-scan(::Type{T}, ::Type{R}, scanFn::Function, initial::R) where T where R = ScanOperator{T, R}(scanFn, initial)
+scan(::Type{T}, ::Type{R}, scanFn::Function, initial::R = zero(R)) where T where R = ScanOperator{T, R}(scanFn, initial)
 
 struct ScanOperator{T, R} <: Operator{T, R}
     scanFn  :: Function
     initial :: R
 end
 
-function on_call!(operator::Scan Operator{T, R}, source::S) where { S <: Subscribable{T} } where T where R
+function on_call!(operator::ScanOperator{T, R}, source::S) where { S <: Subscribable{T} } where T where R
     return ProxyObservable{R}(source, ScanProxy{T, R}(operator.scanFn, operator.initial))
 end
 
@@ -44,6 +44,8 @@ macro CreateScanOperator(name, scanFn)
     operatorDefinition = quote
         struct $operatorName{T, R} <: Operator{T, R}
             initial :: R
+
+            $(operatorName){T, R}(initial = zero(R)) where T where R = new(initial)
         end
 
         function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Subscribable{T} } where T where R
