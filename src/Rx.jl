@@ -5,7 +5,7 @@ include("teardown/void.jl")
 
 include("actor.jl")
 include("actor/lambda.jl")
-include("actor/log.jl")
+include("actor/logger.jl")
 
 include("subscribable.jl")
 
@@ -19,5 +19,6 @@ include("operators/map.jl")
 include("operators/filter.jl")
 include("operators/count.jl")
 include("operators/enumerate.jl")
+include("operators/take.jl")
 
 end # module
