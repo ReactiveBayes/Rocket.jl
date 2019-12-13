@@ -11,6 +11,8 @@ using Test
     include("./actor/test_void_actor.jl")
     include("./actor/test_lambda_actor.jl")
     include("./actor/test_logger_actor.jl")
+
+    include("./test_subscribable.jl")
 end
 
 end

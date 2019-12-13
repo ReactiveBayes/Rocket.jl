@@ -1,4 +1,4 @@
-module RxLщппукActorTest
+module RxLoggerActorTest
 
 using Test
 using Suppressor
