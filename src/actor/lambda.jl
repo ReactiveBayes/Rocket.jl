@@ -14,9 +14,9 @@ function on_next!(actor::LambdaActor{D}, data::D) where D
     end
 end
 
-function on_error!(actor::LambdaActor{D}, error) where D
+function on_error!(actor::LambdaActor{D}, err) where D
     if actor.on_error != nothing
-        Base.invokelatest(actor.on_error, error)
+        Base.invokelatest(actor.on_error, err)
     end
 end
 
