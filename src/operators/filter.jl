@@ -44,33 +44,33 @@ macro CreateFilterOperator(name, filterFn)
     actorName    = Symbol(name, "FilterActor")
 
     operatorDefinition = quote
-        struct $operatorName{T} <: Operator{T, T} end
+        struct $operatorName{T} <: Rx.Operator{T, T} end
 
-        function Rx.on_call!(operator::($operatorName){T}, source::S) where { S <: Subscribable{T} } where T
-            return ProxyObservable{T}(source, ($proxyName){T}())
+        function Rx.on_call!(operator::($operatorName){T}, source::S) where { S <: Rx.Subscribable{T} } where T
+            return Rx.ProxyObservable{T}(source, ($proxyName){T}())
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName{T} <: ActorProxy end
+        struct $proxyName{T} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){T}, actor::A) where { A <: Rx.AbstractActor{T} } where T = ($actorName){T}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){T}, actor::A) where { A <: Rx.AbstractActor{T} } where T = ($actorName){T, A}(actor)
     end
 
     actorDefintion = quote
-        struct $actorName{T} <: Rx.Actor{T}
-            actor
+        struct $actorName{T, A <: Rx.AbstractActor{T} } <: Rx.Actor{T}
+            actor::A
         end
 
-        Rx.on_next!(a::($actorName){T}, data::T) where T = begin
+        Rx.on_next!(a::($actorName){T, A}, data::T) where A <: Rx.AbstractActor{T} where T = begin
             __inlined_lambda = $filterFn
             if (__inlined_lambda(data))
-                next!(a.actor, data)
+                Rx.next!(a.actor, data)
             end
         end
 
-        Rx.on_error!(a::($actorName){T}, error) where T = error!(a.actor, error)
-        Rx.on_complete!(a::($actorName){T})     where T = complete!(a.actor)
+        Rx.on_error!(a::($actorName), error) = Rx.error!(a.actor, error)
+        Rx.on_complete!(a::($actorName))     = Rx.complete!(a.actor)
     end
 
     generated = quote

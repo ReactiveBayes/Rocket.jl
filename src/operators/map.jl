@@ -38,31 +38,31 @@ macro CreateMapOperator(name, mappingFn)
     actorName      = Symbol(name, "MapActor")
 
     operatorDefinition = quote
-        struct $operatorName{T, R} <: Operator{T, R} end
+        struct $operatorName{T, R} <: Rx.Operator{T, R} end
 
-        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Subscribable{T} } where T where R
-            return ProxyObservable{R}(source, ($proxyName){T, R}())
+        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Rx.Subscribable{T} } where T where R
+            return Rx.ProxyObservable{R}(source, ($proxyName){T, R}())
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName{T, R} <: ActorProxy end
+        struct $proxyName{T, R} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R, A}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName{T, R} <: Rx.Actor{T}
-            actor
+        struct $actorName{ T, R, A <: Rx.AbstractActor{R} } <: Rx.Actor{T}
+            actor::A
         end
 
-        Rx.on_next!(a::($actorName){T, R}, data::(T)) where T where R = begin
+        Rx.on_next!(a::($actorName){T, R, A}, data::T) where { A <: Rx.AbstractActor{R} } where T where R = begin
             __inlined_lambda = $mappingFn
-            next!(a.actor, __inlined_lambda(data))
+            Rx.next!(a.actor, __inlined_lambda(data))
         end
 
-        Rx.on_error!(a::($actorName){T, R}, error) where T where R = error!(a.actor, error)
-        Rx.on_complete!(a::($actorName){T, R})     where T where R = complete!(a.actor)
+        Rx.on_error!(a::($actorName), error) = Rx.error!(a.actor, error)
+        Rx.on_complete!(a::($actorName))     = Rx.complete!(a.actor)
     end
 
     generated = quote
@@ -73,3 +73,45 @@ macro CreateMapOperator(name, mappingFn)
 
     return esc(generated)
 end
+
+# macro CreateMapOperator(name, mappingFn)
+#     operatorName   = Symbol(name, "MapOperator")
+#     proxyName      = Symbol(name, "MapProxy")
+#     actorName      = Symbol(name, "MapActor")
+#
+#     operatorDefinition = quote
+#         struct $operatorName{T, R} <: Operator{T, R} end
+#
+#         function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Subscribable{T} } where T where R
+#             return ProxyObservable{R}(source, ($proxyName){T, R}())
+#         end
+#     end
+#
+#     proxyDefinition = quote
+#         struct $proxyName{T, R} <: ActorProxy end
+#
+#         Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R}(actor)
+#     end
+#
+#     actorDefinition = quote
+#         struct $actorName{T, R} <: Rx.Actor{T}
+#             actor
+#         end
+#
+#         Rx.on_next!(a::($actorName){T, R}, data::(T)) where T where R = begin
+#             __inlined_lambda = $mappingFn
+#             next!(a.actor, __inlined_lambda(data))
+#         end
+#
+#         Rx.on_error!(a::($actorName){T, R}, error) where T where R = error!(a.actor, error)
+#         Rx.on_complete!(a::($actorName){T, R})     where T where R = complete!(a.actor)
+#     end
+#
+#     generated = quote
+#         $operatorDefinition
+#         $proxyDefinition
+#         $actorDefinition
+#     end
+#
+#     return esc(generated)
+# end

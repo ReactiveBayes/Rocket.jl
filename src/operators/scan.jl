@@ -42,39 +42,39 @@ macro CreateScanOperator(name, scanFn)
     actorName      = Symbol(name, "ScanActor")
 
     operatorDefinition = quote
-        struct $operatorName{T, R} <: Operator{T, R}
+        struct $operatorName{T, R} <: Rx.Operator{T, R}
             initial :: R
 
             $(operatorName){T, R}(initial = zero(R)) where T where R = new(initial)
         end
 
-        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Subscribable{T} } where T where R
-            return ProxyObservable{R}(source, ($proxyName){T, R}(operator.initial))
+        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Rx.Subscribable{T} } where T where R
+            return Rx.ProxyObservable{R}(source, ($proxyName){T, R}(operator.initial))
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName{T, R} <: ActorProxy
+        struct $proxyName{T, R} <: Rx.ActorProxy
             initial :: R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R}(copy(proxy.initial), actor)
+        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R, A}(copy(proxy.initial), actor)
     end
 
     actorDefinition = quote
-        mutable struct $actorName{T, R} <: Rx.Actor{T}
+        mutable struct $actorName{T, R, A <: Rx.AbstractActor{R} } <: Rx.Actor{T}
             current :: R
-            actor
+            actor   :: A
         end
 
-        Rx.on_next!(actor::($actorName){T, R}, data::T) where T where R = begin
+        Rx.on_next!(actor::($actorName){T, R, A}, data::T) where { A <: Rx.AbstractActor{R} } where T where R = begin
             __inlined_lambda = $scanFn
             actor.current = __inlined_lambda(data, actor.current)
-            next!(actor.actor, actor.current)
+            Rx.next!(actor.actor, actor.current)
         end
 
-        Rx.on_error!(actor::($actorName){T, R}, error) where T where R = error!(actor.actor, error)
-        Rx.on_complete!(actor::($actorName){T, R})     where T where R = complete!(actor.actor)
+        Rx.on_error!(actor::($actorName), error) = Rx.error!(actor.actor, error)
+        Rx.on_complete!(actor::($actorName))     = Rx.complete!(actor.actor)
     end
 
     generated = quote
