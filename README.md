@@ -92,3 +92,9 @@ You can also use a special macro which is defined for some operators to produce 
 @CreateMapOperator("Squared", (d) -> d ^ 2)
 squared_int_values = source_of_int_values |> SquaredMapOperator{Int, Int}()
 ```
+
+Here some performance comparison of using different approaches with Observable of 1000 integers and `StoreActor`.
+
+|      | Using regular array | Using macro generated map operator | Using lambda based map operator |
+|------|---------------------|------------------------------------|---------------------------------|
+| Time |6.908 μs (11 allocations: 24.33 KiB)|7.244 μs (15 allocations: 24.41 KiB) KiB)|80.367 μs (2483 allocations: 62.98 KiB)|
