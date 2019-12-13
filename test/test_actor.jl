@@ -36,6 +36,9 @@ import Rx: as_actor
     struct ImplementedCompletionActor <: CompletionActor{Any} end
     Rx.on_complete!(::ImplementedCompletionActor) = "ImplementedCompletionActor:complete"
 
+    struct IntegerActor <: NextActor{Int} end
+    Rx.on_next!(::IntegerActor, data::Int) = data
+
     @testset "as_actor" begin
             # Check if arbitrary dummy type has undefined actor type
             @test as_actor(DummyType) === UndefinedActorTrait()
@@ -60,6 +63,8 @@ import Rx: as_actor
             @test as_actor(ImplementedNextActor)       === NextActorTrait{Any}()
             @test as_actor(ImplementedErrorActor)      === ErrorActorTrait{Any}()
             @test as_actor(ImplementedCompletionActor) === CompletionActorTrait{Any}()
+
+            @test as_actor(IntegerActor) === NextActorTrait{Int}()
     end
 
     @testset "next!" begin
@@ -85,6 +90,10 @@ import Rx: as_actor
             @test next!(ImplementedActor(),     2) === 2
             @test next!(ImplementedNextActor(), 1) === 1
             @test next!(ImplementedNextActor(), 2) === 2
+
+            # Check next! function throws an error for wrong type of message
+            @test_throws ErrorException next!(IntegerActor(), "string")
+            @test_throws ErrorException next!(IntegerActor(), 1.0)
     end
 
     @testset "error!" begin
