@@ -21,4 +21,4 @@ subscribable_on_subscribe!(::ValidSubscribable,     ::UndefinedActorTrait, subsc
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2 = error("Actor of type $(typeof(actor)) expects data to be of type $(T2), while subscribable of type $(typeof(subscribable)) produces data of type $(T1).")
 subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subscribable, actor) where T           = on_subscribe!(subscribable, actor)
 
-on_subscribe!(subscribable, actor) = error("You probably forgot to implement osubscribe!(subscribable::$(typeof(subscribable)), actor).")
+on_subscribe!(subscribable, actor) = error("You probably forgot to implement on_subscribe!(subscribable::$(typeof(subscribable)), actor).")

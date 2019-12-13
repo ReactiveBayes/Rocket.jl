@@ -13,6 +13,8 @@ using Test
     include("./actor/test_logger_actor.jl")
 
     include("./test_subscribable.jl")
+
+    include("./test_operator.jl")
 end
 
 end

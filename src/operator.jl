@@ -29,3 +29,5 @@ function call_operator!(::ValidOperator{T, R}, operator, source::S) where { S <:
 end
 
 Base.:|>(source::S, operator) where { S <: Subscribable{T} } where T = call_operator!(operator, source)
+
+on_call!(operator, source) = error("You probably forgot to implement on_call!(operator::$(typeof(operator)), source).")
