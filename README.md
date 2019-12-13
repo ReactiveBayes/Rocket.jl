@@ -37,6 +37,32 @@ subscribe!(source_of_values, LambdaActor{TypeOfData}(
 | Tip | Do not use lambda functions for real computations as it lacks of performance. Use an Actor based approach instead. |
 | --- | - |
 
+## Actors
+
+To process messages from an observable you have to define an Actor that know how to react on incoming messages.
+
+```Julia
+struct MyActor <: Rx.Actor{Int} end
+
+Rx.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
+Rx.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
+Rx.on_complete!(actor::MyActor)        = println("Completed!")
+```
+
+Actor can also have its own local state
+
+```Julia
+struct StoreActor{D} <: Rx.Actor{}
+    values::Array{D, 1}
+
+    StoreActor{D}() where D = new(Array{D, 1}())
+end
+
+Rx.on_next!(actor::StoreActor{D}, data::D) where D = push!(actor.values, data)
+Rx.on_error!(actor::StoreActor, error) = doSomethingWithAnError(error)
+Rx.on_complete!(actor::StoreActor) = println("Completed: $(actor.values)")
+```
+
 ## Operators
 
 What makes Rx.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
