@@ -20,21 +20,21 @@ struct ScanProxy{T, R} <: ActorProxy
     initial :: R
 end
 
-actor_proxy!(proxy::ScanProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = ScanActor{T, R}(proxy.scanFn, copy(proxy.initial), actor)
+actor_proxy!(proxy::ScanProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = ScanActor{T, R, A}(proxy.scanFn, copy(proxy.initial), actor)
 
-mutable struct ScanActor{T, R} <: Actor{T}
+mutable struct ScanActor{T, R, A <: AbstractActor{R} } <: Actor{T}
     scanFn  :: Function
     current :: R
-    actor
+    actor   :: A
 end
 
-function on_next!(r::ScanActor{T, R}, data::T) where T where R
+function on_next!(r::ScanActor{T, R, A}, data::T) where { A <: AbstractActor{R} } where T where R
     r.current = Base.invokelatest(r.scanFn, data, r.current)
     next!(r.actor, r.current)
 end
 
-on_error!(r::ScanActor{T, R}, error) where T where R = error!(r.actor, error)
-on_complete!(r::ScanActor{T, R})     where T where R = complete!(r.actor)
+on_error!(r::ScanActor, error) = error!(r.actor, error)
+on_complete!(r::ScanActor)     = complete!(r.actor)
 
 macro CreateScanOperator(name, scanFn)
     operatorName   = Symbol(name, "ScanOperator")

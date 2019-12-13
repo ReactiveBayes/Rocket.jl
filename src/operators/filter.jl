@@ -20,22 +20,22 @@ struct FilterProxy{T} <: ActorProxy
     filterFn::Function
 end
 
-actor_proxy!(proxy::FilterProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = FilterActor{T}(proxy.filterFn, actor)
+actor_proxy!(proxy::FilterProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = FilterActor{T, A}(proxy.filterFn, actor)
 
 
-struct FilterActor{T} <: Actor{T}
+struct FilterActor{T, A <: AbstractActor{T} } <: Actor{T}
     filterFn :: Function
-    actor
+    actor    :: A
 end
 
-function on_next!(f::FilterActor{T}, data::T) where T
+function on_next!(f::FilterActor{T, A}, data::T) where { A <: AbstractActor{T} } where T
     if (Base.invokelatest(f.filterFn, data))
         next!(f.actor, data)
     end
 end
 
-on_error!(f::FilterActor{T}, error) where T = error!(f.actor, error)
-on_complete!(f::FilterActor{T})     where T = complete!(f.actor)
+on_error!(f::FilterActor, error) = error!(f.actor, error)
+on_complete!(f::FilterActor)     = complete!(f.actor)
 
 
 macro CreateFilterOperator(name, filterFn)

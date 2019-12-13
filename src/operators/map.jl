@@ -20,16 +20,16 @@ struct MapProxy{T, R} <: ActorProxy
     mappingFn::Function
 end
 
-actor_proxy!(proxy::MapProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = MapActor{T, R}(proxy.mappingFn, actor)
+actor_proxy!(proxy::MapProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = MapActor{T, R, A}(proxy.mappingFn, actor)
 
-struct MapActor{T, R} <: Actor{T}
+struct MapActor{T, R, A <: AbstractActor{R} } <: Actor{T}
     mappingFn  :: Function
-    actor
+    actor      :: A
 end
 
-on_next!(m::MapActor{T, R},  data::T) where T where R = next!(m.actor, Base.invokelatest(m.mappingFn, data))
-on_error!(m::MapActor{T, R}, error)   where T where R = error!(m.actor, error)
-on_complete!(m::MapActor{T, R})       where T where R = complete!(m.actor)
+on_next!(m::MapActor{T, R, A},  data::T) where { A <: AbstractActor{R} } where T where R = next!(m.actor, Base.invokelatest(m.mappingFn, data))
+on_error!(m::MapActor, error)                                                            = error!(m.actor, error)
+on_complete!(m::MapActor)                                                                = complete!(m.actor)
 
 
 macro CreateMapOperator(name, mappingFn)

@@ -22,21 +22,21 @@ struct ReduceProxy{T, R} <: ActorProxy
     initial  :: R
 end
 
-actor_proxy!(proxy::ReduceProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = ReduceActor{T, R}(proxy.reduceFn, copy(proxy.initial), actor)
+actor_proxy!(proxy::ReduceProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = ReduceActor{T, R, A}(proxy.reduceFn, copy(proxy.initial), actor)
 
-mutable struct ReduceActor{T, R} <: Actor{T}
+mutable struct ReduceActor{T, R, A <: AbstractActor{R} } <: Actor{T}
     reduceFn :: Function
     current  :: R
-    actor
+    actor    :: A
 end
 
-function on_next!(actor::ReduceActor{T, R}, data::T) where T where R
+function on_next!(actor::ReduceActor{T, R, A}, data::T) where { A <: AbstractActor{R} } where T where R
     actor.current = Base.invokelatest(actor.reduceFn, data, actor.current)
 end
 
-on_error!(actor::ReduceActor{T, R}, error) where T where R = error!(actor.actor, error)
+on_error!(actor::ReduceActor, error) = error!(actor.actor, error)
 
-function on_complete!(actor::ReduceActor{T, R}) where T where R
+function on_complete!(actor::ReduceActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end
