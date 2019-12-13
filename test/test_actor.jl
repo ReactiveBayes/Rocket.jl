@@ -36,8 +36,19 @@ import Rx: as_actor
     struct ImplementedCompletionActor <: CompletionActor{Any} end
     Rx.on_complete!(::ImplementedCompletionActor) = "ImplementedCompletionActor:complete"
 
-    struct IntegerActor <: NextActor{Int} end
-    Rx.on_next!(::IntegerActor, data::Int) = data
+    struct IntegerActor <: Actor{Int} end
+    Rx.on_next!(::IntegerActor,  data::Int) = data
+    Rx.on_error!(::IntegerActor, err)       = err
+    Rx.on_complete!(::IntegerActor)         = "IntegerActor:complete"
+
+    struct IntegerNextActor <: NextActor{Int} end
+    Rx.on_next!(::IntegerNextActor, data::Int) = data
+
+    struct IntegerErrorActor <: ErrorActor{Int} end
+    Rx.on_error!(::IntegerErrorActor, err) = err
+
+    struct IntegerCompletionActor <: CompletionActor{Int} end
+    Rx.on_complete!(::IntegerCompletionActor) = "IntegerCompletionActor:complete"
 
     @testset "as_actor" begin
             # Check if arbitrary dummy type has undefined actor type
@@ -64,7 +75,10 @@ import Rx: as_actor
             @test as_actor(ImplementedErrorActor)      === ErrorActorTrait{Any}()
             @test as_actor(ImplementedCompletionActor) === CompletionActorTrait{Any}()
 
-            @test as_actor(IntegerActor) === NextActorTrait{Int}()
+            @test as_actor(IntegerActor)           === BaseActorTrait{Int}()
+            @test as_actor(IntegerNextActor)       === NextActorTrait{Int}()
+            @test as_actor(IntegerErrorActor)      === ErrorActorTrait{Int}()
+            @test as_actor(IntegerCompletionActor) === CompletionActorTrait{Int}()
     end
 
     @testset "next!" begin
@@ -94,6 +108,12 @@ import Rx: as_actor
             # Check next! function throws an error for wrong type of message
             @test_throws ErrorException next!(IntegerActor(), "string")
             @test_throws ErrorException next!(IntegerActor(), 1.0)
+            @test_throws ErrorException next!(IntegerNextActor(), "string")
+            @test_throws ErrorException next!(IntegerNextActor(), 1.0)
+            @test_throws ErrorException next!(IntegerErrorActor(), "string")
+            @test_throws ErrorException next!(IntegerErrorActor(), 1.0)
+            @test_throws ErrorException next!(IntegerCompletionActor(), "string")
+            @test_throws ErrorException next!(IntegerCompletionActor(), 1.0)
     end
 
     @testset "error!" begin

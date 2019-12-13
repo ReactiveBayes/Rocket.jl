@@ -1,2 +1,3 @@
 demos/.ipynb_checkpoints
 demos/*_incomplete.ipynb
+**/*.cov

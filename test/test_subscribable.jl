@@ -36,11 +36,16 @@ import Rx: subscribe!
     @testset "subscribe!" begin
         actor = Rx.VoidActor{Int}()
 
+        # Check if subscribe! throws an error for not valid subscribable
         @test_throws ErrorException subscribe!(DummyType(), actor)
         @test_throws ErrorException subscribe!(NotImplementedSubscribable(), actor)
         @test_throws ErrorException subscribe!(ExplicitlyDefinedSubscribable(), actor)
 
+        # Check if subscribe! subscribes to a valid subscribable
         @test subscribe!(ImplementedSubscribable(), actor) === Rx.VoidTeardown()
+
+        # Check if subscribe! throws an error if subscribable and actor data types does not match
+        @test_throws ErrorException subscribe!(ImplementedSubscribable(), Rx.VoidActor{String}())
     end
 
 end
