@@ -1,3 +1,5 @@
+export ChainTeardown, as_teardown, on_unsubscribe!
+
 struct ChainTeardown{T <: Teardown} <: Teardown
     teardown::T
 end

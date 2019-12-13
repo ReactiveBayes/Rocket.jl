@@ -1,4 +1,4 @@
-export TeardownLogic, UnsubscribableTeardown, CallableTeardown, VoidTeardown, UndefinedTeardown
+export TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTeardownLogic, UndefinedTeardownLogic
 export Teardown, as_teardown
 export unsubscribe!, teardown!, on_unsubscribe!
 

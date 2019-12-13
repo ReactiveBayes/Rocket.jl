@@ -2,6 +2,7 @@ module Rx
 
 include("teardown.jl")
 include("teardown/void.jl")
+include("teardown/chain.jl")
 
 include("actor.jl")
 include("actor/lambda.jl")

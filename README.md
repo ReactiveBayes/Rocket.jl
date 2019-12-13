@@ -1,6 +1,6 @@
 # Reactive extensions library for Julia
 
-Rx.jl is a Julia package for reactive programming using Observables, to make it easier to compose asynchronous and actor based code.
+Rx.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
 In order to achieve best performance and convenient API Rx.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
