@@ -1,3 +1,14 @@
-demos/.ipynb_checkpoints
-demos/*_incomplete.ipynb
+docs/build
+
+demo/.ipynb_checkpoints
+demo/*_incomplete.ipynb
+demo/*.jl
+
+**/*.aux
+**/*.log
+**/*.synctex.*
 **/*.cov
+
+**/*.DS_Store
+
+.ipynb_checkpoints

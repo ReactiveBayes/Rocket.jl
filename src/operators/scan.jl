@@ -4,6 +4,37 @@ export ScanProxy, actor_proxy!
 export ScanActor, on_next!, on_error!, on_complete!
 export @CreateScanOperator
 
+"""
+    scan(::Type{T}, ::Type{R}, scanFn::Function, initial::R = zero(R)) where T where R
+
+Creates a scan operator, which applies a given accumulator `scanFn` function to each value emmited by the source
+Observable, and returns each intermediate resultm with an optional initial value.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `::Type{R}`: the type of data of transformed value, may be or may not be the same as T
+- `scanFn::Function`: accumulator function with `(data::T, current::R) -> R` signature
+- `initial::R`: optional initial value for accumulator function
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> scan(Int, Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActor{Vector{Int}}())
+;
+
+# output
+
+[LogActor] Data: [1]
+[LogActor] Data: [1, 2]
+[LogActor] Data: [1, 2, 3]
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 scan(::Type{T}, ::Type{R}, scanFn::Function, initial::R = zero(R)) where T where R = ScanOperator{T, R}(scanFn, initial)
 
 struct ScanOperator{T, R} <: Operator{T, R}
@@ -36,6 +67,39 @@ end
 on_error!(r::ScanActor, error) = error!(r.actor, error)
 on_complete!(r::ScanActor)     = complete!(r.actor)
 
+
+"""
+    @CreateScanOperator(name, scanFn)
+
+Creates a custom scan operator, which can be used as `nameScanOperator{T, R}()`.
+
+# Arguments
+- `name`: custom operator name
+- `scanFn`: accumulator function, assumed to be pure
+
+# Generates
+- `nameScanOperator{T, R}()` function
+
+# Examples
+```jldoctest
+using Rx
+
+@CreateScanOperator(IntoArray, (d, c) -> [ c..., d ])
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> IntoArrayScanOperator{Int, Vector{Int}}(Int[]), LoggerActor{Vector{Int}}())
+;
+
+# output
+
+[LogActor] Data: [1]
+[LogActor] Data: [1, 2]
+[LogActor] Data: [1, 2, 3]
+[LogActor] Completed
+
+```
+
+"""
 macro CreateScanOperator(name, scanFn)
     operatorName   = Symbol(name, "ScanOperator")
     proxyName      = Symbol(name, "ScanProxy")

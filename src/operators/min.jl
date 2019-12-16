@@ -5,6 +5,32 @@ export MinActor, on_next!, on_error!, on_complete!
 
 import Base: min
 
+"""
+    min(::Type{T}, from = nothing) where T
+
+Creates a min operator, which emits a single item: the item with the smallest value.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `from`: optional initial minimal value, if `nothing` first item from the source will be used as initial instead
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ i for i in 1:42 ])
+subscribe!(source |> min(Int), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 1
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 min(::Type{T}, from = nothing) where T = MinOperator{T}(from)
 
 struct MinOperator{T} <: Operator{T, T}
@@ -32,9 +58,11 @@ function on_next!(actor::MinActor{T}, data::T) where T
     else
         actor.current = data < actor.current ? data : actor.current
     end
-
-    next!(actor.actor, actor.current)
 end
 
 on_error!(actor::MinActor{T}, error) where T = error!(actor.actor, error)
-on_complete!(actor::MinActor{T})     where T = complete!(actor.actor)
+
+function on_complete!(actor::MinActor{T}) where T
+    next!(actor.actor, actor.current)
+    complete!(actor.actor)
+end

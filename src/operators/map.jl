@@ -6,6 +6,36 @@ export @CreateMapOperator
 
 import Base: map
 
+"""
+    map(::Type{T}, ::Type{R}, mappingFn::Function) where T where R
+
+Creates a map operator, which applies a given `mappingFn` to each value emmited by the source
+Observable, and emits the resulting values as an Observable.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `::Type{R}`: the type of data of transformed value, may be or may not be the same as T
+- `mappingFn::Function`: transformation function with `(data::T) -> R` signature
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> map(Int, Int, (d) -> d ^ 2), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 1
+[LogActor] Data: 4
+[LogActor] Data: 9
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 map(::Type{T}, ::Type{R}, mappingFn::Function) where T where R = MapOperator{T, R}(mappingFn)
 
 struct MapOperator{T, R} <: Operator{T, R}
@@ -31,7 +61,38 @@ on_next!(m::MapActor{T, R, A},  data::T) where { A <: AbstractActor{R} } where T
 on_error!(m::MapActor, error)                                                            = error!(m.actor, error)
 on_complete!(m::MapActor)                                                                = complete!(m.actor)
 
+"""
+    @CreateMapOperator(name, mappingFn)
 
+Creates a custom map operator, which can be used as `nameMapOperator{T, R}()`.
+
+# Arguments
+- `name`: custom operator name
+- `mappingFn`: transformation function, assumed to be pure
+
+# Generates
+- `nameMapOperator{T, R}()` function
+
+# Examples
+```jldoctest
+using Rx
+
+@CreateMapOperator(Squared, (d) -> d ^ 2)
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> SquaredMapOperator{Int, Int}(), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 1
+[LogActor] Data: 4
+[LogActor] Data: 9
+[LogActor] Completed
+
+```
+
+"""
 macro CreateMapOperator(name, mappingFn)
     operatorName   = Symbol(name, "MapOperator")
     proxyName      = Symbol(name, "MapProxy")

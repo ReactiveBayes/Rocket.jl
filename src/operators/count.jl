@@ -5,6 +5,32 @@ export CountActor, on_next!, on_error!, on_complete!
 
 import Base: count
 
+"""
+    count(::Type{T}) where T
+
+Creates a count operator, which counts the number of
+emissions on the source and emits that number when the source completes.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ i for i in 1:42 ])
+subscribe!(source |> count(Int), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 42
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 count(::Type{T}) where T = CountOperator{T}()
 
 struct CountOperator{T} <: Operator{T, Int} end
@@ -21,14 +47,16 @@ mutable struct CountActor{T} <: Actor{T}
     current :: Int
     actor
 
-    CountActor{T}(actor) where T = new(1, actor)
+    CountActor{T}(actor) where T = new(0, actor)
 end
 
 function on_next!(c::CountActor{T}, data::T) where T
-    current = c.current
     c.current += 1
-    next!(c.actor, current)
 end
 
 on_error!(c::CountActor{T}, error) where T = error!(c.actor, error)
-on_complete!(c::CountActor{T})     where T = complete!(c.actor)
+
+function on_complete!(c::CountActor{T})     where T
+    next!(c.actor, c.current)
+    complete!(c.actor)
+end

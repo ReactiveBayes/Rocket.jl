@@ -4,6 +4,43 @@ export TakeProxy, source_proxy!
 export TakeInnerActor, on_next!, on_error!, on_complete!
 export TakeSource, on_subscribe!
 
+"""
+    take(::Type{T}, max_count::Int) where T
+
+Creates a take operator, which returns an Observable
+that emits only the first `max_count` values emitted by the source Observable.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `max_count::Int`: the maximum number of next values to emit.
+
+# Examples
+```jldoctest
+using Rx
+
+struct KeepActor{D} <: NextActor{D}
+    values::Vector{D}
+
+    KeepActor{D}() where D = new(Vector{D}())
+end
+
+Rx.on_next!(actor::KeepActor{D}, data::D) where D = push!(actor.values, data)
+
+@sync begin
+    source = from([ i for i in 1:100 ])
+    actor  = KeepActor{Int}()
+    subscription = subscribe!(source |> take(Int, 5), actor)
+    println(actor.values)
+end
+;
+
+# output
+
+Int64[1, 2, 3, 4, 5]
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 take(::Type{T}, max_count::Int) where T = TakeOperator{T}(max_count)
 
 struct TakeOperator{T} <: Operator{T, T}

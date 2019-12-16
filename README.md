@@ -4,6 +4,8 @@ Rx.jl is a Julia package for reactive programming using Observables, to make it 
 
 In order to achieve best performance and convenient API Rx.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
+Inspired by [RxJS](https://github.com/ReactiveX/rxjs).
+
 Rx.jl has been designed with a focus on performance and modularity.
 
 The essential concepts in Rx.jl are:

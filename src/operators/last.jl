@@ -3,6 +3,47 @@ export LastOperator, on_call!
 export LastProxy, actor_proxy!
 export LastActor, on_next!, on_error!, on_complete!
 
+import Base: last
+
+"""
+    last(::Type{T}, default = nothing) where T
+
+Creates a last operator, which returns an Observable that emits only
+the last item emitted by the source Observable.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `default`: an optional default value to provide if no values were emitted
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> last(Int), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 3
+[LogActor] Completed
+
+```
+
+```jldoctest
+using Rx
+
+source = from(Int[])
+subscribe!(source |> last(Int), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Completed
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 last(::Type{T}, default = nothing) where T = LastOperator{T}(default)
 
 struct LastOperator{T} <: Operator{T, T}

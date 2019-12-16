@@ -4,6 +4,38 @@ export TapProxy, actor_proxy!
 export TapActor, on_next!, on_error!, on_complete!
 export @CreateTapOperator
 
+"""
+    tap(::Type{T}, tapFn::Function) where T
+
+Creates a tap operator, which performs a side effect
+for every emission on the source Observable, but return an Observable that is identical to the source.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `tapFn::Function`: side-effect tap function with `(data::T) -> Nothing` signature
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> tap(Int, (d) -> println("In tap: \$d")), LoggerActor{Int}())
+;
+
+# output
+
+In tap: 1
+[LogActor] Data: 1
+In tap: 2
+[LogActor] Data: 2
+In tap: 3
+[LogActor] Data: 3
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 tap(::Type{T}, tapFn::Function) where T = TapOperator{T}(tapFn)
 
 struct TapOperator{T} <: Operator{T, T}
@@ -33,6 +65,41 @@ end
 on_error!(t::TapActor{T}, error) where T = error!(t.actor, error)
 on_complete!(t::TapActor{T})     where T = complete!(t.actor)
 
+"""
+    @CreateTapOperator(name, tapFn)
+
+Creates a custom tap operator, which can be used as `nameTapOperator{T}()`.
+
+# Arguments
+- `name`: custom operator name
+- `tapFn`: side-effect tap function
+
+# Generates
+- `nameTapOperator{T}()` function
+
+# Examples
+```jldoctest
+using Rx
+
+@CreateTapOperator("Print", (d) -> println("In tap: \$d"))
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> PrintTapOperator{Int}(), LoggerActor{Int}())
+;
+
+# output
+
+In tap: 1
+[LogActor] Data: 1
+In tap: 2
+[LogActor] Data: 2
+In tap: 3
+[LogActor] Data: 3
+[LogActor] Completed
+
+```
+
+"""
 macro CreateTapOperator(name, tapFn)
     operatorName = Symbol(name, "TapOperator")
     proxyName    = Symbol(name, "TapProxy")

@@ -5,6 +5,38 @@ export EnumerateActor, on_next!, on_error!, on_complete!
 
 import Base: enumerate
 
+"""
+    enumerate(::Type{T}) where T
+
+Creates an enumerate operator, which converts each value emitted by the source
+Observable into a tuple of its order number and the value itself.
+
+The enumerate operator is similar to
+`scan(Int, Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))`
+(see [`scan`](@ref)).
+
+# Arguments
+- `::Type{T}`: the type of data of source
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ i for i in 1:3 ])
+subscribe!(source |> enumerate(Int), LoggerActor{Tuple{Int, Int}}())
+;
+
+# output
+
+[LogActor] Data: (1, 1)
+[LogActor] Data: (2, 2)
+[LogActor] Data: (3, 3)
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref), [`map`](@ref)
+"""
 enumerate(::Type{T}) where T = EnumerateOperator{T}()
 
 struct EnumerateOperator{T} <: Operator{T, Tuple{T, Int}} end

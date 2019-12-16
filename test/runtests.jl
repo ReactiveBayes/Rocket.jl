@@ -1,6 +1,8 @@
 module RxTest
 
-using Test
+using Test, Documenter, Rx
+
+doctest(Rx)
 
 @testset "Rx" begin
     include("./test_teardown.jl")

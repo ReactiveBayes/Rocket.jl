@@ -6,6 +6,33 @@ export @CreateFilterOperator
 
 import Base: filter
 
+"""
+    filter(::Type{T}, filterFn::Function) where T
+
+Creates a filter operator, which filters items by the source Observable by emitting only
+those that satisfy a specified `filterFn` predicate.
+
+# Arguments
+- `::Type{T}`: the type of data of source
+- `filterFn::Function`: predicate function with `(data::T) -> Bool` signature
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> filter(Int, (d) -> d % 2 == 0), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 2
+[LogActor] Completed
+
+```
+
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+"""
 filter(::Type{T}, filterFn::Function) where T = FilterOperator{T}(filterFn)
 
 struct FilterOperator{T} <: Operator{T, T}
@@ -38,6 +65,36 @@ on_error!(f::FilterActor, error) = error!(f.actor, error)
 on_complete!(f::FilterActor)     = complete!(f.actor)
 
 
+"""
+    @CreateFilterOperator(name, filterFn)
+
+Creates a custom filter operator, which can be used as `nameFilterOperator{T}()`.
+
+# Arguments
+- `name`: custom operator name
+- `filterFn`: predicate function, assumed to be pure
+
+# Generates
+- `nameFilterOperator{T}()` function
+
+# Examples
+```jldoctest
+using Rx
+
+@CreateFilterOperator(Even, (d) -> d % 2 == 0)
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> EvenFilterOperator{Int}(), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 2
+[LogActor] Completed
+
+```
+
+"""
 macro CreateFilterOperator(name, filterFn)
     operatorName = Symbol(name, "FilterOperator")
     proxyName    = Symbol(name, "FilterProxy")
