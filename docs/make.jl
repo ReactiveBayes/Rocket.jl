@@ -7,6 +7,9 @@ makedocs(
     pages    = [
         "Home"            => "index.md",
         "Getting started" => "getting-started.md",
+        "Observables"     => [
+            "About observables" => "observables/about.md"
+        ],
         "Subscription"    => "teardown/about.md",
         "Operators"       => [
             "About operators"         => "operators/about.md",
