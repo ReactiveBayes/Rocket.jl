@@ -1,4 +1,4 @@
-# Subscription
+# [Subscription](@id section_subscription)
 
 What is a Subscription? A Subscription is an object that represents a disposable resource, usually the execution of an Observable. A Subscription has one important method, `unsubscribe!(t::T) where { T <: Teardown }`, that takes some teardown logic object as one argument and just disposes the resource held by the subscription.
 

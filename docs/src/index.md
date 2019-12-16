@@ -1,4 +1,4 @@
-This documentation is an adaptation of [RxJS library documentation](rxjs.dev) for Julia Rx.jl package.
+This documentation is an adaptation of [RxJS library documentation](https://rxjs.dev) for Julia Rx.jl package.
 
 # Table of Contents
 
