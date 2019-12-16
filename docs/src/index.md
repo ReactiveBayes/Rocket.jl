@@ -1,7 +1,11 @@
+This documentation is an adaptation of [RxJS library documentation](rxjs.dev) for Julia Rx.jl package.
+
 # Table of Contents
+
 ```@contents
 Pages = [
   "getting-started.md",
+  "teardown/about.md",
   "operators/about.md",
   "operators/piping.md",
   "operators/create-new-operator.md",
@@ -20,5 +24,6 @@ Depth = 3
 ```
 
 # Index
+
 ```@index
 ```

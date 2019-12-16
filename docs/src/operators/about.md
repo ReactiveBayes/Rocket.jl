@@ -1,4 +1,4 @@
-# About operators
+# Operators
 
 Rx is mostly useful for its __operators__, even though the Observable is the foundation. Operators are the essential pieces that allow complex asynchronous code to be easily composed in a declarative manner.
 
