@@ -8,6 +8,7 @@ include("actor.jl")
 include("actor/lambda.jl")
 include("actor/logger.jl")
 include("actor/void.jl")
+include("actor/async.jl")
 
 include("subscribable.jl")
 
