@@ -60,6 +60,8 @@ function _subject_handle_event(subject::Subject{D}, message::SubjectErrorMessage
     for actor in subject.actors
         error!(actor, error)
     end
+
+    _subject_unsubscribe_all(subject)
 end
 
 function _subject_handle_event(subject::Subject{D}, message::SubjectCompleteMessage) where D
@@ -67,6 +69,14 @@ function _subject_handle_event(subject::Subject{D}, message::SubjectCompleteMess
 
     for actor in subject.actors
         complete!(actor)
+    end
+
+    _subject_unsubscribe_all(subject)
+end
+
+function _subject_unsubscribe_all(subject::Subject{D}) where D
+    for actor in subject.actors
+        unsubscribe!(SubjectSubscription(subject, actor))
     end
 end
 
