@@ -1,5 +1,6 @@
-export AsyncActor, async, close
+export AsyncActor, async
 export on_next!, on_error!, on_complete!
+export close
 
 import Base: close
 
@@ -26,4 +27,5 @@ on_error!(actor::AsyncActor{D, A}, err) where { A <: AbstractActor{D} } where D 
 on_complete!(actor::AsyncActor{D, A}) where { A <: AbstractActor{D} } where D   = complete!(actor.actor)
 
 async(actor::A) where { A <: AbstractActor{D} } where D = AsyncActor{D, A}(actor)
+
 close(actor::AsyncActor) = close(actor.channel)

@@ -14,8 +14,10 @@ include("subscribable.jl")
 
 include("observable/array.jl")
 include("observable/error.jl")
+include("observable/never.jl")
 include("observable/proxy.jl")
 include("observable/subject.jl")
+include("observable/timer.jl")
 
 include("operator.jl")
 include("operators/map.jl")
