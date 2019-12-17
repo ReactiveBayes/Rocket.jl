@@ -24,18 +24,15 @@ mutable struct Subject{D} <: Subscribable{D}
     last_error   :: Union{Nothing, Any}
 
     Subject{D}() where D = begin
-        channel      = Channel{SubjectMessage{D}}(Inf)
         actors       = Array{AbstractActor{D}, 1}()
         is_completed = false
         is_error     = false
         last_error   = nothing
 
-        subject = new(channel, actors, is_completed, is_error, last_error)
-
-        task = @async begin
+        channel = Channel{SubjectMessage{D}}(Inf, spawn = true) do ch
             try
                 while !subject.is_completed && !subject.is_error
-                    message = take!(subject.channel)
+                    message = take!(ch)
                     _subject_handle_event(subject, message)
                 end
             catch e
@@ -43,9 +40,7 @@ mutable struct Subject{D} <: Subscribable{D}
             end
         end
 
-        bind(subject.channel, task)
-
-        subject
+        new(channel, actors, is_completed, is_error, last_error)
     end
 end
 

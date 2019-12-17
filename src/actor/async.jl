@@ -1,24 +1,20 @@
-export AsyncActor, async, on_next!, on_error!, on_complete!
+export AsyncActor, async, close
+export on_next!, on_error!, on_complete!
+
+import Base: close
 
 struct AsyncActor{ D, A <: AbstractActor{D} } <: Actor{D}
     channel :: Channel{D}
     actor   :: A
 
     AsyncActor{D, A}(actor) where { A <: AbstractActor{D} } where D = begin
-        channel = Channel{D}(Inf)
-
-        async_actor = new(channel, actor)
-
-        task = @async begin
+        channel = Channel{D}(Inf, spawn = true) do ch
             while true
-                message = take!(async_actor.channel)
-                next!(async_actor.actor, message)
+                message = take!(ch)
+                next!(actor, message)
             end
         end
-
-        bind(async_actor.channel, task)
-
-        async_actor
+        new(channel, actor)
     end
 end
 
@@ -30,3 +26,4 @@ on_error!(actor::AsyncActor{D, A}, err) where { A <: AbstractActor{D} } where D 
 on_complete!(actor::AsyncActor{D, A}) where { A <: AbstractActor{D} } where D   = complete!(actor.actor)
 
 async(actor::A) where { A <: AbstractActor{D} } where D = AsyncActor{D, A}(actor)
+close(actor::AsyncActor) = close(actor.channel)
