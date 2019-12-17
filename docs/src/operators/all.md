@@ -26,3 +26,4 @@ There are operators for different purposes, and they may be categorized as: crea
 ## Utility operators
 
 - [tap](@ref operator_tap)
+- [delay](@ref operator_delay)
