@@ -98,6 +98,7 @@ function _subject_handle_event(subject::Subject{D}, message::SubjectCompleteMess
     end
 
     _subject_unsubscribe_all(subject)
+    close(subject.channel)
 end
 
 function _subject_unsubscribe_actors(subject::Subject{D}, actors::Vector{AbstractActor{D}}) where D
@@ -145,4 +146,6 @@ on_complete!(subject::Subject{D})      where D = put!(subject.channel, SubjectCo
 Base.show(io::IO, subject::Subject)                  = print(io, "Subject [ with $(length(subject.actors)) actors listening ]")
 Base.show(io::IO, subscription::SubjectSubscription) = print(io, "Subject subscription with $(subscription.actor) actor")
 
-close(subject::Subject) = close(subject.channel)
+function close(subject::Subject{D}) where D
+    _subject_handle_event(subject, SubjectCompleteMessage())
+end

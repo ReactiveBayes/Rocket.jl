@@ -15,6 +15,7 @@ ever increasing numbers after each `period` of time thereafter.
 - `due_time`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
 - `period`: The period of time in milliseconds between emissions of the subsequent numbers.
 
+See also: ['Subscribable'](@ref)
 """
 mutable struct TimerObservable <: Subscribable{Int}
     due_time   :: Int
@@ -51,18 +52,27 @@ end
 isperiodic(observable::TimerObservable) = observable.period != nothing
 
 function on_subscribe!(observable::TimerObservable, actor::A) where { A <: AbstractActor{Int} }
-    return chain(subscribe!(observable.subject, actor))
+    if !observable.is_stopped
+        return chain(subscribe!(observable.subject, actor))
+    else
+        complete!(actor)
+        return VoidTeardown()
+    end
 end
 
 """
     timer(due_time::Int = 0, period = nothing)
 
+Its like `interval`(@ref), but you can specify when should the emissions start.
 `timer` returns an Observable that emits an infinite sequence of ascending integers,
 with a constant interval of time, period of your choosing between those emissions.
 The first emission happens after the specified `due_time`.
 If `period` is not specified, the output Observable emits only one value, 0.
 Otherwise, it emits an infinite sequence.
 Note that you have to `close` timer observable when you do not need it.
+After closing a time you will always receive a complete event on subscribe!.
+
+See also: [`interval`](@ref), ['TimerObservable'](@ref), ['Subscribable'](@ref)
 """
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
 

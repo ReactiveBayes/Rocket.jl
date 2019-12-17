@@ -18,6 +18,7 @@ include("observable/never.jl")
 include("observable/proxy.jl")
 include("observable/subject.jl")
 include("observable/timer.jl")
+include("observable/interval.jl")
 
 include("operator.jl")
 include("operators/map.jl")
