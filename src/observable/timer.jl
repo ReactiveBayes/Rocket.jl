@@ -3,8 +3,6 @@ export close
 
 import Base: close
 
-const MILLISECONDS_IN_SECOND = 1000.0::Float64
-
 """
     TimerObservable <: Subscribable{Int}
 

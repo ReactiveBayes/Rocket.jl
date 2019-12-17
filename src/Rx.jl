@@ -1,5 +1,7 @@
 module Rx
 
+include("utils.jl")
+
 include("teardown.jl")
 include("teardown/void.jl")
 include("teardown/chain.jl")
@@ -34,5 +36,6 @@ include("operators/tap.jl")
 include("operators/sum.jl")
 include("operators/max.jl")
 include("operators/min.jl")
+include("operators/delay.jl")
 
 end # module
