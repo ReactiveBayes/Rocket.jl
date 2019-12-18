@@ -11,6 +11,7 @@ There are operators for different purposes, and they may be categorized as: crea
 ## Filtering operators
 
 - [filter](@ref operator_filter)
+- [some](@ref operator_some)
 - [take](@ref operator_take)
 - [first](@ref operator_first)
 - [last](@ref operator_last)
