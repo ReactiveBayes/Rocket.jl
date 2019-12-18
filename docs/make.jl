@@ -27,6 +27,7 @@ makedocs(
         ],
         "Subscription"    => [
             "About subscriptions" => "teardown/about.md",
+            "API"                 => "teardown/api.md",
         ],
         "Operators"       => [
             "About operators"         => "operators/about.md",
