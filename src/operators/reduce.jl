@@ -21,7 +21,7 @@ the initial value for the accumulator. If no `seed` value is specified, the firs
 
 # Producing
 
-Stream of type <: Subscribable{R}
+Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
@@ -52,7 +52,7 @@ subscribe!(source |> reduce(Int, +), LoggerActor{Int}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref)
 """
 reduce(::Type{R}, reduceFn::Function, seed::Union{R, Nothing} = nothing) where R = ReduceOperator{R}(reduceFn, seed)
 
@@ -111,7 +111,7 @@ Creates a custom reduce operator, which can be used as `nameReduceOperator()`.
 
 # Producing
 
-Stream of type <: Subscribable{R}
+Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
@@ -130,6 +130,7 @@ subscribe!(source |> IntoArrayReduceOperator(Int[]), LoggerActor{Vector{Int}}())
 
 ```
 
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref)
 """
 macro CreateReduceOperator(name, L, R, reduceFn)
     operatorName   = Symbol(name, "ReduceOperator")

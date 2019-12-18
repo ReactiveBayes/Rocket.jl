@@ -15,7 +15,7 @@ Creates a max operator, which emits a single item: the item with the largest val
 
 # Producing
 
-Stream of type <: Subscribable{Union{L, Nothing}} where L refers to type of source stream
+Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -32,11 +32,11 @@ subscribe!(source |> max(), LoggerActor{Union{Int, Nothing}}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 max(; from = nothing) = MaxOperator(from)
 
-struct MaxOperator <: InferrableOperator
+struct MaxOperator <: InferableOperator
     from
 end
 

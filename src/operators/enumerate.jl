@@ -17,7 +17,7 @@ The enumerate operator is similar to
 
 # Producing
 
-Stream of type <: Subscribable{Tuple{L, Int}} where L refers to type of source stream
+Stream of type `<: Subscribable{Tuple{L, Int}}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -36,11 +36,11 @@ subscribe!(source |> enumerate(), LoggerActor{Tuple{Int, Int}}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref), [`scan`](@ref), [`map`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref), [`map`](@ref)
 """
 enumerate() = EnumerateOperator()
 
-struct EnumerateOperator <: InferrableOperator end
+struct EnumerateOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{Tuple{L, Int}}, operator::EnumerateOperator, source::S) where { S <: Subscribable{L} } where L
     return ProxyObservable{Tuple{L, Int}}(source, EnumerateProxy{L}())

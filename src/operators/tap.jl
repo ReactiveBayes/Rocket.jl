@@ -15,7 +15,7 @@ for every emission on the source Observable, but return an Observable that is id
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -37,11 +37,11 @@ In tap: 3
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 tap(tapFn::Function) = TapOperator(tapFn)
 
-struct TapOperator <: InferrableOperator
+struct TapOperator <: InferableOperator
     tapFn :: Function
 end
 
@@ -111,7 +111,7 @@ macro CreateTapOperator(name, tapFn)
     actorName    = Symbol(name, "TapActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Rx.InferrableOperator end
+        struct $operatorName <: Rx.InferableOperator end
 
         function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{L} } where L
             return Rx.ProxyObservable{L}(source, ($proxyName){L}())

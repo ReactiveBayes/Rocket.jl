@@ -19,7 +19,7 @@ The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref)).
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -50,11 +50,11 @@ subscribe!(source |> sum(from = 97), LoggerActor{Int}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref), [`reduce`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref)
 """
 sum(; from = nothing) = SumOperator(from)
 
-struct SumOperator <: InferrableOperator
+struct SumOperator <: InferableOperator
     from
 end
 

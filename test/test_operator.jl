@@ -3,8 +3,8 @@ module RxOperatorTest
 using Test
 
 import Rx
-import Rx: OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferrableOperatorTrait, InvalidOperatorTrait
-import Rx: AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferrableOperator
+import Rx: OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferableOperatorTrait, InvalidOperatorTrait
+import Rx: AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
 import Rx: as_operator, call_operator!, on_call!, operator_right
 import Rx: |>
 
@@ -32,14 +32,14 @@ import Rx: |>
     struct RightTypedFloatZeroOperator <: RightTypedOperator{Float64} end
     Rx.on_call!(::Type{L}, ::Type{Float64}, operator::RightTypedFloatZeroOperator, source) where L = Rx.from([ 0.0 ])
 
-    struct InferrableIntoZeroTupleOperator <: InferrableOperator end
-    Rx.on_call!(::Type{L}, ::Type{Tuple{L, L}}, operator::InferrableIntoZeroTupleOperator, source) where L = Rx.from([ (zero(L), zero(L)) ])
-    Rx.operator_right(::InferrableIntoZeroTupleOperator, ::Type{L}) where L = Tuple{L, L}
+    struct InferableIntoZeroTupleOperator <: InferableOperator end
+    Rx.on_call!(::Type{L}, ::Type{Tuple{L, L}}, operator::InferableIntoZeroTupleOperator, source) where L = Rx.from([ (zero(L), zero(L)) ])
+    Rx.operator_right(::InferableIntoZeroTupleOperator, ::Type{L}) where L = Tuple{L, L}
 
-    struct InferrableNotImplementedOperator <: InferrableOperator end
-    Rx.on_call!(::Type{L}, ::Type{L}, operator::InferrableIntoZeroTupleOperator, source) where L = source
+    struct InferableNotImplementedOperator <: InferableOperator end
+    Rx.on_call!(::Type{L}, ::Type{L}, operator::InferableIntoZeroTupleOperator, source) where L = source
     # Should be commented as we are testing this case
-    # Rx.operator_right(::InferrableNotImplementedOperator, ::Type{L}) where L = L
+    # Rx.operator_right(::InferableNotImplementedOperator, ::Type{L}) where L = L
 
     struct SomeSubscribable{D} <: Rx.Subscribable{D} end
 
@@ -51,7 +51,7 @@ import Rx: |>
         @test as_operator(NotImplementedOperator)          === TypedOperatorTrait{Int, String}()
         @test as_operator(LeftTypedStringIdentityOperator) === LeftTypedOperatorTrait{String}()
         @test as_operator(RightTypedFloatZeroOperator)     === RightTypedOperatorTrait{Float64}()
-        @test as_operator(InferrableIntoZeroTupleOperator) === InferrableOperatorTrait()
+        @test as_operator(InferableIntoZeroTupleOperator)  === InferableOperatorTrait()
 
         # Check if as_operator returns valid operator type for explicitly defined types
         @test as_operator(ExplicitlyDefinedOperator) === TypedOperatorTrait{String, Int}()
@@ -73,7 +73,7 @@ import Rx: |>
         @test_throws ErrorException int_source    |> NotImplementedOperator()
         @test_throws ErrorException string_source |> ExplicitlyDefinedOperator()
         @test_throws ErrorException int_source    |> LeftTypedIntIdentityNotImplementedOperator()
-        @test_throws ErrorException int_source    |> InferrableNotImplementedOperator()
+        @test_throws ErrorException int_source    |> InferableNotImplementedOperator()
 
         # Check if pipe operator calls on_call! for valid operator
         @test int_source |> IdentityIntOperator() === int_source
@@ -83,8 +83,8 @@ import Rx: |>
         @test string_source |> RightTypedFloatZeroOperator() == Rx.from([ 0.0 ])
 
         # Check if inferrable operator may operate on different input source types
-        @test int_source    |> InferrableIntoZeroTupleOperator() == Rx.from([ (0, 0) ])
-        @test float_source  |> InferrableIntoZeroTupleOperator() == Rx.from([ (0.0, 0.0) ])
+        @test int_source    |> InferableIntoZeroTupleOperator() == Rx.from([ (0, 0) ])
+        @test float_source  |> InferableIntoZeroTupleOperator() == Rx.from([ (0.0, 0.0) ])
     end
 
 end

@@ -11,28 +11,29 @@ those that not equal to `nothing`.
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream <: Subscribable{Union{L, Nothing}}
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream `<: Subscribable{Union{L, Nothing}}`
 
 # Examples
 ```jldoctest
 using Rx
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> max() |> some(), LoggerActor{Int}())
+source = Rx.from([ 1, nothing, 3 ])
+subscribe!(source |> some(), LoggerActor{Int}())
 ;
 
 # output
 
+[LogActor] Data: 1
 [LogActor] Data: 3
 [LogActor] Completed
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref), ['max'](@ref), ['min'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`max`](@ref), [`min`](@ref)
 """
 some() = SomeOperator()
 
-struct SomeOperator <: InferrableOperator end
+struct SomeOperator <: InferableOperator end
 
 function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, source::S) where { S <: Subscribable{Union{L, Nothing}} } where L
     return ProxyObservable{L}(source, SomeProxy{L}())

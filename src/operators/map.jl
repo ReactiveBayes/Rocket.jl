@@ -19,7 +19,7 @@ Observable, and emits the resulting values as an Observable. You have to specify
 
 # Producing
 
-Stream of type <: Subscribable{R}
+Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
@@ -38,7 +38,7 @@ subscribe!(source |> map(Int, (d) -> d ^ 2), LoggerActor{Int}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref)
 """
 map(::Type{R}, mappingFn::Function) where R = MapOperator{R}(mappingFn)
 
@@ -81,7 +81,7 @@ Creates a custom map operator, which can be used as `nameMapOperator()`.
 
 # Producing
 
-Stream of type <: Subscribable{R}
+Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
@@ -102,6 +102,7 @@ subscribe!(source |> SquaredIntMapOperator(), LoggerActor{Int}())
 
 ```
 
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref),, [`ProxyObservable`](@ref), [`map`](@ref)
 """
 macro CreateMapOperator(name, L, R, mappingFn)
     operatorName   = Symbol(name, "MapOperator")

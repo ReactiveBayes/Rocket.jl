@@ -15,7 +15,7 @@ Creates a min operator, which emits a single item: the item with the smallest va
 
 # Producing
 
-Stream of type <: Subscribable{Union{L, Nothing}} where L refers to type of source stream
+Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -32,11 +32,11 @@ subscribe!(source |> min(), LoggerActor{Union{Int, Nothing}}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 min(; from = nothing) = MinOperator(from)
 
-struct MinOperator <: InferrableOperator
+struct MinOperator <: InferableOperator
     from
 end
 

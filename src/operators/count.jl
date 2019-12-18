@@ -13,7 +13,7 @@ emissions on the source and emits that number when the source completes.
 
 # Producing
 
-Stream of type <: Subscribable{Int}
+Stream of type `<: Subscribable{Int}`
 
 # Examples
 ```jldoctest
@@ -30,7 +30,7 @@ subscribe!(source |> count(), LoggerActor{Int}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref)
 """
 count() = CountOperator()
 

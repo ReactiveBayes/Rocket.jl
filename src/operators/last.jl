@@ -16,7 +16,7 @@ the last item emitted by the source Observable.
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -58,11 +58,11 @@ subscribe!(source |> last(default = 1), LoggerActor{Int}())
 [LogActor] Completed
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 last(; default = nothing) = LastOperator(default)
 
-struct LastOperator <: InferrableOperator
+struct LastOperator <: InferableOperator
     default
 end
 

@@ -19,7 +19,7 @@ If no seed value is specified, the first item of the source is used as the seed.
 
 # Producing
 
-Stream of type <: Subscribable{R}
+Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
@@ -38,7 +38,7 @@ subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActo
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref)
 """
 scan(::Type{R}, scanFn::Function, seed::Union{R, Nothing} = nothing) where T where R = ScanOperator{R}(scanFn, seed)
 
@@ -93,7 +93,7 @@ Creates a custom scan operator, which can be used as `nameScanOperator()`.
 
 # Producing
 
-Stream of type <: Subscribable{R}
+Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
@@ -114,6 +114,7 @@ subscribe!(source |> IntoArrayScanOperator(Int[]), LoggerActor{Vector{Int}}())
 
 ```
 
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref)
 """
 macro CreateScanOperator(name, L, R, scanFn)
     operatorName   = Symbol(name, "ScanOperator")

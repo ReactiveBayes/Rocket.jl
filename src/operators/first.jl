@@ -10,7 +10,7 @@ that emits only the first value emitted by the source Observable.
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -37,6 +37,6 @@ end
 Int64[1]
 ```
 
-See also: [`take`](@ref), [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`take`](@ref)
 """
 first() = take(1)

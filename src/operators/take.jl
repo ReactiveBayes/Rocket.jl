@@ -15,7 +15,7 @@ that emits only the first `max_count` values emitted by the source Observable.
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -42,11 +42,11 @@ end
 Int64[1, 2, 3, 4, 5]
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 take(max_count::Int) = TakeOperator(max_count)
 
-struct TakeOperator <: InferrableOperator
+struct TakeOperator <: InferableOperator
     max_count :: Int
 end
 

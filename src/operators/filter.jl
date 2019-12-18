@@ -14,7 +14,7 @@ those that satisfy a specified `filterFn` predicate.
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Arguments
 - `filterFn::Function`: predicate function with `(data::T) -> Bool` signature
@@ -34,11 +34,11 @@ subscribe!(source |> filter((d) -> d % 2 == 0), LoggerActor{Int}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 filter(filterFn::Function) = FilterOperator(filterFn)
 
-struct FilterOperator <: InferrableOperator
+struct FilterOperator <: InferableOperator
     filterFn::Function
 end
 
@@ -85,7 +85,7 @@ Creates a custom filter operator, which can be used as `nameFilterOperator()`.
 
 # Producing
 
-Stream of type <: Subscribable{L} where L refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
@@ -104,6 +104,7 @@ subscribe!(source |> EvenIntFilterOperator(), LoggerActor{Int}())
 
 ```
 
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`filter`](@ref)
 """
 macro CreateFilterOperator(name, L, filterFn)
     operatorName = Symbol(name, "FilterOperator")
