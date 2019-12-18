@@ -22,7 +22,7 @@ Stream of type <: Subscribable{Union{L, Nothing}} where L refers to type of sour
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> min(), LoggerActor{Int}())
+subscribe!(source |> min(), LoggerActor{Union{Int, Nothing}}())
 ;
 
 # output
