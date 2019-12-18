@@ -11,7 +11,7 @@ Pages = [
   "operators/about.md",
   "operators/piping.md",
   "operators/create-new-operator.md",
-  "operators/hihg-order.md"
+  "operators/high-order.md"
 ]
 Depth = 3
 ```
@@ -21,6 +21,14 @@ Depth = 3
 ```@contents
 Pages = [
   "operators/all.md"
+]
+Depth = 3
+```
+
+# TODO
+```@contents
+Pages = [
+  "todo.md"
 ]
 Depth = 3
 ```

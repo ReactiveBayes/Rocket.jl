@@ -25,7 +25,9 @@ makedocs(
             "Void"          => "actors/types/void.md",
             "API"           => "actors/api.md",
         ],
-        "Subscription"    => "teardown/about.md",
+        "Subscription"    => [
+            "About subscriptions" => "teardown/about.md",
+        ],
         "Operators"       => [
             "About operators"         => "operators/about.md",
             "Piping"                  => "operators/piping.md",
@@ -63,7 +65,8 @@ makedocs(
                 ]
             ],
             "API"         => "operators/api.md",
-        ]
+        ],
+        "TODO" => "todo.md"
     ],
     format   = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true"
