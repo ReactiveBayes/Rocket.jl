@@ -39,7 +39,7 @@ subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerAc
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> reduce(Int, Int, +), LoggerActor{Int}())
+subscribe!(source |> reduce(Int, +), LoggerActor{Int}())
 ;
 
 # output

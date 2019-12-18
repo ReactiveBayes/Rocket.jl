@@ -6,7 +6,7 @@ export SumActor, on_next!, on_error!, on_complete!
 import Base: sum
 
 """
-    sum(from = nothing)
+    sum(; from = nothing)
 
 Creates a sum operator, which applies a sum accumulator function
 over the source Observable, and returns the accumulated result when the source completes,
@@ -32,9 +32,23 @@ subscribe!(source |> sum(), LoggerActor{Int}())
 
 ```
 
+```jldoctest
+using Rx
+
+source = from([ i for i in 1:42 ])
+subscribe!(source |> sum(from = 97), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 1000
+[LogActor] Completed
+
+```
+
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref), [`reduce`](@ref)
 """
-sum(from = nothing) = SumOperator(from)
+sum(; from = nothing) = SumOperator(from)
 
 struct SumOperator <: InferrableOperator
     from
