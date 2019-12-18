@@ -14,11 +14,14 @@ over the source Observable, and returns the accumulated result when the source c
 given an optional seed value. If a `seed` value is specified, then that value will be used as
 the initial value for the accumulator. If no `seed` value is specified, the first item of the source is used as the seed.
 
-
 # Arguments
 - `::Type{R}`: the type of data of transformed value
 - `reduceFn::Function`: transformation function with `(data::T, current::R) -> R` signature
 - `seed::R`: optional seed accumulation value
+
+# Producing
+
+Stream of type <: Subscribable{R}
 
 # Examples
 ```jldoctest
@@ -105,6 +108,10 @@ Creates a custom reduce operator, which can be used as `nameReduceOperator()`.
 
 # Generates
 - `nameReduceOperator(seed::R)` function
+
+# Producing
+
+Stream of type <: Subscribable{R}
 
 # Examples
 ```jldoctest

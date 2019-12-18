@@ -13,6 +13,10 @@ for every emission on the source Observable, but return an Observable that is id
 # Arguments
 - `tapFn::Function`: side-effect tap function with `(data) -> Nothing` signature
 
+# Producing
+
+Stream of type <: Subscribable{L} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx

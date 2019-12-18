@@ -8,6 +8,10 @@ import Base: first
 Creates a first operator, which returns an Observable
 that emits only the first value emitted by the source Observable.
 
+# Producing
+
+Stream of type <: Subscribable{L} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx

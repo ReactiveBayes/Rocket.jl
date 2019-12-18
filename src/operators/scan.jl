@@ -17,6 +17,10 @@ If no seed value is specified, the first item of the source is used as the seed.
 - `scanFn::Function`: accumulator function with `(data::T, current::R) -> R` signature
 - `seed::R`: optional initial value for accumulator function
 
+# Producing
+
+Stream of type <: Subscribable{R}
+
 # Examples
 ```jldoctest
 using Rx
@@ -86,6 +90,10 @@ Creates a custom scan operator, which can be used as `nameScanOperator()`.
 
 # Generates
 - `nameScanOperator(seed::R)` function
+
+# Producing
+
+Stream of type <: Subscribable{R}
 
 # Examples
 ```jldoctest

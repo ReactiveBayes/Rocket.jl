@@ -14,6 +14,10 @@ the last item emitted by the source Observable.
 # Arguments
 - `default`: an optional default value to provide if no values were emitted
 
+# Producing
+
+Stream of type <: Subscribable{L} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx

@@ -11,6 +11,10 @@ import Base: count
 Creates a count operator, which counts the number of
 emissions on the source and emits that number when the source completes.
 
+# Producing
+
+Stream of type <: Subscribable{Int}
+
 # Examples
 ```jldoctest
 using Rx

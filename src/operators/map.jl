@@ -17,6 +17,10 @@ Observable, and emits the resulting values as an Observable. You have to specify
 - `::Type{R}`: the type of data of transformed value, may be or may not be the same as source type
 - `mappingFn::Function`: transformation function with `(data::L) -> R` signature, where L is type of data in input source
 
+# Producing
+
+Stream of type <: Subscribable{R}
+
 # Examples
 ```jldoctest
 using Rx
@@ -74,6 +78,10 @@ Creates a custom map operator, which can be used as `nameMapOperator()`.
 
 # Generates
 - `nameMapOperator()` function
+
+# Producing
+
+Stream of type <: Subscribable{R}
 
 # Examples
 ```jldoctest

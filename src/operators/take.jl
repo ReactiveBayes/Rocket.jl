@@ -13,6 +13,10 @@ that emits only the first `max_count` values emitted by the source Observable.
 # Arguments
 - `max_count::Int`: the maximum number of next values to emit.
 
+# Producing
+
+Stream of type <: Subscribable{L} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx

@@ -17,6 +17,10 @@ The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref)).
 # Arguments
 - `from`: optional initial accumulation value, if nothing first value will be used instead
 
+# Producing
+
+Stream of type <: Subscribable{L} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx

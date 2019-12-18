@@ -11,6 +11,11 @@ by a given timeout.
 
 # Arguments:
 - `delay::Int`: the delay duration in milliseconds (a number) until which the emission of the source items is delayed.
+
+# Producing
+
+Stream of type <: Subscribable{L} where L refers to type of source stream
+
 """
 delay(delay::Int) = DelayOperator(delay)
 

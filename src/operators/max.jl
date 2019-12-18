@@ -13,6 +13,10 @@ Creates a max operator, which emits a single item: the item with the largest val
 # Arguments
 - `from`: optional initial maximum value, if `nothing` first item from the source will be used as initial instead
 
+# Producing
+
+Stream of type <: Subscribable{Union{L, Nothing}} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx
@@ -36,24 +40,24 @@ struct MaxOperator <: InferrableOperator
     from
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::MaxOperator, source::S) where { S <: Subscribable{L} } where L
-    return ProxyObservable{L}(source, MaxProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
+function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MaxOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{Union{L, Nothing}}(source, MaxProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
 end
 
-operator_right(operator::MaxOperator, ::Type{L}) where L = L
+operator_right(operator::MaxOperator, ::Type{L}) where L = Union{L, Nothing}
 
 struct MaxProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MaxProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = MaxActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::MaxProxy{L}, actor::A) where { A <: AbstractActor{Union{L, Nothing}} } where L = MaxActor{L, A}(proxy.from, actor)
 
-mutable struct MaxActor{L, A <: AbstractActor{L} } <: Actor{L}
+mutable struct MaxActor{L, A <: AbstractActor{Union{L, Nothing}} } <: Actor{L}
     current :: Union{L, Nothing}
     actor   :: A
 end
 
-function on_next!(actor::MaxActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
+function on_next!(actor::MaxActor{L, A}, data::L) where { A <: AbstractActor{Union{L, Nothing}} } where L
     if actor.current == nothing
         actor.current = data
     else

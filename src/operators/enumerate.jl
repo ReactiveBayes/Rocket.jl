@@ -15,6 +15,10 @@ The enumerate operator is similar to
 `scan(Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))`
 (see [`scan`](@ref)).
 
+# Producing
+
+Stream of type <: Subscribable{Tuple{L, Int}} where L refers to type of source stream
+
 # Examples
 ```jldoctest
 using Rx
