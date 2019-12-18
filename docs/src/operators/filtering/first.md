@@ -1,4 +1,4 @@
-# [First operator](@ref operator_first)
+# [First operator](@id operator_first)
 
 ```@docs
 first

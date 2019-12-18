@@ -5,6 +5,8 @@ This documentation is an adaptation of [RxJS library documentation](https://rxjs
 ```@contents
 Pages = [
   "getting-started.md",
+  "observables/about.md",
+  "actors/about.md",
   "teardown/about.md",
   "operators/about.md",
   "operators/piping.md",

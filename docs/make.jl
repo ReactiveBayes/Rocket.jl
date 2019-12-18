@@ -8,7 +8,12 @@ makedocs(
         "Home"            => "index.md",
         "Getting started" => "getting-started.md",
         "Observables"     => [
-            "About observables" => "observables/about.md"
+            "About observables" => "observables/about.md",
+            "Proxy"             => "observables/types/proxy.md"
+        ],
+        "Actors"     => [
+            "About actors"  => "actors/about.md",
+            "Lambda"        => "actors/types/lambda.md"
         ],
         "Subscription"    => "teardown/about.md",
         "Operators"       => [
@@ -27,6 +32,7 @@ makedocs(
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",
                     "filter"                    => "operators/filtering/filter.md",
+                    "some"                      => "operators/filtering/some.md",
                     "take"                      => "operators/filtering/take.md",
                     "first"                     => "operators/filtering/first.md",
                     "last"                      => "operators/filtering/last.md",

@@ -6,8 +6,16 @@ export actor_proxy!, source_proxy!
 
 import Base: show
 
+"""
+"""
 abstract type ActorProxy       end
+
+"""
+"""
 abstract type SourceProxy      end
+
+"""
+"""
 abstract type ActorSourceProxy end
 
 abstract type ProxyTrait end
@@ -36,6 +44,8 @@ call_source_proxy!(::ValidActorProxy,       proxy, source) = source
 call_source_proxy!(::ValidSourceProxy,      proxy, source) = source_proxy!(proxy, source)
 call_source_proxy!(::ValidActorSourceProxy, proxy, source) = source_proxy!(proxy, source)
 
+"""
+"""
 struct ProxyObservable{D} <: Subscribable{D}
     source
     proxy

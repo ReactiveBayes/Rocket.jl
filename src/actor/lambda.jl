@@ -1,5 +1,7 @@
 export LambdaActor, on_next!, on_error!, on_complete!
 
+"""
+"""
 struct LambdaActor{D} <: Actor{D}
     on_next     :: Union{Nothing, Function}
     on_error    :: Union{Nothing, Function}
