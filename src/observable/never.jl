@@ -1,14 +1,14 @@
 export NeverObservable, on_subscribe!, never
 
 """
-    NeverObservable{D} <: Subscribable{D}
+    NeverObservable{D}()
 
 An Observable that emits no items to the Observer and never completes.
 
 # Type parameters
 - `D`: Type of Observable data
 
-See also: [`Subscribable`](@ref)
+See also: [`Subscribable`](@ref), [`never`](@ref)
 """
 struct NeverObservable{D} <: Subscribable{D} end
 
@@ -17,7 +17,7 @@ function on_subscribe!(observable::NeverObservable{D}, actor::A) where { A <: Ab
 end
 
 """
-    never(T)
+    never(T = Any)
 
 Creates a simple Observable that emits neither values nor errors nor the completion notification.
 It can be used for testing purposes or for composing with other Observables.
@@ -26,7 +26,20 @@ the subscription from being disposed automatically. Subscriptions need to be man
 disposed.
 
 # Arguments
-- `T`: Type of Observable data
+- `T`: Type of Observable data, optional, `Any` is the default
+
+# Examples
+
+```jldoctest
+using Rx
+
+source = never()
+subscribe!(source, LoggerActor{Any}())
+;
+
+# output
+
+```
 
 See also: [`NeverObservable`](@ref), [`Subscribable`](@ref)
 """

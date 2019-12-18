@@ -9,11 +9,19 @@ makedocs(
         "Getting started" => "getting-started.md",
         "Observables"     => [
             "About observables" => "observables/about.md",
+            "Array"             => "observables/types/array.md",
+            "Error"             => "observables/types/error.md",
+            "Never"             => "observables/types/never.md",
+            "Timer"             => "observables/types/timer.md",
+            "Interval"          => "observables/types/interval.md",
             "Proxy"             => "observables/types/proxy.md"
         ],
         "Actors"     => [
             "About actors"  => "actors/about.md",
-            "Lambda"        => "actors/types/lambda.md"
+            "Lambda"        => "actors/types/lambda.md",
+            "Logger"        => "actors/types/logger.md",
+            "Async"         => "actors/types/async.md",
+            "Void"          => "actors/types/void.md"
         ],
         "Subscription"    => "teardown/about.md",
         "Operators"       => [

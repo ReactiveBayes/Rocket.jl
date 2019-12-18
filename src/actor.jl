@@ -12,10 +12,24 @@ struct NextActorTrait{T}       <: ActorTrait{T}       end
 struct ErrorActorTrait{T}      <: ActorTrait{T}       end
 struct CompletionActorTrait{T} <: ActorTrait{T}       end
 
+"""
+"""
 abstract type AbstractActor{T} end
+
+"""
+"""
 abstract type Actor{T}           <: AbstractActor{T} end
+
+"""
+"""
 abstract type NextActor{T}       <: AbstractActor{T} end
+
+"""
+"""
 abstract type ErrorActor{T}      <: AbstractActor{T} end
+
+"""
+"""
 abstract type CompletionActor{T} <: AbstractActor{T} end
 
 as_actor(::Type)                  = UndefinedActorTrait()

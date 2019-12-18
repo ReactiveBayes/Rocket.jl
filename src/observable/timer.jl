@@ -13,7 +13,7 @@ ever increasing numbers after each `period` of time thereafter.
 - `due_time`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
 - `period`: The period of time in milliseconds between emissions of the subsequent numbers.
 
-See also: ['Subscribable'](@ref)
+See also: [`Subscribable`](@ref)
 """
 mutable struct TimerObservable <: Subscribable{Int}
     due_time   :: Int
@@ -70,7 +70,32 @@ Otherwise, it emits an infinite sequence.
 Note that you have to `close` timer observable when you do not need it.
 After closing a time you will always receive a complete event on subscribe!.
 
-See also: [`interval`](@ref), ['TimerObservable'](@ref), ['Subscribable'](@ref)
+# Arguments
+- `due_time`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
+- `period`: the period of time between emissions of the subsequent numbers.
+
+# Examples
+```
+using Rx
+
+source = timer(0, 50)
+
+sleep(0.075)
+subscription = subscribe!(source, LoggerActor{Int}())
+sleep(0.105)
+unsubscribe!(subscription)
+
+close(source)
+;
+
+# output
+
+[LogActor] Data: 2
+[LogActor] Data: 3
+
+```
+
+See also: [`interval`](@ref), [`TimerObservable`](@ref), [`Subscribable`](@ref)
 """
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
 
