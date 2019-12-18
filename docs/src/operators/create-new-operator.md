@@ -34,50 +34,6 @@ logic which has to return another Observable as a result of applying `MyFancyOpe
 It might be useful to use [`ProxyObservable`](@ref) as a return result for an `on_call!` function.
 ProxyObservable is a special Observable which proxying actors with the source and/or source with actors.
 
-## Operator types
+## Operators API
 
-```@docs
-AbstractOperator
-```
-
-```@docs
-TypedOperator
-```
-
-```@docs
-LeftTypedOperator
-```
-
-```@docs
-RightTypedOperator
-```
-
-```@docs
-InferableOperator
-```
-
-## Operator traits
-
-```@docs
-OperatorTrait
-```
-
-```@docs
-TypedOperatorTrait
-```
-
-```@docs
-LeftTypedOperatorTrait
-```
-
-```@docs
-RightTypedOperatorTrait
-```
-
-```@docs
-InferableOperatorTrait
-```
-
-```@docs
-InvalidOperatorTrait
-```
+See more on operators in [API section](@ref operators_api)

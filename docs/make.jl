@@ -14,14 +14,16 @@ makedocs(
             "Never"             => "observables/types/never.md",
             "Timer"             => "observables/types/timer.md",
             "Interval"          => "observables/types/interval.md",
-            "Proxy"             => "observables/types/proxy.md"
+            "Proxy"             => "observables/types/proxy.md",
+            "API"               => "observables/api.md",
         ],
         "Actors"     => [
             "About actors"  => "actors/about.md",
             "Lambda"        => "actors/types/lambda.md",
             "Logger"        => "actors/types/logger.md",
             "Async"         => "actors/types/async.md",
-            "Void"          => "actors/types/void.md"
+            "Void"          => "actors/types/void.md",
+            "API"           => "actors/api.md",
         ],
         "Subscription"    => "teardown/about.md",
         "Operators"       => [
@@ -31,6 +33,7 @@ makedocs(
             "High-orders Observables" => "operators/high-order.md",
             "Categories"            => [
                 "All"            => "operators/all.md",
+                "Creation"       => "operators/creation/about.md",
                 "Transformation" => [
                     "About transformation operators" => "operators/transformation/about.md",
                     "map"                            => "operators/transformation/map.md",
@@ -58,7 +61,8 @@ makedocs(
                     "tap"                     => "operators/utility/tap.md",
                     "delay"                   => "operators/utility/delay.md",
                 ]
-            ]
+            ],
+            "API"         => "operators/api.md",
         ]
     ],
     format   = Documenter.HTML(

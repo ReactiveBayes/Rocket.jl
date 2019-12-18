@@ -62,7 +62,7 @@ struct TypedOperatorTrait{L, R}   <: OperatorTrait end
 
 """
 Left typed operator trait specifies operator to be statically typed with input data type.
-To infer output data type this trait should specify a special function `operator_right(operator, ::Type{L}) where L` which will be
+To infer output data type this object should specify a special function `operator_right(operator, ::Type{L}) where L` which will be
 used to infer output data type. Left typed operator with input type `L` can only operate on input Observable with data type `L` and
 will always produce an Observable with data type `operator_right(operator, ::Type{L})`.
 
@@ -166,7 +166,7 @@ struct RightTypedOperatorTrait{R} <: OperatorTrait end
 
 """
 Inferable operator trait specifies operator to be statically typed neither with input data type nor with output data type.
-To infer output data type this trait should specify a special function `operator_right(operator, ::Type{L}) where L` where `L` is input data type
+To infer output data type this object should specify a special function `operator_right(operator, ::Type{L}) where L` where `L` is input data type
 which will be used to infer output data type.
 
 ```jldoctest
@@ -222,7 +222,7 @@ See also: [`InferableOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservabl
 struct InferableOperatorTrait     <: OperatorTrait end
 
 """
-InvalidOperatorTrait trait specifies special 'invalid' behaviour and types with such a trait specification cannot be used as an operator for an observable stream.
+InvalidOperatorTrait trait specifies special 'invalid' behavior and types with such a trait specification cannot be used as an operator for an observable stream.
 By default any type has InvalidOperatorTrait trait specification
 """
 struct InvalidOperatorTrait       <: OperatorTrait end
@@ -233,28 +233,80 @@ Supertype for all operators
 abstract type AbstractOperator      end
 
 """
-Supertype for any operator with TypedOperatorTrait behaviour
+Can be used as a supertype for any operator. Automatically specifies TypedOperatorTrait behavior.
+
+# Examples
+```jldoctest
+using Rx
+
+struct MyOperator <: TypedOperator{Int, String} end
+
+println(as_operator(MyOperator) === TypedOperatorTrait{Int, String}())
+;
+
+# output
+true
+```
 
 See also: [`TypedOperatorTrait`](@ref)
 """
 abstract type TypedOperator{L, R}   <: AbstractOperator end
 
 """
-Supertype for any operator with LeftTypedOperatorTrait behaviour
+Can be used as a supertype for any operator. Automatically specifies LeftTypedOperatorTrait behavior.
+
+# Examples
+```jldoctest
+using Rx
+
+struct MyOperator <: LeftTypedOperator{Int} end
+
+println(as_operator(MyOperator) === LeftTypedOperatorTrait{Int}())
+;
+
+# output
+true
+```
 
 See also: [`LeftTypedOperatorTrait`](@ref)
 """
 abstract type LeftTypedOperator{L}  <: AbstractOperator end
 
 """
-Supertype for any operator with RightTypedOperatorTrait behaviour
+Can be used as a supertype for any operator. Automatically specifies RightTypedOperatorTrait behavior.
+
+# Examples
+```jldoctest
+using Rx
+
+struct MyOperator <: RightTypedOperator{Int} end
+
+println(as_operator(MyOperator) === RightTypedOperatorTrait{Int}())
+;
+
+# output
+true
+```
 
 See also: [`RightTypedOperatorTrait`](@ref)
 """
 abstract type RightTypedOperator{R} <: AbstractOperator end
 
 """
-Supertype for any operator with InferableOperatorTrait behaviour
+Can be used as a supertype for any operator. Automatically specifies InferableOperatorTrait behavior.
+
+# Examples
+```jldoctest
+using Rx
+
+struct MyOperator <: InferableOperator end
+
+println(as_operator(MyOperator) === InferableOperatorTrait())
+;
+
+# output
+true
+```
 
 See also: [`InferableOperatorTrait`](@ref)
 """

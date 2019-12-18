@@ -2,6 +2,14 @@
 
 There are operators for different purposes, and they may be categorized as: creation, transformation, filtering, joining, multicasting, error handling, utility, etc.
 
+## Creation operators
+
+- [from](@ref observable_array)
+- [error](@ref observable_error)
+- [never](@ref observable_never)
+- [timer](@ref observable_timer)
+- [interval](@ref observable_interval)
+
 ## Transformation operators
 
 - [map](@ref operator_map)

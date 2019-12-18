@@ -51,7 +51,7 @@ Note that [`map()`](@ref operator_map) logically must be constructed on the fly,
 
 ## Creation operators
 
-What are creation operators? Distinct from pipeable operators, creation operators are functions that can be used to create an Observable with some common predefined behavior or by joining other Observables. For example: `from([ 1, 2, 3 ])` creates an observable that will emit 1, 2, and 3, one right after another.
+What are creation operators? Distinct from pipeable operators, creation operators are functions that can be used to create an Observable with some common predefined behavior or by joining other Observables. For example: [`from([ 1, 2, 3 ])`](@ref observable_array) creates an observable that will emit 1, 2, and 3, one right after another.
 
 ```julia
 source = from([ 1, 2, 3 ])

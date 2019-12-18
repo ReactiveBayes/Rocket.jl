@@ -1,4 +1,4 @@
-# [Error Observable](@id observable_error)
+# [Never Observable](@id observable_never)
 
 ```@docs
 never

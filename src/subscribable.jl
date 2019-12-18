@@ -10,14 +10,14 @@ See also: [`ValidSubscribable`](@ref), [`InvalidSubscribable`](@ref)
 abstract type SubscribableTrait{T} end
 
 """
-Valid subscription trait behavior. Valid subscribable can be used in subscribe! fucntion.
+Valid subscribable trait behavior. Valid subscribable can be used in subscribe! fucntion.
 
 See also: [`SubscribableTrait`](@ref), [`Subscribable`](@ref)
 """
 struct ValidSubscribable{T} <: SubscribableTrait{T} end
 
 """
-Default subscription trait behavior for all types. Invalid subscribable cannot be used in subscribe! function, doing so will throw an error.
+Default subscribable trait behavior for all types. Invalid subscribable cannot be used in subscribe! function, doing so will throw an error.
 
 See also: [`SubscribableTrait`](@ref), [`subscribe!`](@ref)
 """
