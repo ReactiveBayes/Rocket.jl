@@ -1,29 +1,26 @@
 export enumerate
-export EnumerateOperator, on_call!
+export EnumerateOperator, on_call!, operator_right
 export EnumerateProxy, actor_proxy!
 export EnumerateActor, on_next!, on_error!, on_complete!
 
 import Base: enumerate
 
 """
-    enumerate(::Type{T}) where T
+    enumerate()
 
 Creates an enumerate operator, which converts each value emitted by the source
 Observable into a tuple of its order number and the value itself.
 
 The enumerate operator is similar to
-`scan(Int, Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))`
+`scan(Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))`
 (see [`scan`](@ref)).
-
-# Arguments
-- `::Type{T}`: the type of data of source
 
 # Examples
 ```jldoctest
 using Rx
 
 source = from([ i for i in 1:3 ])
-subscribe!(source |> enumerate(Int), LoggerActor{Tuple{Int, Int}}())
+subscribe!(source |> enumerate(), LoggerActor{Tuple{Int, Int}}())
 ;
 
 # output
@@ -35,32 +32,32 @@ subscribe!(source |> enumerate(Int), LoggerActor{Tuple{Int, Int}}())
 
 ```
 
-See also: [`Operator`](@ref), ['ProxyObservable'](@ref), [`map`](@ref)
+See also: [`Operator`](@ref), ['ProxyObservable'](@ref), [`scan`](@ref), [`map`](@ref)
 """
-enumerate(::Type{T}) where T = EnumerateOperator{T}()
+enumerate() = EnumerateOperator()
 
-struct EnumerateOperator{T} <: Operator{T, Tuple{T, Int}} end
+struct EnumerateOperator <: InferrableOperator end
 
-function on_call!(operator::EnumerateOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{Tuple{T, Int}}(source, EnumerateProxy{T}())
+function on_call!(::Type{L}, ::Type{Tuple{L, Int}}, operator::EnumerateOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{Tuple{L, Int}}(source, EnumerateProxy{L}())
 end
 
-struct EnumerateProxy{T} <: ActorProxy end
+operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{L, Int}
 
-actor_proxy!(proxy::EnumerateProxy{T}, actor::A) where { A <: AbstractActor{Tuple{T, Int}} } where T = EnumerateActor{T}(actor)
+struct EnumerateProxy{L} <: ActorProxy end
 
-mutable struct EnumerateActor{T} <: Actor{T}
+actor_proxy!(proxy::EnumerateProxy{L}, actor::A) where { A <: AbstractActor{Tuple{L, Int}} } where L = EnumerateActor{L, A}(1, actor)
+
+mutable struct EnumerateActor{ L, A <: AbstractActor{Tuple{L, Int}} } <: Actor{L}
     current :: Int
-    actor
-
-    EnumerateActor{T}(actor) where T = new(1, actor)
+    actor   :: A
 end
 
-function on_next!(c::EnumerateActor{T}, data::T) where T
+function on_next!(c::EnumerateActor{L, A}, data::L) where { A <: AbstractActor{Tuple{L, Int}} } where L
     current = c.current
     c.current += 1
     next!(c.actor, (data, current))
 end
 
-on_error!(c::EnumerateActor{T}, error) where T = error!(c.actor, error)
-on_complete!(c::EnumerateActor{T})     where T = complete!(c.actor)
+on_error!(c::EnumerateActor, err) = error!(c.actor, err)
+on_complete!(c::EnumerateActor)   = complete!(c.actor)

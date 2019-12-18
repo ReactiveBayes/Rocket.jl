@@ -1,5 +1,5 @@
 export filter
-export FilterOperator, on_call!
+export FilterOperator, on_call!, operator_right
 export FilterProxy, actor_proxy!
 export FilterActor, on_next!, on_error!, on_complete!
 export @CreateFilterOperator
@@ -7,13 +7,12 @@ export @CreateFilterOperator
 import Base: filter
 
 """
-    filter(::Type{T}, filterFn::Function) where T
+    filter(filterFn::Function)
 
 Creates a filter operator, which filters items by the source Observable by emitting only
 those that satisfy a specified `filterFn` predicate.
 
 # Arguments
-- `::Type{T}`: the type of data of source
 - `filterFn::Function`: predicate function with `(data::T) -> Bool` signature
 
 # Examples
@@ -21,7 +20,7 @@ those that satisfy a specified `filterFn` predicate.
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> filter(Int, (d) -> d % 2 == 0), LoggerActor{Int}())
+subscribe!(source |> filter((d) -> d % 2 == 0), LoggerActor{Int}())
 ;
 
 # output
@@ -33,58 +32,61 @@ subscribe!(source |> filter(Int, (d) -> d % 2 == 0), LoggerActor{Int}())
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-filter(::Type{T}, filterFn::Function) where T = FilterOperator{T}(filterFn)
+filter(filterFn::Function) = FilterOperator(filterFn)
 
-struct FilterOperator{T} <: Operator{T, T}
+struct FilterOperator <: InferrableOperator
     filterFn::Function
 end
 
-function on_call!(operator::FilterOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{T}(source, FilterProxy{T}(operator.filterFn))
+function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{L}(source, FilterProxy{L}(operator.filterFn))
 end
 
-struct FilterProxy{T} <: ActorProxy
+operator_right(operator::FilterOperator, ::Type{L}) where L = L
+
+struct FilterProxy{L} <: ActorProxy
     filterFn::Function
 end
 
-actor_proxy!(proxy::FilterProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = FilterActor{T, A}(proxy.filterFn, actor)
+actor_proxy!(proxy::FilterProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = FilterActor{L, A}(proxy.filterFn, actor)
 
 
-struct FilterActor{T, A <: AbstractActor{T} } <: Actor{T}
+struct FilterActor{L, A <: AbstractActor{L} } <: Actor{L}
     filterFn :: Function
     actor    :: A
 end
 
-function on_next!(f::FilterActor{T, A}, data::T) where { A <: AbstractActor{T} } where T
+function on_next!(f::FilterActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
     if (Base.invokelatest(f.filterFn, data))
         next!(f.actor, data)
     end
 end
 
-on_error!(f::FilterActor, error) = error!(f.actor, error)
-on_complete!(f::FilterActor)     = complete!(f.actor)
+on_error!(f::FilterActor, err) = error!(f.actor, err)
+on_complete!(f::FilterActor)   = complete!(f.actor)
 
 
 """
-    @CreateFilterOperator(name, filterFn)
+    @CreateFilterOperator(name, T, filterFn)
 
-Creates a custom filter operator, which can be used as `nameFilterOperator{T}()`.
+Creates a custom filter operator, which can be used as `nameFilterOperator()`.
 
 # Arguments
 - `name`: custom operator name
+- `T`: type of data of input source
 - `filterFn`: predicate function, assumed to be pure
 
 # Generates
-- `nameFilterOperator{T}()` function
+- `nameFilterOperator()` function
 
 # Examples
 ```jldoctest
 using Rx
 
-@CreateFilterOperator(Even, (d) -> d % 2 == 0)
+@CreateFilterOperator(EvenInt, Int, (d) -> d % 2 == 0)
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> EvenFilterOperator{Int}(), LoggerActor{Int}())
+subscribe!(source |> EvenIntFilterOperator(), LoggerActor{Int}())
 ;
 
 # output
@@ -95,39 +97,39 @@ subscribe!(source |> EvenFilterOperator{Int}(), LoggerActor{Int}())
 ```
 
 """
-macro CreateFilterOperator(name, filterFn)
+macro CreateFilterOperator(name, T, filterFn)
     operatorName = Symbol(name, "FilterOperator")
     proxyName    = Symbol(name, "FilterProxy")
     actorName    = Symbol(name, "FilterActor")
 
     operatorDefinition = quote
-        struct $operatorName{T} <: Rx.Operator{T, T} end
+        struct $operatorName <: Rx.TypedOperator{$T, $T} end
 
-        function Rx.on_call!(operator::($operatorName){T}, source::S) where { S <: Rx.Subscribable{T} } where T
-            return Rx.ProxyObservable{T}(source, ($proxyName){T}())
+        function Rx.on_call!(::Type{$T}, ::Type{$T}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{$T} }
+            return Rx.ProxyObservable{$T}(source, ($proxyName)())
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName{T} <: Rx.ActorProxy end
+        struct $proxyName <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){T}, actor::A) where { A <: Rx.AbstractActor{T} } where T = ($actorName){T, A}(actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$T} } = ($actorName){A}(actor)
     end
 
     actorDefintion = quote
-        struct $actorName{T, A <: Rx.AbstractActor{T} } <: Rx.Actor{T}
+        struct $actorName{ A <: Rx.AbstractActor{$T} } <: Rx.Actor{$T}
             actor::A
         end
 
-        Rx.on_next!(a::($actorName){T, A}, data::T) where A <: Rx.AbstractActor{T} where T = begin
+        Rx.on_next!(a::($actorName){A}, data::$T) where A <: Rx.AbstractActor{$T} = begin
             __inlined_lambda = $filterFn
             if (__inlined_lambda(data))
                 Rx.next!(a.actor, data)
             end
         end
 
-        Rx.on_error!(a::($actorName), error) = Rx.error!(a.actor, error)
-        Rx.on_complete!(a::($actorName))     = Rx.complete!(a.actor)
+        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
+        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
     end
 
     generated = quote

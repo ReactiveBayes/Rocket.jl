@@ -6,7 +6,7 @@ first
 
 ## Description
 
-An alias for `take(T, 1)` operator.
+An alias for `take(1)` operator.
 
 ## See also
 

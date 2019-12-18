@@ -7,25 +7,25 @@ export @CreateReduceOperator
 import Base: reduce
 
 """
-    reduce(::Type{T}, ::Type{R}, reduceFn::Function, initial::R = zero(R)) where T where R
+    reduce(::Type{R}, reduceFn::Function, seed::Union{R, Nothing} = nothing) where R
 
 Creates a reduce operator, which applies a given accumulator `reduceFn` function
 over the source Observable, and returns the accumulated result when the source completes,
-given an optional initial value.
+given an optional seed value. If a `seed` value is specified, then that value will be used as
+the initial value for the accumulator. If no `seed` value is specified, the first item of the source is used as the seed.
 
 
 # Arguments
-- `::Type{T}`: the type of data of source
-- `::Type{R}`: the type of data of transformed value, may be or may not be the same as T
-- `reduceFn::Function`: transformation function with `(data::T) -> R` signature
-- `initial::R`: optional initial accumulation value
+- `::Type{R}`: the type of data of transformed value
+- `reduceFn::Function`: transformation function with `(data::T, current::R) -> R` signature
+- `seed::R`: optional seed accumulation value
 
 # Examples
 ```jldoctest
 using Rx
 
 source = from([ i for i in 1:10 ])
-subscribe!(source |> reduce(Int, Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActor{Vector{Int}}())
+subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActor{Vector{Int}}())
 ;
 
 # output
@@ -51,35 +51,41 @@ subscribe!(source |> reduce(Int, Int, +), LoggerActor{Int}())
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-reduce(::Type{T}, ::Type{R}, reduceFn::Function, initial::R = zero(R)) where T where R = ReduceOperator{T, R}(reduceFn, initial)
+reduce(::Type{R}, reduceFn::Function, seed::Union{R, Nothing} = nothing) where R = ReduceOperator{R}(reduceFn, seed)
 
-struct ReduceOperator{T, R} <: Operator{T, R}
+struct ReduceOperator{R} <: RightTypedOperator{R}
     reduceFn :: Function
-    initial  :: R
+    seed     :: Union{R, Nothing}
 end
 
-function on_call!(operator::ReduceOperator{T, R}, source::S) where { S <: Subscribable{T} } where T where R
-    return ProxyObservable{R}(source, ReduceProxy{T, R}(operator.reduceFn, operator.initial))
+function on_call!(::Type{L}, ::Type{R}, operator::ReduceOperator{R}, source::S) where { S <: Subscribable{L} } where L where R
+    return ProxyObservable{R}(source, ReduceProxy{L, R}(operator.reduceFn, operator.seed))
 end
 
-struct ReduceProxy{T, R} <: ActorProxy
+struct ReduceProxy{L, R} <: ActorProxy
     reduceFn :: Function
-    initial  :: R
+    seed     :: Union{R, Nothing}
 end
 
-actor_proxy!(proxy::ReduceProxy{T, R}, actor::A) where { A <: AbstractActor{R} } where T where R = ReduceActor{T, R, A}(proxy.reduceFn, copy(proxy.initial), actor)
+actor_proxy!(proxy::ReduceProxy{L, R}, actor::A) where { A <: AbstractActor{R} } where L where R = ReduceActor{L, R, A}(proxy.reduceFn, proxy.seed, actor)
 
-mutable struct ReduceActor{T, R, A <: AbstractActor{R} } <: Actor{T}
+mutable struct ReduceActor{L, R, A <: AbstractActor{R} } <: Actor{L}
     reduceFn :: Function
-    current  :: R
+    current  :: Union{R, Nothing}
     actor    :: A
 end
 
-function on_next!(actor::ReduceActor{T, R, A}, data::T) where { A <: AbstractActor{R} } where T where R
-    actor.current = Base.invokelatest(actor.reduceFn, data, actor.current)
+function on_next!(actor::ReduceActor{L, R, A}, data::L) where { A <: AbstractActor{R} } where L where R
+    if actor.current == nothing
+        actor.current = data
+    else
+        actor.current = Base.invokelatest(actor.reduceFn, data, actor.current)
+    end
 end
 
-on_error!(actor::ReduceActor, error) = error!(actor.actor, error)
+function on_error!(actor::ReduceActor, err)
+    error!(actor.actor, err)
+end
 
 function on_complete!(actor::ReduceActor)
     next!(actor.actor, actor.current)
@@ -87,25 +93,27 @@ function on_complete!(actor::ReduceActor)
 end
 
 """
-    @CreateReduceOperator(name, reduceFn)
+    @CreateReduceOperator(name, L, R, reduceFn)
 
-Creates a custom reduce operator, which can be used as `nameReduceOperator{T, R}()`.
+Creates a custom reduce operator, which can be used as `nameReduceOperator()`.
 
 # Arguments
 - `name`: custom operator name
+- `L`: type of input data
+- `R`: type of output data after `reduceFn` projection
 - `reduceFn`: accumulator function, assumed to be pure
 
 # Generates
-- `nameReduceOperator{T, R}()` function
+- `nameReduceOperator(seed::R)` function
 
 # Examples
 ```jldoctest
 using Rx
 
-@CreateReduceOperator(IntoArray, (d, c) -> [ c..., d ])
+@CreateReduceOperator(IntoArray, Int, Vector{Int}, (d, c) -> [ c..., d ])
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> IntoArrayReduceOperator{Int, Vector{Int}}(Int[]), LoggerActor{Vector{Int}}())
+subscribe!(source |> IntoArrayReduceOperator(Int[]), LoggerActor{Vector{Int}}())
 ;
 
 # output
@@ -116,43 +124,44 @@ subscribe!(source |> IntoArrayReduceOperator{Int, Vector{Int}}(Int[]), LoggerAct
 ```
 
 """
-macro CreateReduceOperator(name, reduceFn)
+macro CreateReduceOperator(name, L, R, reduceFn)
     operatorName   = Symbol(name, "ReduceOperator")
     proxyName      = Symbol(name, "ReduceProxy")
     actorName      = Symbol(name, "ReduceActor")
 
     operatorDefinition = quote
-        struct $operatorName{T, R} <: Rx.Operator{T, R}
-            initial :: R
-
-            $(operatorName){T, R}(initial = zero(R)) where T where R = new(initial)
+        struct $operatorName <: Rx.TypedOperator{$L, $R}
+            seed :: $R
         end
 
-        function Rx.on_call!(operator::($operatorName){T, R}, source::S) where { S <: Rx.Subscribable{T} } where T where R
-            return Rx.ProxyObservable{R}(source, ($proxyName){T, R}(operator.initial))
+        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{$L} }
+            return Rx.ProxyObservable{$R}(source, ($proxyName)(operator.seed))
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName{T, R} <: ActorProxy
-            initial :: R
+        struct $proxyName <: ActorProxy
+            seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName){T, R}, actor::A) where { A <: Rx.AbstractActor{R} } where T where R = ($actorName){T, R, A}(copy(proxy.initial), actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$R} } = ($actorName){A}(proxy.seed, actor)
     end
 
     actorDefinition = quote
-        mutable struct $actorName{T, R, A <: Rx.AbstractActor{R} } <: Rx.Actor{T}
-            current :: R
+        mutable struct $actorName{ A <: Rx.AbstractActor{$R} } <: Rx.Actor{$L}
+            current :: $R
             actor   :: A
         end
 
-        Rx.on_next!(actor::($actorName){T, R, A}, data::T) where { A <: Rx.AbstractActor{R} } where T where R = begin
+        Rx.on_next!(actor::($actorName){A}, data::($L)) where { A <: Rx.AbstractActor{$R} } = begin
             __inlined_lambda = $reduceFn
             actor.current = __inlined_lambda(data, actor.current)
         end
 
-        Rx.on_error!(actor::($actorName), error) = Rx.error!(actor.actor, error)
+        Rx.on_error!(actor::($actorName), err) = begin
+            Rx.error!(actor.actor, err)
+        end
+
         Rx.on_complete!(actor::($actorName))     = begin
             Rx.next!(actor.actor, actor.current)
             Rx.complete!(actor.actor)

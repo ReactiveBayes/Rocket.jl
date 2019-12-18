@@ -6,20 +6,17 @@ export CountActor, on_next!, on_error!, on_complete!
 import Base: count
 
 """
-    count(::Type{T}) where T
+    count()
 
 Creates a count operator, which counts the number of
 emissions on the source and emits that number when the source completes.
-
-# Arguments
-- `::Type{T}`: the type of data of source
 
 # Examples
 ```jldoctest
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> count(Int), LoggerActor{Int}())
+subscribe!(source |> count(), LoggerActor{Int}())
 ;
 
 # output
@@ -31,32 +28,32 @@ subscribe!(source |> count(Int), LoggerActor{Int}())
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-count(::Type{T}) where T = CountOperator{T}()
+count() = CountOperator()
 
-struct CountOperator{T} <: Operator{T, Int} end
+struct CountOperator <: RightTypedOperator{Int} end
 
-function on_call!(operator::CountOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{Int}(source, CountProxy{T}())
+function on_call!(::Type{L}, ::Type{Int}, operator::CountOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{Int}(source, CountProxy{L}())
 end
 
-struct CountProxy{T} <: ActorProxy end
+struct CountProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::CountProxy{T}, actor::A) where { A <: AbstractActor{Int} } where T = CountActor{T}(actor)
+actor_proxy!(proxy::CountProxy{L}, actor::A) where { A <: AbstractActor{Int} } where L = CountActor{L, A}(0, actor)
 
-mutable struct CountActor{T} <: Actor{T}
+mutable struct CountActor{L, A <: AbstractActor{Int} } <: Actor{L}
     current :: Int
-    actor
-
-    CountActor{T}(actor) where T = new(0, actor)
+    actor   :: A
 end
 
-function on_next!(c::CountActor{T}, data::T) where T
+function on_next!(c::CountActor{L, A}, data::L) where { A <: AbstractActor{Int} } where L
     c.current += 1
 end
 
-on_error!(c::CountActor{T}, error) where T = error!(c.actor, error)
+function on_error!(c::CountActor, err)
+    error!(c.actor, err)
+end
 
-function on_complete!(c::CountActor{T})     where T
+function on_complete!(c::CountActor)
     next!(c.actor, c.current)
     complete!(c.actor)
 end

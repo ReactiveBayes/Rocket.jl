@@ -1,25 +1,24 @@
 export tap
-export TapOperator, on_call!
+export TapOperator, on_call!, operator_right
 export TapProxy, actor_proxy!
 export TapActor, on_next!, on_error!, on_complete!
 export @CreateTapOperator
 
 """
-    tap(::Type{T}, tapFn::Function) where T
+    tap(tapFn::Function)
 
 Creates a tap operator, which performs a side effect
 for every emission on the source Observable, but return an Observable that is identical to the source.
 
 # Arguments
-- `::Type{T}`: the type of data of source
-- `tapFn::Function`: side-effect tap function with `(data::T) -> Nothing` signature
+- `tapFn::Function`: side-effect tap function with `(data) -> Nothing` signature
 
 # Examples
 ```jldoctest
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> tap(Int, (d) -> println("In tap: \$d")), LoggerActor{Int}())
+subscribe!(source |> tap((d) -> println("In tap: \$d")), LoggerActor{Int}())
 ;
 
 # output
@@ -36,46 +35,48 @@ In tap: 3
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-tap(::Type{T}, tapFn::Function) where T = TapOperator{T}(tapFn)
+tap(tapFn::Function) = TapOperator(tapFn)
 
-struct TapOperator{T} <: Operator{T, T}
+struct TapOperator <: InferrableOperator
     tapFn :: Function
 end
 
-function on_call!(operator::TapOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{T}(source, TapProxy{T}(operator.tapFn))
+operator_right(operator::TapOperator, ::Type{L}) where L = L
+
+function on_call!(::Type{L}, ::Type{L}, operator::TapOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{L}(source, TapProxy{L}(operator.tapFn))
 end
 
-struct TapProxy{T} <: ActorProxy
+struct TapProxy{L} <: ActorProxy
     tapFn :: Function
 end
 
-actor_proxy!(proxy::TapProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = TapActor{T, A}(proxy.tapFn, actor)
+actor_proxy!(proxy::TapProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = TapActor{L, A}(proxy.tapFn, actor)
 
-struct TapActor{T, A <: AbstractActor{T} } <: Actor{T}
+struct TapActor{L, A <: AbstractActor{L} } <: Actor{L}
     tapFn :: Function
     actor :: A
 end
 
-function on_next!(t::TapActor{T, A}, data::T) where { A <: AbstractActor{T} } where T
+function on_next!(t::TapActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
     Base.invokelatest(t.tapFn, data)
     next!(t.actor, data)
 end
 
-on_error!(t::TapActor{T}, error) where T = error!(t.actor, error)
-on_complete!(t::TapActor{T})     where T = complete!(t.actor)
+on_error!(t::TapActor, err) = error!(t.actor, err)
+on_complete!(t::TapActor)   = complete!(t.actor)
 
 """
     @CreateTapOperator(name, tapFn)
 
-Creates a custom tap operator, which can be used as `nameTapOperator{T}()`.
+Creates a custom tap operator, which can be used as `nameTapOperator()`.
 
 # Arguments
 - `name`: custom operator name
 - `tapFn`: side-effect tap function
 
 # Generates
-- `nameTapOperator{T}()` function
+- `nameTapOperator()` function
 
 # Examples
 ```jldoctest
@@ -84,7 +85,7 @@ using Rx
 @CreateTapOperator("Print", (d) -> println("In tap: \$d"))
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> PrintTapOperator{Int}(), LoggerActor{Int}())
+subscribe!(source |> PrintTapOperator(), LoggerActor{Int}())
 ;
 
 # output
@@ -106,32 +107,34 @@ macro CreateTapOperator(name, tapFn)
     actorName    = Symbol(name, "TapActor")
 
     operatorDefinition = quote
-        struct $operatorName{T} <: Rx.Operator{T, T} end
+        struct $operatorName <: Rx.InferrableOperator end
 
-        function Rx.on_call!(operator::($operatorName), source::S) where { S <: Rx.Subscribable{T} } where T
-            return Rx.ProxyObservable{T}(source, ($proxyName){T}())
+        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{L} } where L
+            return Rx.ProxyObservable{L}(source, ($proxyName){L}())
         end
+
+        Rx.operator_right(operator::($operatorName), ::Type{L}) where L = L
     end
 
     proxyDefinition = quote
-        struct $proxyName{T} <: Rx.ActorProxy end
+        struct $proxyName{L} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){T}, actor::A) where { A <: Rx.AbstractActor{T} } where T = ($actorName){T, A}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where { A <: Rx.AbstractActor{L} } where L = ($actorName){L, A}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName{T, A <: Rx.AbstractActor{T} } <: Rx.Actor{T}
+        struct $actorName{L, A <: Rx.AbstractActor{L} } <: Rx.Actor{L}
             actor :: A
         end
 
-        function Rx.on_next!(actor::($actorName){T, A}, data::T) where { A <: Rx.AbstractActor{T} } where T
+        function Rx.on_next!(actor::($actorName){L, A}, data::L) where { A <: Rx.AbstractActor{L} } where L
             __inlined_lambda = $tapFn
             __inlined_lambda(data)
             Rx.next!(actor.actor, data)
         end
 
-        Rx.on_error!(actor::($actorName), error) = Rx.next!(actor.actor, error)
-        Rx.on_complete!(actor::($actorName))     = Rx.complete!(actor.actor)
+        Rx.on_error!(actor::($actorName), err) = Rx.next!(actor.actor, err)
+        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
     end
 
     generated = quote

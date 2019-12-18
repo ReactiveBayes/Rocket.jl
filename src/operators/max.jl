@@ -6,12 +6,11 @@ export MaxActor, on_next!, on_error!, on_complete!
 import Base: max
 
 """
-    max(::Type{T}, from = nothing) where T
+    max(; from = nothing)
 
 Creates a max operator, which emits a single item: the item with the largest value.
 
 # Arguments
-- `::Type{T}`: the type of data of source
 - `from`: optional initial maximum value, if `nothing` first item from the source will be used as initial instead
 
 # Examples
@@ -19,7 +18,7 @@ Creates a max operator, which emits a single item: the item with the largest val
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> max(Int), LoggerActor{Int}())
+subscribe!(source |> max(), LoggerActor{Int}())
 ;
 
 # output
@@ -31,28 +30,30 @@ subscribe!(source |> max(Int), LoggerActor{Int}())
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-max(::Type{T}, from = nothing) where T = MaxOperator{T}(from)
+max(; from = nothing) = MaxOperator(from)
 
-struct MaxOperator{T} <: Operator{T, T}
-    from :: Union{Nothing, T}
+struct MaxOperator <: InferrableOperator
+    from
 end
 
-function on_call!(operator::MaxOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{T}(source, MaxProxy{T}(operator.from))
+function on_call!(::Type{L}, ::Type{L}, operator::MaxOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{L}(source, MaxProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
 end
 
-struct MaxProxy{T} <: ActorProxy
-    from :: Union{Nothing, T}
+operator_right(operator::MaxOperator, ::Type{L}) where L = L
+
+struct MaxProxy{L} <: ActorProxy
+    from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MaxProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = MaxActor{T}(proxy.from, actor)
+actor_proxy!(proxy::MaxProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = MaxActor{L, A}(proxy.from, actor)
 
-mutable struct MaxActor{T} <: Actor{T}
-    current :: Union{Nothing, T}
-    actor
+mutable struct MaxActor{L, A <: AbstractActor{L} } <: Actor{L}
+    current :: Union{L, Nothing}
+    actor   :: A
 end
 
-function on_next!(actor::MaxActor{T}, data::T) where T
+function on_next!(actor::MaxActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
     if actor.current == nothing
         actor.current = data
     else
@@ -60,9 +61,11 @@ function on_next!(actor::MaxActor{T}, data::T) where T
     end
 end
 
-on_error!(actor::MaxActor{T}, error) where T = error!(actor.actor, error)
+function on_error!(actor::MaxActor, err)
+    error!(actor.actor, err)
+end
 
-function on_complete!(actor::MaxActor{T}) where T
+function on_complete!(actor::MaxActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

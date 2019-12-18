@@ -1,33 +1,62 @@
 import Base: |>
 
-export OperatorTrait, ValidOperator, InvalidOperator
-export Operator, as_operator, call_operator!
+export OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferrableOperatorTrait, InvalidOperatorTrait
+export AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferrableOperator
+export as_operator, call_operator!, on_call!, operator_right
 export |>
 
-abstract type OperatorTrait{T, R} end
+abstract type OperatorTrait end
 
-struct ValidOperator{T, R} <: OperatorTrait{T, R} end
-struct InvalidOperator     <: OperatorTrait{Nothing, Nothing} end
+struct TypedOperatorTrait{L, R}   <: OperatorTrait end
+struct LeftTypedOperatorTrait{L}  <: OperatorTrait end
+struct RightTypedOperatorTrait{R} <: OperatorTrait end
+struct InferrableOperatorTrait    <: OperatorTrait end
+struct InvalidOperatorTrait       <: OperatorTrait end
 
-abstract type Operator{T, R} end
+abstract type AbstractOperator      end
+abstract type TypedOperator{L, R}   <: AbstractOperator end
+abstract type LeftTypedOperator{L}  <: AbstractOperator end
+abstract type RightTypedOperator{R} <: AbstractOperator end
+abstract type InferrableOperator    <: AbstractOperator end
 
-as_operator(::Type)                                   = InvalidOperator()
-as_operator(::Type{<:Operator{T, R}}) where T where R = ValidOperator{T, R}()
+as_operator(::Type)                                          = InvalidOperatorTrait()
+as_operator(::Type{<:TypedOperator{L, R}})   where L where R = TypedOperatorTrait{L, R}()
+as_operator(::Type{<:LeftTypedOperator{L}})  where L         = LeftTypedOperatorTrait{L}()
+as_operator(::Type{<:RightTypedOperator{R}}) where R         = RightTypedOperatorTrait{R}()
+as_operator(::Type{<:InferrableOperator})                    = InferrableOperatorTrait()
 
 call_operator!(operator::T, source) where T = call_operator!(as_operator(T), operator, source)
 
-function call_operator!(::InvalidOperator, operator, source)
-    error("Type $(typeof(operator)) is not a valid operator type. Consider extending your type with base Operator{T, R} abstract type.")
+function call_operator!(::InvalidOperatorTrait, operator, source)
+    error("Type $(typeof(operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferrableOperator or implement Rx.as_operator(::Type{<:$(typeof(operator))}).")
 end
 
-function call_operator!(::ValidOperator{T, R}, operator, source::S) where { S <: Subscribable{L} } where L where T where R
-    error("Operator of type $(typeof(operator)) expects source data to be of type $(T), but $(L) found.")
+function call_operator!(::TypedOperatorTrait{L, R}, operator, source::S) where { S <: Subscribable{NotL} } where L where R where NotL
+    error("Operator of type $(typeof(operator)) expects source data to be of type $(L), but $(NotL) found.")
 end
 
-function call_operator!(::ValidOperator{T, R}, operator, source::S) where { S <: Subscribable{T} } where T where R
-    on_call!(operator, source)
+function call_operator!(::TypedOperatorTrait{L, R}, operator, source::S) where { S <: Subscribable{L} } where L where R
+    on_call!(L, R, operator, source)
+end
+
+function call_operator!(::LeftTypedOperatorTrait{L}, operator, source::S) where { S <: Subscribable{NotL} } where L where NotL
+    error("Operator of type $(typeof(operator)) expects source data to be of type $(L), but $(NotL) found.")
+end
+
+function call_operator!(::LeftTypedOperatorTrait{L}, operator, source::S) where { S <: Subscribable{L} } where L
+    on_call!(L, operator_right(operator, L), operator, source)
+end
+
+function call_operator!(::RightTypedOperatorTrait{R}, operator, source::S) where { S <: Subscribable{L} } where L where R
+    on_call!(L, R, operator, source)
+end
+
+function call_operator!(::InferrableOperatorTrait, operator, source::S) where { S <: Subscribable{L} } where L
+    on_call!(L, operator_right(operator, L), operator, source)
 end
 
 Base.:|>(source::S, operator) where { S <: Subscribable{T} } where T = call_operator!(operator, source)
 
-on_call!(operator, source) = error("You probably forgot to implement on_call!(operator::$(typeof(operator)), source).")
+on_call!(::Type, ::Type, operator, source) = error("You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(operator)), source).")
+
+operator_right(operator, L) = error("You probably forgot to implement operator_right(operator::$(typeof(operator)), L).")

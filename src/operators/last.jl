@@ -6,13 +6,12 @@ export LastActor, on_next!, on_error!, on_complete!
 import Base: last
 
 """
-    last(::Type{T}, default = nothing) where T
+    last(; default = nothing)
 
 Creates a last operator, which returns an Observable that emits only
 the last item emitted by the source Observable.
 
 # Arguments
-- `::Type{T}`: the type of data of source
 - `default`: an optional default value to provide if no values were emitted
 
 # Examples
@@ -20,7 +19,7 @@ the last item emitted by the source Observable.
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> last(Int), LoggerActor{Int}())
+subscribe!(source |> last(), LoggerActor{Int}())
 ;
 
 # output
@@ -34,7 +33,7 @@ subscribe!(source |> last(Int), LoggerActor{Int}())
 using Rx
 
 source = from(Int[])
-subscribe!(source |> last(Int), LoggerActor{Int}())
+subscribe!(source |> last(), LoggerActor{Int}())
 ;
 
 # output
@@ -42,38 +41,55 @@ subscribe!(source |> last(Int), LoggerActor{Int}())
 [LogActor] Completed
 ```
 
+```jldoctest
+using Rx
+
+source = Rx.from(Int[])
+subscribe!(source |> last(default = 1), LoggerActor{Int}())
+;
+
+# output
+
+[LogActor] Data: 1
+[LogActor] Completed
+```
+
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-last(::Type{T}, default = nothing) where T = LastOperator{T}(default)
+last(; default = nothing) = LastOperator(default)
 
-struct LastOperator{T} <: Operator{T, T}
-    default :: Union{Nothing, T}
+struct LastOperator <: InferrableOperator
+    default
 end
 
-function on_call!(operator::LastOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{T}(source, LastProxy{T}(operator.default))
+function on_call!(::Type{L}, ::Type{L}, operator::LastOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{L}(source, LastProxy{L}(operator.default))
 end
 
-struct LastProxy{T} <: ActorProxy
-    default :: Union{Nothing, T}
+operator_right(operator::LastOperator, ::Type{L}) where L = L
+
+struct LastProxy{L} <: ActorProxy
+    default :: Union{L, Nothing}
 end
 
-function actor_proxy!(proxy::LastProxy{T}, actor::A) where { A <: AbstractActor{T} } where T
-    return LastActor{T}(proxy.default != nothing ? copy(proxy.default) : nothing, actor)
+function actor_proxy!(proxy::LastProxy{L}, actor::A) where { A <: AbstractActor{L} } where L
+    return LastActor{L, A}(proxy.default, actor)
 end
 
-mutable struct LastActor{T} <: Actor{T}
-    last   :: Union{Nothing, T}
-    actor
+mutable struct LastActor{L, A <: AbstractActor{L} } <: Actor{L}
+    last   :: Union{L, Nothing}
+    actor  :: A
 end
 
-function on_next!(actor::LastActor{T}, data::T) where T
+function on_next!(actor::LastActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
     actor.last = data
 end
 
-on_error!(actor::LastActor{T}, error) where T = error!(actor.actor, error)
+function on_error!(actor::LastActor, err)
+    error!(actor.actor, error)
+end
 
-function on_complete!(actor::LastActor{T}) where T
+function on_complete!(actor::LastActor)
     if actor.last != nothing
         next!(actor.actor, actor.last)
     end

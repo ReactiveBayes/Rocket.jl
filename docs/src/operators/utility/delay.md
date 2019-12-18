@@ -18,7 +18,7 @@ using Dates
 
 source = from([ 1, 2, 3 ])
 println(Dates.format(now(), "MM:SS"))
-subscription = subscribe!(t |> delay(Int, 2000), LambdaActor{Int}(
+subscription = subscribe!(source |> delay(2000), LambdaActor{Int}(
     on_next = (d) -> println("$(Dates.format(now(), "MM:SS")): $d")
 ));
 

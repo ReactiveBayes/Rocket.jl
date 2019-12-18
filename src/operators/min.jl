@@ -6,12 +6,11 @@ export MinActor, on_next!, on_error!, on_complete!
 import Base: min
 
 """
-    min(::Type{T}, from = nothing) where T
+    min(; from = nothing)
 
 Creates a min operator, which emits a single item: the item with the smallest value.
 
 # Arguments
-- `::Type{T}`: the type of data of source
 - `from`: optional initial minimal value, if `nothing` first item from the source will be used as initial instead
 
 # Examples
@@ -19,7 +18,7 @@ Creates a min operator, which emits a single item: the item with the smallest va
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> min(Int), LoggerActor{Int}())
+subscribe!(source |> min(), LoggerActor{Int}())
 ;
 
 # output
@@ -31,28 +30,30 @@ subscribe!(source |> min(Int), LoggerActor{Int}())
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-min(::Type{T}, from = nothing) where T = MinOperator{T}(from)
+min(; from = nothing) = MinOperator(from)
 
-struct MinOperator{T} <: Operator{T, T}
-    from :: Union{Nothing, T}
+struct MinOperator <: InferrableOperator
+    from
 end
 
-function on_call!(operator::MinOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{T}(source, MinProxy{T}(operator.from))
+function on_call!(::Type{L}, ::Type{L}, operator::MinOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{L}(source, MinProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
 end
 
-struct MinProxy{T} <: ActorProxy
-    from :: Union{Nothing, T}
+operator_right(operator::MinOperator, ::Type{L}) where L = L
+
+struct MinProxy{L} <: ActorProxy
+    from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MinProxy{T}, actor::A) where { A <: AbstractActor{T} } where T = MinActor{T}(proxy.from, actor)
+actor_proxy!(proxy::MinProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = MinActor{L, A}(proxy.from, actor)
 
-mutable struct MinActor{T} <: Actor{T}
-    current :: Union{Nothing, T}
-    actor
+mutable struct MinActor{L, A <: AbstractActor{L} } <: Actor{L}
+    current :: Union{L, Nothing}
+    actor   :: A
 end
 
-function on_next!(actor::MinActor{T}, data::T) where T
+function on_next!(actor::MinActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
     if actor.current == nothing
         actor.current = data
     else
@@ -60,9 +61,11 @@ function on_next!(actor::MinActor{T}, data::T) where T
     end
 end
 
-on_error!(actor::MinActor{T}, error) where T = error!(actor.actor, error)
+function on_error!(actor::MinActor, err)
+    error!(actor.actor, error)
+end
 
-function on_complete!(actor::MinActor{T}) where T
+function on_complete!(actor::MinActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

@@ -5,13 +5,12 @@ export TakeInnerActor, on_next!, on_error!, on_complete!
 export TakeSource, on_subscribe!
 
 """
-    take(::Type{T}, max_count::Int) where T
+    take(max_count::Int)
 
 Creates a take operator, which returns an Observable
 that emits only the first `max_count` values emitted by the source Observable.
 
 # Arguments
-- `::Type{T}`: the type of data of source
 - `max_count::Int`: the maximum number of next values to emit.
 
 # Examples
@@ -29,7 +28,7 @@ Rx.on_next!(actor::KeepActor{D}, data::D) where D = push!(actor.values, data)
 @sync begin
     source = from([ i for i in 1:100 ])
     actor  = KeepActor{Int}()
-    subscription = subscribe!(source |> take(Int, 5), actor)
+    subscription = subscribe!(source |> take(5), actor)
     println(actor.values)
 end
 ;
@@ -41,30 +40,32 @@ Int64[1, 2, 3, 4, 5]
 
 See also: [`Operator`](@ref), ['ProxyObservable'](@ref)
 """
-take(::Type{T}, max_count::Int) where T = TakeOperator{T}(max_count)
+take(max_count::Int) = TakeOperator(max_count)
 
-struct TakeOperator{T} <: Operator{T, T}
+struct TakeOperator <: InferrableOperator
     max_count :: Int
 end
 
-function on_call!(operator::TakeOperator{T}, source::S) where { S <: Subscribable{T} } where T
-    return ProxyObservable{T}(source, TakeProxy{T}(operator.max_count))
+function on_call!(::Type{L}, ::Type{L}, operator::TakeOperator, source::S) where { S <: Subscribable{L} } where L
+    return ProxyObservable{L}(source, TakeProxy{L}(operator.max_count))
 end
 
-struct TakeProxy{T} <: SourceProxy
+operator_right(operator::TakeOperator, ::Type{L}) where L = L
+
+struct TakeProxy{L} <: SourceProxy
     max_count :: Int
 end
 
-source_proxy!(proxy::TakeProxy{T}, source::S)  where { S <: Subscribable{T} } where T = TakeSource{T}(proxy.max_count, source)
+source_proxy!(proxy::TakeProxy{L}, source::S)  where { S <: Subscribable{L} } where L = TakeSource{L, S}(proxy.max_count, source)
 
-mutable struct TakeInnerActor{T} <: Actor{T}
+mutable struct TakeInnerActor{L} <: Actor{L}
     is_completed :: Bool
     max_count    :: Int
     current      :: Int
-    subject      :: Subject{T}
+    subject      :: Subject{L}
     subscription
 
-    TakeInnerActor{T}(max_count::Int, subject::Subject{T}) where T = begin
+    TakeInnerActor{L}(max_count::Int, subject::Subject{L}) where L = begin
         actor = new()
 
         actor.is_completed = false
@@ -76,7 +77,7 @@ mutable struct TakeInnerActor{T} <: Actor{T}
     end
 end
 
-function on_next!(actor::TakeInnerActor{T}, data::T) where T
+function on_next!(actor::TakeInnerActor{L}, data::L) where L
     if !actor.is_completed
         if actor.current < actor.max_count
             actor.current += 1
@@ -88,16 +89,16 @@ function on_next!(actor::TakeInnerActor{T}, data::T) where T
     end
 end
 
-function on_error!(actor::TakeInnerActor{T}, error) where T
+function on_error!(actor::TakeInnerActor, err)
     if !actor.is_completed
-        error!(actor.subject, error)
+        error!(actor.subject, err)
         if isdefined(actor, :subscription)
             unsubscribe!(actor.subscription)
         end
     end
 end
 
-function on_complete!(actor::TakeInnerActor{T}) where T
+function on_complete!(actor::TakeInnerActor)
     if !actor.is_completed
         actor.is_completed = true
         complete!(actor.subject)
@@ -107,16 +108,16 @@ function on_complete!(actor::TakeInnerActor{T}) where T
     end
 end
 
-struct TakeSource{T} <: Subscribable{T}
+struct TakeSource{L, S <: Subscribable{L} } <: Subscribable{L}
     max_count :: Int
-    subject   :: Subject{T}
-    source
+    subject   :: Subject{L}
+    source    :: S
 
-    TakeSource{T}(max_count::Int, source) where T = new(max_count, Subject{T}(), source)
+    TakeSource{L, S}(max_count::Int, source::S) where S <: Subscribable{L} where L = new(max_count, Subject{L}(), source)
 end
 
-function on_subscribe!(observable::TakeSource{T}, actor::A) where { A <: AbstractActor{T} } where T
-    inner_actor  = TakeInnerActor{T}(observable.max_count, observable.subject)
+function on_subscribe!(observable::TakeSource{L, S}, actor::A)  where S <: Subscribable{L} where { A <: AbstractActor{L} } where L
+    inner_actor  = TakeInnerActor{L}(observable.max_count, observable.subject)
     subscription = subscribe!(observable.source, inner_actor)
 
     inner_actor.subscription = subscription

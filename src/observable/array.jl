@@ -1,5 +1,7 @@
 export ArrayObservable, on_subscribe!, from
 
+import Base: ==
+
 abstract type Scalarness end
 
 struct Scalar              <: Scalarness end
@@ -30,5 +32,9 @@ function on_subscribe!(observable::ArrayObservable{D}, actor::A) where { A <: Ab
     return VoidTeardown()
 end
 
+
 from(x)                      = from(as_array(x))
 from(a::Array{D, 1}) where D = ArrayObservable{D}(a)
+
+Base.:(==)(left::ArrayObservable{D},  right::ArrayObservable{D})  where D           = left.values == right.values
+Base.:(==)(left::ArrayObservable{D1}, right::ArrayObservable{D2}) where D1 where D2 = false
