@@ -2,6 +2,7 @@ export ActorProxy, SourceProxy, ActorSourceProxy
 export ProxyTrait, ValidProxy, InvalidProxy
 export as_proxy, call_actor_proxy!, call_source_proxy!
 export ProxyObservable, on_subscribe!
+export actor_proxy!, source_proxy!
 
 import Base: show
 
@@ -45,3 +46,6 @@ function on_subscribe!(observable::ProxyObservable{D}, actor::A) where { A <: Ab
     proxied_actor  = call_actor_proxy!(observable.proxy, actor)
     return subscribe!(proxied_source, proxied_actor)
 end
+
+actor_proxy!(proxy, actor) = error("You probably forgot to implement actor_proxy!(proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
+source_proxy!(proxy, source) = error("You probably forgot to implement source_proxy!(proxy::$(typeof(proxy)), source::$(typeof(source)))")
