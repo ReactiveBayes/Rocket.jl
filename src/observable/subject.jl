@@ -18,7 +18,7 @@ struct SubjectCompleteMessage end
 
 const SubjectMessage{D} = Union{SubjectNextMessage{D}, SubjectErrorMessage, SubjectCompleteMessage}
 
-mutable struct Subject{D} <: Subscribable{D}
+mutable struct Subject{D} <: Actor{D}
     channel      :: Channel{SubjectMessage{D}}
     actors       :: Array{AbstractActor{D}, 1}
     is_completed :: Bool
@@ -50,6 +50,12 @@ mutable struct Subject{D} <: Subscribable{D}
         subject
     end
 end
+
+as_subscribable(::Type{<:Subject{D}}) where D = ValidSubscribable{D}()
+
+on_next!(subject::Subject{D}, data::D) where D = put!(subject.channel, SubjectNextMessage{D}(data))
+on_error!(subject::Subject{D}, error)  where D = put!(subject.channel, SubjectErrorMessage(error))
+on_complete!(subject::Subject{D})      where D = put!(subject.channel, SubjectCompleteMessage())
 
 function _subject_handle_event(subject::Subject{D}, message::SubjectNextMessage{D}) where D
     failed_actors = Vector{AbstractActor{D}}()
@@ -136,12 +142,6 @@ function on_unsubscribe!(subscription::SubjectSubscription)
     filter!((actor) -> actor !== subscription.actor, subscription.subject.actors)
     return nothing
 end
-
-as_actor(::Type{<:Subject{D}}) where D = BaseActorTrait{D}()
-
-on_next!(subject::Subject{D}, data::D) where D = put!(subject.channel, SubjectNextMessage{D}(data))
-on_error!(subject::Subject{D}, error)  where D = put!(subject.channel, SubjectErrorMessage(error))
-on_complete!(subject::Subject{D})      where D = put!(subject.channel, SubjectCompleteMessage())
 
 Base.show(io::IO, subject::Subject)                  = print(io, "Subject [ with $(length(subject.actors)) actors listening ]")
 Base.show(io::IO, subscription::SubjectSubscription) = print(io, "Subject subscription with $(subscription.actor) actor")

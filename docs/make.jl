@@ -9,20 +9,29 @@ makedocs(
         "Getting started" => "getting-started.md",
         "Observables"     => [
             "About observables" => "observables/about.md",
-            "Array"             => "observables/types/array.md",
-            "Error"             => "observables/types/error.md",
-            "Never"             => "observables/types/never.md",
-            "Timer"             => "observables/types/timer.md",
-            "Interval"          => "observables/types/interval.md",
-            "Proxy"             => "observables/types/proxy.md",
+            "Types" => [
+                "Function"          => "observables/types/function.md",
+                "Single"            => "observables/types/single.md",
+                "Array"             => "observables/types/array.md",
+                "Error"             => "observables/types/error.md",
+                "Never"             => "observables/types/never.md",
+                "Timer"             => "observables/types/timer.md",
+                "Interval"          => "observables/types/interval.md",
+                "Proxy"             => "observables/types/proxy.md",
+            ],
             "API"               => "observables/api.md",
+        ],
+        "Subjects" => [
+            "About subjects" => "subjects/about.md"
         ],
         "Actors"     => [
             "About actors"  => "actors/about.md",
-            "Lambda"        => "actors/types/lambda.md",
-            "Logger"        => "actors/types/logger.md",
-            "Async"         => "actors/types/async.md",
-            "Void"          => "actors/types/void.md",
+            "Types"         => [
+                "Lambda"        => "actors/types/lambda.md",
+                "Logger"        => "actors/types/logger.md",
+                "Async"         => "actors/types/async.md",
+                "Void"          => "actors/types/void.md",
+            ],
             "API"           => "actors/api.md",
         ],
         "Subscription"    => [
@@ -67,7 +76,9 @@ makedocs(
             ],
             "API"         => "operators/api.md",
         ],
-        "TODO" => "todo.md"
+        "TODO"         => "todo.md",
+        "Contributing" => "contributing.md",
+        "Utils"        => "utils.md"
     ],
     format   = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true"

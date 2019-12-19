@@ -1,9 +1,10 @@
-# List of all available operators
+# [List of all available operators](@id operators_list)
 
 There are operators for different purposes, and they may be categorized as: creation, transformation, filtering, joining, multicasting, error handling, utility, etc.
 
 ## Creation operators
 
+- [of](@ref observable_single)
 - [from](@ref observable_array)
 - [error](@ref observable_error)
 - [never](@ref observable_never)

@@ -1,0 +1,5 @@
+# Utils
+
+```@docs
+setTimeout
+```
