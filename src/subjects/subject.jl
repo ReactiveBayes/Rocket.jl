@@ -1,4 +1,4 @@
-export Subject, on_subscribe!
+export Subject, as_subscribable, on_subscribe!
 export SubjectSubscription, as_teardown, on_unsubscribe!
 export as_actor, on_next!, on_error!, on_complete!
 export close

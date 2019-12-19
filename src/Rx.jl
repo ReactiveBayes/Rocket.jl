@@ -14,12 +14,14 @@ include("actor/async.jl")
 
 include("subscribable.jl")
 
+include("subjects/subject.jl")
+include("subjects/behavior.jl")
+
 include("observable/single.jl")
 include("observable/array.jl")
 include("observable/error.jl")
 include("observable/never.jl")
 include("observable/proxy.jl")
-include("observable/subject.jl")
 include("observable/timer.jl")
 include("observable/interval.jl")
 include("observable/function.jl")

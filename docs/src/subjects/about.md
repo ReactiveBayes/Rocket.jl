@@ -70,7 +70,42 @@ There are also a few specializations of the Subject type: [`BehaviorSubject`](@r
 
 ## BehaviorSubject
 
-[ Under development ]
+One of the variants of Subjects is the BehaviorSubject, which has a notion of "the current value". It stores the latest value emitted to its consumers, and whenever a new Actor subscribes, it will immediately receive the "current value" from the BehaviorSubject.
+
+```@docs
+BehaviorSubject
+```
+
+!!! note
+    BehaviorSubjects are useful for representing "values over time". For instance, an event stream of birthdays is a Subject, but the stream of a person's age would be a BehaviorSubject.
+
+In the following example, the BehaviorSubject is initialized with the value 0 which the first Actor receives when it subscribes. The second Actor receives the value 2 even though it subscribed after the value 2 was sent.
+
+```julia
+using Rx
+
+b = BehaviorSubject{Int}(0)
+
+subscription1 = subscribe!(b, LoggerActor{Int}("Actor 1"))
+
+next!(b, 1)
+next!(b, 2)
+
+yield()
+
+subscription2 = subscribe!(b, LoggerActor{Int}("Actor 2"))
+
+next!(b, 3)
+
+# Logs
+# [Actor 1] Data: 0
+# [Actor 1] Data: 1
+# [Actor 1] Data: 2
+# [Actor 2] Data: 2
+# [Actor 1] Data: 3
+# [Actor 2] Data: 3
+
+```
 
 ## ReplaySubject
 
