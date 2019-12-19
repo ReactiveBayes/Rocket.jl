@@ -5,9 +5,12 @@ export close
 import Base: close
 
 """
-    BehaviorSubject{D}
+    BehaviorSubject{D}(current)
 
 A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
+
+# Arguments
+- `current`: Default current value
 
 ```
 using Rx

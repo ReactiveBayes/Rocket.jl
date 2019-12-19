@@ -6,11 +6,14 @@ import DataStructures: CircularBuffer
 import Base: close
 
 """
-    ReplaySubject{D}
+    ReplaySubject{D}(capacity)
 
 A variant of Subject that "replays" or emits old values to new subscribers.
 It buffers a set number of values and will emit those values immediately to any new subscribers
 in addition to emitting new values to existing subscribers.
+
+# Arguments
+- `capacity`: how many values to replay
 
 # Examples
 
