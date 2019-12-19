@@ -108,3 +108,18 @@ Here some performance comparison of using different approaches with Observable o
 |      | Using regular array | Using macro generated map operator | Using lambda based map operator |
 |------|---------------------|------------------------------------|---------------------------------|
 | Time |6.908 μs (11 allocations: 24.33 KiB)|7.244 μs (15 allocations: 24.41 KiB) KiB)|80.367 μs (2483 allocations: 62.98 KiB)|
+
+## TODO
+
+This package in under development and some features of reactive framework may be missing
+
+### List of not implemented features
+
+- Better error handling and resource disposal
+- High-order observables and operators (`mergeMap`, `concatMap`, etc..)
+- Join operators: `combineLatest`, `concatAll`, etc..
+- More transformation, filtering, utility operators
+- Multicasting operators
+- Error handling operators
+- API stabilization
+- Possible bugs (welcome to open a PR)
