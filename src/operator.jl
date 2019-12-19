@@ -113,7 +113,7 @@ subscribe!(source |> CountIntegersOperator(), LoggerActor{Tuple{Int, Int}}())
 [LogActor] Completed
 ```
 
-See also: [`LeftTypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
+See also: [`LeftTypedOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
 """
 struct LeftTypedOperatorTrait{L}  <: OperatorTrait end
 
@@ -217,7 +217,7 @@ subscribe!(source |> IdentityOperator(), LoggerActor{Float64}())
 
 ```
 
-See also: [`InferableOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
+See also: [`InferableOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
 """
 struct InferableOperatorTrait     <: OperatorTrait end
 
@@ -268,7 +268,7 @@ println(as_operator(MyOperator) === LeftTypedOperatorTrait{Int}())
 true
 ```
 
-See also: [`LeftTypedOperatorTrait`](@ref)
+See also: [`LeftTypedOperatorTrait`](@ref), [`operator_right`](@ref)
 """
 abstract type LeftTypedOperator{L}  <: AbstractOperator end
 
@@ -308,10 +308,17 @@ println(as_operator(MyOperator) === InferableOperatorTrait())
 true
 ```
 
-See also: [`InferableOperatorTrait`](@ref)
+See also: [`InferableOperatorTrait`](@ref), [`operator_right`](@ref)
 """
 abstract type InferableOperator     <: AbstractOperator end
 
+"""
+    as_operator(::Type)
+
+This function checks operator trait behavior. May be used explicitly to specify operator trait behavior for any object.
+
+See also: [`OperatorTrait`](@ref), [`AbstractOperator`](@ref)
+"""
 as_operator(::Type)                                          = InvalidOperatorTrait()
 as_operator(::Type{<:TypedOperator{L, R}})   where L where R = TypedOperatorTrait{L, R}()
 as_operator(::Type{<:LeftTypedOperator{L}})  where L         = LeftTypedOperatorTrait{L}()
@@ -350,6 +357,22 @@ end
 
 Base.:|>(source::S, operator) where { S <: Subscribable{T} } where T = call_operator!(operator, source)
 
+"""
+    on_call!(::Type, ::Type, operator, source)
+
+Each operator must implement its own method for `on_call!` function. This function is used to invoke operator on some Observable
+and to produce another Observable with new logic (operator specific).
+
+See also: [`AbstractOperator`](@ref)
+"""
 on_call!(::Type, ::Type, operator, source) = error("You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(operator)), source).")
 
+"""
+    operator_right(operator, L)
+
+Both LeftTypedOperator and InferableOperator must implement its own method for `operator_right` function. This function is used to infer
+type of data of output Observable given type of data of input Observable.
+
+See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOperator`](@ref)
+"""
 operator_right(operator, L) = error("You probably forgot to implement operator_right(operator::$(typeof(operator)), L).")

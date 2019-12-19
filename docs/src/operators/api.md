@@ -4,25 +4,11 @@
 
 ```@docs
 OperatorTrait
-```
-
-```@docs
+as_operator
 TypedOperatorTrait
-```
-
-```@docs
 LeftTypedOperatorTrait
-```
-
-```@docs
 RightTypedOperatorTrait
-```
-
-```@docs
 InferableOperatorTrait
-```
-
-```@docs
 InvalidOperatorTrait
 ```
 
@@ -31,20 +17,10 @@ InvalidOperatorTrait
 
 ```@docs
 AbstractOperator
-```
-
-```@docs
 TypedOperator
-```
-
-```@docs
 LeftTypedOperator
-```
-
-```@docs
 RightTypedOperator
-```
-
-```@docs
 InferableOperator
+on_call!
+operator_right
 ```

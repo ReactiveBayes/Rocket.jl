@@ -6,29 +6,11 @@ Any Subscription should implement Teardown logic.
 
 ```@docs
 TeardownLogic
-```
-
-```@docs
 as_teardown
-```
-
-```@docs
 UnsubscribableTeardownLogic
-```
-
-```@docs
 on_unsubscribe!
-```
-
-```@docs
 CallableTeardownLogic
-```
-
-```@docs
 VoidTeardownLogic
-```
-
-```@docs
 UndefinedTeardownLogic
 ```
 
@@ -36,8 +18,5 @@ UndefinedTeardownLogic
 
 ```@docs
 Teardown
-```
-
-```@docs
 unsubscribe!
 ```

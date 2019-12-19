@@ -1,21 +1,38 @@
 # [Actors API](@id actors_api)
 
+## Actor traits
+
+
+```@docs
+ActorTrait
+as_actor
+BaseActorTrait
+NextActorTrait
+ErrorActorTrait
+CompletionActorTrait
+UndefinedActorTrait
+```
+
+## Actor types
+
 ```@docs
 AbstractActor
-```
-
-```@docs
 Actor
-```
-
-```@docs
 NextActor
-```
-
-```@docs
 ErrorActor
+CompletionActor
+```
+
+## Actor events
+
+```@docs
+next!
+error!
+complete!
 ```
 
 ```@docs
-CompletionActor
+on_next!
+on_error!
+on_complete!
 ```

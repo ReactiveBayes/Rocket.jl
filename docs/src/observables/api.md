@@ -6,17 +6,8 @@ Any Observable should implement Subscribable logic.
 
 ```@docs
 SubscribableTrait
-```
-
-```@docs
 as_subscribable
-```
-
-```@docs
 ValidSubscribable
-```
-
-```@docs
 InvalidSubscribable
 ```
 
@@ -24,12 +15,6 @@ InvalidSubscribable
 
 ```@docs
 Subscribable
-```
-
-```@docs
 subscribe!
-```
-
-```@docs
 on_subscribe!
 ```
