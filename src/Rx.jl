@@ -26,6 +26,7 @@ include("observable/proxy.jl")
 include("observable/timer.jl")
 include("observable/interval.jl")
 include("observable/function.jl")
+include("observable/file.jl")
 
 include("operator.jl")
 include("operators/map.jl")
@@ -43,5 +44,8 @@ include("operators/sum.jl")
 include("operators/max.jl")
 include("operators/min.jl")
 include("operators/delay.jl")
+include("operators/uppercase.jl")
+include("operators/lowercase.jl")
+
 
 end # module

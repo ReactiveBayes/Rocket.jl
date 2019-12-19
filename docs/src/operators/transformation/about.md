@@ -5,6 +5,8 @@ There are operators for different purposes, and they may be categorized as: crea
 - [map](@ref operator_map)
 - [scan](@ref operator_scan)
 - [enumerate](@ref operator_enumerate)
+- [uppercase](@ref operator_uppercase)
+- [lowercase](@ref operator_lowercase)
 
 # See also
 

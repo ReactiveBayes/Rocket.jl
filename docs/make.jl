@@ -18,6 +18,7 @@ makedocs(
                 "Timer"             => "observables/types/timer.md",
                 "Interval"          => "observables/types/interval.md",
                 "Proxy"             => "observables/types/proxy.md",
+                "File"              => "observables/types/file.md",
             ],
             "API"               => "observables/api.md",
         ],
@@ -55,6 +56,8 @@ makedocs(
                     "map"                            => "operators/transformation/map.md",
                     "scan"                           => "operators/transformation/scan.md",
                     "enumerate"                      => "operators/transformation/enumerate.md",
+                    "uppercase"                      => "operators/transformation/uppercase.md",
+                    "lowercase"                      => "operators/transformation/lowercase.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",

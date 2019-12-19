@@ -70,7 +70,7 @@ subscribe!(source, subject);
 
 With the approach above, we essentially just converted a unicast Observable execution to multicast, through the Subject. This demonstrates how Subjects are the only way of making any Observable execution be shared to multiple Observers.
 
-There are also a few specializations of the Subject type: [`BehaviorSubject`](@ref), [`ReplaySubject`](@ref), and [`AsyncSubject`](@ref).
+There are also a few specializations of the Subject type: [`BehaviorSubject`](@ref), [`ReplaySubject`](@ref).
 
 ## BehaviorSubject
 
