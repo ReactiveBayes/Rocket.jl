@@ -25,7 +25,7 @@ A Subject is a special type of Observable that allows values to be multicasted t
 Every Subject is an Observable and an Actor. You can subscribe to a Subject,
 and you can call `next!` to feed values as well as `error!` and `complete!`.
 
-See also: ['BehaviorSubject'](@ref), [`ReplaySubject`](@ref)
+See also: [`BehaviorSubject`](@ref), [`ReplaySubject`](@ref)
 """
 mutable struct Subject{D} <: Actor{D}
     channel      :: Channel{SubjectMessage{D}}
