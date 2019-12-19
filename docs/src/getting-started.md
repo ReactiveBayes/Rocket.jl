@@ -20,11 +20,11 @@ Rx.jl has been designed with a focus on performance and modularity.
 
 The essential concepts in Rx.jl are:
 
-- __Observable__: represents a collection of future messages (data or/and events).
+- [__Observable__](@ref section_observables): represents a collection of future messages (data or/and events).
 - [__Actor__](@ref section_actors): is an object that knows how to react on incoming messages delivered by the __Observable__.
 - [__Subscription__](@ref section_subscription): represents a teardown logic which might be useful for cancelling the execution of an __Observable__.
 - [__Operators__](@ref section_operators): are objects that enable a functional programming style to dealing with collections with operations like [`map`](@ref operator_map), [`filter`](@ref operator_filter), [`reduce`](@ref operator_reduce), etc.
-- __Subject__: the way of multicasting a message to multiple Observers.
+- [__Subject__](@ref section_subjects): the way of multicasting a message to multiple Observers.
 
 ## First example
 

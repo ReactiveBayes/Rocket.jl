@@ -1,4 +1,4 @@
-# About subjects
+# [About subjects](@id section_subjects)
 
 What is a __Subject__? An Rx.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
 

@@ -91,8 +91,8 @@ subscribe!(squared_int_values, LambdaActor{Int}(
 You can also use a special macro which is defined for some operators to produce an optimized versions of some operations on observables without using the callbacks.
 
 ```Julia
-@CreateMapOperator("Squared", (d) -> d ^ 2)
-squared_int_values = source_of_int_values |> SquaredMapOperator{Int, Int}()
+@CreateMapOperator("Squared", Int, Int, (d) -> d ^ 2)
+squared_int_values = source_of_int_values |> SquaredMapOperator()
 ```
 
 Here some performance comparison of using different approaches with Observable of 1000 integers and `StoreActor`.
