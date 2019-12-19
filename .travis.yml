@@ -1,0 +1,17 @@
+language: julia
+
+os:
+  - linux
+  - osx
+
+julia:
+  - 1.0
+  - 1.1
+  - 1.2
+  - 1.3
+
+notifications:
+  email: false
+
+script:
+  - julie -e 'import Pkg; Pkg.test("Rx")'

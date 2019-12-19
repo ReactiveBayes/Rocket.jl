@@ -37,7 +37,7 @@ unsubscribe!(subscription2)
 
 ```
 
-Since a Subject is an ACTOR, this also means you may provide a Subject as the argument to the subscribe of any Observable, like the example below shows:
+Since a Subject is an actor, this also means you may provide a Subject as the argument to the subscribe of any Observable, like the example below shows:
 
 ```julia
 using Rx

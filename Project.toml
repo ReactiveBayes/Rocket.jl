@@ -1,7 +1,7 @@
 name = "Rx"
 uuid = "df971d30-c9d6-4b37-b8ff-e965b2cb3a40"
 authors = ["Dmitri Bagaev <bvdmitri@gmail.com>"]
-version = "0.1.0"
+version = "0.5.0"
 
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
