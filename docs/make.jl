@@ -36,6 +36,10 @@ makedocs(
         ],
         "Subscription"    => [
             "About subscriptions" => "teardown/about.md",
+            "Types"               => [
+                "Void"  => "teardown/types/void.md",
+                "Chain" => "teardown/types/chain.md",
+            ],
             "API"                 => "teardown/api.md",
         ],
         "Operators"       => [

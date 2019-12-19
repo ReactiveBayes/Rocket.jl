@@ -4,6 +4,7 @@ There are operators for different purposes, and they may be categorized as: crea
 
 ## Creation operators
 
+- [make](@ref observable_function)
 - [of](@ref observable_single)
 - [from](@ref observable_array)
 - [error](@ref observable_error)

@@ -9,6 +9,10 @@ SubscribableTrait
 ```
 
 ```@docs
+as_subscribable
+```
+
+```@docs
 ValidSubscribable
 ```
 
@@ -20,10 +24,6 @@ InvalidSubscribable
 
 ```@docs
 Subscribable
-```
-
-```@docs
-as_subscribable
 ```
 
 ```@docs

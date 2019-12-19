@@ -5,9 +5,9 @@ Pipeable operators are special objects, so the could be used like ordinary funct
 
 ```julia
 source = from([ i for i in 1:100 ]) |>
-  filter(Int, (d) -> d % 2 === 0) |>
-  map(Int, Int, (d) -> d ^ 2) |>
-  sum(Int)
+  filter((d) -> d % 2 === 0) |>
+  map(Int, (d) -> d ^ 2) |>
+  sum()
 
 subscribe!(source, LoggerActor{Int}())
 
