@@ -5,6 +5,10 @@ What is a __Subject__? An Rx.jl Subject is a special type of Observable that all
 !!! note
     A Subject is like an Observable, but can multicast to many Actors. Subjects are like event emitters: they maintain a registry of many listeners.
 
+```@docs
+Subject
+```
+
 Every Subject is an Observable. Given a Subject, you can subscribe to it, providing an Actor, which will start receiving values normally. From the perspective of the Actor, it cannot tell whether the Observable execution is coming from a plain unicast Observable or a Subject.
 
 Internally to the Subject, subscribe does not invoke a new execution that delivers values. It simply registers the given Actor in a list of Actors.
@@ -109,8 +113,46 @@ next!(b, 3)
 
 ## ReplaySubject
 
-[ Under development ]
+A `ReplaySubject` is similar to a [`BehaviorSubject`](@ref) in that it can send old values to new subscribers,
+but it can also record a part of the Observable execution.
 
-## AsyncSubject
+```@docs
+ReplaySubject
+```
 
-[ Under development ]
+!!! note
+    A ReplaySubject records multiple values from the Observable execution and replays them to new subscribers.
+
+When creating a ReplaySubject, you can specify how many values to replay:
+
+```julia
+using Rx
+
+b = ReplaySubject{Int}(4)
+
+subscription1 = subscribe!(b, LoggerActor{Int}("Actor 1"))
+
+next!(b, 1)
+next!(b, 2)
+
+yield()
+
+subscription2 = subscribe!(b, LoggerActor{Int}("Actor 2"))
+
+next!(b, 3)
+
+subscription3 = subscribe!(b, LoggerActor{Int}("Actor 3"))
+;
+
+# Logs
+# [Actor 1] Data: 1
+# [Actor 1] Data: 2
+# [Actor 2] Data: 1
+# [Actor 2] Data: 2
+# [Actor 3] Data: 1
+# [Actor 3] Data: 2
+# [Actor 3] Data: 3
+# [Actor 1] Data: 3
+# [Actor 2] Data: 3
+# [Actor 3] Data: 3
+```

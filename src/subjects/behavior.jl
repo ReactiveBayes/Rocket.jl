@@ -33,6 +33,8 @@ subscription = subscribe!(b, LoggerActor{Int}())
 [LogActor] Data: 2
 [LogActor] Data: 3
 ```
+
+See also: [`Subject`](@ref)
 """
 mutable struct BehaviorSubject{D} <: Actor{D}
     current :: D
