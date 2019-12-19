@@ -20,6 +20,14 @@ The essential concepts in Rx.jl are:
 
 A full documentation is available at ???
 
+It is also possible to build a documentation locally. Just use
+
+```bash
+$ julia make.jl
+```
+
+in the `docs/` directory to build local version of the documentation.
+
 ## First example
 
 Normally you use an arrays for processing some data.
