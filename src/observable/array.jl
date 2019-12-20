@@ -10,6 +10,7 @@ struct UndefinedScalarness <: Scalarness end
 
 scalarness(::Type)                   = UndefinedScalarness()
 scalarness(::Type{<:Number})         = Scalar()
+scalarness(::Type{<:Char})           = Scalar()
 scalarness(::Type{<:AbstractArray})  = NonScalar()
 scalarness(::Type{<:Tuple})          = NonScalar()
 scalarness(::Type{<:AbstractString}) = NonScalar()

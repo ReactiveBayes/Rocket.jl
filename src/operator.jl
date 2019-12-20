@@ -429,7 +429,7 @@ end
 """
 This error will be thrown if Julia cannot find specific method of `operator_right` function for a given operator.
 
-See also: [`operator_right!`](@ref)
+See also: [`operator_right`](@ref)
 """
 struct MissingOperatorRightImplementationError
     operator
