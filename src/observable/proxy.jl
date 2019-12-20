@@ -57,5 +57,5 @@ function on_subscribe!(observable::ProxyObservable{D}, actor::A) where { A <: Ab
     return subscribe!(proxied_source, proxied_actor)
 end
 
-actor_proxy!(proxy, actor) = error("You probably forgot to implement actor_proxy!(proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
+actor_proxy!(proxy, actor)   = error("You probably forgot to implement actor_proxy!(proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
 source_proxy!(proxy, source) = error("You probably forgot to implement source_proxy!(proxy::$(typeof(proxy)), source::$(typeof(source)))")

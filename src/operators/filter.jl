@@ -42,7 +42,7 @@ struct FilterOperator <: InferableOperator
     filterFn::Function
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator, source) where L
     return ProxyObservable{L}(source, FilterProxy{L}(operator.filterFn))
 end
 
@@ -66,8 +66,8 @@ function on_next!(f::FilterActor{L, A}, data::L) where { A <: AbstractActor{L} }
     end
 end
 
-on_error!(f::FilterActor, err) = error!(f.actor, err)
-on_complete!(f::FilterActor)   = complete!(f.actor)
+on_error!(f::FilterActor{L, A}, err) where { A <: AbstractActor{L} } where L = error!(f.actor, err)
+on_complete!(f::FilterActor{L, A})   where { A <: AbstractActor{L} } where L = complete!(f.actor)
 
 
 """
@@ -137,8 +137,8 @@ macro CreateFilterOperator(name, L, filterFn)
             end
         end
 
-        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
-        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+        Rx.on_error!(a::($actorName){A}, err) where A <: Rx.AbstractActor{$L} = Rx.error!(a.actor, err)
+        Rx.on_complete!(a::($actorName){A})   where A <: Rx.AbstractActor{$L} = Rx.complete!(a.actor)
     end
 
     generated = quote

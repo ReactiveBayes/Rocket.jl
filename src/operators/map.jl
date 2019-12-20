@@ -133,8 +133,8 @@ macro CreateMapOperator(name, L, R, mappingFn)
             Rx.next!(a.actor, __inlined_lambda(data))
         end
 
-        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
-        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+        Rx.on_error!(a::($actorName){A}, err) where { A <: Rx.AbstractActor{$R} } = Rx.error!(a.actor, err)
+        Rx.on_complete!(a::($actorName){A})   where { A <: Rx.AbstractActor{$R} } = Rx.complete!(a.actor)
     end
 
     generated = quote

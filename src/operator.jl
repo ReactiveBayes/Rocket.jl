@@ -1,9 +1,6 @@
-import Base: |>
-
 export OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferableOperatorTrait, InvalidOperatorTrait
 export AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
 export as_operator, call_operator!, on_call!, operator_right
-export |>
 
 """
 Abstract type for all possible operator traits
@@ -325,37 +322,41 @@ as_operator(::Type{<:LeftTypedOperator{L}})  where L         = LeftTypedOperator
 as_operator(::Type{<:RightTypedOperator{R}}) where R         = RightTypedOperatorTrait{R}()
 as_operator(::Type{<:InferableOperator})                     = InferableOperatorTrait()
 
-call_operator!(operator::T, source) where T = call_operator!(as_operator(T), operator, source)
+call_operator!(operator::T, source::S) where T where S = call_operator!(as_operator(T), as_subscribable(S), operator, source)
 
-function call_operator!(::InvalidOperatorTrait, operator, source)
+function call_operator!(as_operator, ::InvalidSubscribable, operator, source)
+    error("Type $(typeof(source)) is not a valid subscribable type. \nConsider extending your type with the Subscribable{T} abstract type or implement Rx.as_subscribable(::Type{<:$(typeof(source))}).")
+end
+
+function call_operator!(::InvalidOperatorTrait, as_subscribable, operator, source)
     error("Type $(typeof(operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rx.as_operator(::Type{<:$(typeof(operator))}).")
 end
 
-function call_operator!(::TypedOperatorTrait{L, R}, operator, source::S) where { S <: Subscribable{NotL} } where L where R where NotL
+function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{NotL}, operator, source) where L where R where NotL
     error("Operator of type $(typeof(operator)) expects source data to be of type $(L), but $(NotL) found.")
 end
 
-function call_operator!(::TypedOperatorTrait{L, R}, operator, source::S) where { S <: Subscribable{L} } where L where R
+function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{L}, operator, source) where L where R
     on_call!(L, R, operator, source)
 end
 
-function call_operator!(::LeftTypedOperatorTrait{L}, operator, source::S) where { S <: Subscribable{NotL} } where L where NotL
+function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{NotL}, operator, source) where L where NotL
     error("Operator of type $(typeof(operator)) expects source data to be of type $(L), but $(NotL) found.")
 end
 
-function call_operator!(::LeftTypedOperatorTrait{L}, operator, source::S) where { S <: Subscribable{L} } where L
+function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{L}, operator, source) where L
     on_call!(L, operator_right(operator, L), operator, source)
 end
 
-function call_operator!(::RightTypedOperatorTrait{R}, operator, source::S) where { S <: Subscribable{L} } where L where R
+function call_operator!(::RightTypedOperatorTrait{R}, ::ValidSubscribable{L}, operator, source) where L where R
     on_call!(L, R, operator, source)
 end
 
-function call_operator!(::InferableOperatorTrait, operator, source::S) where { S <: Subscribable{L} } where L
+function call_operator!(::InferableOperatorTrait, ::ValidSubscribable{L}, operator, source) where L
     on_call!(L, operator_right(operator, L), operator, source)
 end
 
-Base.:|>(source::S, operator) where { S <: Subscribable{T} } where T = call_operator!(operator, source)
+(operator::AbstractOperator)(source) = call_operator!(operator, source)
 
 """
     on_call!(::Type, ::Type, operator, source)

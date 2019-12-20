@@ -48,6 +48,7 @@ include("operators/min.jl")
 include("operators/delay.jl")
 include("operators/uppercase.jl")
 include("operators/lowercase.jl")
+include("operators/to_array.jl")
 
 
 end # module
