@@ -6,15 +6,18 @@ import Rx
 import Rx: OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferableOperatorTrait, InvalidOperatorTrait
 import Rx: AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
 import Rx: as_operator, call_operator!, on_call!, operator_right
-import Rx: |>
+
+import Rx: InvalidOperatorTraitUsageError, InconsistentSourceOperatorDataTypesError
+import Rx: MissingOnCallImplementationError, MissingOperatorRightImplementationError
+
 
 @testset "Operator" begin
 
-    struct DummyType end
+    struct DummyType <: AbstractOperator end
 
     struct NotImplementedOperator <: TypedOperator{Int, String} end
 
-    struct ExplicitlyDefinedOperator end
+    struct ExplicitlyDefinedOperator <: AbstractOperator end
     Rx.as_operator(::Type{<:ExplicitlyDefinedOperator}) = TypedOperatorTrait{String, Int}()
 
     struct IdentityIntOperator <: TypedOperator{Int, Int} end
@@ -63,17 +66,18 @@ import Rx: |>
         float_source  = SomeSubscribable{Float64}()
 
         # Check if pipe operator throws an error for invalid operator type
-        @test_throws MethodError int_source |> DummyType()
+        @test_throws InvalidOperatorTraitUsageError int_source |> DummyType()
 
         # Check if pipe operator throws an error for invalid source and operator data types
-        @test_throws ErrorException string_source |> IdentityIntOperator()
-        @test_throws ErrorException int_source    |> LeftTypedStringIdentityOperator()
+        @test_throws InconsistentSourceOperatorDataTypesError string_source |> IdentityIntOperator()
+        @test_throws InconsistentSourceOperatorDataTypesError int_source    |> LeftTypedStringIdentityOperator()
 
         # Check if pipe operator throws an error for not implemented operator
-        @test_throws MethodError string_source |> ExplicitlyDefinedOperator()
-        @test_throws ErrorException int_source    |> NotImplementedOperator()
-        @test_throws ErrorException int_source    |> LeftTypedIntIdentityNotImplementedOperator()
-        @test_throws ErrorException int_source    |> InferableNotImplementedOperator()
+        @test_throws MissingOnCallImplementationError string_source |> ExplicitlyDefinedOperator()
+        @test_throws MissingOnCallImplementationError int_source    |> NotImplementedOperator()
+
+        @test_throws MissingOperatorRightImplementationError int_source  |> LeftTypedIntIdentityNotImplementedOperator()
+        @test_throws MissingOperatorRightImplementationError int_source  |> InferableNotImplementedOperator()
 
         # Check if pipe operator calls on_call! for valid operator
         @test int_source |> IdentityIntOperator() === int_source

@@ -20,3 +20,10 @@ UndefinedTeardownLogic
 Teardown
 unsubscribe!
 ```
+
+## Teardown error
+
+```@docs
+UndefinedTeardownLogicTraitUsageError
+MissingOnUnsubscribeImplementationError
+```

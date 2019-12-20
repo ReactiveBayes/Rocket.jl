@@ -2,6 +2,11 @@ export SubscribableTrait, ValidSubscribable, InvalidSubscribable
 export Subscribable, as_subscribable
 export subscribe!, on_subscribe!
 
+export InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableDataTypesError
+export MissingOnSubscribeImplementationError
+
+import Base: show
+
 """
 Abstract type for all possible subscribable traits
 
@@ -133,9 +138,9 @@ end
 # source <: Subscribable{L}
 # actor  <: Actor{Union{L, Nothing}}
 
-subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                   = error("Type $(typeof(subscribable)) is not a valid subscribable type. \nConsider extending your subscribable with Subscribable{T} abstract type or implement as_subscribable(::Type{<:$(typeof(subscribable))}).")
-subscribable_on_subscribe!(::ValidSubscribable,     ::UndefinedActorTrait, subscribable, actor)                   = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
-subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2 = error("Actor of type $(typeof(actor)) expects data to be of type $(T2), while subscribable of type $(typeof(subscribable)) produces data of type $(T1).")
+subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                   = throw(InvalidSubscribableTraitUsageError(subscribable))
+subscribable_on_subscribe!(::ValidSubscribable,     ::UndefinedActorTrait, subscribable, actor)                   = throw(UndefinedActorTraitUsageError(actor))
+subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2 = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subscribable, actor) where T           = on_subscribe!(subscribable, actor)
 
 """
@@ -172,4 +177,48 @@ subscribe!(MySubscribable(), LoggerActor{Int}())
 
 See also: [`Subscribable`](@ref), [`Teardown`](@ref)
 """
-on_subscribe!(subscribable, actor) = error("You probably forgot to implement on_subscribe!(subscribable::$(typeof(subscribable)), actor).")
+on_subscribe!(subscribable, actor) = throw(MissingOnSubscribeImplementationError(subscribable))
+
+# -------------------------------- #
+# Errors                           #
+# -------------------------------- #
+
+"""
+This error will be thrown if `subscribe!` function is called with invalid subscribable object
+
+See also: [`subscribe!`](@ref)
+"""
+struct InvalidSubscribableTraitUsageError
+    subscribable
+end
+
+function Base.show(io::IO, err::InvalidSubscribableTraitUsageError)
+    print(io, "Type $(typeof(err.subscribable)) is not a valid subscribable type. \nConsider extending your subscribable with Subscribable{T} abstract type or implement as_subscribable(::Type{<:$(typeof(err.subscribable))}).")
+end
+
+"""
+This error will be thrown if `subscribe!` function is called with inconsistent subscribable and actor objects
+
+See also: [`subscribe!`](@ref)
+"""
+struct InconsistentActorWithSubscribableDataTypesError{T1, T2}
+    subscribable
+    actor
+end
+
+function Base.show(io::IO, err::InconsistentActorWithSubscribableDataTypesError{T1, T2}) where T1 where T2
+    print(io, "Actor of type $(typeof(err.actor)) expects data to be of type $(T2), while subscribable of type $(typeof(err.subscribable)) produces data of type $(T1).")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of 'on_subscribe!()' function for given subscribable and actor
+
+See also: [`on_subscribe!`](@ref)
+"""
+struct MissingOnSubscribeImplementationError
+    subscribable
+end
+
+function Base.show(io::IO, err::MissingOnSubscribeImplementationError)
+    print(io, "You probably forgot to implement on_subscribe!(subscribable::$(typeof(err.subscribable)), actor).")
+end

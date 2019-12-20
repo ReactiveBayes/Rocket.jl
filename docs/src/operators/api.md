@@ -24,3 +24,12 @@ InferableOperator
 on_call!
 operator_right
 ```
+
+## Operator errors
+
+```@docs
+InvalidOperatorTraitUsageError
+InconsistentSourceOperatorDataTypesError
+MissingOnCallImplementationError
+MissingOperatorRightImplementationError
+```

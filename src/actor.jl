@@ -230,7 +230,7 @@ end
 """
 This error will be thrown if `error!` function is called without err argument
 
-See also: [`next!`](@ref)
+See also: [`error!`](@ref)
 """
 struct MissingErrorArgumentInErrorCall end
 
@@ -241,7 +241,7 @@ end
 """
 This error will be thrown if `complete!` function is called with extra data/err argument
 
-See also: [`next!`](@ref)
+See also: [`complete!`](@ref)
 """
 struct ExtraArgumentInCompleteCall end
 

@@ -18,3 +18,11 @@ Subscribable
 subscribe!
 on_subscribe!
 ```
+
+## Subscribable errors
+
+```@docs
+InvalidSubscribableTraitUsageError
+InconsistentActorWithSubscribableDataTypesError
+MissingOnSubscribeImplementationError
+```

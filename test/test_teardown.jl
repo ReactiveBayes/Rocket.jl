@@ -7,6 +7,8 @@ import Rx: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, Vo
 import Rx: Teardown, as_teardown
 import Rx: unsubscribe!, teardown!, on_unsubscribe!
 
+import Rx: UndefinedTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+
 @testset "Teardown" begin
 
     struct DummyType end
@@ -36,7 +38,7 @@ import Rx: unsubscribe!, teardown!, on_unsubscribe!
 
     @testset "unsubscribe!" begin
         # Check if arbitrary dummy type throws an error in unsubscribe!
-        @test_throws ErrorException unsubscribe!(DummyType())
+        @test_throws UndefinedTeardownLogicTraitUsageError unsubscribe!(DummyType())
 
         # Check if void teardown object does nothing
         @test unsubscribe!(AnotherDummyType()) === nothing
@@ -45,7 +47,7 @@ import Rx: unsubscribe!, teardown!, on_unsubscribe!
         @test unsubscribe!(() -> return 1) === 1
 
         #Check if dummy subscription throws an error in unusubscribe!
-        @test_throws ErrorException unsubscribe!(DummySubscription())
+        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!(DummySubscription())
 
         #Check if implemented subscription calls on_unsubscribe!
         @test unsubscribe!(ImplementedSubscription()) === "unsubscribed"

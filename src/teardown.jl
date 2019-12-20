@@ -2,6 +2,10 @@ export TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTe
 export Teardown, as_teardown
 export unsubscribe!, teardown!, on_unsubscribe!
 
+export UndefinedTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+
+import Base: show
+
 """
 Abstract type for all possible teardown logic traits
 
@@ -81,12 +85,12 @@ as_teardown(::Type{<:Function}) = CallableTeardownLogic()
 
 See also: [`Teardown`](@ref), [`TeardownLogic`](@ref)
 """
-unsubscribe!(o::T) where T = teardown!(as_teardown(T), o)
+unsubscribe!(teardown::T) where T = teardown!(as_teardown(T), teardown)
 
-teardown!(::UnsubscribableTeardownLogic, o) = on_unsubscribe!(o)
-teardown!(::CallableTeardownLogic, o)       = o()
-teardown!(::VoidTeardownLogic, o)           = begin end
-teardown!(::UndefinedTeardownLogic, o)      = error("Type $(typeof(o)) has undefined teardown behavior. \nConsider implement as_teardown(::Type{<:$(typeof(o))}).")
+teardown!(::UnsubscribableTeardownLogic, teardown) = on_unsubscribe!(teardown)
+teardown!(::CallableTeardownLogic, teardown)       = teardown()
+teardown!(::VoidTeardownLogic, teardown)           = begin end
+teardown!(::UndefinedTeardownLogic, teardown)      = throw(UndefinedTeardownLogicTraitUsageError(teardown))
 
 """
     on_unsubscribe!(o)
@@ -96,4 +100,34 @@ for `on_unsubscribe!()` function which will be invoked when actor decides to 'un
 
 See also: [`Teardown`](@ref), [`TeardownLogic`](@ref), [`UnsubscribableTeardownLogic`](@ref)
 """
-on_unsubscribe!(o) = error("You probably forgot to implement on_unsubscribe!(unsubscribable::$(typeof(o))).")
+on_unsubscribe!(teardown) = throw(MissingOnUnsubscribeImplementationError(teardown))
+
+# -------------------------------- #
+# Errors                           #
+# -------------------------------- #
+
+"""
+This error will be thrown if `unsubscribe!` function is called with invalid teardown object.
+
+See also: [`unsubscribe!`](@ref)
+"""
+struct UndefinedTeardownLogicTraitUsageError
+    teardown
+end
+
+function Base.show(io::IO, err::UndefinedTeardownLogicTraitUsageError)
+    print(io, "Type $(typeof(err.teardown)) has undefined teardown behavior. \nConsider implement as_teardown(::Type{<:$(typeof(err.teardown))}).")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of 'on_unsubscribe!()' function for given teardown object.
+
+See also: [`on_unsubscribe!`](@ref)
+"""
+struct MissingOnUnsubscribeImplementationError
+    teardown
+end
+
+function Base.show(io::IO, err::MissingOnUnsubscribeImplementationError)
+    print(io, "You probably forgot to implement on_unsubscribe!(unsubscribable::$(typeof(err.teardown))).")
+end

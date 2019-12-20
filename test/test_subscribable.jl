@@ -8,6 +8,9 @@ import Rx: SubscribableTrait, ValidSubscribable, InvalidSubscribable
 import Rx: Subscribable, as_subscribable
 import Rx: subscribe!
 
+import Rx: InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableDataTypesError
+import Rx: MissingOnSubscribeImplementationError
+
 @testset "Subscribable" begin
 
     struct DummyType end
@@ -34,18 +37,19 @@ import Rx: subscribe!
     end
 
     @testset "subscribe!" begin
-        actor = Rx.VoidActor{Int}()
+        actor   = Rx.VoidActor{Int}()
+        actor_s = Rx.VoidActor{String}()
 
         # Check if subscribe! throws an error for not valid subscribable
-        @test_throws ErrorException subscribe!(DummyType(), actor)
-        @test_throws ErrorException subscribe!(NotImplementedSubscribable(), actor)
-        @test_throws ErrorException subscribe!(ExplicitlyDefinedSubscribable(), actor)
+        @test_throws InvalidSubscribableTraitUsageError subscribe!(DummyType(), actor)
+        @test_throws MissingOnSubscribeImplementationError subscribe!(NotImplementedSubscribable(), actor)
+        @test_throws MissingOnSubscribeImplementationError subscribe!(ExplicitlyDefinedSubscribable(), actor_s)
 
         # Check if subscribe! subscribes to a valid subscribable
         @test subscribe!(ImplementedSubscribable(), actor) === Rx.VoidTeardown()
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match
-        @test_throws ErrorException subscribe!(ImplementedSubscribable(), Rx.VoidActor{String}())
+        @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedSubscribable(), Rx.VoidActor{String}())
     end
 
 end

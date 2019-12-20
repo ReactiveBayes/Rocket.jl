@@ -2,6 +2,11 @@ export OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOper
 export AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
 export as_operator, call_operator!, on_call!, operator_right
 
+export InvalidOperatorTraitUsageError, InconsistentSourceOperatorDataTypesError
+export MissingOnCallImplementationError, MissingOperatorRightImplementationError
+
+import Base: show
+
 """
 Abstract type for all possible operator traits
 
@@ -325,15 +330,15 @@ as_operator(::Type{<:InferableOperator})                     = InferableOperator
 call_operator!(operator::T, source::S) where T where S = call_operator!(as_operator(T), as_subscribable(S), operator, source)
 
 function call_operator!(as_operator, ::InvalidSubscribable, operator, source)
-    error("Type $(typeof(source)) is not a valid subscribable type. \nConsider extending your type with the Subscribable{T} abstract type or implement Rx.as_subscribable(::Type{<:$(typeof(source))}).")
+    throw(InvalidSubscribableTraitUsageError(source))
 end
 
 function call_operator!(::InvalidOperatorTrait, as_subscribable, operator, source)
-    error("Type $(typeof(operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rx.as_operator(::Type{<:$(typeof(operator))}).")
+    throw(InvalidOperatorTraitUsageError(operator))
 end
 
 function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{NotL}, operator, source) where L where R where NotL
-    error("Operator of type $(typeof(operator)) expects source data to be of type $(L), but $(NotL) found.")
+    throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
 end
 
 function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{L}, operator, source) where L where R
@@ -341,7 +346,7 @@ function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{L}, oper
 end
 
 function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{NotL}, operator, source) where L where NotL
-    error("Operator of type $(typeof(operator)) expects source data to be of type $(L), but $(NotL) found.")
+    throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
 end
 
 function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{L}, operator, source) where L
@@ -366,7 +371,7 @@ and to produce another Observable with new logic (operator specific).
 
 See also: [`AbstractOperator`](@ref)
 """
-on_call!(::Type, ::Type, operator, source) = error("You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(operator)), source).")
+on_call!(::Type, ::Type, operator, source) = throw(MissingOnCallImplementationError(operator))
 
 """
     operator_right(operator, L)
@@ -376,4 +381,60 @@ type of data of output Observable given type of data of input Observable.
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOperator`](@ref)
 """
-operator_right(operator, L) = error("You probably forgot to implement operator_right(operator::$(typeof(operator)), L).")
+operator_right(operator, L) = throw(MissingOperatorRightImplementationError(operator))
+
+# -------------------------------- #
+# Errors                           #
+# -------------------------------- #
+
+"""
+This error will be thrown if `|>` pipe operator is called with invalid operator object
+
+See also: [`on_call!`](@ref)
+"""
+struct InvalidOperatorTraitUsageError
+    operator
+end
+
+function Base.show(io::IO, err::InvalidOperatorTraitUsageError)
+    print(io, "Type $(typeof(err.operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rx.as_operator(::Type{<:$(typeof(err.operator))}).")
+end
+
+"""
+This error will be thrown if `|>` pipe operator is called with inconsistent data type
+
+See also: [`on_call!`](@ref)
+"""
+struct InconsistentSourceOperatorDataTypesError{L, NotL}
+    operator
+end
+
+function Base.show(io::IO, err::InconsistentSourceOperatorDataTypesError{L, NotL}) where L where NotL
+    print(io, "Operator of type $(typeof(err.operator)) expects source data to be of type $(L), but $(NotL) found.")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of `on_call!` function for a given operator.
+
+See also: [`on_call!`](@ref)
+"""
+struct MissingOnCallImplementationError
+    operator
+end
+
+function Base.show(io::IO, err::MissingOnCallImplementationError)
+    print(io, "You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(err.operator)), source).")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of `operator_right` function for a given operator.
+
+See also: [`operator_right!`](@ref)
+"""
+struct MissingOperatorRightImplementationError
+    operator
+end
+
+function Base.show(io::IO, err::MissingOperatorRightImplementationError)
+    print(io, "You probably forgot to implement operator_right(operator::$(typeof(err.operator)), L).")
+end
