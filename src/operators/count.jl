@@ -36,7 +36,7 @@ count() = CountOperator()
 
 struct CountOperator <: RightTypedOperator{Int} end
 
-function on_call!(::Type{L}, ::Type{Int}, operator::CountOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{Int}, operator::CountOperator, source) where L
     return ProxyObservable{Int}(source, CountProxy{L}())
 end
 
@@ -53,11 +53,11 @@ function on_next!(c::CountActor{L, A}, data::L) where { A <: AbstractActor{Int} 
     c.current += 1
 end
 
-function on_error!(c::CountActor, err)
+function on_error!(c::CountActor{L, A}, err) where { A <: AbstractActor{Int} } where L
     error!(c.actor, err)
 end
 
-function on_complete!(c::CountActor)
+function on_complete!(c::CountActor{L, A}) where { A <: AbstractActor{Int} } where L
     next!(c.actor, c.current)
     complete!(c.actor)
 end

@@ -47,7 +47,7 @@ struct ScanOperator{R} <: RightTypedOperator{R}
     seed    :: Union{R, Nothing}
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::ScanOperator{R}, source::S) where { S <: Subscribable{L} } where L where R
+function on_call!(::Type{L}, ::Type{R}, operator::ScanOperator{R}, source) where L where R
     return ProxyObservable{R}(source, ScanProxy{L, R}(operator.scanFn, operator.seed))
 end
 
@@ -73,8 +73,8 @@ function on_next!(r::ScanActor{L, R, A}, data::L) where { A <: AbstractActor{R} 
     next!(r.actor, r.current)
 end
 
-on_error!(r::ScanActor, err) = error!(r.actor, err)
-on_complete!(r::ScanActor)   = complete!(r.actor)
+on_error!(r::ScanActor{L, R, A}, err) where { A <: AbstractActor{R} } where L where R = error!(r.actor, err)
+on_complete!(r::ScanActor{L, R, A})   where { A <: AbstractActor{R} } where L where R = complete!(r.actor)
 
 
 """

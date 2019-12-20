@@ -46,7 +46,7 @@ struct MapOperator{R} <: RightTypedOperator{R}
     mappingFn::Function
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R}, source::S) where { S <: Subscribable{L} } where L where R
+function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R}, source) where L where R
     return ProxyObservable{R}(source, MapProxy{L, R}(operator.mappingFn))
 end
 
@@ -62,8 +62,8 @@ struct MapActor{L, R, A <: AbstractActor{R} } <: Actor{L}
 end
 
 on_next!(m::MapActor{L, R, A},  data::L) where { A <: AbstractActor{R} } where L where R = next!(m.actor, Base.invokelatest(m.mappingFn, data))
-on_error!(m::MapActor, err)                                                              = error!(m.actor, err)
-on_complete!(m::MapActor)                                                                = complete!(m.actor)
+on_error!(m::MapActor{L, R, A}, err)     where { A <: AbstractActor{R} } where L where R = error!(m.actor, err)
+on_complete!(m::MapActor{L, R, A})       where { A <: AbstractActor{R} } where L where R = complete!(m.actor)
 
 """
     @CreateMapOperator(name, L, R, mappingFn)
@@ -112,7 +112,7 @@ macro CreateMapOperator(name, L, R, mappingFn)
     operatorDefinition = quote
         struct $operatorName <: Rx.TypedOperator{$L, $R} end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{$L} }
+        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.ProxyObservable{$R}(source, ($proxyName)())
         end
     end

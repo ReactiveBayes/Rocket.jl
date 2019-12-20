@@ -47,7 +47,7 @@ end
 
 operator_right(operator::TapOperator, ::Type{L}) where L = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::TapOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::TapOperator, source) where L
     return ProxyObservable{L}(source, TapProxy{L}(operator.tapFn))
 end
 
@@ -67,8 +67,8 @@ function on_next!(t::TapActor{L, A}, data::L) where { A <: AbstractActor{L} } wh
     next!(t.actor, data)
 end
 
-on_error!(t::TapActor, err) = error!(t.actor, err)
-on_complete!(t::TapActor)   = complete!(t.actor)
+on_error!(t::TapActor{L, A}, err) where { A <: AbstractActor{L} } where L = error!(t.actor, err)
+on_complete!(t::TapActor{L, A})   where { A <: AbstractActor{L} } where L = complete!(t.actor)
 
 """
     @CreateTapOperator(name, tapFn)
@@ -113,7 +113,7 @@ macro CreateTapOperator(name, tapFn)
     operatorDefinition = quote
         struct $operatorName <: Rx.InferableOperator end
 
-        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{L} } where L
+        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source) where L
             return Rx.ProxyObservable{L}(source, ($proxyName){L}())
         end
 
@@ -137,8 +137,8 @@ macro CreateTapOperator(name, tapFn)
             Rx.next!(actor.actor, data)
         end
 
-        Rx.on_error!(actor::($actorName), err) = Rx.next!(actor.actor, err)
-        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+        Rx.on_error!(actor::($actorName){L, A}, err) where { A <: Rx.AbstractActor{L} } where L = Rx.next!(actor.actor, err)
+        Rx.on_complete!(actor::($actorName){L, A})   where { A <: Rx.AbstractActor{L} } where L = Rx.complete!(actor.actor)
     end
 
     generated = quote

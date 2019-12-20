@@ -35,7 +35,7 @@ some() = SomeOperator()
 
 struct SomeOperator <: InferableOperator end
 
-function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, source::S) where { S <: Subscribable{Union{L, Nothing}} } where L
+function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, source) where L
     return ProxyObservable{L}(source, SomeProxy{L}())
 end
 
@@ -55,5 +55,5 @@ function on_next!(f::SomeActor{L, A}, data::Union{L, Nothing}) where { A <: Abst
     end
 end
 
-on_error!(f::SomeActor, err) = error!(f.actor, err)
-on_complete!(f::SomeActor)   = complete!(f.actor)
+on_error!(f::SomeActor{L, A}, err) where { A <: AbstractActor{L} } where L = error!(f.actor, err)
+on_complete!(f::SomeActor{L, A})   where { A <: AbstractActor{L} } where L = complete!(f.actor)

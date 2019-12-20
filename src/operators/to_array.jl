@@ -7,7 +7,7 @@ to_array() = ToArrayOperator()
 
 struct ToArrayOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{Vector{L}}, operator::ToArrayOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{Vector{L}}, operator::ToArrayOperator, source) where L
     return ProxyObservable{Vector{L}}(source, ToArrayProxy{L}())
 end
 
@@ -25,9 +25,9 @@ struct ToArrayActor{L, A <: AbstractActor{Vector{L}}} <: Actor{L}
 end
 
 on_next!(actor::ToArrayActor{L, A}, data::L) where { A <: AbstractActor{Vector{L}} } where L = push!(actor.values, data)
-on_error!(actor::ToArrayActor, err)          = error!(actor.actor, err)
+on_error!(actor::ToArrayActor{L, A}, err)    where { A <: AbstractActor{Vector{L}} } where L = error!(actor.actor, err)
 
-function on_complete!(actor::ToArrayActor)
+function on_complete!(actor::ToArrayActor{L, A}) where { A <: AbstractActor{Vector{L}} } where L
     next!(actor.actor, actor.values)
     complete!(actor.actor)
 end

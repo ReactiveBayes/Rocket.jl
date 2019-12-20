@@ -66,7 +66,7 @@ struct LastOperator <: InferableOperator
     default
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::LastOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::LastOperator, source) where L
     return ProxyObservable{L}(source, LastProxy{L}(operator.default))
 end
 
@@ -89,11 +89,11 @@ function on_next!(actor::LastActor{L, A}, data::L) where { A <: AbstractActor{L}
     actor.last = data
 end
 
-function on_error!(actor::LastActor, err)
+function on_error!(actor::LastActor{L, A}, err) where { A <: AbstractActor{L} } where L
     error!(actor.actor, error)
 end
 
-function on_complete!(actor::LastActor)
+function on_complete!(actor::LastActor{L, A}) where { A <: AbstractActor{L} } where L
     if actor.last != nothing
         next!(actor.actor, actor.last)
     end

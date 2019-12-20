@@ -58,7 +58,7 @@ struct SumOperator <: InferableOperator
     from
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::SumOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::SumOperator, source) where L
     return ProxyObservable{L}(source, SumProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
 end
 
@@ -83,11 +83,11 @@ function on_next!(actor::SumActor{L, A}, data::L) where { A <: AbstractActor{L} 
     end
 end
 
-function on_error!(actor::SumActor, err)
+function on_error!(actor::SumActor{L, A}, err) where { A <: AbstractActor{L} } where L
     error!(actor.actor, err)
 end
 
-function on_complete!(actor::SumActor)
+function on_complete!(actor::SumActor{L, A}) where { A <: AbstractActor{L} } where L
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

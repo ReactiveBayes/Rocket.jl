@@ -33,7 +33,7 @@ uppercase() = UppercaseOperator()
 
 struct UppercaseOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::UppercaseOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::UppercaseOperator, source) where L
     return ProxyObservable{L}(source, UppercaseProxy{L}())
 end
 
@@ -48,5 +48,5 @@ struct UppercaseActor{ L, A <: AbstractActor{L} } <: Actor{L}
 end
 
 on_next!(actor::UppercaseActor{L, A}, data::L) where { A <: AbstractActor{L} } where L = next!(actor.actor, uppercase(data))
-on_error!(actor::UppercaseActor,      err)                                             = error!(actor.actor, err)
-on_complete!(actor::UppercaseActor)                                                    = complete!(actor.actor)
+on_error!(actor::UppercaseActor{L, A}, err) where { A <: AbstractActor{L} } where L    = error!(actor.actor, err)
+on_complete!(actor::UppercaseActor{L, A})  where { A <: AbstractActor{L} } where L     = complete!(actor.actor)

@@ -40,7 +40,7 @@ struct MaxOperator <: InferableOperator
     from
 end
 
-function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MaxOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MaxOperator, source) where L
     return ProxyObservable{Union{L, Nothing}}(source, MaxProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
 end
 
@@ -65,11 +65,11 @@ function on_next!(actor::MaxActor{L, A}, data::L) where { A <: AbstractActor{Uni
     end
 end
 
-function on_error!(actor::MaxActor, err)
+function on_error!(actor::MaxActor{L, A}, err) where { A <: AbstractActor{Union{L, Nothing}} } where L
     error!(actor.actor, err)
 end
 
-function on_complete!(actor::MaxActor)
+function on_complete!(actor::MaxActor{L, A}) where { A <: AbstractActor{Union{L, Nothing}} } where L
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

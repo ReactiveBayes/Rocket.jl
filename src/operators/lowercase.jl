@@ -33,7 +33,7 @@ lowercase() = LowercaseOperator()
 
 struct LowercaseOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::LowercaseOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::LowercaseOperator, source) where L
     return ProxyObservable{L}(source, LowercaseProxy{L}())
 end
 
@@ -48,5 +48,5 @@ struct LowercaseActor{ L, A <: AbstractActor{L} } <: Actor{L}
 end
 
 on_next!(actor::LowercaseActor{L, A}, data::L) where { A <: AbstractActor{L} } where L = next!(actor.actor, lowercase(data))
-on_error!(actor::LowercaseActor,      err)                                             = error!(actor.actor, err)
-on_complete!(actor::LowercaseActor)                                                    = complete!(actor.actor)
+on_error!(actor::LowercaseActor{L, A}, err)    where { A <: AbstractActor{L} } where L = error!(actor.actor, err)
+on_complete!(actor::LowercaseActor{L, A})      where { A <: AbstractActor{L} } where L = complete!(actor.actor)

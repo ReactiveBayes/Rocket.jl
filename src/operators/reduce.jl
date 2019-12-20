@@ -61,7 +61,7 @@ struct ReduceOperator{R} <: RightTypedOperator{R}
     seed     :: Union{R, Nothing}
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::ReduceOperator{R}, source::S) where { S <: Subscribable{L} } where L where R
+function on_call!(::Type{L}, ::Type{R}, operator::ReduceOperator{R}, source) where L where R
     return ProxyObservable{R}(source, ReduceProxy{L, R}(operator.reduceFn, operator.seed))
 end
 
@@ -86,11 +86,11 @@ function on_next!(actor::ReduceActor{L, R, A}, data::L) where { A <: AbstractAct
     end
 end
 
-function on_error!(actor::ReduceActor, err)
+function on_error!(actor::ReduceActor{L, R, A}, err) where { A <: AbstractActor{R} } where L where R
     error!(actor.actor, err)
 end
 
-function on_complete!(actor::ReduceActor)
+function on_complete!(actor::ReduceActor{L, R, A}) where { A <: AbstractActor{R} } where L where R
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

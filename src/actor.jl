@@ -130,7 +130,7 @@ See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
 complete!(actor::T)     where T = actor_on_complete!(as_actor(T), actor)
 
-actor_on_next!(::UndefinedActorTrait,     actor, data)                     = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}).")
+actor_on_next!(::UndefinedActorTrait,     actor, data)                     = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")
 actor_on_next!(::NextActorTrait{T},       actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")
 actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")

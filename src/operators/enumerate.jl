@@ -42,7 +42,7 @@ enumerate() = EnumerateOperator()
 
 struct EnumerateOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{Tuple{L, Int}}, operator::EnumerateOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{Tuple{L, Int}}, operator::EnumerateOperator, source) where L
     return ProxyObservable{Tuple{L, Int}}(source, EnumerateProxy{L}())
 end
 
@@ -63,5 +63,5 @@ function on_next!(c::EnumerateActor{L, A}, data::L) where { A <: AbstractActor{T
     next!(c.actor, (data, current))
 end
 
-on_error!(c::EnumerateActor, err) = error!(c.actor, err)
-on_complete!(c::EnumerateActor)   = complete!(c.actor)
+on_error!(c::EnumerateActor{L, A}, err) where { A <: AbstractActor{Tuple{L, Int}} } where L  = error!(c.actor, err)
+on_complete!(c::EnumerateActor{L, A})   where { A <: AbstractActor{Tuple{L, Int}} } where L  = complete!(c.actor)

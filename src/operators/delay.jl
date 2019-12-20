@@ -24,7 +24,7 @@ struct DelayOperator <: InferableOperator
     delay :: Int
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::DelayOperator, source::S) where { S <: Subscribable{L} } where L
+function on_call!(::Type{L}, ::Type{L}, operator::DelayOperator, source) where L
     return ProxyObservable{L}(source, DelayProxy{L}(operator.delay))
 end
 
@@ -52,7 +52,7 @@ function on_next!(actor::DelayActor{L, A}, data::L) where { A <: AbstractActor{L
     end
 end
 
-function on_error!(actor::DelayActor, err)
+function on_error!(actor::DelayActor{L, A}, err) where { A <: AbstractActor{L} } where L
     @async begin
         sleep(actor.delay / MILLISECONDS_IN_SECOND)
         if !actor.is_cancelled
@@ -61,7 +61,7 @@ function on_error!(actor::DelayActor, err)
     end
 end
 
-function on_complete!(actor::DelayActor)
+function on_complete!(actor::DelayActor{L, A}) where { A <: AbstractActor{L} } where L
     @async begin
         sleep(actor.delay / MILLISECONDS_IN_SECOND)
         if !actor.is_cancelled

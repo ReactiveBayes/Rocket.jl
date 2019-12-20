@@ -114,7 +114,7 @@ macro CreateFilterOperator(name, L, filterFn)
     operatorDefinition = quote
         struct $operatorName <: Rx.TypedOperator{$L, $L} end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{$L} }
+        function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
             return Rx.ProxyObservable{$L}(source, ($proxyName)())
         end
     end
