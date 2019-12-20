@@ -4,6 +4,12 @@ export next!, error!, complete!
 export on_next!, on_error!, on_complete!
 export as_actor
 
+export UndefinedActorTraitUsageError, InconsistentSourceActorDataTypesError
+export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
+export MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
+
+import Base: show
+
 """
 Abstract type for all possible actor traits
 
@@ -99,9 +105,9 @@ as_actor(::Type{<:NextActor{T}})       where T = NextActorTrait{T}()
 as_actor(::Type{<:ErrorActor{T}})      where T = ErrorActorTrait{T}()
 as_actor(::Type{<:CompletionActor{T}}) where T = CompletionActorTrait{T}()
 
-next!(actor)            = error("Missing data argument in next! callback")
-error!(actor)           = error("Missing error argument in error! callback")
-complete!(actor, extra) = error("Extra argument in complete! callback")
+next!(actor)            = throw(MissingDataArgumentInNextCall())
+error!(actor)           = throw(MissingErrorArgumentInErrorCall())
+complete!(actor, extra) = throw(ExtraArgumentInCompleteCall())
 
 """
     next!(actor, data)
@@ -130,23 +136,23 @@ See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
 complete!(actor::T)     where T = actor_on_complete!(as_actor(T), actor)
 
-actor_on_next!(::UndefinedActorTrait,     actor, data)                     = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
-actor_on_next!(::BaseActorTrait{T},       actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")
-actor_on_next!(::NextActorTrait{T},       actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")
-actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")
-actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where T where R  = error("Actor of type $(typeof(actor)) expects data to be of type $(T), but $(R) was found.")
+actor_on_next!(::UndefinedActorTrait,     actor, data)                     = throw(UndefinedActorTraitUsageError(actor))
+actor_on_next!(::BaseActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::NextActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
 actor_on_next!(::BaseActorTrait{T},       actor, data::T) where T = on_next!(actor, data)
 actor_on_next!(::NextActorTrait{T},       actor, data::T) where T = on_next!(actor, data)
 actor_on_next!(::ErrorActorTrait{T},      actor, data::T) where T = begin end
 actor_on_next!(::CompletionActorTrait{T}, actor, data::T) where T = begin end
 
-actor_on_error!(::UndefinedActorTrait,  actor, err) = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}).")
+actor_on_error!(::UndefinedActorTrait,  actor, err) = throw(UndefinedActorTraitUsageError(actor))
 actor_on_error!(::BaseActorTrait,       actor, err) = on_error!(actor, err)
 actor_on_error!(::NextActorTrait,       actor, err) = begin end
 actor_on_error!(::ErrorActorTrait,      actor, err) = on_error!(actor, err)
 actor_on_error!(::CompletionActorTrait, actor, err) = begin end
 
-actor_on_complete!(::UndefinedActorTrait,  actor) = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}).")
+actor_on_complete!(::UndefinedActorTrait,  actor) = throw(UndefinedActorTraitUsageError(actor))
 actor_on_complete!(::BaseActorTrait,       actor) = on_complete!(actor)
 actor_on_complete!(::NextActorTrait,       actor) = begin end
 actor_on_complete!(::ErrorActorTrait,      actor) = begin end
@@ -159,7 +165,7 @@ Both Actor and NextActor objects must implement its own method for `on_next!` fu
 
 See also: [`Actor`](@ref), [`NextActor`](@ref)
 """
-on_next!(actor, data)   = error("You probably forgot to implement on_next!(actor::$(typeof(actor)), data::$(typeof(data))).")
+on_next!(actor, data)   = throw(MissingOnNextImplementationError(actor, data))
 
 """
     on_error!(actor, err)
@@ -168,7 +174,7 @@ Both Actor and ErrorActor objects must implement its own method for `on_error!` 
 
 See also: [`Actor`](@ref), [`ErrorActor`](@ref)
 """
-on_error!(actor, err)   = error("You probably forgot to implement on_error!(actor::$(typeof(actor)), err).")
+on_error!(actor, err)   = throw(MissingOnErrorImplementationError(actor))
 
 """
     on_complete!(actor)
@@ -177,4 +183,108 @@ Both Actor and CompletionActor objects must implement its own method for `on_com
 
 See also: [`Actor`](@ref), [`ErrorActor`](@ref)
 """
-on_complete!(actor)     = error("You probably forgot to implement on_complete!(actor::$(typeof(actor))).")
+on_complete!(actor)     = throw(MissingOnCompleteImplementationError(actor))
+
+# -------------------------------- #
+# Errors                           #
+# -------------------------------- #
+
+"""
+This error will be thrown if `next!`, `error!` or `complete!` functions are called with invalid actor object
+
+See also: [`next!`](@ref), [`error!`](@ref), [`complete!`](@ref), [`UndefinedActorTrait`](@ref)
+"""
+struct UndefinedActorTraitUsageError
+    actor
+end
+
+function Base.show(io::IO, err::UndefinedActorTraitUsageError)
+    print(io, "Type $(typeof(err.actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(err.actor))}).")
+end
+
+
+"""
+This error will be thrown if `next!` function is called with inconsistent data type
+
+See also: [`AbstractActor`](@ref), [`Subscribable`](@ref), [`next!`](@ref)
+"""
+struct InconsistentSourceActorDataTypesError{T, R}
+    actor
+end
+
+function Base.show(io::IO, err::InconsistentSourceActorDataTypesError{T, R}) where T where R
+    print(io, "Actor of type $(typeof(err.actor)) expects data to be of type $(T), but $(R) was found.")
+end
+
+"""
+This error will be thrown if `next!` function is called without data argument
+
+See also: [`next!`](@ref)
+"""
+struct MissingDataArgumentInNextCall end
+
+function Base.show(io::IO, ::MissingDataArgumentInNextCall)
+    print(io, "Missing data argument in next! callback")
+end
+
+"""
+This error will be thrown if `error!` function is called without err argument
+
+See also: [`next!`](@ref)
+"""
+struct MissingErrorArgumentInErrorCall end
+
+function Base.show(io::IO, ::MissingErrorArgumentInErrorCall)
+    print(io, "Missing err argument in error! callback")
+end
+
+"""
+This error will be thrown if `complete!` function is called with extra data/err argument
+
+See also: [`next!`](@ref)
+"""
+struct ExtraArgumentInCompleteCall end
+
+function Base.show(io::IO, ::ExtraArgumentInCompleteCall)
+    print(io, "Extra argument in complete! callback")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of 'on_next!()' function for given actor and data
+
+See also: [`on_next!`](@ref)
+"""
+struct MissingOnNextImplementationError
+    actor
+    data
+end
+
+function Base.show(io::IO, err::MissingOnNextImplementationError)
+    print(io, "You probably forgot to implement on_next!(actor::$(typeof(err.actor)), data::$(typeof(err.data))).")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of 'on_error!()' function for given actor
+
+See also: [`on_error!`](@ref)
+"""
+struct MissingOnErrorImplementationError
+    actor
+end
+
+function Base.show(io::IO, err::MissingOnErrorImplementationError)
+    print(io, "You probably forgot to implement on_error!(actor::$(typeof(err.actor)), err).")
+end
+
+"""
+This error will be thrown if Julia cannot find specific method of 'on_complete!()' function for given actor and data
+
+See also: [`on_next!`](@ref)
+"""
+struct MissingOnCompleteImplementationError
+    actor
+end
+
+function Base.show(io::IO, err::MissingOnCompleteImplementationError)
+    print(io, "You probably forgot to implement on_complete!(actor::$(typeof(err.actor))).")
+end

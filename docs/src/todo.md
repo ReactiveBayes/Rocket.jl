@@ -10,5 +10,6 @@ This package in under development and some features of reactive framework may be
 - More transformation, filtering, utility operators
 - Multicasting operators
 - Error handling operators
-- API stabilization 
+- API stabilization
+- More tests
 - Possible bugs (welcome to open a PR)

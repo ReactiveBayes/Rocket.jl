@@ -63,15 +63,15 @@ import Rx: |>
         float_source  = SomeSubscribable{Float64}()
 
         # Check if pipe operator throws an error for invalid operator type
-        @test_throws ErrorException int_source |> DummyType()
+        @test_throws MethodError int_source |> DummyType()
 
         # Check if pipe operator throws an error for invalid source and operator data types
         @test_throws ErrorException string_source |> IdentityIntOperator()
         @test_throws ErrorException int_source    |> LeftTypedStringIdentityOperator()
 
         # Check if pipe operator throws an error for not implemented operator
+        @test_throws MethodError string_source |> ExplicitlyDefinedOperator()
         @test_throws ErrorException int_source    |> NotImplementedOperator()
-        @test_throws ErrorException string_source |> ExplicitlyDefinedOperator()
         @test_throws ErrorException int_source    |> LeftTypedIntIdentityNotImplementedOperator()
         @test_throws ErrorException int_source    |> InferableNotImplementedOperator()
 

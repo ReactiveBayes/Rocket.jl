@@ -5,6 +5,7 @@ using Suppressor
 
 import Rx
 import Rx: VoidActor, next!, error!, complete!
+import Rx: InconsistentSourceActorDataTypesError
 
 @testset "VoidActor" begin
 
@@ -18,7 +19,7 @@ import Rx: VoidActor, next!, error!, complete!
     @test isempty(@capture_out error!(actor, "some error"))
     @test isempty(@capture_out complete!(actor))
 
-    @test_throws ErrorException next!(VoidActor{Int}, "string")
+    @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
 end
 
 end

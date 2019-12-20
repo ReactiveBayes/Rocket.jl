@@ -5,6 +5,7 @@ using Suppressor
 
 import Rx
 import Rx: LoggerActor, next!, error!, complete!
+import Rx: InconsistentSourceActorDataTypesError
 
 @testset "LoggerActor" begin
 
@@ -15,7 +16,7 @@ import Rx: LoggerActor, next!, error!, complete!
     @test occursin("error", @capture_out error!(actor, "error"))
     @test occursin("Completed", @capture_out complete!(actor))
 
-    @test_throws ErrorException next!(actor, "string")
+    @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
 end
 
 end

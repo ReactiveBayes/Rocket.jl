@@ -36,3 +36,16 @@ on_next!
 on_error!
 on_complete!
 ```
+
+## Actor errors
+
+```@docs
+UndefinedActorTraitUsageError
+InconsistentSourceActorDataTypesError
+MissingDataArgumentInNextCall
+MissingErrorArgumentInErrorCall
+ExtraArgumentInCompleteCall
+MissingOnNextImplementationError
+MissingOnErrorImplementationError
+MissingOnCompleteImplementationError
+```

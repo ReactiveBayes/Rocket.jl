@@ -4,6 +4,7 @@ using Test
 
 import Rx
 import Rx: LambdaActor, next!, error!, complete!
+import Rx: InconsistentSourceActorDataTypesError
 
 @testset "LambdaActor" begin
 
@@ -17,7 +18,7 @@ import Rx: LambdaActor, next!, error!, complete!
     @test error!(actor, "error") === "error"
     @test complete!(actor)       === "Lambda: completed"
 
-    @test_throws ErrorException next!(actor, "string")
+    @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
 end
 
 end

@@ -9,6 +9,10 @@ import Rx: next!, error!, complete!
 import Rx: on_next!, on_error!, on_complete!
 import Rx: as_actor
 
+import Rx: UndefinedActorTraitUsageError, InconsistentSourceActorDataTypesError
+import Rx: MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
+import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
+
 @testset "Actor" begin
 
     struct DummyType end
@@ -83,15 +87,15 @@ import Rx: as_actor
 
     @testset "next!" begin
             # Check if next! function throws an error for not valid actors
-            @test_throws ErrorException next!(DummyType(), 1)
-            @test_throws ErrorException next!(AbstractDummyActor(), 1)
+            @test_throws UndefinedActorTraitUsageError next!(DummyType(), 1)
+            @test_throws UndefinedActorTraitUsageError next!(AbstractDummyActor(), 1)
 
             # Check if next! function throws an error without data argument
-            @test_throws ErrorException next!(ImplementedActor())
+            @test_throws MissingDataArgumentInNextCall next!(ImplementedActor())
 
             # Check if next! function throws an error for not implemented actors
-            @test_throws ErrorException next!(NotImplementedActor(), 1)
-            @test_throws ErrorException next!(NotImplementedNextActor(), 1)
+            @test_throws MissingOnNextImplementationError next!(NotImplementedActor(), 1)
+            @test_throws MissingOnNextImplementationError next!(NotImplementedNextActor(), 1)
 
             # Check if next! function doing nothing for incomplete actors
             @test next!(NotImplementedErrorActor(), 1)      === nothing
@@ -106,27 +110,27 @@ import Rx: as_actor
             @test next!(ImplementedNextActor(), 2) === 2
 
             # Check next! function throws an error for wrong type of message
-            @test_throws ErrorException next!(IntegerActor(), "string")
-            @test_throws ErrorException next!(IntegerActor(), 1.0)
-            @test_throws ErrorException next!(IntegerNextActor(), "string")
-            @test_throws ErrorException next!(IntegerNextActor(), 1.0)
-            @test_throws ErrorException next!(IntegerErrorActor(), "string")
-            @test_throws ErrorException next!(IntegerErrorActor(), 1.0)
-            @test_throws ErrorException next!(IntegerCompletionActor(), "string")
-            @test_throws ErrorException next!(IntegerCompletionActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerNextActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerNextActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerErrorActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerErrorActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerCompletionActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerCompletionActor(), 1.0)
     end
 
     @testset "error!" begin
             # Check if error! function throws an error for not valid actors
-            @test_throws ErrorException error!(DummyType(), 1)
-            @test_throws ErrorException error!(AbstractDummyActor(), 1)
+            @test_throws UndefinedActorTraitUsageError error!(DummyType(), 1)
+            @test_throws UndefinedActorTraitUsageError error!(AbstractDummyActor(), 1)
 
             # Check if error! function throws an error without error argument
-            @test_throws ErrorException error!(ImplementedActor())
+            @test_throws MissingErrorArgumentInErrorCall error!(ImplementedActor())
 
             # Check if error! function throws an error for not implemented actors
-            @test_throws ErrorException error!(NotImplementedActor(), 1)
-            @test_throws ErrorException error!(NotImplementedErrorActor(), 1)
+            @test_throws MissingOnErrorImplementationError error!(NotImplementedActor(), 1)
+            @test_throws MissingOnErrorImplementationError error!(NotImplementedErrorActor(), 1)
 
             # Check if error! function doing nothing for incomplete actors
             @test error!(NotImplementedNextActor(), 1)       === nothing
@@ -143,15 +147,15 @@ import Rx: as_actor
 
     @testset "complete!" begin
             # Check if error! function throws an error for not valid actors
-            @test_throws ErrorException complete!(DummyType())
-            @test_throws ErrorException complete!(AbstractDummyActor())
+            @test_throws UndefinedActorTraitUsageError complete!(DummyType())
+            @test_throws UndefinedActorTraitUsageError complete!(AbstractDummyActor())
 
             # Check if complete! function throws an error with extra argument
-            @test_throws ErrorException complete!(ImplementedActor(), 1)
+            @test_throws ExtraArgumentInCompleteCall complete!(ImplementedActor(), 1)
 
             # Check if complete! function throws an error for not implemented actors
-            @test_throws ErrorException complete!(NotImplementedActor())
-            @test_throws ErrorException complete!(NotImplementedCompletionActor(), 1)
+            @test_throws MissingOnCompleteImplementationError complete!(NotImplementedActor())
+            @test_throws MissingOnCompleteImplementationError complete!(NotImplementedCompletionActor())
 
             # Check if complete! function doing nothing for incomplete actors
             @test complete!(NotImplementedNextActor())  === nothing
