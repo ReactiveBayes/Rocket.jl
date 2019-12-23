@@ -1,5 +1,7 @@
 export SingleObservable, on_subscribe!, of
 
+import Base: ==
+
 """
     SingleObservable{D}
 
@@ -43,3 +45,6 @@ subscribe!(source, LoggerActor{Int}())
 
 """
 of(x::T) where T = SingleObservable{T}(x)
+
+Base.:(==)(left::SingleObservable{D},  right::SingleObservable{D})  where D           = left.value == right.value
+Base.:(==)(left::SingleObservable{D1}, right::SingleObservable{D2}) where D1 where D2 = false

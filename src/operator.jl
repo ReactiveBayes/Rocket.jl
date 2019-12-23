@@ -6,6 +6,7 @@ export InvalidOperatorTraitUsageError, InconsistentSourceOperatorDataTypesError
 export MissingOnCallImplementationError, MissingOperatorRightImplementationError
 
 import Base: show
+import Base: |>
 
 """
 Abstract type for all possible operator traits
@@ -361,7 +362,7 @@ function call_operator!(::InferableOperatorTrait, ::ValidSubscribable{L}, operat
     on_call!(L, operator_right(operator, L), operator, source)
 end
 
-(operator::AbstractOperator)(source) = call_operator!(operator, source)
+Base.:|>(source, operator::O) where { O <: AbstractOperator } = call_operator!(operator, source)
 
 """
     on_call!(::Type, ::Type, operator, source)
