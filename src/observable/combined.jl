@@ -108,6 +108,9 @@ mutable struct LatestCombinedObservable2ActorWrapper{ D1, D2, A <: AbstractActor
         wrapper.actor2 = actor2
         wrapper.actor  = actor
 
+        wrapper.latest1 = nothing
+        wrapper.latest2 = nothing
+
         wrapper.is_completed1 = false
         wrapper.is_completed2 = false
         wrapper.is_completed  = false
