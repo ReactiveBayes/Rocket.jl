@@ -29,6 +29,7 @@ include("observable/interval.jl")
 include("observable/function.jl")
 include("observable/file.jl")
 include("observable/network.jl")
+include("observable/combined.jl")
 
 include("operator.jl")
 include("operators/map.jl")

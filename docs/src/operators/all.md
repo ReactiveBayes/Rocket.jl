@@ -11,6 +11,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [never](@ref observable_never)
 - [timer](@ref observable_timer)
 - [interval](@ref observable_interval)
+- [combined](@ref observable_combined)
 
 ## Transformation operators
 
