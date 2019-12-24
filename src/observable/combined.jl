@@ -50,6 +50,10 @@ function combineLatest(::ValidSubscribable{D1}, ::ValidSubscribable{D2}, source1
     return LatestCombined2Observable{S1, D1, S2, D2}(source1, source2)
 end
 
+function combineLatest(source1::SingleObservable{S1}, source2::SingleObservable{S2}) where S1 where S2
+    return SingleObservable{Tuple{S1, S2}}((source1.value, source2.value))
+end
+
 ### Specific Actors ###
 
 macro MakeLatestCombinedActor(n)
@@ -139,6 +143,13 @@ end
 function next_check_and_emit!(wrapper::LatestCombinedObservable2ActorWrapper)
     if !wrapper.is_completed && (wrapper.latest1 != nothing && wrapper.latest2 != nothing)
         next!(wrapper.subject, (wrapper.latest1, wrapper.latest2))
+        # TODO this is wrong but anyway
+        if !wrapper.is_completed1
+            wrapper.latest1 = nothing
+        end
+        if !wrapper.is_completed2
+            wrapper.latest2 = nothing
+        end
     end
 end
 
