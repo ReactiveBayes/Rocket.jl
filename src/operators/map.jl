@@ -115,6 +115,11 @@ macro CreateMapOperator(name, L, R, mappingFn)
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.ProxyObservable{$R}(source, ($proxyName)())
         end
+
+        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source::SingleObservable{$L})
+            __inlined_lambda = $mappingFn
+            return Rx.SingleObservable{$R}(__inlined_lambda(source.value))
+        end
     end
 
     proxyDefinition = quote

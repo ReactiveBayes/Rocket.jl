@@ -50,10 +50,6 @@ function combineLatest(::ValidSubscribable{D1}, ::ValidSubscribable{D2}, source1
     return LatestCombined2Observable{S1, D1, S2, D2}(source1, source2)
 end
 
-function combineLatest(source1::SingleObservable{S1}, source2::SingleObservable{S2}) where S1 where S2
-    return SingleObservable{Tuple{S1, S2}}((source1.value, source2.value))
-end
-
 ### Specific Actors ###
 
 macro MakeLatestCombinedActor(n)

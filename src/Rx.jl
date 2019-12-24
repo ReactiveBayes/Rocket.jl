@@ -51,5 +51,7 @@ include("operators/uppercase.jl")
 include("operators/lowercase.jl")
 include("operators/to_array.jl")
 
+include("observable/extensions/combined.jl")
+
 
 end # module
