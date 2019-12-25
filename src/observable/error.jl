@@ -1,9 +1,11 @@
-export ErrorObservable, TypedErrorObservable, on_subscribe!, throwError
+export ErrorObservable, on_subscribe!, throwError
 
 """
     ErrorObservable{D}(error)
 
 Observable that emits no items to the Actor and immediately emits an error notification on subscription.
+
+See also: [`throwError`](@ref)
 """
 struct ErrorObservable{D} <: Subscribable{D}
     error

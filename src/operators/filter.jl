@@ -117,6 +117,15 @@ macro CreateFilterOperator(name, L, filterFn)
         function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
             return Rx.ProxyObservable{$L}(source, ($proxyName)())
         end
+
+        function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source::SingleObservable{$L})
+            __inlined_lambda = $filterFn
+            if __inlined_lambda(source.value)
+                return of(source.value)
+            else
+                return completed($L)
+            end
+        end
     end
 
     proxyDefinition = quote
@@ -139,6 +148,61 @@ macro CreateFilterOperator(name, L, filterFn)
 
         Rx.on_error!(a::($actorName){A}, err) where A <: Rx.AbstractActor{$L} = Rx.error!(a.actor, err)
         Rx.on_complete!(a::($actorName){A})   where A <: Rx.AbstractActor{$L} = Rx.complete!(a.actor)
+    end
+
+    generated = quote
+        $operatorDefinition
+        $proxyDefinition
+        $actorDefintion
+    end
+
+    return esc(generated)
+end
+
+macro CreateFilterOperator(name, filterFn)
+    operatorName = Symbol(name, "FilterOperator")
+    proxyName    = Symbol(name, "FilterProxy")
+    actorName    = Symbol(name, "FilterActor")
+
+    operatorDefinition = quote
+        struct $operatorName{L} <: Rx.LeftTypedOperator{L} end
+
+        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source)
+            return Rx.ProxyObservable{L}(source, ($proxyName){L}())
+        end
+
+        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source::SingleObservable{L})
+            __inlined_lambda = $filterFn
+            if __inlined_lambda(source.value)
+                return of(source.value)
+            else
+                return completed(L)
+            end
+        end
+
+        operator_right(operator::($operatorName){L}, ::Type{L}) where L = L
+    end
+
+    proxyDefinition = quote
+        struct $proxyName{L} <: Rx.ActorProxy end
+
+        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where { A <: Rx.AbstractActor{L} } where L = ($actorName){L, A}(actor)
+    end
+
+    actorDefintion = quote
+        struct $actorName{ L, A <: Rx.AbstractActor{L} } <: Rx.Actor{L}
+            actor :: A
+        end
+
+        Rx.on_next!(a::($actorName){L, A}, data::L) where A <: Rx.AbstractActor{L} where L = begin
+            __inlined_lambda = $filterFn
+            if (__inlined_lambda(data))
+                Rx.next!(a.actor, data)
+            end
+        end
+
+        Rx.on_error!(a::($actorName){L, A}, err) where A <: Rx.AbstractActor{L} where L = Rx.error!(a.actor, err)
+        Rx.on_complete!(a::($actorName){L, A})   where A <: Rx.AbstractActor{L} where L= Rx.complete!(a.actor)
     end
 
     generated = quote

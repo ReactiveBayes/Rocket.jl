@@ -13,6 +13,7 @@ include("actor/void.jl")
 include("actor/async.jl")
 
 include("subscribable.jl")
+include("operator.jl")
 
 include("subjects/subject.jl")
 include("subjects/behavior.jl")
@@ -23,6 +24,7 @@ include("observable/single.jl")
 include("observable/array.jl")
 include("observable/error.jl")
 include("observable/never.jl")
+include("observable/completed.jl")
 include("observable/proxy.jl")
 include("observable/timer.jl")
 include("observable/interval.jl")
@@ -30,8 +32,8 @@ include("observable/function.jl")
 include("observable/file.jl")
 include("observable/network.jl")
 include("observable/combined.jl")
+include("observable/lazy.jl")
 
-include("operator.jl")
 include("operators/map.jl")
 include("operators/reduce.jl")
 include("operators/scan.jl")
@@ -51,7 +53,6 @@ include("operators/uppercase.jl")
 include("operators/lowercase.jl")
 include("operators/to_array.jl")
 
-include("observable/extensions/combined.jl")
-
+include("extensions/observable/single.jl")
 
 end # module

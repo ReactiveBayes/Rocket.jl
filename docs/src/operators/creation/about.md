@@ -6,6 +6,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [from](@ref observable_array)
 - [error](@ref observable_error)
 - [never](@ref observable_never)
+- [completed](@ref observable_completed)
 - [timer](@ref observable_timer)
 - [interval](@ref observable_interval)
 

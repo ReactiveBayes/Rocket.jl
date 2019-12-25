@@ -15,6 +15,7 @@ makedocs(
                 "Array"             => "observables/types/array.md",
                 "Error"             => "observables/types/error.md",
                 "Never"             => "observables/types/never.md",
+                "Completed"         => "observables/types/completed.md",
                 "Timer"             => "observables/types/timer.md",
                 "Interval"          => "observables/types/interval.md",
                 "Proxy"             => "observables/types/proxy.md",

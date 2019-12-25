@@ -1,9 +1,5 @@
 export combineLatest
 
-function combineLatest(source1::SingleObservable{S1}, source2::SingleObservable{S2}) where S1 where S2
-    return SingleObservable{Tuple{S1, S2}}((source1.value, source2.value))
-end
-
 struct CombineSingleLeftMapOperator{L, R} <: TypedOperator{R, Tuple{L, R}}
     left::L
 end

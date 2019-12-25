@@ -130,7 +130,7 @@ macro CreateMapOperator(name, L, R, mappingFn)
 
     actorDefinition = quote
         struct $actorName{ A <: Rx.AbstractActor{$R} } <: Rx.Actor{$L}
-            actor::A
+            actor :: A
         end
 
         Rx.on_next!(a::($actorName){A}, data::($L)) where { A <: Rx.AbstractActor{$R} }  = begin
@@ -140,6 +140,53 @@ macro CreateMapOperator(name, L, R, mappingFn)
 
         Rx.on_error!(a::($actorName){A}, err) where { A <: Rx.AbstractActor{$R} } = Rx.error!(a.actor, err)
         Rx.on_complete!(a::($actorName){A})   where { A <: Rx.AbstractActor{$R} } = Rx.complete!(a.actor)
+    end
+
+    generated = quote
+        $operatorDefinition
+        $proxyDefinition
+        $actorDefinition
+    end
+
+    return esc(generated)
+end
+
+macro CreateMapOperator(name, mappingFn)
+    operatorName   = Symbol(name, "MapOperator")
+    proxyName      = Symbol(name, "MapProxy")
+    actorName      = Symbol(name, "MapActor")
+
+    operatorDefinition = quote
+        struct $operatorName{L, R} <: Rx.TypedOperator{L, R} end
+
+        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source) where L where R
+            return Rx.ProxyObservable{R}(source, ($proxyName){L, R}())
+        end
+
+        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source::SingleObservable{L})
+            __inlined_lambda = $mappingFn
+            return Rx.SingleObservable{R}(__inlined_lambda(source.value))
+        end
+    end
+
+    proxyDefinition = quote
+        struct $proxyName{L, R} <: Rx.ActorProxy end
+
+        Rx.actor_proxy!(proxy::($proxyName){L, R}, actor::A) where { A <: Rx.AbstractActor{R} } where L where R = ($actorName){L, R, A}(actor)
+    end
+
+    actorDefinition = quote
+        struct $actorName{ L, R, A <: Rx.AbstractActor{R} } <: Rx.Actor{L}
+            actor :: A
+        end
+
+        Rx.on_next!(a::($actorName){L, R, A}, data::L) where { A <: Rx.AbstractActor{R} } where L where R  = begin
+            __inlined_lambda = $mappingFn
+            Rx.next!(a.actor, __inlined_lambda(data))
+        end
+
+        Rx.on_error!(a::($actorName){L, R, A}, err) where { A <: Rx.AbstractActor{R} } where L where R = Rx.error!(a.actor, err)
+        Rx.on_complete!(a::($actorName){L, R, A})   where { A <: Rx.AbstractActor{R} } where L where R = Rx.complete!(a.actor)
     end
 
     generated = quote
