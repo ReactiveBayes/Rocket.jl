@@ -1,6 +1,6 @@
 # [About subjects](@id section_subjects)
 
-What is a __Subject__? An Rx.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
+An Rx.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
 
 !!! note
     A Subject is like an Observable, but can multicast to many Actors. Subjects are like event emitters: they maintain a registry of many listeners.
@@ -11,9 +11,9 @@ Subject
 
 Every Subject is an Observable. Given a Subject, you can subscribe to it, providing an Actor, which will start receiving values normally. From the perspective of the Actor, it cannot tell whether the Observable execution is coming from a plain unicast Observable or a Subject.
 
-Internally to the Subject, subscribe does not invoke a new execution that delivers values. It simply registers the given Actor in a list of Actors.
+Internally to the Subject, subscribe does not invoke a new execution that delivers values. Instead, it simply registers the given Actor in a list of Actors.
 
-Every Subject is an Actor itself. It is an object with the methods `next!`, `error!`, and `complete!`. To feed a new value to the Subject, just call `next!(subject, theValue)`, and it will be multicasted to the Actors registered to listen to the Subject.
+Every Subject is an Actor itself. It is an object with the methods `next!`, `error!`, and `complete!`. Call `next!(subject, theValue)` to feed a new value to the Subject, and it will be multicasted to the Actors that listen to the Subject.
 
 In the example below, we have two Observers attached to a Subject, and we feed some values to the Subject:
 
@@ -41,7 +41,7 @@ unsubscribe!(subscription2)
 
 ```
 
-Since a Subject is an actor, this also means you may provide a Subject as the argument to the subscribe of any Observable, like the example below shows:
+Since a Subject is an actor, this also means you may provide a Subject as the argument to the subscribe of any Observable:
 
 ```julia
 using Rx
@@ -68,13 +68,13 @@ subscribe!(source, subject);
 # Actor 2: 3
 ```
 
-With the approach above, we essentially just converted a unicast Observable execution to multicast, through the Subject. This demonstrates how Subjects are the only way of making any Observable execution be shared to multiple Observers.
+Here, we essentially convert a unicast Observable execution to multicast, through the Subject. This demonstrates how Subjects offer a unique way to share Observable execution with multiple Observers.
 
-There are also a few specializations of the Subject type: [`BehaviorSubject`](@ref), [`ReplaySubject`](@ref).
+There are a few specializations of the Subject type: [`BehaviorSubject`](@ref), and [`ReplaySubject`](@ref).
 
 ## BehaviorSubject
 
-One of the variants of Subjects is the BehaviorSubject, which has a notion of "the current value". It stores the latest value emitted to its consumers, and whenever a new Actor subscribes, it will immediately receive the "current value" from the BehaviorSubject.
+One of the variants of Subjects is the BehaviorSubject, which has a notion of "the current value". It stores the latest value emitted to its consumers and, whenever a new Actor subscribes, it will immediately receive the "current value" from the BehaviorSubject.
 
 ```@docs
 BehaviorSubject
@@ -113,8 +113,8 @@ next!(b, 3)
 
 ## ReplaySubject
 
-A `ReplaySubject` is similar to a [`BehaviorSubject`](@ref) in that it can send old values to new subscribers,
-but it can also record a part of the Observable execution.
+A `ReplaySubject` is similar to a [`BehaviorSubject`](@ref). Both send old values to new subscribers,
+but a `ReplaySubject` can also record a part of the Observable execution.
 
 ```@docs
 ReplaySubject

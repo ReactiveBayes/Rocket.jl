@@ -1,10 +1,8 @@
 # Getting started
 
-Rx.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
+Rx.jl is a Julia package for reactive programming that makes it easier to work with asynchronous data. It is inspired by the [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
 
-In order to achieve best performance and convenient API Rx.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
-
-Inspired by [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) community.
+In order to combine good performance with a convenient API, Rx.jl employs [Observer patterns](https://en.wikipedia.org/wiki/Observer_pattern), [Actor models](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
 ## Installation
 
@@ -22,13 +20,13 @@ The essential concepts in Rx.jl are:
 
 - [__Observable__](@ref section_observables): represents a collection of future messages (data or/and events).
 - [__Actor__](@ref section_actors): is an object that knows how to react on incoming messages delivered by the __Observable__.
-- [__Subscription__](@ref section_subscription): represents a teardown logic which might be useful for cancelling the execution of an __Observable__.
-- [__Operators__](@ref section_operators): are objects that enable a functional programming style to dealing with collections with operations like [`map`](@ref operator_map), [`filter`](@ref operator_filter), [`reduce`](@ref operator_reduce), etc.
+- [__Subscription__](@ref section_subscription): represents a teardown logic that is useful for cancelling the execution of an __Observable__.
+- [__Operator__](@ref section_operators): an object that deals with collection operations, such as [`map`](@ref operator_map), [`filter`](@ref operator_filter), [`reduce`](@ref operator_reduce), etc.
 - [__Subject__](@ref section_subjects): the way of multicasting a message to multiple Observers.
 
 ## First example
 
-Normally you use an arrays for processing some data.
+Conventionally, arrays are used for processing data.
 
 ```Julia
 for value in array_of_values
@@ -36,7 +34,7 @@ for value in array_of_values
 end
 ```
 
-In Rx.jl you will use an observable.
+In contrast, Rx.jl uses observables.
 
 ```Julia
 subscription = subscribe!(source_of_values, LambdaActor{TypeOfData}(
@@ -46,7 +44,7 @@ subscription = subscribe!(source_of_values, LambdaActor{TypeOfData}(
 ))
 ```
 
-At some point of time you may decide to stop listening for new messages.
+At some point in time you may decide to stop listening for new messages.
 
 ```Julia
 unsubscribe!(subscription)
@@ -54,7 +52,7 @@ unsubscribe!(subscription)
 
 ## Actors
 
-To process messages from an observable you have to define an Actor that know how to react on incoming messages.
+In order to process messages from an observable you will need to define an Actor that knows how to react to incoming messages.
 
 ```Julia
 struct MyActor <: Rx.Actor{Int} end
@@ -64,7 +62,7 @@ Rx.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
 Rx.on_complete!(actor::MyActor)        = println("Completed!")
 ```
 
-Actor can also have its own local state
+An actor can also have its own local state.
 
 ```Julia
 struct StoreActor{D} <: Rx.Actor{}
@@ -82,7 +80,7 @@ For debugging purposes you can use a general [`LambdaActor`](@ref) actor.
 
 ## Operators
 
-What makes Rx.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using [__Operators__](@ref section_operators).
+What makes Rx.jl powerful is its ability to help you process, transform and modify the messages that flow through your observables, using [__Operators__](@ref section_operators).
 
 ```Julia
 subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), LambdaActor{Int}(
@@ -90,14 +88,14 @@ subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), LambdaActor{Int}(
 ))
 ```
 
-You can also use a special macro which is defined for some operators to produce an optimized versions of some operations on observables without using the callbacks.
+You can also use a special macro which is defined for some operators to produce an optimized version of some operations on observables, without using the callbacks.
 
 ```Julia
 @CreateMapOperator("SquaredInt", Int, Int, (d) -> d ^ 2)
 squared_int_values = source_of_int_values |> SquaredIntMapOperator()
 ```
 
-Here some performance comparison of using different approaches with Observable of 1000 integers and `StoreActor`.
+Below is a performance comparison between different approaches, with an Observable of 1000 integers and a `StoreActor`.
 
 |   _  | Using regular array | Using macro generated map operator | Using lambda based map operator |
 |------|---------------------|------------------------------------|---------------------------------|

@@ -5,4 +5,4 @@ LambdaActor
 ```
 
 !!! tip "Performance tip"
-    Do not use lambda based actor in real Julia code as it lacks of performance. Use it only for debugging.
+    For performance reasons, do not use lambda-based actors in production; use them for debugging only.
