@@ -382,9 +382,9 @@ type of data of output Observable given type of data of input Observable.
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOperator`](@ref)
 """
+operator_right(operator::O, ::Type{L}) where { O <: TypedOperator{L, R}   } where L where R = R
+operator_right(operator::O, ::Type{L}) where { O <: RightTypedOperator{R} } where L where R = R
 operator_right(operator, L) = throw(MissingOperatorRightImplementationError(operator))
-operator_right(operator::TypedOperator{L, R}, ::Type{L})   where L where R = R
-operator_right(operator::RightTypedOperator{R}, ::Type{L}) where L where R = R
 
 # -------------------------------- #
 # Errors                           #

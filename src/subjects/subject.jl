@@ -98,6 +98,7 @@ function _subject_handle_event(subject::Subject{D}, message::SubjectErrorMessage
     end
 
     _subject_unsubscribe_all(subject)
+    close(subject.channel)
 end
 
 function _subject_handle_event(subject::Subject{D}, message::SubjectCompleteMessage) where D
