@@ -60,6 +60,7 @@ makedocs(
                     "enumerate"                      => "operators/transformation/enumerate.md",
                     "uppercase"                      => "operators/transformation/uppercase.md",
                     "lowercase"                      => "operators/transformation/lowercase.md",
+                    "to_array"                       => "operators/transformation/to_array.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",

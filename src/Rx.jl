@@ -52,6 +52,7 @@ include("operators/delay.jl")
 include("operators/uppercase.jl")
 include("operators/lowercase.jl")
 include("operators/to_array.jl")
+include("operators/tuple_with.jl")
 
 include("extensions/observable/single.jl")
 

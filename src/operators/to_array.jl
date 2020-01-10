@@ -3,6 +3,32 @@ export ToArrayOperator, on_call!, operator_right
 export ToArrayProxy, actor_proxy!
 export ToArrayActor, on_next!, on_error!, on_complete!
 
+"""
+    to_array()
+
+Creates a `to_array` operator, which reduces all values into a single array and returns this result when the source completes.
+
+# Producing
+
+Stream of type `<: Subscribable{Vector{L}}` where `L` refers to type of source stream
+
+# Examples
+```jldoctest
+using Rx
+
+source = from([ 1, 2, 3 ])
+subscribe!(source |> to_array(), LoggerActor{Vector{Int}}())
+;
+
+# output
+
+[LogActor] Data: [1, 2, 3]
+[LogActor] Completed
+
+```
+
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+"""
 to_array() = ToArrayOperator()
 
 struct ToArrayOperator <: InferableOperator end
