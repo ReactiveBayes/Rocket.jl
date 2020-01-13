@@ -60,13 +60,13 @@ function on_next!(actor::LambdaActor{D}, data::D) where D
     end
 end
 
-function on_error!(actor::LambdaActor{D}, err) where D
+function on_error!(actor::LambdaActor, err)
     if actor.on_error != nothing
         Base.invokelatest(actor.on_error, err)
     end
 end
 
-function on_complete!(actor::LambdaActor{D}) where D
+function on_complete!(actor::LambdaActor)
     if actor.on_complete != nothing
         Base.invokelatest(actor.on_complete)
     end

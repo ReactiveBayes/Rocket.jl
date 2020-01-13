@@ -22,5 +22,5 @@ See also: [`Actor`](@ref), [`tap`](@ref)
 struct VoidActor{T} <: Actor{T} end
 
 on_next!(actor::VoidActor{T}, data::T) where T = begin end
-on_error!(actor::VoidActor{T}, err)    where T = begin end
-on_complete!(actor::VoidActor{T})      where T = begin end
+on_error!(actor::VoidActor, err)               = begin end
+on_complete!(actor::VoidActor)                 = begin end
