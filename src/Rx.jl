@@ -12,6 +12,7 @@ include("actor/logger.jl")
 include("actor/void.jl")
 include("actor/async.jl")
 include("actor/sync.jl")
+include("actor/keep.jl")
 
 include("subscribable.jl")
 include("operator.jl")

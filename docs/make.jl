@@ -34,6 +34,7 @@ makedocs(
                 "Logger"        => "actors/types/logger.md",
                 "Async"         => "actors/types/async.md",
                 "Sync"          => "actors/types/sync.md",
+                "Keep"          => "actors/types/keep.md",
                 "Void"          => "actors/types/void.md",
             ],
             "API"           => "actors/api.md",
