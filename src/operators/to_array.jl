@@ -41,19 +41,19 @@ operator_right(operator::ToArrayOperator, ::Type{L}) where L = Vector{L}
 
 struct ToArrayProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::ToArrayProxy{L}, actor::A) where { A <: AbstractActor{Vector{L}} } where L = ToArrayActor{L, A}(actor)
+actor_proxy!(proxy::ToArrayProxy{L}, actor) where L = ToArrayActor{L}(actor)
 
-struct ToArrayActor{L, A <: AbstractActor{Vector{L}}} <: Actor{L}
+struct ToArrayActor{L} <: Actor{L}
     values :: Vector{L}
-    actor  :: A
+    actor
 
-    ToArrayActor{L, A}(actor::A) where { A <: AbstractActor{Vector{L}} } where L = new(Vector{L}(), actor)
+    ToArrayActor{L}(actor) where L = new(Vector{L}(), actor)
 end
 
-on_next!(actor::ToArrayActor{L, A}, data::L) where { A <: AbstractActor{Vector{L}} } where L = push!(actor.values, data)
-on_error!(actor::ToArrayActor{L, A}, err)    where { A <: AbstractActor{Vector{L}} } where L = error!(actor.actor, err)
+on_next!(actor::ToArrayActor, data::L) where L = push!(actor.values, data)
+on_error!(actor::ToArrayActor, err)            = error!(actor.actor, err)
 
-function on_complete!(actor::ToArrayActor{L, A}) where { A <: AbstractActor{Vector{L}} } where L
+function on_complete!(actor::ToArrayActor)
     next!(actor.actor, actor.values)
     complete!(actor.actor)
 end

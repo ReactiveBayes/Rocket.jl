@@ -12,7 +12,7 @@ See also: [`Subscribable`](@ref), [`never`](@ref)
 """
 struct NeverObservable{D} <: Subscribable{D} end
 
-function on_subscribe!(observable::NeverObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(observable::NeverObservable, actor)
     return VoidTeardown()
 end
 

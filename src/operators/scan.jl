@@ -56,15 +56,15 @@ struct ScanProxy{L, R} <: ActorProxy
     seed    :: Union{R, Nothing}
 end
 
-actor_proxy!(proxy::ScanProxy{L, R}, actor::A) where { A <: AbstractActor{R} } where L where R = ScanActor{L, R, A}(proxy.scanFn, proxy.seed, actor)
+actor_proxy!(proxy::ScanProxy{L, R}, actor) where L where R = ScanActor{L, R}(proxy.scanFn, proxy.seed, actor)
 
-mutable struct ScanActor{L, R, A <: AbstractActor{R} } <: Actor{L}
+mutable struct ScanActor{L, R} <: Actor{L}
     scanFn  :: Function
     current :: Union{R, Nothing}
-    actor   :: A
+    actor
 end
 
-function on_next!(r::ScanActor{L, R, A}, data::L) where { A <: AbstractActor{R} } where L where R
+function on_next!(r::ScanActor{L, R}, data::L) where L where R
     if r.current == nothing
         r.current = data
     else
@@ -73,8 +73,8 @@ function on_next!(r::ScanActor{L, R, A}, data::L) where { A <: AbstractActor{R} 
     next!(r.actor, r.current)
 end
 
-on_error!(r::ScanActor{L, R, A}, err) where { A <: AbstractActor{R} } where L where R = error!(r.actor, err)
-on_complete!(r::ScanActor{L, R, A})   where { A <: AbstractActor{R} } where L where R = complete!(r.actor)
+on_error!(r::ScanActor, err) where L where R = error!(r.actor, err)
+on_complete!(r::ScanActor)   where L where R = complete!(r.actor)
 
 
 """
@@ -126,7 +126,7 @@ macro CreateScanOperator(name, L, R, scanFn)
             seed :: $R
         end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{$L} }
+        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.ProxyObservable{$R}(source, ($proxyName)(operator.seed))
         end
     end
@@ -136,16 +136,16 @@ macro CreateScanOperator(name, L, R, scanFn)
             seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$R} } = ($actorName){A}(proxy.seed, actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor) = ($actorName)(proxy.seed, actor)
     end
 
     actorDefinition = quote
-        mutable struct $actorName{ A <: Rx.AbstractActor{$R} } <: Rx.Actor{$L}
+        mutable struct $actorName <: Rx.Actor{$L}
             current :: $R
-            actor   :: A
+            actor
         end
 
-        Rx.on_next!(actor::($actorName){A}, data::($L)) where { A <: Rx.AbstractActor{$R} } = begin
+        Rx.on_next!(actor::($actorName), data::($L)) = begin
             __inlined_lambda = $scanFn
             actor.current = __inlined_lambda(data, actor.current)
             Rx.next!(actor.actor, actor.current)

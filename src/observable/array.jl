@@ -35,7 +35,7 @@ struct ArrayObservable{D} <: Subscribable{D}
     values::Array{D, 1}
 end
 
-function on_subscribe!(observable::ArrayObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(observable::ArrayObservable, actor)
     for value in observable.values
         next!(actor, value)
     end

@@ -41,12 +41,12 @@ operator_right(::LowercaseOperator, ::Type{L}) where L = L
 
 struct LowercaseProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::LowercaseProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = LowercaseActor{L, A}(actor)
+actor_proxy!(proxy::LowercaseProxy{L}, actor) where L = LowercaseActor{L}(actor)
 
-struct LowercaseActor{ L, A <: AbstractActor{L} } <: Actor{L}
-    actor :: A
+struct LowercaseActor{L} <: Actor{L}
+    actor
 end
 
-on_next!(actor::LowercaseActor{L, A}, data::L) where { A <: AbstractActor{L} } where L = next!(actor.actor, lowercase(data))
-on_error!(actor::LowercaseActor{L, A}, err)    where { A <: AbstractActor{L} } where L = error!(actor.actor, err)
-on_complete!(actor::LowercaseActor{L, A})      where { A <: AbstractActor{L} } where L = complete!(actor.actor)
+on_next!(actor::LowercaseActor{L}, data::L) where L = next!(actor.actor, lowercase(data))
+on_error!(actor::LowercaseActor, err)       where L = error!(actor.actor, err)
+on_complete!(actor::LowercaseActor)         where L = complete!(actor.actor)

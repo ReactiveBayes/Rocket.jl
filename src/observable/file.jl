@@ -4,7 +4,7 @@ struct SyncFileObservable <: Subscribable{String}
     path :: String
 end
 
-function on_subscribe!(observable::SyncFileObservable, actor::A) where { A <: AbstractActor{String} }
+function on_subscribe!(observable::SyncFileObservable, actor)
     f = open(observable.path, "r")
     for line in eachline(f)
         next!(actor, line)
@@ -18,7 +18,7 @@ struct AsyncFileObservable <: Subscribable{String}
     path :: String
 end
 
-function on_subscribe!(observable::AsyncFileObservable, actor::A) where { A <: AbstractActor{String} }
+function on_subscribe!(observable::AsyncFileObservable, actor)
     error("AsyncFileObservable not implemented yet.")
 end
 

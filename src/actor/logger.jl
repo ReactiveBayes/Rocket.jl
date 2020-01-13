@@ -52,5 +52,5 @@ struct LoggerActor{D} <: Actor{D}
 end
 
 on_next!(log::LoggerActor{D}, data::D) where D = println("[$(log.name)] Data: $data")
-on_error!(log::LoggerActor{D}, err)    where D = println("[$(log.name)] Error: $err")
-on_complete!(log::LoggerActor{D})      where D = println("[$(log.name)] Completed")
+on_error!(log::LoggerActor, err)               = println("[$(log.name)] Error: $err")
+on_complete!(log::LoggerActor)                 = println("[$(log.name)] Completed")

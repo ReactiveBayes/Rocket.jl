@@ -19,19 +19,19 @@ struct FunctionObservable{D} <: Subscribable{D}
     f :: Function
 end
 
-function on_subscribe!(observable::FunctionObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
-    wrapper = FunctionObservableActorWrapper{D, A}(false, actor)
-    subscription = FunctionObservableSubscription{D, A}(wrapper)
+function on_subscribe!(observable::FunctionObservable{D}, actor) where D
+    wrapper = FunctionObservableActorWrapper{D}(false, actor)
+    subscription = FunctionObservableSubscription{D}(wrapper)
     observable.f(wrapper)
     return subscription
 end
 
-mutable struct FunctionObservableActorWrapper{D, A <: AbstractActor{D} } <: Actor{D}
+mutable struct FunctionObservableActorWrapper{D} <: Actor{D}
     is_unsubscribed :: Bool
-    actor           :: A
+    actor
 end
 
-function on_next!(actor::FunctionObservableActorWrapper{D, A}, data::D) where A <: AbstractActor{D} where D
+function on_next!(actor::FunctionObservableActorWrapper{D}, data::D) where D
     if !actor.is_unsubscribed
         next!(actor.actor, data)
     end
@@ -49,8 +49,8 @@ function on_complete!(actor::FunctionObservableActorWrapper)
     end
 end
 
-struct FunctionObservableSubscription{ D, A <: AbstractActor{D} } <: Teardown
-    wrapper :: FunctionObservableActorWrapper{D, A}
+struct FunctionObservableSubscription{D} <: Teardown
+    wrapper :: FunctionObservableActorWrapper{D}
 end
 
 as_teardown(::Type{<:FunctionObservableSubscription}) = UnsubscribableTeardownLogic()

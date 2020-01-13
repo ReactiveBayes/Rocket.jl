@@ -42,22 +42,22 @@ end
 
 struct CountProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::CountProxy{L}, actor::A) where { A <: AbstractActor{Int} } where L = CountActor{L, A}(0, actor)
+actor_proxy!(proxy::CountProxy{L}, actor) where L = CountActor{L}(0, actor)
 
-mutable struct CountActor{L, A <: AbstractActor{Int} } <: Actor{L}
+mutable struct CountActor{L} <: Actor{L}
     current :: Int
-    actor   :: A
+    actor
 end
 
-function on_next!(c::CountActor{L, A}, data::L) where { A <: AbstractActor{Int} } where L
+function on_next!(c::CountActor{L}, data::L) where L
     c.current += 1
 end
 
-function on_error!(c::CountActor{L, A}, err) where { A <: AbstractActor{Int} } where L
+function on_error!(c::CountActor, err)
     error!(c.actor, err)
 end
 
-function on_complete!(c::CountActor{L, A}) where { A <: AbstractActor{Int} } where L
+function on_complete!(c::CountActor)
     next!(c.actor, c.current)
     complete!(c.actor)
 end

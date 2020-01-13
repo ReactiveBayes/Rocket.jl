@@ -5,7 +5,7 @@ export close
 import Base: close
 
 """
-    AsyncActor{D, A}(actor::A) where { A <: AbstractActor{D} } where D
+    AsyncActor{D}(actor) where D
 
 AsyncActor wraps an actor and send a data from a stream to this actor asynchronously in a different `Task`.
 You have to `close` this actor when you do not need it.
@@ -15,11 +15,11 @@ You have to `close` this actor when you do not need it.
 
 See also: [`Actor`](@ref), [`async`](@ref)
 """
-struct AsyncActor{ D, A <: AbstractActor{D} } <: Actor{D}
+struct AsyncActor{D} <: Actor{D}
     channel :: Channel{D}
-    actor   :: A
+    actor
 
-    AsyncActor{D, A}(actor::A) where { A <: AbstractActor{D} } where D = begin
+    AsyncActor{D}(actor) where D = begin
         channel = Channel{D}(Inf, spawn = true) do ch
             while true
                 message = take!(ch)
@@ -30,20 +30,23 @@ struct AsyncActor{ D, A <: AbstractActor{D} } <: Actor{D}
     end
 end
 
-function on_next!(actor::AsyncActor{D, A}, data::D) where { A <: AbstractActor{D} } where D
+function on_next!(actor::AsyncActor{D}, data::D) where D
     put!(actor.channel, data)
 end
 
-on_error!(actor::AsyncActor{D, A}, err) where { A <: AbstractActor{D} } where D = error!(actor.actor, err)
-on_complete!(actor::AsyncActor{D, A}) where { A <: AbstractActor{D} } where D   = complete!(actor.actor)
+on_error!(actor::AsyncActor, err) = error!(actor.actor, err)
+on_complete!(actor::AsyncActor)   = complete!(actor.actor)
 
 """
-    async(actor::A) where { A <: AbstractActor{D} } where D
+    async(actor)
 
 Helper function to create an AsyncActor
 
 See also: [`AsyncActor`](@ref), [`AbstractActor`](@ref)
 """
-async(actor::A) where { A <: AbstractActor{D} } where D = AsyncActor{D, A}(actor)
+async(actor::A) where A = as_async(as_actor(A), actor)
+
+as_async(::UndefinedActorTrait, actor)         = throw(UndefinedActorTraitUsageError(actor))
+as_async(::ActorTrait{D},       actor) where D = AsyncActor{D}(actor)
 
 close(actor::AsyncActor) = close(actor.channel)

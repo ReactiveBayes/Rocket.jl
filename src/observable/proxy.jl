@@ -49,14 +49,15 @@ call_source_proxy!(::ValidActorSourceProxy, as_subscribable,       proxy, source
 """
 """
 struct ProxyObservable{D} <: Subscribable{D}
-    source
+    proxied_source
     proxy
+
+    ProxyObservable{D}(source, proxy) where D = new(call_source_proxy!(proxy, source), proxy)
 end
 
-function on_subscribe!(observable::ProxyObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
-    proxied_source = call_source_proxy!(observable.proxy, observable.source)
+function on_subscribe!(observable::ProxyObservable, actor)
     proxied_actor  = call_actor_proxy!(observable.proxy, actor)
-    return subscribe!(proxied_source, proxied_actor)
+    return subscribe!(observable.proxied_source, proxied_actor)
 end
 
 actor_proxy!(proxy, actor)   = error("You probably forgot to implement actor_proxy!(proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
