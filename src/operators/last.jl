@@ -76,24 +76,24 @@ struct LastProxy{L} <: ActorProxy
     default :: Union{L, Nothing}
 end
 
-function actor_proxy!(proxy::LastProxy{L}, actor::A) where { A <: AbstractActor{L} } where L
-    return LastActor{L, A}(proxy.default, actor)
+function actor_proxy!(proxy::LastProxy{L}, actor) where L
+    return LastActor{L}(proxy.default, actor)
 end
 
-mutable struct LastActor{L, A <: AbstractActor{L} } <: Actor{L}
+mutable struct LastActor{L} <: Actor{L}
     last   :: Union{L, Nothing}
-    actor  :: A
+    actor
 end
 
-function on_next!(actor::LastActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
+function on_next!(actor::LastActor{L}, data::L) where L
     actor.last = data
 end
 
-function on_error!(actor::LastActor{L, A}, err) where { A <: AbstractActor{L} } where L
+function on_error!(actor::LastActor, err)
     error!(actor.actor, error)
 end
 
-function on_complete!(actor::LastActor{L, A}) where { A <: AbstractActor{L} } where L
+function on_complete!(actor::LastActor)
     if actor.last != nothing
         next!(actor.actor, actor.last)
     end

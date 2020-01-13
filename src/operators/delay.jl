@@ -34,16 +34,16 @@ struct DelayProxy{L} <: ActorSourceProxy
     delay :: Int
 end
 
-actor_proxy!(proxy::DelayProxy{L}, actor::A) where { A <: AbstractActor{L} } where L  = DelayActor{L, A}(false, proxy.delay, actor)
-source_proxy!(proxy::DelayProxy{L}, source::S) where { S <: Subscribable{L} } where L = DelayObservable{L, S}(source)
+actor_proxy!(proxy::DelayProxy{L}, actor)   where L = DelayActor{L}(false, proxy.delay, actor)
+source_proxy!(proxy::DelayProxy{L}, source) where L = DelayObservable{L}(source)
 
-mutable struct DelayActor{L, A <: AbstractActor{L} } <: Actor{L}
+mutable struct DelayActor{L} <: Actor{L}
     is_cancelled :: Bool
     delay        :: Int
-    actor        :: A
+    actor
 end
 
-function on_next!(actor::DelayActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
+function on_next!(actor::DelayActor{L}, data::L) where L
     @async begin
         sleep(actor.delay / MILLISECONDS_IN_SECOND)
         if !actor.is_cancelled
@@ -52,7 +52,7 @@ function on_next!(actor::DelayActor{L, A}, data::L) where { A <: AbstractActor{L
     end
 end
 
-function on_error!(actor::DelayActor{L, A}, err) where { A <: AbstractActor{L} } where L
+function on_error!(actor::DelayActor, err)
     @async begin
         sleep(actor.delay / MILLISECONDS_IN_SECOND)
         if !actor.is_cancelled
@@ -61,7 +61,7 @@ function on_error!(actor::DelayActor{L, A}, err) where { A <: AbstractActor{L} }
     end
 end
 
-function on_complete!(actor::DelayActor{L, A}) where { A <: AbstractActor{L} } where L
+function on_complete!(actor::DelayActor)
     @async begin
         sleep(actor.delay / MILLISECONDS_IN_SECOND)
         if !actor.is_cancelled
@@ -70,22 +70,22 @@ function on_complete!(actor::DelayActor{L, A}) where { A <: AbstractActor{L} } w
     end
 end
 
-struct DelayObservable{ L, S <: Subscribable{L} } <: Subscribable{L}
-    source :: S
+struct DelayObservable{L} <: Subscribable{L}
+    source
 end
 
-function on_subscribe!(observable::DelayObservable{L, S}, actor::DelayActor{L, A}) where { A <: AbstractActor{L} } where { S <: Subscribable{L} } where L
+function on_subscribe!(observable::DelayObservable, actor::DelayActor)
     return DelaySubscription(actor, subscribe!(observable.source, actor))
 end
 
-struct DelaySubscription{ L, A <: AbstractActor{L}, S <: Teardown } <: Teardown
-    actor        :: DelayActor{L, A}
-    subscription :: S
+struct DelaySubscription <: Teardown
+    actor
+    subscription
 end
 
 as_teardown(::Type{<:DelaySubscription}) = UnsubscribableTeardownLogic()
 
-function on_unsubscribe!(subscription::DelaySubscription{L, A}) where { A <: AbstractActor{L} } where L
+function on_unsubscribe!(subscription::DelaySubscription)
     subscription.actor.is_cancelled = true
     unsubscribe!(subscription.subscription)
     return nothing

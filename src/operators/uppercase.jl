@@ -41,12 +41,12 @@ operator_right(::UppercaseOperator, ::Type{L}) where L = L
 
 struct UppercaseProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::UppercaseProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = UppercaseActor{L, A}(actor)
+actor_proxy!(proxy::UppercaseProxy{L}, actor) where L = UppercaseActor{L}(actor)
 
-struct UppercaseActor{ L, A <: AbstractActor{L} } <: Actor{L}
-    actor :: A
+struct UppercaseActor{L} <: Actor{L}
+    actor
 end
 
-on_next!(actor::UppercaseActor{L, A}, data::L) where { A <: AbstractActor{L} } where L = next!(actor.actor, uppercase(data))
-on_error!(actor::UppercaseActor{L, A}, err) where { A <: AbstractActor{L} } where L    = error!(actor.actor, err)
-on_complete!(actor::UppercaseActor{L, A})  where { A <: AbstractActor{L} } where L     = complete!(actor.actor)
+on_next!(actor::UppercaseActor{L}, data::L) where L = next!(actor.actor, uppercase(data))
+on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)
+on_complete!(actor::UppercaseActor)                 = complete!(actor.actor)

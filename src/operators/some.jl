@@ -43,17 +43,17 @@ operator_right(operator::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
 
 struct SomeProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::SomeProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = SomeActor{L, A}(actor)
+actor_proxy!(proxy::SomeProxy{L}, actor) where L = SomeActor{L}(actor)
 
-struct SomeActor{ L, A <: AbstractActor{L} } <: Actor{ Union{L, Nothing} }
-    actor :: A
+struct SomeActor{L} <: Actor{ Union{L, Nothing} }
+    actor
 end
 
-function on_next!(f::SomeActor{L, A}, data::Union{L, Nothing}) where { A <: AbstractActor{L} } where L
+function on_next!(f::SomeActor{L}, data::Union{L, Nothing}) where L
     if data != nothing
         next!(f.actor, data)
     end
 end
 
-on_error!(f::SomeActor{L, A}, err) where { A <: AbstractActor{L} } where L = error!(f.actor, err)
-on_complete!(f::SomeActor{L, A})   where { A <: AbstractActor{L} } where L = complete!(f.actor)
+on_error!(f::SomeActor, err) = error!(f.actor, err)
+on_complete!(f::SomeActor)   = complete!(f.actor)

@@ -55,20 +55,20 @@ struct TapProxy{L} <: ActorProxy
     tapFn :: Function
 end
 
-actor_proxy!(proxy::TapProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = TapActor{L, A}(proxy.tapFn, actor)
+actor_proxy!(proxy::TapProxy{L}, actor) where L = TapActor{L}(proxy.tapFn, actor)
 
-struct TapActor{L, A <: AbstractActor{L} } <: Actor{L}
+struct TapActor{L} <: Actor{L}
     tapFn :: Function
-    actor :: A
+    actor
 end
 
-function on_next!(t::TapActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
+function on_next!(t::TapActor{L}, data::L) where L
     Base.invokelatest(t.tapFn, data)
     next!(t.actor, data)
 end
 
-on_error!(t::TapActor{L, A}, err) where { A <: AbstractActor{L} } where L = error!(t.actor, err)
-on_complete!(t::TapActor{L, A})   where { A <: AbstractActor{L} } where L = complete!(t.actor)
+on_error!(t::TapActor, err) = error!(t.actor, err)
+on_complete!(t::TapActor)   = complete!(t.actor)
 
 """
     @CreateTapOperator(name, tapFn)
@@ -123,22 +123,22 @@ macro CreateTapOperator(name, tapFn)
     proxyDefinition = quote
         struct $proxyName{L} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where { A <: Rx.AbstractActor{L} } where L = ($actorName){L, A}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){L}, actor) where L = ($actorName){L}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName{L, A <: Rx.AbstractActor{L} } <: Rx.Actor{L}
-            actor :: A
+        struct $actorName{L} <: Rx.Actor{L}
+            actor
         end
 
-        function Rx.on_next!(actor::($actorName){L, A}, data::L) where { A <: Rx.AbstractActor{L} } where L
+        function Rx.on_next!(actor::($actorName){L}, data::L) where L
             __inlined_lambda = $tapFn
             __inlined_lambda(data)
             Rx.next!(actor.actor, data)
         end
 
-        Rx.on_error!(actor::($actorName){L, A}, err) where { A <: Rx.AbstractActor{L} } where L = Rx.next!(actor.actor, err)
-        Rx.on_complete!(actor::($actorName){L, A})   where { A <: Rx.AbstractActor{L} } where L = Rx.complete!(actor.actor)
+        Rx.on_error!(actor::($actorName), err) = Rx.next!(actor.actor, err)
+        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
     end
 
     generated = quote

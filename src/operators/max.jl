@@ -50,14 +50,14 @@ struct MaxProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MaxProxy{L}, actor::A) where { A <: AbstractActor{Union{L, Nothing}} } where L = MaxActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::MaxProxy{L}, actor) where L = MaxActor{L}(proxy.from, actor)
 
-mutable struct MaxActor{L, A <: AbstractActor{Union{L, Nothing}} } <: Actor{L}
+mutable struct MaxActor{L} <: Actor{L}
     current :: Union{L, Nothing}
-    actor   :: A
+    actor
 end
 
-function on_next!(actor::MaxActor{L, A}, data::L) where { A <: AbstractActor{Union{L, Nothing}} } where L
+function on_next!(actor::MaxActor{L}, data::L) where L
     if actor.current == nothing
         actor.current = data
     else
@@ -65,11 +65,11 @@ function on_next!(actor::MaxActor{L, A}, data::L) where { A <: AbstractActor{Uni
     end
 end
 
-function on_error!(actor::MaxActor{L, A}, err) where { A <: AbstractActor{Union{L, Nothing}} } where L
+function on_error!(actor::MaxActor, err)
     error!(actor.actor, err)
 end
 
-function on_complete!(actor::MaxActor{L, A}) where { A <: AbstractActor{Union{L, Nothing}} } where L
+function on_complete!(actor::MaxActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

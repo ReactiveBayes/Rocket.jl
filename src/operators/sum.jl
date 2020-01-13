@@ -68,14 +68,14 @@ struct SumProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::SumProxy{L}, actor::A) where { A <: AbstractActor{L} } where L = SumActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::SumProxy{L}, actor) where L = SumActor{L}(proxy.from, actor)
 
-mutable struct SumActor{L, A <: AbstractActor{L} } <: Actor{L}
+mutable struct SumActor{L} <: Actor{L}
     current :: Union{L, Nothing}
-    actor   :: A
+    actor
 end
 
-function on_next!(actor::SumActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
+function on_next!(actor::SumActor{L}, data::L) where L
     if actor.current == nothing
         actor.current = data
     else
@@ -83,11 +83,11 @@ function on_next!(actor::SumActor{L, A}, data::L) where { A <: AbstractActor{L} 
     end
 end
 
-function on_error!(actor::SumActor{L, A}, err) where { A <: AbstractActor{L} } where L
+function on_error!(actor::SumActor, err)
     error!(actor.actor, err)
 end
 
-function on_complete!(actor::SumActor{L, A}) where { A <: AbstractActor{L} } where L
+function on_complete!(actor::SumActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

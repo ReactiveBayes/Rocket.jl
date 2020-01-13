@@ -19,16 +19,16 @@ struct TupleWithLeftProxy{T, L} <: ActorProxy
     value :: T
 end
 
-actor_proxy!(proxy::TupleWithLeftProxy{T, L}, actor::A) where { A <: AbstractActor{Tuple{T, L}} } where T where L = TupleWithLeftActor{T, L, A}(proxy.value, actor)
+actor_proxy!(proxy::TupleWithLeftProxy{T, L}, actor) where T where L = TupleWithLeftActor{T, L}(proxy.value, actor)
 
-struct TupleWithLeftActor{T, L, A <: AbstractActor{Tuple{T, L}}} <: Actor{L}
+struct TupleWithLeftActor{T, L} <: Actor{L}
     value :: T
-    actor :: A
+    actor
 end
 
-on_next!(actor::TupleWithLeftActor{T, L, A}, data::L) where { A <: AbstractActor{Tuple{T, L}} } where T where L = next!(actor.actor, (actor.value, data))
-on_error!(actor::TupleWithLeftActor{T, L, A}, err)    where { A <: AbstractActor{Tuple{T, L}} } where T where L = error!(actor.actor, err)
-on_complete!(actor::TupleWithLeftActor{T, L, A})      where { A <: AbstractActor{Tuple{T, L}} } where T where L = complete!(actor.actor)
+on_next!(actor::TupleWithLeftActor{T, L}, data::L) where T where L = next!(actor.actor, (actor.value, data))
+on_error!(actor::TupleWithLeftActor, err)                          = error!(actor.actor, err)
+on_complete!(actor::TupleWithLeftActor)                            = complete!(actor.actor)
 
 tuple_with_right(value::T) where T = TupleWithRightOperator{T}(value)
 
@@ -46,13 +46,13 @@ struct TupleWithRightProxy{T, L} <: ActorProxy
     value :: T
 end
 
-actor_proxy!(proxy::TupleWithRightProxy{T, L}, actor::A) where { A <: AbstractActor{Tuple{L, T}} } where T where L = TupleWithRightActor{T, L, A}(proxy.value, actor)
+actor_proxy!(proxy::TupleWithRightProxy{T, L}, actor) where T where L = TupleWithRightActor{T, L}(proxy.value, actor)
 
-struct TupleWithRightActor{T, L, A <: AbstractActor{Tuple{L, T}}} <: Actor{L}
+struct TupleWithRightActor{T, L} <: Actor{L}
     value :: T
-    actor :: A
+    actor
 end
 
-on_next!(actor::TupleWithRightActor{T, L, A}, data::L) where { A <: AbstractActor{Tuple{L, T}} } where T where L = next!(actor.actor, (data, actor.value))
-on_error!(actor::TupleWithRightActor{T, L, A}, err)    where { A <: AbstractActor{Tuple{L, T}} } where T where L = error!(actor.actor, err)
-on_complete!(actor::TupleWithRightActor{T, L, A})      where { A <: AbstractActor{Tuple{L, T}} } where T where L = complete!(actor.actor)
+on_next!(actor::TupleWithRightActor{T, L}, data::L) where T where L = next!(actor.actor, (data, actor.value))
+on_error!(actor::TupleWithRightActor, err)                          = error!(actor.actor, err)
+on_complete!(actor::TupleWithRightActor)                            = complete!(actor.actor)

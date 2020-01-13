@@ -50,14 +50,14 @@ struct MinProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MinProxy{L}, actor::A) where { A <: AbstractActor{Union{L, Nothing}} } where L = MinActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::MinProxy{L}, actor) where L = MinActor{L}(proxy.from, actor)
 
-mutable struct MinActor{L, A <: AbstractActor{Union{L, Nothing}} } <: Actor{L}
+mutable struct MinActor{L} <: Actor{L}
     current :: Union{L, Nothing}
-    actor   :: A
+    actor
 end
 
-function on_next!(actor::MinActor{L, A}, data::L) where { A <: AbstractActor{Union{L, Nothing}} } where L
+function on_next!(actor::MinActor{L}, data::L) where L
     if actor.current == nothing
         actor.current = data
     else
@@ -65,11 +65,11 @@ function on_next!(actor::MinActor{L, A}, data::L) where { A <: AbstractActor{Uni
     end
 end
 
-function on_error!(actor::MinActor{L, A}, err) where { A <: AbstractActor{Union{L, Nothing}} } where L
+function on_error!(actor::MinActor, err)
     error!(actor.actor, error)
 end
 
-function on_complete!(actor::MinActor{L, A}) where { A <: AbstractActor{Union{L, Nothing}} } where L
+function on_complete!(actor::MinActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end

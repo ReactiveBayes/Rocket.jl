@@ -50,18 +50,18 @@ operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{L, Int}
 
 struct EnumerateProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::EnumerateProxy{L}, actor::A) where { A <: AbstractActor{Tuple{L, Int}} } where L = EnumerateActor{L, A}(1, actor)
+actor_proxy!(proxy::EnumerateProxy{L}, actor) where L = EnumerateActor{L}(1, actor)
 
-mutable struct EnumerateActor{ L, A <: AbstractActor{Tuple{L, Int}} } <: Actor{L}
+mutable struct EnumerateActor{L} <: Actor{L}
     current :: Int
-    actor   :: A
+    actor
 end
 
-function on_next!(c::EnumerateActor{L, A}, data::L) where { A <: AbstractActor{Tuple{L, Int}} } where L
+function on_next!(c::EnumerateActor{L}, data::L) where L
     current = c.current
     c.current += 1
     next!(c.actor, (data, current))
 end
 
-on_error!(c::EnumerateActor{L, A}, err) where { A <: AbstractActor{Tuple{L, Int}} } where L  = error!(c.actor, err)
-on_complete!(c::EnumerateActor{L, A})   where { A <: AbstractActor{Tuple{L, Int}} } where L  = complete!(c.actor)
+on_error!(c::EnumerateActor, err) = error!(c.actor, err)
+on_complete!(c::EnumerateActor)   = complete!(c.actor)

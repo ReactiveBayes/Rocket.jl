@@ -120,7 +120,7 @@ struct TakeSource{L} <: Subscribable{L}
     TakeSource{L}(max_count::Int, source) where L = new(max_count, Subject{L}(), source)
 end
 
-function on_subscribe!(observable::TakeSource{L}, actor::A) where { A <: AbstractActor{L} } where L
+function on_subscribe!(observable::TakeSource{L}, actor) where L
     inner_actor  = TakeInnerActor{L}(observable.max_count, observable.subject)
     subscription = subscribe!(observable.source, inner_actor)
 

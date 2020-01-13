@@ -70,15 +70,15 @@ struct ReduceProxy{L, R} <: ActorProxy
     seed     :: Union{R, Nothing}
 end
 
-actor_proxy!(proxy::ReduceProxy{L, R}, actor::A) where { A <: AbstractActor{R} } where L where R = ReduceActor{L, R, A}(proxy.reduceFn, proxy.seed, actor)
+actor_proxy!(proxy::ReduceProxy{L, R}, actor) where L where R = ReduceActor{L, R}(proxy.reduceFn, proxy.seed, actor)
 
-mutable struct ReduceActor{L, R, A <: AbstractActor{R} } <: Actor{L}
+mutable struct ReduceActor{L, R} <: Actor{L}
     reduceFn :: Function
     current  :: Union{R, Nothing}
-    actor    :: A
+    actor
 end
 
-function on_next!(actor::ReduceActor{L, R, A}, data::L) where { A <: AbstractActor{R} } where L where R
+function on_next!(actor::ReduceActor{L, R}, data::L) where L where R
     if actor.current == nothing
         actor.current = data
     else
@@ -86,11 +86,11 @@ function on_next!(actor::ReduceActor{L, R, A}, data::L) where { A <: AbstractAct
     end
 end
 
-function on_error!(actor::ReduceActor{L, R, A}, err) where { A <: AbstractActor{R} } where L where R
+function on_error!(actor::ReduceActor, err)
     error!(actor.actor, err)
 end
 
-function on_complete!(actor::ReduceActor{L, R, A}) where { A <: AbstractActor{R} } where L where R
+function on_complete!(actor::ReduceActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end
@@ -142,7 +142,7 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             seed :: $R
         end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source::S) where { S <: Rx.Subscribable{$L} }
+        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.ProxyObservable{$R}(source, ($proxyName)(operator.seed))
         end
     end
@@ -152,16 +152,16 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor::A) where { A <: Rx.AbstractActor{$R} } = ($actorName){A}(proxy.seed, actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor) = ($actorName)(proxy.seed, actor)
     end
 
     actorDefinition = quote
-        mutable struct $actorName{ A <: Rx.AbstractActor{$R} } <: Rx.Actor{$L}
+        mutable struct $actorName <: Rx.Actor{$L}
             current :: $R
-            actor   :: A
+            actor
         end
 
-        Rx.on_next!(actor::($actorName){A}, data::($L)) where { A <: Rx.AbstractActor{$R} } = begin
+        Rx.on_next!(actor::($actorName), data::($L)) = begin
             __inlined_lambda = $reduceFn
             actor.current = __inlined_lambda(data, actor.current)
         end
@@ -170,7 +170,7 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             Rx.error!(actor.actor, err)
         end
 
-        Rx.on_complete!(actor::($actorName))     = begin
+        Rx.on_complete!(actor::($actorName))   = begin
             Rx.next!(actor.actor, actor.current)
             Rx.complete!(actor.actor)
         end
