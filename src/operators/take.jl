@@ -122,9 +122,9 @@ end
 
 function on_subscribe!(observable::TakeSource{L}, actor) where L
     inner_actor  = TakeInnerActor{L}(observable.max_count, observable.subject)
-    subscription = subscribe!(observable.source, inner_actor)
 
-    inner_actor.subscription = subscription
+    subscription             = subscribe!(observable.subject, actor)
+    inner_actor.subscription = subscribe!(observable.source, inner_actor)
 
-    return subscribe!(observable.subject, actor)
+    return subscription
 end

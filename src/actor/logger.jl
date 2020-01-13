@@ -1,4 +1,5 @@
 export LoggerActor, on_next!, on_error!, on_complete!
+export logger
 
 """
     LoggerActor{D}(name::String = "LogActor") where D
@@ -54,3 +55,12 @@ end
 on_next!(log::LoggerActor{D}, data::D) where D = println("[$(log.name)] Data: $data")
 on_error!(log::LoggerActor, err)               = println("[$(log.name)] Error: $err")
 on_complete!(log::LoggerActor)                 = println("[$(log.name)] Completed")
+
+"""
+    logger(::Type{T}) where T
+
+Helper function to create a LoggerActor
+
+See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
+"""
+logger(::Type{T}) where T = LoggerActor{T}()
