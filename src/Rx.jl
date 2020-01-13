@@ -33,6 +33,7 @@ include("observable/function.jl")
 include("observable/file.jl")
 include("observable/network.jl")
 include("observable/combined.jl")
+include("observable/collected.jl")
 include("observable/lazy.jl")
 
 include("operators/map.jl")

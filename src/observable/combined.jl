@@ -9,8 +9,6 @@ export combineLatest
 struct LatestCombined2Observable{D1, D2} <: Subscribable{Tuple{D1, D2}}
     source1
     source2
-
-    LatestCombined2Observable{D1, D2}(source1, source2) where D1 where D2 = new(source1, source2)
 end
 
 function on_subscribe!(observable::LatestCombined2Observable{D1, D2}, actor) where D1 where D2
