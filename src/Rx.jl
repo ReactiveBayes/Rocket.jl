@@ -56,6 +56,7 @@ include("operators/uppercase.jl")
 include("operators/lowercase.jl")
 include("operators/to_array.jl")
 include("operators/tuple_with.jl")
+include("operators/replay.jl")
 
 include("extensions/observable/single.jl")
 
