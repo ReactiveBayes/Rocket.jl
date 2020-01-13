@@ -6,15 +6,15 @@ export combineLatest
 
 # TODO It is better to use macro to create this structures and actors
 # Consider to reimplement it in the future. For now implement just a two combined
-struct LatestCombined2Observable{S1, D1, S2, D2} <: Subscribable{Tuple{D1, D2}}
-    source1 :: S1
-    source2 :: S2
+struct LatestCombined2Observable{D1, D2} <: Subscribable{Tuple{D1, D2}}
+    source1
+    source2
 
-    LatestCombined2Observable{S1, D1, S2, D2}(source1::S1, source2::S2) where S1 where S2 where D1 where D2 = new(source1, source2)
+    LatestCombined2Observable{D1, D2}(source1, source2) where D1 where D2 = new(source1, source2)
 end
 
-function on_subscribe!(observable::LatestCombined2Observable{S1, D1, S2, D2}, actor::A) where { A <: AbstractActor{Tuple{D1, D2}} } where S1 where S2 where D1 where D2
-    wrapper = LatestCombinedObservable2ActorWrapper{D1, D2, A}(observable.source1, observable.source2, actor)
+function on_subscribe!(observable::LatestCombined2Observable{D1, D2}, actor) where D1 where D2
+    wrapper = LatestCombinedObservable2ActorWrapper{D1, D2}(observable.source1, observable.source2, actor)
     return LatestCombined2Subscription(wrapper)
 end
 
@@ -46,8 +46,8 @@ combineLatest(source1::S1, source2::S2) where S1 where S2 = combineLatest(as_sub
 combineLatest(::InvalidSubscribable, as_subscribable, source1, source2) = throw(InvalidSubscribableTraitUsageError(source1))
 combineLatest(as_subscribable, ::InvalidSubscribable, source1, source2) = throw(InvalidSubscribableTraitUsageError(source2))
 
-function combineLatest(::ValidSubscribable{D1}, ::ValidSubscribable{D2}, source1::S1, source2::S2) where S1 where S2 where D1 where D2
-    return LatestCombined2Observable{S1, D1, S2, D2}(source1, source2)
+function combineLatest(::ValidSubscribable{D1}, ::ValidSubscribable{D2}, source1, source2) where D1 where D2
+    return LatestCombined2Observable{D1, D2}(source1, source2)
 end
 
 ### Specific Actors ###
@@ -59,15 +59,13 @@ macro MakeLatestCombinedActor(n)
     on_complete = Symbol("complete_", n, "!")
 
     esc(quote
-        struct ($actor){D, W} <: Actor{D}
-            wrapper::W
-
-            $actor{D, W}(wrapper::W) where D where W = new(wrapper)
+        struct ($actor){D} <: Actor{D}
+            wrapper
         end
 
-        on_next!(actor::($actor){D, W}, data::D) where D where W = $on_next(actor.wrapper, data)
-        on_error!(actor::($actor), err)                          = $on_error(actor.wrapper, err)
-        on_complete!(actor::($actor))                            = $on_complete(actor.wrapper)
+        on_next!(actor::($actor){D}, data::D) where D = $on_next(actor.wrapper, data)
+        on_error!(actor::($actor), err)               = $on_error(actor.wrapper, err)
+        on_complete!(actor::($actor))                 = $on_complete(actor.wrapper)
     end)
 end
 
@@ -77,10 +75,10 @@ end
 ### Base Actor wrappers ###
 ### TODO: Again it is better to write a macro for this kind of structures and pregenerate a lot of them
 
-mutable struct LatestCombinedObservable2ActorWrapper{ D1, D2, A <: AbstractActor{Tuple{D1, D2}} }
+mutable struct LatestCombinedObservable2ActorWrapper{D1, D2}
     actor1 :: LatestCombinedActor1{D1}
     actor2 :: LatestCombinedActor2{D2}
-    actor  :: A
+    actor
 
     latest1 :: Union{D1, Nothing}
     latest2 :: Union{D2, Nothing}
@@ -95,14 +93,14 @@ mutable struct LatestCombinedObservable2ActorWrapper{ D1, D2, A <: AbstractActor
     subscription2 :: Teardown
     subscription  :: Teardown
 
-    LatestCombinedObservable2ActorWrapper{D1, D2, A}(source1, source2, actor::A) where { A <: AbstractActor{Tuple{D1, D2}} } where D1 where D2 = begin
+    LatestCombinedObservable2ActorWrapper{D1, D2}(source1, source2, actor) where D1 where D2 = begin
         subject      = Subject{Tuple{D1, D2}}()
         subscription = subscribe!(subject, actor)
 
         wrapper = new()
 
-        actor1 = LatestCombinedActor1{ D1, LatestCombinedObservable2ActorWrapper{D1, D2, A} }(wrapper)
-        actor2 = LatestCombinedActor2{ D2, LatestCombinedObservable2ActorWrapper{D1, D2, A} }(wrapper)
+        actor1 = LatestCombinedActor1{D1}(wrapper)
+        actor2 = LatestCombinedActor2{D2}(wrapper)
 
         wrapper.actor1 = actor1
         wrapper.actor2 = actor2
@@ -126,12 +124,12 @@ end
 
 ### Emit logic for base combined actors ###
 
-function next_1!(wrapper::LatestCombinedObservable2ActorWrapper{D1, D2, A}, data::D1) where { A <: AbstractActor{Tuple{D1, D2}} } where D1 where D2
+function next_1!(wrapper::LatestCombinedObservable2ActorWrapper{D1, D2}, data::D1) where D1 where D2
     wrapper.latest1 = data
     next_check_and_emit!(wrapper)
 end
 
-function next_2!(wrapper::LatestCombinedObservable2ActorWrapper{D1, D2, A}, data::D2) where { A <: AbstractActor{Tuple{D1, D2}} } where D1 where D2
+function next_2!(wrapper::LatestCombinedObservable2ActorWrapper{D1, D2}, data::D2) where D1 where D2
     wrapper.latest2 = data
     next_check_and_emit!(wrapper)
 end
