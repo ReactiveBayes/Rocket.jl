@@ -1,7 +1,7 @@
 export enumerate
 export EnumerateOperator, on_call!, operator_right
 export EnumerateProxy, actor_proxy!
-export EnumerateActor, on_next!, on_error!, on_complete!
+export EnumerateActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: enumerate
 
@@ -56,6 +56,8 @@ mutable struct EnumerateActor{L} <: Actor{L}
     current :: Int
     actor
 end
+
+is_exhausted(actor::EnumerateActor) = is_exhausted(actor.actor)
 
 function on_next!(c::EnumerateActor{L}, data::L) where L
     current = c.current

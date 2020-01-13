@@ -1,4 +1,5 @@
-export VoidActor, on_next!, on_error!, on_complete!
+export VoidActor
+export on_next!, on_error!, on_complete!, is_exhausted
 
 """
     VoidActor{D}() where D
@@ -20,6 +21,8 @@ subscribe!(source, VoidActor{Int}())
 See also: [`Actor`](@ref), [`tap`](@ref)
 """
 struct VoidActor{T} <: Actor{T} end
+
+is_exhausted(actor::VoidActor) = false
 
 on_next!(actor::VoidActor{T}, data::T) where T = begin end
 on_error!(actor::VoidActor, err)               = begin end

@@ -1,7 +1,7 @@
 export max
 export MaxOperator, on_call!
 export MaxProxy, actor_proxy!
-export MaxActor, on_next!, on_error!, on_complete!
+export MaxActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: max
 
@@ -56,6 +56,8 @@ mutable struct MaxActor{L} <: Actor{L}
     current :: Union{L, Nothing}
     actor
 end
+
+is_exhausted(actor::MaxActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::MaxActor{L}, data::L) where L
     if actor.current == nothing

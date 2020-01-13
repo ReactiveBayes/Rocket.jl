@@ -1,4 +1,5 @@
-export SyncActor, on_next!, on_error!, on_complete!
+export SyncActor
+export on_next!, on_error!, on_complete!, is_exhausted
 export sync
 
 import Base: wait
@@ -18,6 +19,8 @@ mutable struct SyncActor{T} <: Actor{T}
 
     SyncActor{T}(actor) where T = new(Condition(), false, false, actor)
 end
+
+is_exhausted(actor::SyncActor) = actor.is_completed || actor.is_failed || is_exhausted(actor.actor)
 
 function on_next!(actor::SyncActor{T}, data::T) where T
     next!(actor.actor, data)

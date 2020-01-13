@@ -1,7 +1,7 @@
 export min
 export MinOperator, on_call!
 export MinProxy, actor_proxy!
-export MinActor, on_next!, on_error!, on_complete!
+export MinActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: min
 
@@ -56,6 +56,8 @@ mutable struct MinActor{L} <: Actor{L}
     current :: Union{L, Nothing}
     actor
 end
+
+is_exhausted(actor::MinActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::MinActor{L}, data::L) where L
     if actor.current == nothing

@@ -1,5 +1,5 @@
 export ReplaySubject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!
+export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
 import DataStructures: CircularBuffer
@@ -53,6 +53,8 @@ struct ReplaySubject{D} <: Actor{D}
 end
 
 as_subscribable(::Type{<:ReplaySubject{D}}) where D = ValidSubscribable{D}()
+
+is_exhausted(actor::ReplaySubject) = is_exhausted(actor.subject)
 
 function on_next!(subject::ReplaySubject{D}, data::D) where D
     push!(subject.cb, data)

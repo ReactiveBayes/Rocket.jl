@@ -1,7 +1,7 @@
 export reduce
 export ReduceOperator, on_call!
 export ReduceProxy, actor_proxy!
-export ReduceActor, on_next!, on_error!, on_complete!
+export ReduceActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateReduceOperator
 
 import Base: reduce
@@ -77,6 +77,8 @@ mutable struct ReduceActor{L, R} <: Actor{L}
     current  :: Union{R, Nothing}
     actor
 end
+
+is_exhausted(actor::ReduceActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::ReduceActor{L, R}, data::L) where L where R
     if actor.current == nothing
@@ -160,6 +162,8 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             current :: $R
             actor
         end
+
+        Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
 
         Rx.on_next!(actor::($actorName), data::($L)) = begin
             __inlined_lambda = $reduceFn

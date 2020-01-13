@@ -29,6 +29,7 @@ CompletionActor
 next!
 error!
 complete!
+is_exhausted
 ```
 
 ```@docs

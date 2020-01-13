@@ -1,7 +1,7 @@
 export tap
 export TapOperator, on_call!, operator_right
 export TapProxy, actor_proxy!
-export TapActor, on_next!, on_error!, on_complete!
+export TapActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateTapOperator
 
 """
@@ -61,6 +61,8 @@ struct TapActor{L} <: Actor{L}
     tapFn :: Function
     actor
 end
+
+is_exhausted(actor::TapActor) = is_exhausted(actor.actor)
 
 function on_next!(t::TapActor{L}, data::L) where L
     Base.invokelatest(t.tapFn, data)
@@ -130,6 +132,8 @@ macro CreateTapOperator(name, tapFn)
         struct $actorName{L} <: Rx.Actor{L}
             actor
         end
+
+        Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
 
         function Rx.on_next!(actor::($actorName){L}, data::L) where L
             __inlined_lambda = $tapFn

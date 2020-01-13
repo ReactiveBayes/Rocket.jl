@@ -1,7 +1,7 @@
 export sum
 export SumOperator, on_call!
 export SumProxy, actor_proxy!
-export SumActor, on_next!, on_error!, on_complete!
+export SumActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: sum
 
@@ -74,6 +74,8 @@ mutable struct SumActor{L} <: Actor{L}
     current :: Union{L, Nothing}
     actor
 end
+
+is_exhausted(actor::SumActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::SumActor{L}, data::L) where L
     if actor.current == nothing

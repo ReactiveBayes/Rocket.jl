@@ -1,7 +1,8 @@
 export count
 export CountOperator, on_call!
 export CountProxy, actor_proxy!
-export CountActor, on_next!, on_error!, on_complete!
+export CountActor
+export on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: count
 
@@ -48,6 +49,8 @@ mutable struct CountActor{L} <: Actor{L}
     current :: Int
     actor
 end
+
+is_exhausted(actor::CountActor) = is_exhausted(actor.actor)
 
 function on_next!(c::CountActor{L}, data::L) where L
     c.current += 1

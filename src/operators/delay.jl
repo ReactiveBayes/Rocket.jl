@@ -1,7 +1,7 @@
 export delay
 export DelayOperator, on_call!
 export DelayProxy, actor_proxy!
-export DelayActor, on_next!, on_error!, on_complete!
+export DelayActor, on_next!, on_error!, on_complete!, is_exhausted
 
 """
     delay(delay::Int)
@@ -42,6 +42,8 @@ mutable struct DelayActor{L} <: Actor{L}
     delay        :: Int
     actor
 end
+
+is_exhausted(actor::DelayActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::DelayActor{L}, data::L) where L
     @async begin

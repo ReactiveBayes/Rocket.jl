@@ -1,7 +1,7 @@
 export scan
 export ScanOperator, on_call!
 export ScanProxy, actor_proxy!
-export ScanActor, on_next!, on_error!, on_complete!
+export ScanActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateScanOperator
 
 """
@@ -63,6 +63,8 @@ mutable struct ScanActor{L, R} <: Actor{L}
     current :: Union{R, Nothing}
     actor
 end
+
+is_exhausted(actor::ScanActor) = is_exhausted(actor.actor)
 
 function on_next!(r::ScanActor{L, R}, data::L) where L where R
     if r.current == nothing
@@ -144,6 +146,8 @@ macro CreateScanOperator(name, L, R, scanFn)
             current :: $R
             actor
         end
+
+        Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
 
         Rx.on_next!(actor::($actorName), data::($L)) = begin
             __inlined_lambda = $scanFn

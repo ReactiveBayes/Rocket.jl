@@ -1,7 +1,7 @@
 export filter
 export FilterOperator, on_call!, operator_right
 export FilterProxy, actor_proxy!
-export FilterActor, on_next!, on_error!, on_complete!
+export FilterActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateFilterOperator
 
 import Base: filter
@@ -54,11 +54,12 @@ end
 
 actor_proxy!(proxy::FilterProxy{L}, actor) where L = FilterActor{L}(proxy.filterFn, actor)
 
-
 struct FilterActor{L} <: Actor{L}
     filterFn :: Function
     actor
 end
+
+is_exhausted(actor::FilterActor) = is_exhausted(actor.actor)
 
 function on_next!(f::FilterActor{L}, data::L) where L
     if (Base.invokelatest(f.filterFn, data))
@@ -139,6 +140,8 @@ macro CreateFilterOperator(name, L, filterFn)
             actor
         end
 
+        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
+
         Rx.on_next!(a::($actorName), data::($L)) = begin
             __inlined_lambda = $filterFn
             if (__inlined_lambda(data))
@@ -193,6 +196,8 @@ macro CreateFilterOperator(name, filterFn)
         struct $actorName{L} <: Rx.Actor{L}
             actor
         end
+
+        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
 
         Rx.on_next!(a::($actorName){L}, data::L) where L = begin
             __inlined_lambda = $filterFn

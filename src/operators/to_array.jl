@@ -1,7 +1,7 @@
 export to_array
 export ToArrayOperator, on_call!, operator_right
 export ToArrayProxy, actor_proxy!
-export ToArrayActor, on_next!, on_error!, on_complete!
+export ToArrayActor, on_next!, on_error!, on_complete!, is_exhausted
 
 """
     to_array()
@@ -49,6 +49,8 @@ struct ToArrayActor{L} <: Actor{L}
 
     ToArrayActor{L}(actor) where L = new(Vector{L}(), actor)
 end
+
+is_exhausted(actor::ToArrayActor) = is_exhausted(actor.actor)
 
 on_next!(actor::ToArrayActor, data::L) where L = push!(actor.values, data)
 on_error!(actor::ToArrayActor, err)            = error!(actor.actor, err)

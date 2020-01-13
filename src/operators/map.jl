@@ -1,7 +1,7 @@
 export map
 export MapOperator, on_call!
 export MapProxy, actor_proxy!
-export MapActor, on_next!, on_error!, on_complete!
+export MapActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateMapOperator
 
 import Base: map
@@ -60,6 +60,8 @@ struct MapActor{L} <: Actor{L}
     mappingFn  :: Function
     actor
 end
+
+is_exhausted(actor::MapActor) = is_exhausted(actor.actor)
 
 on_next!(m::MapActor{L},  data::L) where L = next!(m.actor, Base.invokelatest(m.mappingFn, data))
 on_error!(m::MapActor, err)                = error!(m.actor, err)
@@ -133,6 +135,8 @@ macro CreateMapOperator(name, L, R, mappingFn)
             actor
         end
 
+        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
+
         Rx.on_next!(a::($actorName), data::($L))  = begin
             __inlined_lambda = $mappingFn
             Rx.next!(a.actor, __inlined_lambda(data))
@@ -179,6 +183,8 @@ macro CreateMapOperator(name, mappingFn)
         struct $actorName{L} <: Rx.Actor{L}
             actor
         end
+
+        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
 
         Rx.on_next!(a::($actorName){L}, data::L) where L  = begin
             __inlined_lambda = $mappingFn

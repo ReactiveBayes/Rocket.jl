@@ -1,7 +1,7 @@
 export take
 export TakeOperator, on_call!
 export TakeProxy, source_proxy!
-export TakeInnerActor, on_next!, on_error!, on_complete!
+export TakeInnerActor, on_next!, on_error!, on_complete!, is_exhausted
 export TakeSource, on_subscribe!
 
 """
@@ -67,19 +67,23 @@ mutable struct TakeInnerActor{L} <: Actor{L}
     max_count    :: Int
     current      :: Int
     subject      :: Subject{L}
+    actor
     subscription
 
-    TakeInnerActor{L}(max_count::Int, subject::Subject{L}) where L = begin
-        actor = new()
+    TakeInnerActor{L}(max_count::Int, subject::Subject{L}, actor) where L = begin
+        take_actor = new()
 
-        actor.is_completed = false
-        actor.max_count    = max_count
-        actor.current      = 0
-        actor.subject      = subject
+        take_actor.is_completed = false
+        take_actor.max_count    = max_count
+        take_actor.current      = 0
+        take_actor.subject      = subject
+        take_actor.actor        = actor
 
-        return actor
+        return take_actor
     end
 end
+
+is_exhausted(actor::TakeInnerActor) = actor.is_completed || is_exhausted(actor.actor)
 
 function on_next!(actor::TakeInnerActor{L}, data::L) where L
     if !actor.is_completed
@@ -121,7 +125,7 @@ struct TakeSource{L} <: Subscribable{L}
 end
 
 function on_subscribe!(observable::TakeSource{L}, actor) where L
-    inner_actor  = TakeInnerActor{L}(observable.max_count, observable.subject)
+    inner_actor  = TakeInnerActor{L}(observable.max_count, observable.subject, actor)
 
     subscription             = subscribe!(observable.subject, actor)
     inner_actor.subscription = subscribe!(observable.source, inner_actor)

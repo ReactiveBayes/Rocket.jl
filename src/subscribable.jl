@@ -141,7 +141,14 @@ end
 subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                   = throw(InvalidSubscribableTraitUsageError(subscribable))
 subscribable_on_subscribe!(::ValidSubscribable,     ::UndefinedActorTrait, subscribable, actor)                   = throw(UndefinedActorTraitUsageError(actor))
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2 = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subscribable, actor) where T           = on_subscribe!(subscribable, actor)
+subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subscribable, actor) where T           = begin
+    if !is_exhausted(actor)
+        on_subscribe!(subscribable, actor)
+    else
+        complete!(actor)
+        return VoidTeardown()
+    end
+end
 
 """
     on_subscribe!(subscribable, actor)

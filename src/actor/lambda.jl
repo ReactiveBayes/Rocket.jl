@@ -1,4 +1,5 @@
-export LambdaActor, on_next!, on_error!, on_complete!
+export LambdaActor
+export on_next!, on_error!, on_complete!, is_exhausted
 
 """
     LambdaActor{D}(; on_next = nothing, on_error = nothing, on_complete = nothing) where D
@@ -53,6 +54,8 @@ struct LambdaActor{D} <: Actor{D}
 
     LambdaActor{D}(; on_next = nothing, on_error = nothing, on_complete = nothing) where D = new(on_next, on_error, on_complete)
 end
+
+is_exhausted(actor::LambdaActor) = false
 
 function on_next!(actor::LambdaActor{D}, data::D) where D
     if actor.on_next != nothing

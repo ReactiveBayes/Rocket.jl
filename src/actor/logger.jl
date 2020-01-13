@@ -1,4 +1,5 @@
-export LoggerActor, on_next!, on_error!, on_complete!
+export LoggerActor
+export on_next!, on_error!, on_complete!, is_exhausted
 export logger
 
 """
@@ -51,6 +52,8 @@ struct LoggerActor{D} <: Actor{D}
 
     LoggerActor{D}(name::String = "LogActor") where D = new(name)
 end
+
+is_exhausted(actor::LoggerActor) = false
 
 on_next!(log::LoggerActor{D}, data::D) where D = println("[$(log.name)] Data: $data")
 on_error!(log::LoggerActor, err)               = println("[$(log.name)] Error: $err")

@@ -1,6 +1,6 @@
 export Subject, as_subscribable, on_subscribe!
 export SubjectSubscription, as_teardown, on_unsubscribe!
-export as_actor, on_next!, on_error!, on_complete!
+export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
 import Base: show
@@ -61,6 +61,8 @@ mutable struct Subject{D} <: Actor{D}
 end
 
 as_subscribable(::Type{<:Subject{D}}) where D = ValidSubscribable{D}()
+
+is_exhausted(actor::Subject) = actor.is_completed || actor.is_error
 
 on_next!(subject::Subject{D}, data::D) where D = put!(subject.channel, SubjectNextMessage{D}(data))
 on_error!(subject::Subject{D}, error)  where D = put!(subject.channel, SubjectErrorMessage(error))

@@ -3,10 +3,12 @@ export AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
 export next!, error!, complete!
 export on_next!, on_error!, on_complete!
 export as_actor
+export is_exhausted
 
 export UndefinedActorTraitUsageError, InconsistentSourceActorDataTypesError
 export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
 export MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
+export MissingIsExhaustedImplementationError
 
 import Base: show
 
@@ -135,6 +137,15 @@ This function is used to deliver a "complete" event to an actor
 See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
 complete!(actor::T)     where T = actor_on_complete!(as_actor(T), actor)
+
+"""
+    is_exhausted(actor)
+
+This function is used to check if actor can handle any further message events
+
+See also: [`AbstractActor`](@ref)
+"""
+is_exhausted(actor) = false # throw(MissingIsExhaustedImplementationError(actor))
 
 actor_on_next!(::UndefinedActorTrait,     actor, data)                     = throw(UndefinedActorTraitUsageError(actor))
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
@@ -287,4 +298,17 @@ end
 
 function Base.show(io::IO, err::MissingOnCompleteImplementationError)
     print(io, "You probably forgot to implement on_complete!(actor::$(typeof(err.actor))).")
+end
+
+"""
+This error will be throw if Julia cannot find specific method of 'is_exhausted()' function for given actor
+
+See also: [`is_exhausted`](@ref)
+"""
+struct MissingIsExhaustedImplementationError
+    actor
+end
+
+function Base.show(io::IO, err::MissingIsExhaustedImplementationError)
+    print(io, "You probably forgot to implement is_exhausted(actor::$(typeof(err.actor))).")
 end

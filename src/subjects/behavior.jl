@@ -1,5 +1,5 @@
 export BehaviorSubject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!
+export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
 import Base: close
@@ -47,6 +47,8 @@ mutable struct BehaviorSubject{D} <: Actor{D}
 end
 
 as_subscribable(::Type{<:BehaviorSubject{D}}) where D = ValidSubscribable{D}()
+
+is_exhausted(actor::BehaviorSubject) = is_exhausted(actor.subject)
 
 function on_next!(subject::BehaviorSubject{D}, data::D) where D
     subject.current = data

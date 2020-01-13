@@ -1,7 +1,7 @@
 export uppercase
 export UppercaseOperator, on_call!, operator_right
 export UppercaseProxy, actor_proxy!
-export on_next!, on_error!, on_complete!
+export UppercaseActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: uppercase
 
@@ -46,6 +46,8 @@ actor_proxy!(proxy::UppercaseProxy{L}, actor) where L = UppercaseActor{L}(actor)
 struct UppercaseActor{L} <: Actor{L}
     actor
 end
+
+is_exhausted(actor::UppercaseActor) = is_exhausted(actor.actor)
 
 on_next!(actor::UppercaseActor{L}, data::L) where L = next!(actor.actor, uppercase(data))
 on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)

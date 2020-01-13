@@ -1,5 +1,5 @@
-export LocalNetworkSubject, on_next!, on_error!, on_complete!
-export as_subscribable, on_subscribe!
+export LocalNetworkSubject, as_subscribable, on_subscribe!
+export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
 using Sockets
@@ -27,6 +27,9 @@ mutable struct LocalNetworkSubject{D} <: Actor{D}
         return subject
     end
 end
+
+# TODO
+is_exhausted(actor::LocalNetworkSubject) = false
 
 function on_next!(subject::LocalNetworkSubject{D}, data::D) where D
     if !subject.is_closed

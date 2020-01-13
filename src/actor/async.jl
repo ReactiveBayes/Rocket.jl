@@ -1,5 +1,5 @@
 export AsyncActor, async
-export on_next!, on_error!, on_complete!
+export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
 import Base: close
@@ -29,6 +29,8 @@ struct AsyncActor{D} <: Actor{D}
         new(channel, actor)
     end
 end
+
+is_exhausted(actor::AsyncActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::AsyncActor{D}, data::D) where D
     put!(actor.channel, data)

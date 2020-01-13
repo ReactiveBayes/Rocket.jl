@@ -1,7 +1,7 @@
 export some
 export SomeOperator, on_call!, operator_right
 export SomeProxy, actor_proxy!
-export SomeActor, on_next!, on_error!, on_complete!
+export SomeActor, on_next!, on_error!, on_complete!, is_exhausted
 
 """
     some()
@@ -48,6 +48,8 @@ actor_proxy!(proxy::SomeProxy{L}, actor) where L = SomeActor{L}(actor)
 struct SomeActor{L} <: Actor{ Union{L, Nothing} }
     actor
 end
+
+is_exhausted(actor::SomeActor) = is_exhausted(actor.actor)
 
 function on_next!(f::SomeActor{L}, data::Union{L, Nothing}) where L
     if data != nothing
