@@ -7,7 +7,7 @@ struct LocalNetworkObservable{D} <: Subscribable{D}
     port :: Int
 end
 
-function on_subscribe!(observable::LocalNetworkObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(observable::LocalNetworkObservable, actor)
     clientside = connect(observable.port)
     @async begin
         try

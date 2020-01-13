@@ -13,7 +13,7 @@ struct SingleObservable{D} <: Subscribable{D}
     value :: D
 end
 
-function on_subscribe!(observable::SingleObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(observable::SingleObservable, actor)
     next!(actor, observable.value)
     complete!(actor)
     return VoidTeardown()

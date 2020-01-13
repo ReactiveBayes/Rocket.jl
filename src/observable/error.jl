@@ -11,7 +11,7 @@ struct ErrorObservable{D} <: Subscribable{D}
     error
 end
 
-function on_subscribe!(observable::ErrorObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(observable::ErrorObservable, actor)
     error!(actor, observable.error)
     return VoidTeardown()
 end

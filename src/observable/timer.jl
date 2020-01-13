@@ -49,7 +49,7 @@ end
 
 isperiodic(observable::TimerObservable) = observable.period != nothing
 
-function on_subscribe!(observable::TimerObservable, actor::A) where { A <: AbstractActor{Int} }
+function on_subscribe!(observable::TimerObservable, actor)
     if !observable.is_stopped
         return chain(subscribe!(observable.subject, actor))
     else

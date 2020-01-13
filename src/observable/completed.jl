@@ -9,7 +9,7 @@ See also: [`completed`](@ref)
 """
 struct CompletedObservable{D} <: Subscribable{D} end
 
-function on_subscribe!(observable::CompletedObservable{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(observable::CompletedObservable{D}, actor) where D
     complete!(actor)
     return VoidTeardown()
 end
