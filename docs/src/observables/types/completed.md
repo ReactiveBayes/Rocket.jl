@@ -1,7 +1,7 @@
 # [Completed Observable](@id observable_completed)
 
 ```@docs
-completed`
+completed
 ```
 
 ```@docs

@@ -33,6 +33,7 @@ makedocs(
                 "Lambda"        => "actors/types/lambda.md",
                 "Logger"        => "actors/types/logger.md",
                 "Async"         => "actors/types/async.md",
+                "Sync"          => "actors/types/sync.md",
                 "Void"          => "actors/types/void.md",
             ],
             "API"           => "actors/api.md",
