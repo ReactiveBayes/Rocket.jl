@@ -1,5 +1,7 @@
 export VoidActor
 export on_next!, on_error!, on_complete!, is_exhausted
+export VoidActorFactory, create_actor
+export void
 
 """
     VoidActor{D}() where D
@@ -27,3 +29,18 @@ is_exhausted(actor::VoidActor) = false
 on_next!(actor::VoidActor{T}, data::T) where T = begin end
 on_error!(actor::VoidActor, err)               = begin end
 on_complete!(actor::VoidActor)                 = begin end
+
+struct VoidActorFactory <: AbstractActorFactory end
+
+create_actor(::Type{L}, factory::VoidActorFactory) where L = VoidActor{L}()
+
+"""
+    void()
+    void(::Type{T}) where T
+
+Helper function to create a VoidActor
+
+See also: [`VoidActor`](@ref), [`AbstractActor`](@ref)
+"""
+void()                  = VoidActorFactory()
+void(::Type{T}) where T = VoidActor{T}()

@@ -1,5 +1,7 @@
 export LambdaActor
 export on_next!, on_error!, on_complete!, is_exhausted
+export LambdaActorFactory, create_actor
+export lambda
 
 """
     LambdaActor{D}(; on_next = nothing, on_error = nothing, on_complete = nothing) where D
@@ -74,3 +76,24 @@ function on_complete!(actor::LambdaActor)
         Base.invokelatest(actor.on_complete)
     end
 end
+
+struct LambdaActorFactory <: AbstractActorFactory
+    on_next     :: Union{Nothing, Function}
+    on_error    :: Union{Nothing, Function}
+    on_complete :: Union{Nothing, Function}
+end
+
+function create_actor(::Type{L}, factory::LambdaActorFactory) where L
+    return LambdaActor{L}(on_next = factory.on_next, on_error = factory.on_error, on_complete = factory.on_complete)
+end
+
+"""
+    lambda(; on_next = nothing, on_error = nothing, on_complete = nothing)
+    lambda(::Type{T}; on_next = nothing, on_error = nothing, on_complete = nothing) where T
+
+Helper function to create a LambdaActor
+
+See also: [`LambdaActor`](@ref), [`AbstractActor`](@ref)
+"""
+lambda(; on_next = nothing, on_error = nothing, on_complete = nothing) = LambdaActorFactory(on_next, on_error, on_complete)
+lambda(::Type{T}, on_next = nothing, on_error = nothing, on_complete = nothing) where T = LambdaActor{T}(on_next = on_next, on_error = on_error, on_complete = on_complete)

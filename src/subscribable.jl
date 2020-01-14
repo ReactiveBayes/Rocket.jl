@@ -134,6 +134,10 @@ function subscribe!(subscribable::T, actor::S) where T where S
     subscribable_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
 end
 
+function subscribe!(subscribable::T, actor_factory::F) where T where { F <: AbstractActorFactory }
+    subscribable_on_subscribe_with_factory!(as_subscribable(T), subscribable, actor_factory)
+end
+
 # TODO: Add a posibility for actors to be a supertype of source data type, for example
 # source <: Subscribable{L}
 # actor  <: Actor{Union{L, Nothing}}
@@ -148,6 +152,11 @@ subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subsc
         complete!(actor)
         return VoidTeardown()
     end
+end
+
+subscribable_on_subscribe_with_factory!(::InvalidSubscribable,  subscribable, actor_factory)         = throw(InvalidSubscribableTraitUsageError(subscribable))
+subscribable_on_subscribe_with_factory!(::ValidSubscribable{L}, subscribable, actor_factory) where L = begin
+    subscribe!(subscribable, create_actor(L, actor_factory))
 end
 
 """

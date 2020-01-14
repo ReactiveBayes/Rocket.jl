@@ -1,5 +1,6 @@
 export LoggerActor
 export on_next!, on_error!, on_complete!, is_exhausted
+export LoggerActorFactory, create_actor
 export logger
 
 """
@@ -48,7 +49,7 @@ subscribe!(source, LoggerActor{Int}("MyName"))
 See also: [`Actor`](@ref)
 """
 struct LoggerActor{D} <: Actor{D}
-    name::String
+    name :: String
 
     LoggerActor{D}(name::String = "LogActor") where D = new(name)
 end
@@ -59,11 +60,19 @@ on_next!(log::LoggerActor{D}, data::D) where D = println("[$(log.name)] Data: $d
 on_error!(log::LoggerActor, err)               = println("[$(log.name)] Error: $err")
 on_complete!(log::LoggerActor)                 = println("[$(log.name)] Completed")
 
+struct LoggerActorFactory <: AbstractActorFactory
+    name :: String
+end
+
+create_actor(::Type{L}, factory::LoggerActorFactory) where L = LoggerActor{L}(factory.name)
+
 """
-    logger(::Type{T}) where T
+    lambda(name = "LogActor")
+    logger(::Type{T}, name = "LogActor") where T
 
 Helper function to create a LoggerActor
 
 See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
 """
-logger(::Type{T}) where T = LoggerActor{T}()
+logger(name = "LogActor")                    = LoggerActorFactory(name)
+logger(::Type{T}, name = "LogActor") where T = LoggerActor{T}(name)

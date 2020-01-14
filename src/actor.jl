@@ -1,5 +1,6 @@
 export UndefinedActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
 export AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
+export AbstractActorFactory
 export next!, error!, complete!
 export on_next!, on_error!, on_complete!
 export as_actor
@@ -9,6 +10,7 @@ export UndefinedActorTraitUsageError, InconsistentSourceActorDataTypesError
 export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
 export MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
 export MissingIsExhaustedImplementationError
+export MissingCreateActorFactoryImplementationError
 
 import Base: show
 
@@ -311,4 +313,25 @@ end
 
 function Base.show(io::IO, err::MissingIsExhaustedImplementationError)
     print(io, "You probably forgot to implement is_exhausted(actor::$(typeof(err.actor))).")
+end
+
+# Actor factory
+"""
+Abstract type for all possible actor factories
+
+See also: [`Actor`](@ref)
+"""
+abstract type AbstractActorFactory end
+
+"""
+This error will be throw if Julia cannot find specific method of 'create_actor()' function for given factory
+
+See also: [`ActorFactory`](@ref)
+"""
+struct MissingCreateActorFactoryImplementationError
+    factory
+end
+
+function Base.show(io::IO, err::MissingCreateActorFactoryImplementationError)
+    print(io, "You probably forgot to implement create_actor(::Type{L}, factory::$(typeof(err.factory))).")
 end
