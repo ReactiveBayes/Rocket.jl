@@ -6,7 +6,7 @@ take
 
 ## Description
 
-`take` returns an Observable that emits only the first count values emitted by the source Observable. If the source emits fewer than count values then all of its values are emitted. After that, it completes, regardless if the source completes.
+`take` returns an Observable that emits only the first `count` values emitted by the source Observable. If the source emits fewer than `count` values, then all of its values are emitted. Afterwards, the Observable completes regardless of whether the source completed.
 
 ## See also
 

@@ -6,7 +6,7 @@ some
 
 ## Description
 
-This operator takes values from the source Observable and only emits those values that do not equal to `nothing`.
+This operator takes values from the source Observable and only emits those values that are not `nothing`.
 
 ## See also
 

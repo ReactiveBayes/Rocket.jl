@@ -6,7 +6,7 @@ enumerate
 
 ## Description
 
-`enumerate` operator returns an Observable, which converts each value emitted by the source Observable into a tuple of its order number and the value itself.
+`enumerate` returns an Observable that converts each value emitted by the source Observable into a tuple of its order number and the value itself.
 
 ## Example
 

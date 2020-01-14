@@ -6,7 +6,7 @@ sum
 
 ## Description
 
-The `sum` operator operates on an Observable of objects for which `+` is defined, and when source Observable completes it emits a single item: sum of all of the previous items. The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref operator_reduce)).
+`sum` operates on an Observable of objects on which `+` is defined. When the source Observable completes, it emits the sum of all previous items. The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref operator_reduce)).
 
 ## See also
 

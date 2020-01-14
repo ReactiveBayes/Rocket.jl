@@ -1,18 +1,16 @@
 # [Actors](@id section_actors)
 
-What is an __Actor__? An actor is the primitive unit of computation.
-It’s the thing that receives a message and do some kind of computation based on it.
+An __Actor__ is the most primitive unit of computation: it receives a message and performs a computation.
 
-The idea is very similar to what we have in object-oriented languages: An object receives a message (a method call) and does something depending on which message it receives (which method we are calling).
-The main difference is that actors are completely isolated from each other and they will never share memory. It’s also worth noting that an actor can maintain a private state that can never be changed directly by another actor.
+An actor is analogous to an object in an object-oriented languages. An object receives a message (a method call) and does something depending on which message it receives (the method we are calling). The main difference is that actors are completely isolated from each other, and they will never share memory. It’s also worth mentioning that an actor can maintain a private state that can never be changed directly by another actor.
 
-For quick introduction into Actor model see this [article](https://www.brianstorti.com/the-actor-model/).
+For a quick introduction to Actor models, see [this article](https://www.brianstorti.com/the-actor-model/).
 
 The API of Rx.jl's Actors is similar to [RxJS](https://rxjs.dev/guide/overview) subscribers.
 
 ## First example
 
-For example the following is an Actor that keeps every received value from an Observable.
+The following example implements an Actor that retains each received value from an Observable.
 
 ```julia
 using Rx
@@ -40,7 +38,7 @@ println(keep_actor.values)
 # [1, 2, 3]
 ```
 
-Actor may be not interested in values itself, but only for a completion event. In such case Rx.jl provides a [`CompletionActor`](@ref) abstract type.
+An actor may be not interested in the values itself, but merely the completion of an event. In this case, Rx.jl provides a [`CompletionActor`](@ref) abstract type.
 
 ```julia
 using Rx
@@ -58,7 +56,7 @@ subscribe!(source, CompletionNotificationActor());
 
 ## Lambda actor
 
-For debugging purposes it may be convenient to work with [`LambdaActor`](@ref). It provides an interface to define a callbacks for next, error and complete events.
+For debugging purposes it may be convenient to work with a [`LambdaActor`](@ref). This provides an interface that defines callbacks for "next", "error" and "complete" events.
 
 ```julia
 using Rx
@@ -79,4 +77,4 @@ subscribe!(source, LambdaActor{Int}(
 ```
 
 !!! tip "Performance tip"
-    Is it better to avoid using `LambdaActor` in final code as it is using `Base.invokelatest` for callback invokation and it may affect performance dramatically.
+    It is better to avoid `LambdaActor`s in production code. Because a `LambdaActor` uses `Base.invokelatest` for callback invocation, it may affect performance dramatically.

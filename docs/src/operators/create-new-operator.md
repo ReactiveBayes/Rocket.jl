@@ -1,8 +1,8 @@
 # Create a new operator from scratch
 
-It is more complicated, but if you have to write an operator that cannot be made from a combination of existing operators, you can write an operator from scratch:
+If you need to write an operator that cannot be made from a combination of existing operators, then you can write a custom operator from scratch.
 
-Each operator (e.g. `MyFancyOperator`) have to either be a subtype of one of abstract [`OperatorTrait`](@ref) trait types or define a
+Each operator (e.g. `MyFancyOperator`) needs to either be (1) a subtype of one of abstract [`OperatorTrait`](@ref) trait types, or (2) define a
 
 ```julia
 Rx.as_operator(::Type{<:MyFancyOperator}) = TypedOperatorTrait{T, R}()
@@ -12,7 +12,7 @@ Rx.as_operator(::Type{<:MyFancyOperator}) = InferableOperatorTrait()
 
 trait behavior.
 
-In addition, operator must implement
+In addition, an operator must implement
 ```julia
 Rx.on_call!(::Type{L}, ::Type{R}, operator::MyFancyOperator, source::S) where { S <: Subscribable{L} } where L
 
@@ -27,11 +27,11 @@ Rx.operator_right(::MyFancyOperator, ::Type{L}) where L = R # where R should be 
 logic which has to return another Observable as a result of applying `MyFancyOperator` to a `source`.
 
 !!! note
-    It is not allowed to modify `source` Observable in any way. You have to return a new observable.
+    It is not allowed to modify the `source` Observable in any way; you have to return a new observable.
 
 ## Proxy observable
 
-It might be useful to use [`ProxyObservable`](@ref) as a return result for an `on_call!` function.
+It might be useful to return a [`ProxyObservable`](@ref) from an `on_call!` function.
 ProxyObservable is a special Observable which proxying actors with the source and/or source with actors.
 
 ## Operators API
