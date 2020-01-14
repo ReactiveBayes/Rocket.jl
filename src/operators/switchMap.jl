@@ -23,10 +23,9 @@ mutable struct SwitchMapActor{L, R} <: Actor{L}
     mappingFn :: Function
     actor
 
-    current_source       :: Union{Nothing, Any}
     current_subscription :: Union{Nothing, Teardown}
 
-    SwitchMapActor{L, R}(mappingFn::Function, actor) where L where R = new(mappingFn, actor, nothing, nothing)
+    SwitchMapActor{L, R}(mappingFn::Function, actor) where L where R = new(mappingFn, actor, nothing)
 end
 
 is_exhausted(actor::SwitchMapActor) = is_exhausted(actor.actor)
@@ -45,35 +44,19 @@ function on_next!(actor::SwitchMapActor{L, R}, data::L) where L where R
     if actor.current_subscription != nothing
         unsubscribe!(actor.current_subscription)
     end
-
-    switched = Base.invokelatest(actor.mappingFn, data)
-
-    if actor.current_source != nothing
-        actor.current_source.last = switched
-    end
-
-    actor.current_subscription = subscribe!(switched, SwitchMapInnerActor{L, R}(actor))
+    actor.current_subscription = subscribe!(Base.invokelatest(actor.mappingFn, data), SwitchMapInnerActor{L, R}(actor))
 end
 
 on_error!(actor::SwitchMapActor, err) = error!(actor.actor, err)
 on_complete!(actor::SwitchMapActor)   = complete!(actor.actor)
 
-# Source proxy #
-
 mutable struct SwitchMapSource{L} <: Subscribable{L}
     source
-    last   :: Union{Nothing, Any}
-
-    SwitchMapSource{L}(source) where L = new(source, nothing)
 end
 
 source_proxy!(proxy::SwitchMapProxy{L, R}, source) where L where R = SwitchMapSource{L}(source)
 
 function on_subscribe!(source::SwitchMapSource{L}, actor::SwitchMapActor{L, R}) where L where R
-    if source.last != nothing
-        actor.current_subscription = subscribe!(source.last, SwitchMapInnerActor{L, R}(actor))
-    end
-    actor.current_source = source
     return SwitchMapSubscription(subscribe!(source.source, actor), actor)
 end
 
