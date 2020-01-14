@@ -170,11 +170,11 @@ macro CreateFilterOperator(name, filterFn)
     operatorDefinition = quote
         struct $operatorName{L} <: Rx.LeftTypedOperator{L} end
 
-        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source)
+        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source) where L
             return Rx.ProxyObservable{L}(source, ($proxyName){L}())
         end
 
-        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source::SingleObservable{L})
+        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source::SingleObservable{L}) where L
             __inlined_lambda = $filterFn
             if __inlined_lambda(source.value)
                 return of(source.value)

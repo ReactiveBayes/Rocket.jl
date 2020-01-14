@@ -167,7 +167,7 @@ macro CreateMapOperator(name, mappingFn)
             return Rx.ProxyObservable{R}(source, ($proxyName){L}())
         end
 
-        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source::SingleObservable{L})
+        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source::SingleObservable{L}) where L where R
             __inlined_lambda = $mappingFn
             return Rx.SingleObservable{R}(__inlined_lambda(source.value))
         end
