@@ -4,6 +4,8 @@ export SwitchMapInnerActor, SwitchMapActor, on_next!, on_error!, on_complete!, i
 export switchMap
 export @CreateSwitchMapOperator
 
+# TODO: Work in progress
+
 switchMap(::Type{R}, mappingFn::Function) where R = SwitchMapOperator{R}(mappingFn)
 
 struct SwitchMapOperator{R} <: RightTypedOperator{R}
@@ -24,12 +26,16 @@ mutable struct SwitchMapActor{L, R} <: Actor{L}
     mappingFn :: Function
     actor
 
+    current_subscription_completed :: Bool
     current_subscription :: Union{Nothing, Teardown}
+    switch_completed     :: Bool
+    switch_failed        :: Bool
+    switch_last_error    :: Union{Nothing, Any}
 
-    SwitchMapActor{L, R}(mappingFn::Function, actor) where L where R = new(mappingFn, actor, nothing)
+    SwitchMapActor{L, R}(mappingFn::Function, actor) where L where R = new(mappingFn, actor, false, nothing, false, false, nothing)
 end
 
-is_exhausted(actor::SwitchMapActor) = is_exhausted(actor.actor)
+is_exhausted(actor::SwitchMapActor) = actor.switch_completed || actor.switch_failed || is_exhausted(actor.actor)
 
 struct SwitchMapInnerActor{L, R} <: Actor{R}
     switch_actor :: SwitchMapActor{L, R}
@@ -39,17 +45,50 @@ is_exhausted(actor::SwitchMapInnerActor) = is_exhausted(actor.switch_actor)
 
 on_next!(actor::SwitchMapInnerActor{L, R}, data::R) where L where R = next!(actor.switch_actor.actor, data)
 on_error!(actor::SwitchMapInnerActor,   err)                        = error!(actor.switch_actor, err)
-on_complete!(actor::SwitchMapInnerActor)                            = begin end
+on_complete!(actor::SwitchMapInnerActor)                            = begin
+    if actor.switch_actor.switch_completed
+        complete!(actor.switch_actor.actor)
+    elseif actor.switch_actor.switch_failed
+        error!(actor.switch_actor.actor, actor.switch_actor.switch_last_error)
+    else
+        actor.switch_actor.current_subscription_completed = true
+    end
+end
 
 function on_next!(actor::SwitchMapActor{L, R}, data::L) where L where R
     if actor.current_subscription != nothing
         unsubscribe!(actor.current_subscription)
     end
-    actor.current_subscription = subscribe!(Base.invokelatest(actor.mappingFn, data), SwitchMapInnerActor{L, R}(actor))
+
+    actor.current_subscription           = nothing
+    actor.current_subscription_completed = false
+
+    subscription = subscribe!(Base.invokelatest(actor.mappingFn, data), SwitchMapInnerActor{L, R}(actor))
+
+    if !actor.current_subscription_completed
+        actor.current_subscription = subscription
+    end
 end
 
-on_error!(actor::SwitchMapActor, err) = error!(actor.actor, err)
-on_complete!(actor::SwitchMapActor)   = complete!(actor.actor)
+function on_error!(actor::SwitchMapActor, err)
+    if !actor.switch_completed && !actor.switch_failed
+        actor.switch_failed     = true
+        actor.switch_last_error = err
+
+        if actor.current_subscription == nothing
+            error!(actor.actor, err)
+        end
+    end
+end
+
+function on_complete!(actor::SwitchMapActor)
+    if !actor.switch_completed && !actor.switch_failed
+        actor.switch_completed = true
+        if actor.current_subscription == nothing
+            complete!(actor.actor)
+        end
+    end
+end
 
 mutable struct SwitchMapSource{L} <: Subscribable{L}
     source
@@ -101,12 +140,16 @@ macro CreateSwitchMapOperator(name, mappingFn)
     actorDefinition = quote
         mutable struct $actorName{L, R} <: Rx.Actor{L}
             actor
+            current_subscription_completed :: Bool
             current_subscription :: Union{Nothing, Teardown}
+            switch_completed     :: Bool
+            switch_failed        :: Bool
+            switch_last_error    :: Union{Nothing, Any}
 
-            ($actorName){L, R}(actor) where L where R = new(actor, nothing)
+            ($actorName){L, R}(actor) where L where R = new(actor, false, nothing, false, false, nothing)
         end
 
-        Rx.is_exhausted(actor::($actorName)) = Rx.is_exhausted(actor.actor)
+        Rx.is_exhausted(actor::($actorName)) = actor.switch_completed || actor.switch_failed || Rx.is_exhausted(actor.actor)
 
         struct $innerActorName{L, R} <: Rx.Actor{R}
             switch_actor :: ($actorName){L, R}
@@ -116,18 +159,51 @@ macro CreateSwitchMapOperator(name, mappingFn)
 
         Rx.on_next!(actor::($innerActorName){L, R}, data::R) where L where R = Rx.next!(actor.switch_actor.actor, data)
         Rx.on_error!(actor::($innerActorName),   err)                        = Rx.error!(actor.switch_actor, err)
-        Rx.on_complete!(actor::($innerActorName))                            = begin end
+        Rx.on_complete!(actor::($innerActorName))                            = begin
+            if actor.switch_actor.switch_completed
+                complete!(actor.switch_actor.actor)
+            elseif actor.switch_actor.switch_failed
+                error!(actor.switch_actor.actor, actor.switch_actor.switch_last_error)
+            else
+                actor.switch_actor.current_subscription_completed = true
+            end
+        end
 
         function Rx.on_next!(actor::($actorName){L, R}, data::L) where L where R
             if actor.current_subscription != nothing
-                Rx.unsubscribe!(actor.current_subscription)
+                unsubscribe!(actor.current_subscription)
             end
+
+            actor.current_subscription           = nothing
+            actor.current_subscription_completed = false
+
             __inlined_lambda = $mappingFn
-            actor.current_subscription = Rx.subscribe!(__inlined_lambda(data), ($innerActorName){L, R}(actor))
+            subscription = subscribe!(__inlined_lambda(data), ($innerActorName){L, R}(actor))
+
+            if !actor.current_subscription_completed
+                actor.current_subscription = subscription
+            end
         end
 
-        Rx.on_error!(actor::($actorName), err) = Rx.error!(actor.actor, err)
-        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+        Rx.on_error!(actor::($actorName), err) = begin
+            if !actor.switch_completed && !actor.switch_failed
+                actor.switch_failed     = true
+                actor.switch_last_error = err
+
+                if actor.current_subscription == nothing
+                    Rx.error!(actor.actor, err)
+                end
+            end
+        end
+
+        Rx.on_complete!(actor::($actorName))   = begin
+            if !actor.switch_completed && !actor.switch_failed
+                actor.switch_completed = true
+                if actor.current_subscription == nothing
+                    Rx.complete!(actor.actor)
+                end
+            end
+        end
     end
 
     generated = quote

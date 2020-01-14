@@ -49,8 +49,9 @@ mutable struct Subject{D} <: Actor{D}
                     message = take!(channel)
                     _subject_handle_event(subject, message)
                 end
-            catch e
-                _subject_handle_event(subject, SubjectErrorMessage(e))
+            catch err
+                @warn "An exception occured during Subject data event handling: $err"
+                _subject_handle_event(subject, SubjectErrorMessage(err))
             end
         end
 
@@ -76,6 +77,7 @@ function _subject_handle_event(subject::Subject{D}, message::SubjectNextMessage{
         try
             next!(actor, data)
         catch err
+            @warn "An exception occured during Subject data event handling for actor $(typeof(actor)): $err"
             error!(actor, err)
             push!(failed_actors, actor)
         end
