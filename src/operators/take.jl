@@ -66,17 +66,15 @@ mutable struct TakeInnerActor{L} <: Actor{L}
     is_completed :: Bool
     max_count    :: Int
     current      :: Int
-    subject      :: Subject{L}
     actor
     subscription
 
-    TakeInnerActor{L}(max_count::Int, subject::Subject{L}, actor) where L = begin
+    TakeInnerActor{L}(max_count::Int, actor) where L = begin
         take_actor = new()
 
         take_actor.is_completed = false
         take_actor.max_count    = max_count
         take_actor.current      = 0
-        take_actor.subject      = subject
         take_actor.actor        = actor
 
         return take_actor
@@ -89,7 +87,7 @@ function on_next!(actor::TakeInnerActor{L}, data::L) where L
     if !actor.is_completed
         if actor.current < actor.max_count
             actor.current += 1
-            next!(actor.subject, data)
+            next!(actor.actor, data)
             if actor.current == actor.max_count
                 complete!(actor)
             end
@@ -99,7 +97,7 @@ end
 
 function on_error!(actor::TakeInnerActor{L}, err) where L
     if !actor.is_completed
-        error!(actor.subject, err)
+        error!(actor.actor, err)
         if isdefined(actor, :subscription)
             unsubscribe!(actor.subscription)
         end
@@ -109,7 +107,7 @@ end
 function on_complete!(actor::TakeInnerActor{L}) where L
     if !actor.is_completed
         actor.is_completed = true
-        complete!(actor.subject)
+        complete!(actor.actor)
         if isdefined(actor, :subscription)
             unsubscribe!(actor.subscription)
         end
@@ -118,17 +116,16 @@ end
 
 struct TakeSource{L} <: Subscribable{L}
     max_count :: Int
-    subject   :: Subject{L}
     source
 
-    TakeSource{L}(max_count::Int, source) where L = new(max_count, Subject{L}(), source)
+    TakeSource{L}(max_count::Int, source) where L = new(max_count, source)
 end
 
 function on_subscribe!(observable::TakeSource{L}, actor) where L
-    inner_actor  = TakeInnerActor{L}(observable.max_count, observable.subject, actor)
+    inner_actor  = TakeInnerActor{L}(observable.max_count, actor)
 
-    subscription             = subscribe!(observable.subject, actor)
-    inner_actor.subscription = subscribe!(observable.source, inner_actor)
+    subscription = subscribe!(observable.source, inner_actor)
+    inner_actor.subscription = subscription
 
     return subscription
 end
