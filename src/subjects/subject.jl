@@ -46,7 +46,7 @@ mutable struct Subject{D} <: Actor{D}
         task = @async begin
             try
                 while !subject.is_completed && !subject.is_error
-                    message = take!(channel)
+                    message = take!(channel)::SubjectMessage{D}
                     _subject_handle_event(subject, message)
                 end
             catch err
@@ -132,9 +132,9 @@ function _subject_unsubscribe_all(subject::Subject{D}) where D
 end
 
 
-struct SubjectSubscription{D, A <: AbstractActor{D}} <: Teardown
-    subject :: Subject{D}
-    actor   :: A
+struct SubjectSubscription <: Teardown
+    subject
+    actor
 end
 
 as_teardown(::Type{<:SubjectSubscription}) = UnsubscribableTeardownLogic()
@@ -148,7 +148,7 @@ function on_subscribe!(subject::Subject{D}, actor::A) where { A <: AbstractActor
         return VoidTeardown()
     else
         push!(subject.actors, actor)
-        return SubjectSubscription{D, A}(subject, actor)
+        return SubjectSubscription(subject, actor)
     end
 end
 
@@ -157,8 +157,8 @@ function on_unsubscribe!(subscription::SubjectSubscription)
     return nothing
 end
 
-Base.show(io::IO, subject::Subject)                  = print(io, "Subject [ with $(length(subject.actors)) actors listening ]")
-Base.show(io::IO, subscription::SubjectSubscription) = print(io, "Subject subscription with $(subscription.actor) actor")
+Base.show(io::IO, subject::Subject{D}) where D       = print(io, "Subject($D)")
+Base.show(io::IO, subscription::SubjectSubscription) = print(io, "SubjectSubscription()")
 
 function close(subject::Subject{D}) where D
     _subject_handle_event(subject, SubjectCompleteMessage())
