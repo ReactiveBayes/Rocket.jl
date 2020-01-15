@@ -68,7 +68,7 @@ end
 
 as_subscribable(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubscribable{D}()
 
-function on_subscribe!(subject::LocalNetworkSubject{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(subject::LocalNetworkSubject, actor)
     if subject.is_closed
         complete!(actor)
         return VoidTeardown()

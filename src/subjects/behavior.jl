@@ -63,7 +63,7 @@ function on_complete!(subject::BehaviorSubject)
     complete!(subject.subject)
 end
 
-function on_subscribe!(subject::BehaviorSubject{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(subject::BehaviorSubject, actor)
     next!(actor, subject.current)
     return subscribe!(subject.subject, actor)
 end

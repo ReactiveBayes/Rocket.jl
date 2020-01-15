@@ -69,7 +69,7 @@ function on_complete!(subject::ReplaySubject)
     complete!(subject.subject)
 end
 
-function on_subscribe!(subject::ReplaySubject{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(subject::ReplaySubject, actor)
     for v in subject.cb
         next!(actor, v)
     end

@@ -58,6 +58,7 @@ include("operators/lowercase.jl")
 include("operators/to_array.jl")
 include("operators/tuple_with.jl")
 include("operators/replay.jl")
+include("operators/share_cached.jl")
 include("operators/switchMap.jl")
 
 include("extensions/observable/single.jl")

@@ -139,7 +139,7 @@ end
 
 as_teardown(::Type{<:SubjectSubscription}) = UnsubscribableTeardownLogic()
 
-function on_subscribe!(subject::Subject{D}, actor::A) where { A <: AbstractActor{D} } where D
+function on_subscribe!(subject::Subject, actor)
     if subject.is_error
         error!(actor, subject.last_error)
         return VoidTeardown()
