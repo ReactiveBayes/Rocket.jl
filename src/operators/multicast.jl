@@ -2,7 +2,7 @@ export MulticastOperator, on_call!, operator_right
 export MulticastWithFactoryOperator, on_call!, operator_right
 export multicast, as_multicast
 
-multicast(subject::S) where D = as_multicast(as_subject(S), subject)
+multicast(subject::S) where S = as_multicast(as_subject(S), subject)
 
 as_multicast(::ValidSubject{D}, subject) where D = MulticastOperator(subject)
 as_multicast(::InvalidSubject,  subject)         = throw(InvalidSubjectTraitUsageError(subject))

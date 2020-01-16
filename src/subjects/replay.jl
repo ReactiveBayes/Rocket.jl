@@ -49,38 +49,38 @@ See also: [`Subject`](@ref), [`BehaviorSubject`](@ref)
 """
 struct ReplaySubject{D} <: Actor{D}
     cb      :: CircularBuffer{D}
-    subject :: Subject{D}
+    inner_subject
 
-    ReplaySubject{D}(capacity::Int) where D = new(CircularBuffer{D}(capacity), Subject{D}())
+    ReplaySubject{D}(capacity::Int; inner_subject = Subject{D}()) where D = new(CircularBuffer{D}(capacity), inner_subject)
 end
 
 as_subject(::Type{<:ReplaySubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:ReplaySubject{D}}) where D = ValidSubscribable{D}()
 
-is_exhausted(actor::ReplaySubject) = is_exhausted(actor.subject)
+is_exhausted(actor::ReplaySubject) = is_exhausted(actor.inner_subject)
 
 function on_next!(subject::ReplaySubject{D}, data::D) where D
     push!(subject.cb, data)
-    next!(subject.subject, data)
+    next!(subject.inner_subject, data)
 end
 
 function on_error!(subject::ReplaySubject, err)
-    error!(subject.subject, err)
+    error!(subject.inner_subject, err)
 end
 
 function on_complete!(subject::ReplaySubject)
-    complete!(subject.subject)
+    complete!(subject.inner_subject)
 end
 
 function on_subscribe!(subject::ReplaySubject, actor)
     for v in subject.cb
         next!(actor, v)
     end
-    return subscribe!(subject.subject, actor)
+    return subscribe!(subject.inner_subject, actor)
 end
 
 function close(subject::ReplaySubject)
-    close(subject.subject)
+    close(subject.inner_subject)
 end
 
 # ----------------------- #
@@ -89,6 +89,9 @@ end
 
 struct ReplaySubjectFactory <: AbstractSubjectFactory
     count :: Int
+    inner_factory
+
+    ReplaySubjectFactory(count::Int; inner_factory = SubjectFactory()) = new(count, inner_factory)
 end
 
-create_subject(::Type{L}, factory::ReplaySubjectFactory) where L = ReplaySubject{L}(factory.count)
+create_subject(::Type{L}, factory::ReplaySubjectFactory) where L = ReplaySubject{L}(factory.count, inner_subject = create_subject(L, factory.inner_factory))
