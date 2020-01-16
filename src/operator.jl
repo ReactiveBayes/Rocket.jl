@@ -1,12 +1,14 @@
 export OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferableOperatorTrait, InvalidOperatorTrait
 export AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
 export as_operator, call_operator!, on_call!, operator_right
+export OperatorsComposition, call_operator_composition!
 
 export InvalidOperatorTraitUsageError, InconsistentSourceOperatorDataTypesError
 export MissingOnCallImplementationError, MissingOperatorRightImplementationError
 
 import Base: show
 import Base: |>
+import Base: +
 
 """
 Abstract type for all possible operator traits
@@ -385,6 +387,28 @@ See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOp
 operator_right(operator::O, ::Type{L}) where { O <: TypedOperator{L, R}   } where L where R = R
 operator_right(operator::O, ::Type{L}) where { O <: RightTypedOperator{R} } where L where R = R
 operator_right(operator, L) = throw(MissingOperatorRightImplementationError(operator))
+
+# -------------------------------- #
+# Operators composition            #
+# -------------------------------- #
+
+struct OperatorsComposition
+    operators
+end
+
+function call_operator_composition!(composition::OperatorsComposition, source)
+    transformed = source
+    for operator in composition.operators
+        transformed = transformed |> operator
+    end
+    return transformed
+end
+
+Base.:|>(source, composition::C) where { C <: OperatorsComposition } = call_operator_composition!(composition, source)
+
+Base.:+(o1::O1, o2::O2)                            where { O1 <: AbstractOperator } where { O2 <: AbstractOperator } = OperatorsComposition((o1, o2))
+Base.:+(o1::O1, composition::OperatorsComposition) where { O1 <: AbstractOperator }                                  = OperatorsComposition((o1, composition.operators...))
+Base.:+(composition::OperatorsComposition, o2::O2) where { O2 <: AbstractOperator }                                  = OperatorsComposition((composition.operators..., o2))
 
 # -------------------------------- #
 # Errors                           #

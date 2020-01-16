@@ -2,6 +2,8 @@ export SingleSubject, as_subscribable, on_subscribe!
 export SingleSubjectSubscription, as_teardown, on_unsubscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 
+export SingleSubjectFactory, create_subject
+
 import Base: show
 
 mutable struct SingleSubject{D} <: Actor{D}
@@ -22,6 +24,7 @@ mutable struct SingleSubject{D} <: Actor{D}
     end
 end
 
+as_subject(::Type{<:SingleSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:SingleSubject{D}}) where D = ValidSubscribable{D}()
 
 is_exhausted(actor::SingleSubject) = actor.is_completed || actor.is_error
@@ -103,3 +106,21 @@ end
 
 Base.show(io::IO, subject::SingleSubject{D}) where D       = print(io, "SingleSubject($D)")
 Base.show(io::IO, subscription::SingleSubjectSubscription) = print(io, "SingleSubjectSubscription()")
+
+# ----------------------- #
+# Single Subject factory  #
+# ----------------------- #
+
+struct SingleSubjectFactory <: AbstractSubjectFactory
+    initial
+
+    SingleSubjectFactory(initial = nothing) = new(initial)
+end
+
+function create_subject(::Type{L}, factory::SingleSubjectFactory) where L
+    if factory.initial !== nothing
+        return SingleSubject{L}(convert(L, factory.initial))
+    else
+        return SingleSubject{L}()
+    end
+end

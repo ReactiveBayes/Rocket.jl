@@ -2,6 +2,8 @@ export ReplaySubject, as_subscribable, on_subscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
+export ReplaySubjectFactory, create_subject
+
 import DataStructures: CircularBuffer
 import Base: close
 
@@ -52,6 +54,7 @@ struct ReplaySubject{D} <: Actor{D}
     ReplaySubject{D}(capacity::Int) where D = new(CircularBuffer{D}(capacity), Subject{D}())
 end
 
+as_subject(::Type{<:ReplaySubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:ReplaySubject{D}}) where D = ValidSubscribable{D}()
 
 is_exhausted(actor::ReplaySubject) = is_exhausted(actor.subject)
@@ -79,3 +82,13 @@ end
 function close(subject::ReplaySubject)
     close(subject.subject)
 end
+
+# ----------------------- #
+# Replay Subject factory  #
+# ----------------------- #
+
+struct ReplaySubjectFactory <: AbstractSubjectFactory
+    count :: Int
+end
+
+create_subject(::Type{L}, factory::ReplaySubjectFactory) where L = ReplaySubject{L}(factory.count)

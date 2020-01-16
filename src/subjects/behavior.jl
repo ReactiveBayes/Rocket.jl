@@ -2,6 +2,8 @@ export BehaviorSubject, as_subscribable, on_subscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
+export BehaviorSubjectFactory, create_subject
+
 import Base: close
 
 """
@@ -46,6 +48,7 @@ mutable struct BehaviorSubject{D} <: Actor{D}
     BehaviorSubject{D}(current::D) where D = new(current, Subject{D}())
 end
 
+as_subject(::Type{<:BehaviorSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:BehaviorSubject{D}}) where D = ValidSubscribable{D}()
 
 is_exhausted(actor::BehaviorSubject) = is_exhausted(actor.subject)
@@ -71,3 +74,13 @@ end
 function close(subject::BehaviorSubject)
     close(subject.subject)
 end
+
+# ------------------------- #
+# Behavior Subject factory  #
+# ------------------------- #
+
+struct BehaviorSubjectFactory <: AbstractSubjectFactory
+    default
+end
+
+create_subject(::Type{L}, factory::BehaviorSubjectFactory) where L = BehaviorSubject{L}(convert(L, factory.default))

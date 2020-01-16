@@ -3,6 +3,8 @@ export SubjectSubscription, as_teardown, on_unsubscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
+export SubjectFactory, create_subject
+
 import Base: show
 import Base: close
 
@@ -61,19 +63,22 @@ mutable struct Subject{D} <: Actor{D}
     end
 end
 
+as_subject(::Type{<:Subject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:Subject{D}}) where D = ValidSubscribable{D}()
 
 is_exhausted(actor::Subject) = actor.is_completed || actor.is_error
 
 on_next!(subject::Subject{D}, data::D) where D = put!(subject.channel, SubjectNextMessage{D}(data))
-on_error!(subject::Subject{D}, error)  where D = put!(subject.channel, SubjectErrorMessage(error))
-on_complete!(subject::Subject{D})      where D = put!(subject.channel, SubjectCompleteMessage())
+on_error!(subject::Subject, err)               = put!(subject.channel, SubjectErrorMessage(err))
+on_complete!(subject::Subject)                 = put!(subject.channel, SubjectCompleteMessage())
 
 function _subject_handle_event(subject::Subject{D}, message::SubjectNextMessage{D}) where D
     failed_actors = Vector{AbstractActor{D}}()
 
-    data = message.data
-    for actor in subject.actors
+    data   = message.data
+    actors = copy(subject.actors)
+
+    for actor in actors
         try
             next!(actor, data)
         catch err
@@ -127,7 +132,7 @@ function _subject_unsubscribe_actors(subject::Subject{D}, actors::Vector{Abstrac
     end
 end
 
-function _subject_unsubscribe_all(subject::Subject{D}) where D
+function _subject_unsubscribe_all(subject::Subject)
     _subject_unsubscribe_actors(subject, subject.actors)
 end
 
@@ -163,3 +168,11 @@ Base.show(io::IO, subscription::SubjectSubscription) = print(io, "SubjectSubscri
 function close(subject::Subject{D}) where D
     _subject_handle_event(subject, SubjectCompleteMessage())
 end
+
+# ----------------------- #
+# Subject factory         #
+# ----------------------- #
+
+struct SubjectFactory <: AbstractSubjectFactory end
+
+create_subject(::Type{L}, factory::SubjectFactory) where L = Subject{L}()

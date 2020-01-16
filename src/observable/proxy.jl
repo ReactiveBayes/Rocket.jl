@@ -32,7 +32,7 @@ as_proxy(::Type{<:ActorSourceProxy}) = ValidActorSourceProxy()
 
 call_actor_proxy!(proxy::T, actor::A) where T where A = call_actor_proxy!(as_proxy(T), as_actor(A), proxy, actor)
 
-call_actor_proxy!(as_proxy,                ::UndefinedActorTrait, proxy, actor) = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
+call_actor_proxy!(as_proxy,                ::InvalidActorTrait,   proxy, actor) = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
 call_actor_proxy!(::InvalidProxy,          as_actor,              proxy, actor) = error("Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).")
 call_actor_proxy!(::ValidActorProxy,       as_actor,              proxy, actor) = actor_proxy!(proxy, actor)
 call_actor_proxy!(::ValidSourceProxy,      as_actor,              proxy, actor) = actor
