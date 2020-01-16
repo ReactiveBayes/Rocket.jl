@@ -12,21 +12,21 @@ Abstract type for all possible subscribable traits
 
 See also: [`ValidSubscribable`](@ref), [`InvalidSubscribable`](@ref)
 """
-abstract type SubscribableTrait{T} end
+abstract type SubscribableTrait end
 
 """
-Valid subscribable trait behavior. Valid subscribable can be used in subscribe! fucntion.
+Valid subscribable trait behavior. Valid subscribable can be used in subscribe! function.
 
 See also: [`SubscribableTrait`](@ref), [`Subscribable`](@ref)
 """
-struct ValidSubscribable{T} <: SubscribableTrait{T} end
+struct ValidSubscribable{T} <: SubscribableTrait end
 
 """
 Default subscribable trait behavior for all types. Invalid subscribable cannot be used in subscribe! function, doing so will throw an error.
 
 See also: [`SubscribableTrait`](@ref), [`subscribe!`](@ref)
 """
-struct InvalidSubscribable  <: SubscribableTrait{Nothing} end
+struct InvalidSubscribable  <: SubscribableTrait end
 
 """
 Super type for any subscribable object. Automatically specifies a `ValidSubscribable` trait behavior.
@@ -143,7 +143,7 @@ end
 # actor  <: Actor{Union{L, Nothing}}
 
 subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                   = throw(InvalidSubscribableTraitUsageError(subscribable))
-subscribable_on_subscribe!(::ValidSubscribable,     ::UndefinedActorTrait, subscribable, actor)                   = throw(UndefinedActorTraitUsageError(actor))
+subscribable_on_subscribe!(::ValidSubscribable,     ::InvalidActorTrait,   subscribable, actor)                   = throw(InvalidActorTraitUsageError(actor))
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2 = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subscribable, actor) where T           = begin
     if !is_exhausted(actor)

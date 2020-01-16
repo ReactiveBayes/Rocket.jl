@@ -1,4 +1,4 @@
-export UndefinedActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
+export InvalidActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
 export AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
 export AbstractActorFactory
 export next!, error!, complete!
@@ -6,7 +6,7 @@ export on_next!, on_error!, on_complete!
 export as_actor
 export is_exhausted
 
-export UndefinedActorTraitUsageError, InconsistentSourceActorDataTypesError
+export InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
 export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
 export MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
 export MissingIsExhaustedImplementationError
@@ -17,7 +17,7 @@ import Base: show
 """
 Abstract type for all possible actor traits
 
-See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`UndefinedActorTrait`](@ref)
+See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
 """
 abstract type ActorTrait{T} end
 
@@ -53,7 +53,7 @@ struct CompletionActorTrait{T} <: ActorTrait{T}       end
 Default actor trait behavior for any object. Actor with such a trait specificaion cannot be used as a valid actor in `subscribe!` function.
 Doing so will raise an error.
 """
-struct UndefinedActorTrait     <: ActorTrait{Nothing} end
+struct InvalidActorTrait       <: ActorTrait{Nothing} end
 
 """
 Abstract type for any actor object
@@ -101,8 +101,8 @@ This function checks actor trait behavior specification. May be used explicitly 
 
 See also: [`ActorTrait`](@ref)
 """
-as_actor(::Type)                  = UndefinedActorTrait()
-as_actor(::Type{<:AbstractActor}) = UndefinedActorTrait()
+as_actor(::Type)                  = InvalidActorTrait()
+as_actor(::Type{<:AbstractActor}) = InvalidActorTrait()
 
 as_actor(::Type{<:Actor{T}})           where T = BaseActorTrait{T}()
 as_actor(::Type{<:NextActor{T}})       where T = NextActorTrait{T}()
@@ -149,7 +149,7 @@ See also: [`AbstractActor`](@ref)
 """
 is_exhausted(actor) = false # throw(MissingIsExhaustedImplementationError(actor))
 
-actor_on_next!(::UndefinedActorTrait,     actor, data)                     = throw(UndefinedActorTraitUsageError(actor))
+actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
 actor_on_next!(::NextActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
 actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
@@ -159,13 +159,13 @@ actor_on_next!(::NextActorTrait{T},       actor, data::T) where T = on_next!(act
 actor_on_next!(::ErrorActorTrait{T},      actor, data::T) where T = begin end
 actor_on_next!(::CompletionActorTrait{T}, actor, data::T) where T = begin end
 
-actor_on_error!(::UndefinedActorTrait,  actor, err) = throw(UndefinedActorTraitUsageError(actor))
+actor_on_error!(::InvalidActorTrait,    actor, err) = throw(InvalidActorTraitUsageError(actor))
 actor_on_error!(::BaseActorTrait,       actor, err) = on_error!(actor, err)
 actor_on_error!(::NextActorTrait,       actor, err) = begin end
 actor_on_error!(::ErrorActorTrait,      actor, err) = on_error!(actor, err)
 actor_on_error!(::CompletionActorTrait, actor, err) = begin end
 
-actor_on_complete!(::UndefinedActorTrait,  actor) = throw(UndefinedActorTraitUsageError(actor))
+actor_on_complete!(::InvalidActorTrait,    actor) = throw(InvalidActorTraitUsageError(actor))
 actor_on_complete!(::BaseActorTrait,       actor) = on_complete!(actor)
 actor_on_complete!(::NextActorTrait,       actor) = begin end
 actor_on_complete!(::ErrorActorTrait,      actor) = begin end
@@ -205,13 +205,13 @@ on_complete!(actor)     = throw(MissingOnCompleteImplementationError(actor))
 """
 This error will be thrown if `next!`, `error!` or `complete!` functions are called with invalid actor object
 
-See also: [`next!`](@ref), [`error!`](@ref), [`complete!`](@ref), [`UndefinedActorTrait`](@ref)
+See also: [`next!`](@ref), [`error!`](@ref), [`complete!`](@ref), [`InvalidActorTrait`](@ref)
 """
-struct UndefinedActorTraitUsageError
+struct InvalidActorTraitUsageError
     actor
 end
 
-function Base.show(io::IO, err::UndefinedActorTraitUsageError)
+function Base.show(io::IO, err::InvalidActorTraitUsageError)
     print(io, "Type $(typeof(err.actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(err.actor))}).")
 end
 

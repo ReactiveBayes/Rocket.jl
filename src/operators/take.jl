@@ -39,7 +39,7 @@ end
 
 # output
 
-Int64[1, 2, 3, 4, 5]
+[1, 2, 3, 4, 5]
 ```
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)

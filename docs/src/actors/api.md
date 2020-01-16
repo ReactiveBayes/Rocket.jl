@@ -10,7 +10,7 @@ BaseActorTrait
 NextActorTrait
 ErrorActorTrait
 CompletionActorTrait
-UndefinedActorTrait
+InvalidActorTrait
 ```
 
 ## Actor types
@@ -41,7 +41,7 @@ on_complete!
 ## Actor errors
 
 ```@docs
-UndefinedActorTraitUsageError
+InvalidActorTraitUsageError
 InconsistentSourceActorDataTypesError
 MissingDataArgumentInNextCall
 MissingErrorArgumentInErrorCall

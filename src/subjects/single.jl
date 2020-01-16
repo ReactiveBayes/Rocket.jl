@@ -22,7 +22,7 @@ mutable struct SingleSubject{D} <: Actor{D}
     end
 end
 
-as_subscribable(::Type{<:SingleSubject{D}}) where D = ValidSubscribable{D}()
+as_subject(::Type{<:SingleSubject{D}}) where D = ValidSubject{D}()
 
 is_exhausted(actor::SingleSubject) = actor.is_completed || actor.is_error
 

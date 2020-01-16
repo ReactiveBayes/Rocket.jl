@@ -61,7 +61,7 @@ mutable struct Subject{D} <: Actor{D}
     end
 end
 
-as_subscribable(::Type{<:Subject{D}}) where D = ValidSubscribable{D}()
+as_subject(::Type{<:Subject{D}}) where D = ValidSubject{D}()
 
 is_exhausted(actor::Subject) = actor.is_completed || actor.is_error
 

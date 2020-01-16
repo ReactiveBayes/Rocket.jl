@@ -53,5 +53,5 @@ See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 """
 sync(actor::A) where A = as_sync(as_actor(A), actor)
 
-as_sync(::UndefinedActorTrait, actor)         = throw(UndefinedActorTraitUsageError(actor))
-as_sync(::ActorTrait{D},       actor) where D = SyncActor{D}(actor)
+as_sync(::InvalidActorTrait, actor)         = throw(InvalidActorTraitUsageError(actor))
+as_sync(::ActorTrait{D},     actor) where D = SyncActor{D}(actor)

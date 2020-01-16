@@ -25,7 +25,8 @@ makedocs(
             "API"               => "observables/api.md",
         ],
         "Subjects" => [
-            "About subjects" => "subjects/about.md"
+            "About subjects" => "subjects/about.md",
+            "API"            => "subjects/api.md"
         ],
         "Actors"     => [
             "About actors"  => "actors/about.md",

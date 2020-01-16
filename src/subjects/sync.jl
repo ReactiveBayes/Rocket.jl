@@ -20,7 +20,7 @@ mutable struct SyncSubject{D} <: Actor{D}
     end
 end
 
-as_subscribable(::Type{<:SyncSubject{D}}) where D = ValidSubscribable{D}()
+as_subject(::Type{<:SyncSubject{D}}) where D = ValidSubject{D}()
 
 is_exhausted(actor::SyncSubject) = actor.is_completed || actor.is_error
 

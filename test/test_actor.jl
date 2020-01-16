@@ -3,13 +3,13 @@ module RxActorTest
 using Test
 
 import Rx
-import Rx: UndefinedActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
+import Rx: InvalidActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
 import Rx: AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
 import Rx: next!, error!, complete!
 import Rx: on_next!, on_error!, on_complete!
 import Rx: as_actor
 
-import Rx: UndefinedActorTraitUsageError, InconsistentSourceActorDataTypesError
+import Rx: InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
 import Rx: MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
 import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
 
@@ -56,11 +56,11 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
 
     @testset "as_actor" begin
             # Check if arbitrary dummy type has undefined actor type
-            @test as_actor(DummyType) === UndefinedActorTrait()
+            @test as_actor(DummyType) === InvalidActorTrait()
 
             # Check if abstract actor type has undefined actor type
-            @test as_actor(AbstractActor{Any}) === UndefinedActorTrait()
-            @test as_actor(AbstractDummyActor) === UndefinedActorTrait()
+            @test as_actor(AbstractActor{Any}) === InvalidActorTrait()
+            @test as_actor(AbstractDummyActor) === InvalidActorTrait()
 
             # Check if as_teardown return specified actor type
             @test as_actor(SpecifiedAbstractActor) === BaseActorTrait{Any}()
@@ -87,8 +87,8 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
 
     @testset "next!" begin
             # Check if next! function throws an error for not valid actors
-            @test_throws UndefinedActorTraitUsageError next!(DummyType(), 1)
-            @test_throws UndefinedActorTraitUsageError next!(AbstractDummyActor(), 1)
+            @test_throws InvalidActorTraitUsageError next!(DummyType(), 1)
+            @test_throws InvalidActorTraitUsageError next!(AbstractDummyActor(), 1)
 
             # Check if next! function throws an error without data argument
             @test_throws MissingDataArgumentInNextCall next!(ImplementedActor())
@@ -122,8 +122,8 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
 
     @testset "error!" begin
             # Check if error! function throws an error for not valid actors
-            @test_throws UndefinedActorTraitUsageError error!(DummyType(), 1)
-            @test_throws UndefinedActorTraitUsageError error!(AbstractDummyActor(), 1)
+            @test_throws InvalidActorTraitUsageError error!(DummyType(), 1)
+            @test_throws InvalidActorTraitUsageError error!(AbstractDummyActor(), 1)
 
             # Check if error! function throws an error without error argument
             @test_throws MissingErrorArgumentInErrorCall error!(ImplementedActor())
@@ -147,8 +147,8 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
 
     @testset "complete!" begin
             # Check if error! function throws an error for not valid actors
-            @test_throws UndefinedActorTraitUsageError complete!(DummyType())
-            @test_throws UndefinedActorTraitUsageError complete!(AbstractDummyActor())
+            @test_throws InvalidActorTraitUsageError complete!(DummyType())
+            @test_throws InvalidActorTraitUsageError complete!(AbstractDummyActor())
 
             # Check if complete! function throws an error with extra argument
             @test_throws ExtraArgumentInCompleteCall complete!(ImplementedActor(), 1)

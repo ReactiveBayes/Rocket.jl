@@ -28,6 +28,8 @@ mutable struct LocalNetworkSubject{D} <: Actor{D}
     end
 end
 
+as_subject(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubject{D}()
+
 # TODO
 is_exhausted(actor::LocalNetworkSubject) = false
 
@@ -65,8 +67,6 @@ function on_complete!(subject::LocalNetworkSubject)
         end
     end
 end
-
-as_subscribable(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubscribable{D}()
 
 function on_subscribe!(subject::LocalNetworkSubject, actor)
     if subject.is_closed

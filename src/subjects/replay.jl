@@ -52,7 +52,7 @@ struct ReplaySubject{D} <: Actor{D}
     ReplaySubject{D}(capacity::Int) where D = new(CircularBuffer{D}(capacity), Subject{D}())
 end
 
-as_subscribable(::Type{<:ReplaySubject{D}}) where D = ValidSubscribable{D}()
+as_subject(::Type{<:ReplaySubject{D}}) where D = ValidSubject{D}()
 
 is_exhausted(actor::ReplaySubject) = is_exhausted(actor.subject)
 

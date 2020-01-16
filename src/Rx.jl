@@ -16,6 +16,7 @@ include("actor/keep.jl")
 
 include("subscribable.jl")
 include("operator.jl")
+include("subject.jl")
 
 include("subjects/subject.jl")
 include("subjects/sync.jl")

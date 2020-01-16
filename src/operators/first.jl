@@ -34,7 +34,7 @@ end
 
 # output
 
-Int64[1]
+[1]
 ```
 
 See also: [`take`](@ref)
