@@ -85,16 +85,10 @@ mutable struct LatestCombinedObservable2ActorWrapper{D1, D2}
     is_completed2 :: Bool
     is_completed  :: Bool
 
-    subject :: Subject{Tuple{D1, D2}}
-
     subscription1 :: Teardown
     subscription2 :: Teardown
-    subscription  :: Teardown
 
     LatestCombinedObservable2ActorWrapper{D1, D2}(source1, source2, actor) where D1 where D2 = begin
-        subject      = Subject{Tuple{D1, D2}}()
-        subscription = subscribe!(subject, actor)
-
         wrapper = new()
 
         actor1 = LatestCombinedActor1{D1}(wrapper)
@@ -111,8 +105,6 @@ mutable struct LatestCombinedObservable2ActorWrapper{D1, D2}
         wrapper.is_completed2 = false
         wrapper.is_completed  = false
 
-        wrapper.subject       = subject
-        wrapper.subscription  = subscription
         wrapper.subscription1 = subscribe!(source1, wrapper.actor1)
         wrapper.subscription2 = subscribe!(source2, wrapper.actor2)
 
@@ -134,7 +126,7 @@ end
 
 function next_check_and_emit!(wrapper::LatestCombinedObservable2ActorWrapper)
     if !wrapper.is_completed && (wrapper.latest1 != nothing && wrapper.latest2 != nothing)
-        next!(wrapper.subject, (wrapper.latest1, wrapper.latest2))
+        next!(wrapper.actor, (wrapper.latest1, wrapper.latest2))
         # TODO this is wrong but anyway
         if !wrapper.is_completed1
             wrapper.latest1 = nothing
@@ -146,19 +138,13 @@ function next_check_and_emit!(wrapper::LatestCombinedObservable2ActorWrapper)
 end
 
 function error_1!(wrapper::LatestCombinedObservable2ActorWrapper, err)
-    error!(wrapper.subject, err)
+    error!(wrapper.actor, err)
     _dispose_on_complete(wrapper)
-    if isdefined(wrapper, :subscription)
-        unsubscribe!(wrapper.subscription)
-    end
 end
 
 function error_2!(wrapper::LatestCombinedObservable2ActorWrapper, err)
-    error!(wrapper.subject, err)
+    error!(wrapper.actor, err)
     _dispose_on_complete(wrapper)
-    if isdefined(wrapper, :subscription)
-        unsubscribe!(wrapper.subscription)
-    end
 end
 
 function complete_1!(wrapper::LatestCombinedObservable2ActorWrapper)
@@ -180,7 +166,7 @@ end
 function _check_complete(wrapper::LatestCombinedObservable2ActorWrapper)
     if wrapper.is_completed || (wrapper.is_completed1 && wrapper.is_completed2)
         wrapper.is_completed = true
-        complete!(wrapper.subject)
+        complete!(wrapper.actor)
         _dispose_on_complete(wrapper)
     end
 end

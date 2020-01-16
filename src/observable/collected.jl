@@ -3,6 +3,8 @@ export LastCollectedObservableWrapper
 export LastCollectedActor, on_next!, on_error!, on_complete!
 export collectLast
 
+# TODO: WIP fix if some source emits only complete
+
 struct LastCollectedObservable{D} <: Subscribable{Vector{D}}
     sources :: Vector{Any}
 end
@@ -31,31 +33,26 @@ collectLast(::Type{D}, sources) where D = LastCollectedObservable{D}(sources)
 ## Wrapper ##
 
 mutable struct LastCollectedObservableWrapper{D}
-    values          :: Vector{D}
-    size            :: Int
-    completed_count :: Int
-    subject         :: Subject{Vector{D}}
-
-    subject_subscription :: Teardown
+    values               :: Vector{D}
+    size                 :: Int
+    completed_count      :: Int
     inner_subscriptions  :: Vector{Teardown}
+    actor
 
     LastCollectedObservableWrapper{D}(sources::Vector{Any}, actor) where D = begin
         size            = length(sources)
         values          = Vector{D}(undef, size)
         completed_count = 0
-        subject         = Subject{Vector{D}}()
+        inner_subscriptions = Vector{Teardown}(undef, size)
 
-        subject_subscription = subscribe!(subject, actor)
-        inner_subscriptions  = Vector{Teardown}(undef, size)
-
-        wrapper = new(values, size, completed_count, subject, subject_subscription, inner_subscriptions)
+        wrapper = new(values, size, completed_count, inner_subscriptions, actor)
 
         try
             for index in 1:size
                 if !subject.is_error
                     source = sources[index]
-                    actor  = LastCollectedActor{D}(index, wrapper)
-                    subscription = subscribe!(source, actor)
+                    collection_actor = LastCollectedActor{D}(index, wrapper)
+                    subscription = subscribe!(source, collection_actor)
                     inner_subscriptions[index] = subscription
                 end
             end
@@ -70,8 +67,8 @@ end
 
 function _check_completed(wrapper::LastCollectedObservableWrapper)
     if wrapper.completed_count == wrapper.size
-        next!(wrapper.subject, wrapper.values)
-        complete!(wrapper.subject)
+        next!(wrapper.actor, wrapper.values)
+        complete!(wrapper.actor)
     end
 end
 
@@ -98,7 +95,7 @@ function on_next!(actor::LastCollectedActor{D}, data::D) where D
 end
 
 function on_error!(actor::LastCollectedActor, err)
-    error!(actor.wrapper.subject, err)
+    error!(actor.wrapper.actor, err)
     _dispose_inner_subscriptions(actor.wrapper)
 end
 

@@ -1,14 +1,17 @@
+# TODO: WIP
+
 struct ConnectableObservable{D} <: Subscribable{D}
-    observable
+    source
+    subject
 end
 
 function on_subscribe!(observable::ConnectableObservable, actor)
-    error("Not implemented")
+    return subscribe!(observable.subject, actor)
 end
 
-connectable(source::S) where S = as_connectable(as_subscribable(S), source)
+connectable(subject, source::S) where S = as_connectable(as_subscribable(S), source)
 
 as_connectable(::InvalidSubscribable, source)  = throw(InvalidSubscribableTraitUsageError(source))
 as_connectable(::ValidSubscribable{D}, source) = ConnectableObservable{D}(source)
 
-connect(connectable::ConnectableObservable) = subscribe!(ConnectableObservable.observable)
+connect(connectable::ConnectableObservable) = subscribe!(connectable.source, connectable.subject)

@@ -18,6 +18,7 @@ include("subscribable.jl")
 include("operator.jl")
 
 include("subjects/subject.jl")
+include("subjects/sync.jl")
 include("subjects/behavior.jl")
 include("subjects/replay.jl")
 include("subjects/network.jl")
