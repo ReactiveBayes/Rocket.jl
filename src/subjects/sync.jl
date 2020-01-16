@@ -20,7 +20,8 @@ mutable struct SyncSubject{D} <: Actor{D}
     end
 end
 
-as_subject(::Type{<:SyncSubject{D}}) where D = ValidSubject{D}()
+as_subject(::Type{<:SyncSubject{D}})      where D = ValidSubject{D}()
+as_subscribable(::Type{<:SyncSubject{D}}) where D = ValidSubscribable{D}()
 
 is_exhausted(actor::SyncSubject) = actor.is_completed || actor.is_error
 
@@ -110,3 +111,11 @@ end
 
 Base.show(io::IO, subject::SyncSubject{D}) where D       = print(io, "SyncSubject($D)")
 Base.show(io::IO, subscription::SyncSubjectSubscription) = print(io, "SyncSubjectSubscription()")
+
+# ----------------------- #
+# Sync Subject factory    #
+# ----------------------- #
+
+struct SyncSubjectFactory <: AbstractSubjectFactory end
+
+create_subject(::Type{L}, factory::SyncSubjectFactory) where L = SyncSubject{L}()

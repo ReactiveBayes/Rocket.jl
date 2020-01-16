@@ -1,6 +1,9 @@
 export SubjectTrait
 export ValidSubject, InvalidSubject, as_subject
-export as_subscribable
+export AbstractSubjectFactory, create_subject
+
+export InvalidSubjectTraitUsageError
+export MissingCreateSubjectFactoryImplementationError
 
 """
 Abstract type for all possible subject traits
@@ -32,4 +35,54 @@ See also: [`SubjectTrait`](@ref)
 """
 as_subject(::Type) = InvalidSubject()
 
-as_subscribable(::Type{<:ValidSubject{D}}) where D = ValidSubscribable{D}()
+
+# -------------------------------- #
+# Subject factory                  #
+# -------------------------------- #
+
+"""
+Abstract type for all possible subject factories
+
+See also: [`SubjectTrait`](@ref), [`ValidSubject`](@ref), [`InvalidSubject`](@ref)
+"""
+abstract type AbstractSubjectFactory end
+
+"""
+    create_subject(::Type{L}, factory::F) where L where { F <: AbstractSubjectFactory }
+
+Actor creator function for a given factory `F`. Should be implemented explicitly for any `AbstractActorFactory` object
+
+See also: [`AbstractSubjectFactory`](@ref), [`MissingCreateActorFactoryImplementationError`](@ref)
+"""
+create_subject(::Type{L}, factory::F) where L where { F <: AbstractSubjectFactory } = throw(MissingCreateSubjectFactoryImplementationError(factory))
+
+"""
+This error will be throw if Julia cannot find specific method of 'create_subject()' function for given subject factory
+
+See also: [`AbstractSubjectFactory`](@ref), [`create_subject`](@ref)
+"""
+struct MissingCreateSubjectFactoryImplementationError
+    factory
+end
+
+function Base.show(io::IO, err::MissingCreateSubjectFactoryImplementationError)
+    print(io, "You probably forgot to implement create_subject(::Type{L}, factory::$(typeof(err.factory))).")
+end
+
+
+# -------------------------------- #
+# Errors                           #
+# -------------------------------- #
+
+"""
+InvalidSubject usage error
+
+See also: [`subscribe!`](@ref)
+"""
+struct InvalidSubjectTraitUsageError
+    subject
+end
+
+function Base.show(io::IO, err::InvalidSubjectTraitUsageError)
+    print(io, "Type $(typeof(err.subject)) is not a valid subject type. \nConsider implement as_subject(::Type{<:$(typeof(err.subject))}).")
+end

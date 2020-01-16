@@ -38,6 +38,14 @@ on_error!
 on_complete!
 ```
 
+## Actor factory
+
+```@docs
+AbstractActorFactory
+create_actor
+MissingCreateActorFactoryImplementationError
+```
+
 ## Actor errors
 
 ```@docs

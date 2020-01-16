@@ -8,3 +8,17 @@ as_subject
 ValidSubject
 InvalidSubject
 ```
+
+## Subject factory
+
+```@docs
+AbstractSubjectFactory
+create_subject
+MissingCreateSubjectFactoryImplementationError
+```
+
+## Subject errors
+
+```@docs
+InvalidSubjectTraitUsageError
+```

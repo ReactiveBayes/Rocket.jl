@@ -3,6 +3,8 @@ export SubjectSubscription, as_teardown, on_unsubscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
+export SubjectFactory, create_subject
+
 import Base: show
 import Base: close
 
@@ -61,7 +63,8 @@ mutable struct Subject{D} <: Actor{D}
     end
 end
 
-as_subject(::Type{<:Subject{D}}) where D = ValidSubject{D}()
+as_subject(::Type{<:Subject{D}})      where D = ValidSubject{D}()
+as_subscribable(::Type{<:Subject{D}}) where D = ValidSubscribable{D}()
 
 is_exhausted(actor::Subject) = actor.is_completed || actor.is_error
 
@@ -165,3 +168,11 @@ Base.show(io::IO, subscription::SubjectSubscription) = print(io, "SubjectSubscri
 function close(subject::Subject{D}) where D
     _subject_handle_event(subject, SubjectCompleteMessage())
 end
+
+# ----------------------- #
+# Subject factory         #
+# ----------------------- #
+
+struct SubjectFactory <: AbstractSubjectFactory end
+
+create_subject(::Type{L}, factory::SubjectFactory) where L = Subject{L}()

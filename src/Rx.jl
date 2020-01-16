@@ -39,6 +39,7 @@ include("observable/network.jl")
 include("observable/combined.jl")
 include("observable/collected.jl")
 include("observable/lazy.jl")
+include("observable/connectable.jl")
 
 include("operators/map.jl")
 include("operators/reduce.jl")
@@ -62,6 +63,10 @@ include("operators/tuple_with.jl")
 include("operators/replay.jl")
 include("operators/share_cached.jl")
 include("operators/switchMap.jl")
+include("operators/multicast.jl")
+include("operators/ref_count.jl")
+include("operators/publish.jl")
+include("operators/share.jl")
 
 include("extensions/observable/single.jl")
 

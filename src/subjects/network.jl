@@ -2,6 +2,8 @@ export LocalNetworkSubject, as_subscribable, on_subscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
+export LocalNetworkSubjectFactory, create_subject
+
 using Sockets
 
 import Base: close
@@ -28,7 +30,8 @@ mutable struct LocalNetworkSubject{D} <: Actor{D}
     end
 end
 
-as_subject(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubject{D}()
+as_subject(::Type{<:LocalNetworkSubject{D}})      where D = ValidSubject{D}()
+as_subscribable(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubscribable{D}()
 
 # TODO
 is_exhausted(actor::LocalNetworkSubject) = false
@@ -81,3 +84,13 @@ function close(subject::LocalNetworkSubject)
     subject.is_closed = true
     close(subject.server)
 end
+
+# ------------------------------ #
+# Local Network Subject factory  #
+# ------------------------------ #
+
+struct LocalNetworkSubjectFactory <: AbstractSubjectFactory
+    port :: Int
+end
+
+create_subject(::Type{L}, factory::LocalNetworkSubjectFactory) where L = LocalNetworkSubject{L}(factory.port)
