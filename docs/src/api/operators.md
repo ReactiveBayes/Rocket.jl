@@ -1,6 +1,6 @@
 # [Operators API](@id operators_api)
 
-## Operator traits
+## Traits
 
 ```@docs
 OperatorTrait
@@ -13,7 +13,7 @@ InvalidOperatorTrait
 ```
 
 
-## Operator types
+## Types
 
 ```@docs
 AbstractOperator
@@ -25,7 +25,7 @@ on_call!
 operator_right
 ```
 
-## Operator errors
+## Errors
 
 ```@docs
 InvalidOperatorTraitUsageError

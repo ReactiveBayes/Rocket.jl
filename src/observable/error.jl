@@ -1,25 +1,28 @@
-export ErrorObservable, on_subscribe!, throwError
+export ErrorObservable, on_subscribe!
+export throwError
+
+import Base: ==
 
 """
-    ErrorObservable{D}(error)
+    ErrorObservable{D}(err)
 
-Observable that emits no items to the Actor and immediately emits an error notification on subscription.
+Observable that emits no items to the Actor and immediately sends an error notification on subscription.
 
 See also: [`throwError`](@ref)
 """
 struct ErrorObservable{D} <: Subscribable{D}
-    error
+    err
 end
 
 function on_subscribe!(observable::ErrorObservable, actor)
-    error!(actor, observable.error)
+    error!(actor, observable.err)
     return VoidTeardown()
 end
 
 """
     throwError(error, T = Any)
 
-Creates an Observable that emits no items to the Actor and immediately emits an error notification.
+Creates an Observable that emits no items to the Actor and immediately sends an error notification.
 
 # Arguments
 - `error`: the particular Error to pass to the error notification.
@@ -31,7 +34,7 @@ Creates an Observable that emits no items to the Actor and immediately emits an 
 using Rx
 
 source = throwError("Error!")
-subscribe!(source, LoggerActor{Any}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -40,6 +43,9 @@ subscribe!(source, LoggerActor{Any}())
 
 ```
 
-See also: [`ErrorObservable`](@ref)
+See also: [`ErrorObservable`](@ref), [`subscribe!`](@ref)
 """
-throwError(error, T = Any) = ErrorObservable{T}(error)
+throwError(err, T = Any) = ErrorObservable{T}(err)
+
+Base.:(==)(e1::ErrorObservable{D},  e2::ErrorObservable{D})  where D           = e1.error == e2.error
+Base.:(==)(e1::ErrorObservable{D1}, e2::ErrorObservable{D2}) where D1 where D2 = false

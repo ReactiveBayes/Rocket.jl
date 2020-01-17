@@ -1,6 +1,6 @@
 # [Subjects API](@id subjects_api)
 
-## Subject traits
+## Traits
 
 ```@docs
 SubjectTrait
@@ -9,7 +9,7 @@ ValidSubject
 InvalidSubject
 ```
 
-## Subject factory
+## Factory
 
 ```@docs
 AbstractSubjectFactory
@@ -17,7 +17,7 @@ create_subject
 MissingCreateSubjectFactoryImplementationError
 ```
 
-## Subject errors
+## Errors
 
 ```@docs
 InvalidSubjectTraitUsageError

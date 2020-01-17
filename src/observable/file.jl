@@ -1,5 +1,15 @@
-export FileObservable, on_subscribe!, file, file_async
+export SyncFileObservable, on_subscribe!
+export file
 
+import Base: ==
+
+"""
+    SyncFileObservable(path::String)
+
+File observable, which synchronously emits content of the file line by line as a `String` objects on subscription.
+
+See also: [`file`](@ref), [`Subscribable`](@ref)
+"""
 struct SyncFileObservable <: Subscribable{String}
     path :: String
 end
@@ -14,18 +24,13 @@ function on_subscribe!(observable::SyncFileObservable, actor)
     return VoidTeardown()
 end
 
-struct AsyncFileObservable <: Subscribable{String}
-    path :: String
-end
-
-function on_subscribe!(observable::AsyncFileObservable, actor)
-    error("AsyncFileObservable not implemented yet.")
-end
-
 """
     file(path::String)
 
-Creates a file observable which emits line by line synchronously
+Helper function to creates a `SyncFileObservable` with a given path.
+
+See also: [`SyncFileObservable`](@ref)
 """
-file(path::String)       = SyncFileObservable(path)
-file_async(path::String) = AsyncFileObservable(path)
+file(path::String) = SyncFileObservable(path)
+
+Base.:(==)(f1::SyncFileObservable, f2::SyncFileObservable) = f1.path == f2.path

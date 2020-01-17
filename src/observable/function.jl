@@ -4,11 +4,11 @@ export FunctionObservableSubscription, as_teardown, on_unsubscribe!
 export make
 
 """
-    FunctionObservable{D}
+    FunctionObservable{D}(f::Function)
 
-FunctionObservable wraps a callback `f` which is called when the Observable is initially subscribed to.
+FunctionObservable wraps a callback `f`, which is called when the Observable is initially subscribed to.
 This function is given an Actor, to which new values can be nexted (with `next!(actor, data)`),
-or an `error!`` method can be called to raise an error, or `complete!` can be called to notify of a successful completion.
+or an `error!` method can be called to raise an error, or `complete!` can be called to notify of a successful completion.
 
 # Arguments
 - `f`: function to be invoked on subscription
@@ -78,7 +78,7 @@ source = make(Int) do actor
     complete!(actor)
 end
 
-subscription = subscribe!(source, LoggerActor{Int}());
+subscription = subscribe!(source, logger());
 unsubscribe!(subscription)
 ;
 
@@ -100,7 +100,7 @@ source = make(Int) do actor
     end
 end
 
-subscription = subscribe!(source, LoggerActor{Int}())
+subscription = subscribe!(source, logger())
 unsubscribe!(subscription)
 ;
 
@@ -109,5 +109,7 @@ unsubscribe!(subscription)
 [LogActor] Data: 0
 
 ```
+
+See also: [`FunctionObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 make(f::Function, type::Type{D}) where D = FunctionObservable{D}(f)

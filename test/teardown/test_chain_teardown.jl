@@ -15,6 +15,9 @@ import Rx: Teardown, ChainTeardown
     @test Rx.as_teardown(ChainTeardown) === Rx.UnsubscribableTeardownLogic()
     @test Rx.unsubscribe!(ChainTeardown(DummyUnsubscribable())) === "unsubscribed"
 
+    @test chain(DummyUnsubscribable()) isa Teardown
+    @test unsubscribe!(chain(DummyUnsubscribable())) === "unsubscribed"
+
 end
 
 end

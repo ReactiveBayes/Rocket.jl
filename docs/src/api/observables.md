@@ -1,8 +1,8 @@
 # [Observables API](@id observables_api)
 
-Any Observable should implement Subscribable logic.
+Any observable-like should implement a valid subscribable logic.
 
-## Subscribable traits
+## Traits
 
 ```@docs
 SubscribableTrait
@@ -11,7 +11,7 @@ ValidSubscribable
 InvalidSubscribable
 ```
 
-## Subscribable types
+## Types
 
 ```@docs
 Subscribable
@@ -19,7 +19,7 @@ subscribe!
 on_subscribe!
 ```
 
-## Subscribable errors
+## Errors
 
 ```@docs
 InvalidSubscribableTraitUsageError

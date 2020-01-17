@@ -3,11 +3,11 @@ export SingleObservable, on_subscribe!, of
 import Base: ==
 
 """
-    SingleObservable{D}
+    SingleObservable{D}(value::D)
 
-SingleObservable wraps single value of any type into a synchronous observable
+SingleObservable wraps single value of type `D` into a synchronous observable
 
-# See also: [`Subscribable`](@ref), [`of`](@ref)
+# See also: [`of`](@ref), [`Subscribable`](@ref)
 """
 struct SingleObservable{D} <: Subscribable{D}
     value :: D
@@ -33,7 +33,7 @@ Creates a SingleObservable that emits a single value x and then completes.
 using Rx
 
 source = of(1)
-subscribe!(source, LoggerActor{Int}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -43,6 +43,7 @@ subscribe!(source, LoggerActor{Int}())
 
 ```
 
+See also: [`SingleObservable`], [`subscribe!`](@ref), [`logger`](@ref)
 """
 of(x::T) where T = SingleObservable{T}(x)
 

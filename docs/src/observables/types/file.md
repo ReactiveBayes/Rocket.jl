@@ -3,3 +3,7 @@
 ```@docs
 file
 ```
+
+```@docs
+SyncFileObservable
+```

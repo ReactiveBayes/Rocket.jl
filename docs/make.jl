@@ -32,6 +32,7 @@ makedocs(
                 "Proxy"             => "observables/types/proxy.md",
                 "File"              => "observables/types/file.md",
                 "Combined"          => "observables/types/combined.md",
+                "Connectable"       => "observables/types/connectable.md",
             ],
             "Actors" => [
                 "Lambda"        => "actors/types/lambda.md",

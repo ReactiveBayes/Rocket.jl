@@ -41,7 +41,7 @@ source = make(Int) do actor
 end
 
 println("Just before subscribe")
-subscribe!(source, LambdaActor{Int}(
+subscribe!(source, lambda(
     on_next     = (d) -> println(d),
     on_complete = ()  -> println("Completed")
 ))
@@ -95,7 +95,7 @@ end
 
 Observables, however, can do this:
 
-```
+```julia
 using Rx
 
 foo = make(Int) do actor
@@ -108,7 +108,7 @@ end
 
 Observables can also "return" values asynchronously:
 
-```
+```julia
 using Rx
 
 foo = make(Int) do actor
@@ -146,7 +146,7 @@ The Observable `source` in the example can be subscribed to.
 ```julia
 using Rx
 
-subscribe!(source, LambdaActor{Int}(
+subscribe!(source, lambda(
     on_next = (d) -> println(d)
 ))
 ```

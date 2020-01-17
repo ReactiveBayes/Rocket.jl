@@ -1,5 +1,7 @@
 export VoidTeardown, as_teardown
 
+import Base: ==
+
 """
     VoidTeardown()
 

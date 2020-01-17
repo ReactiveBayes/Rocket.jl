@@ -4,7 +4,7 @@ export close
 import Base: close
 
 """
-    TimerObservable <: Subscribable{Int}
+    TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing)
 
 An Observable that starts emitting after an `dueTime` and emits
 ever increasing numbers after each `period` of time thereafter.
@@ -13,7 +13,7 @@ ever increasing numbers after each `period` of time thereafter.
 - `due_time`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
 - `period`: The period of time in milliseconds between emissions of the subsequent numbers.
 
-See also: [`Subscribable`](@ref)
+See also: [`timer`](@ref), [`Subscribable`](@ref)
 """
 mutable struct TimerObservable <: Subscribable{Int}
     due_time   :: Int
@@ -51,7 +51,7 @@ isperiodic(observable::TimerObservable) = observable.period != nothing
 
 function on_subscribe!(observable::TimerObservable, actor)
     if !observable.is_stopped
-        return chain(subscribe!(observable.subject, actor))
+        return subscribe!(observable.subject, actor)
     else
         complete!(actor)
         return VoidTeardown()
@@ -81,7 +81,7 @@ using Rx
 source = timer(0, 50)
 
 sleep(0.075)
-subscription = subscribe!(source, LoggerActor{Int}())
+subscription = subscribe!(source, logger())
 sleep(0.105)
 unsubscribe!(subscription)
 
@@ -95,7 +95,7 @@ close(source)
 
 ```
 
-See also: [`interval`](@ref), [`TimerObservable`](@ref), [`Subscribable`](@ref)
+See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
 

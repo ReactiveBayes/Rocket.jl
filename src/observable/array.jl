@@ -1,6 +1,8 @@
-export ArrayObservable, on_subscribe!, from
+export ArrayObservable, on_subscribe!
+export from
 
 import Base: ==
+import Base: show
 
 abstract type Scalarness end
 
@@ -46,9 +48,12 @@ end
 """
     from(x)
 
-Creates an ArrayObservable that emits either a single value if x has a Scalar trait specification or a collection of values if x has a NonScalar trait specification.
-Throws an ErrorException if x has UndefinedScalarness trait type. To specify scalarness for arbitrary type T some can implement an additional method
+Creates an ArrayObservable that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
+Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
 for `scalarness(::Type{<:MyType})` function and to specify scalarness behaviour.
+
+# Arguments
+    - `x`: an object to be wrapped into array of values
 
 # Examples
 
@@ -56,7 +61,7 @@ for `scalarness(::Type{<:MyType})` function and to specify scalarness behaviour.
 using Rx
 
 source = from([ 0, 1, 2 ])
-subscribe!(source, LoggerActor{Int}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -72,7 +77,7 @@ subscribe!(source, LoggerActor{Int}())
 using Rx
 
 source = from(( 0, 1, 2 ))
-subscribe!(source, LoggerActor{Int}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -88,7 +93,7 @@ subscribe!(source, LoggerActor{Int}())
 using Rx
 
 source = from(0)
-subscribe!(source, LoggerActor{Int}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -102,7 +107,7 @@ subscribe!(source, LoggerActor{Int}())
 using Rx
 
 source = from("Hello, world!")
-subscribe!(source, LoggerActor{Char}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -124,10 +129,12 @@ subscribe!(source, LoggerActor{Char}())
 
 ```
 
-See also: [`ArrayObservable`](@ref)
+See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 from(x)                      = from(as_array(x))
 from(a::Array{D, 1}) where D = ArrayObservable{D}(a)
 
 Base.:(==)(left::ArrayObservable{D},  right::ArrayObservable{D})  where D           = left.values == right.values
 Base.:(==)(left::ArrayObservable{D1}, right::ArrayObservable{D2}) where D1 where D2 = false
+
+Base.show(io::IO, observable::ArrayObservable{D}) where D = print(io, "ArrayObservable($D)")

@@ -1,4 +1,7 @@
-export NeverObservable, on_subscribe!, never
+export NeverObservable, on_subscribe!
+export never
+
+import Base: show
 
 """
     NeverObservable{D}()
@@ -34,13 +37,15 @@ disposed.
 using Rx
 
 source = never()
-subscribe!(source, LoggerActor{Any}())
+subscribe!(source, logger())
 ;
 
 # output
 
 ```
 
-See also: [`NeverObservable`](@ref), [`Subscribable`](@ref)
+See also: [`NeverObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 never(T = Any) = NeverObservable{T}()
+
+Base.show(io::IO, observable::NeverObservable{D}) where D = print(io, "NeverObservable($D)")

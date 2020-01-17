@@ -1,15 +1,19 @@
-export CompletedObservable, on_subscribe!, completed
+export CompletedObservable, on_subscribe!
+export completed
+
+import Base: ==
+import Base: show
 
 """
     CompletedObservable{D}()
 
-Observable that emits no items to the Actor and immediately emits a complete notification on subscription.
+Observable that emits no items to the Actor and immediately sends a complete notification on subscription.
 
-See also: [`completed`](@ref)
+See also: [`Subscribable`](@ref), [`completed`](@ref)
 """
 struct CompletedObservable{D} <: Subscribable{D} end
 
-function on_subscribe!(observable::CompletedObservable{D}, actor) where D
+function on_subscribe!(observable::CompletedObservable, actor)
     complete!(actor)
     return VoidTeardown()
 end
@@ -17,7 +21,7 @@ end
 """
     completed(T = Any)
 
-Creates an Observable that emits no items to the Actor and immediately emits a complete notification.
+Creates an Observable that emits no items to the Actor and immediately sends a complete notification on subscription.
 
 # Arguments
 - `T`: type of output data source, optional, `Any` is the default
@@ -28,7 +32,7 @@ Creates an Observable that emits no items to the Actor and immediately emits a c
 using Rx
 
 source = completed(Int)
-subscribe!(source, LoggerActor{Int}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -37,6 +41,11 @@ subscribe!(source, LoggerActor{Int}())
 
 ```
 
-See also: [`CompletedObservable`](@ref)
+See also: [`CompletedObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 completed(T = Any) = CompletedObservable{T}()
+
+Base.:(==)(c1::CompletedObservable{T},  c2::CompletedObservable{T})  where T           = true
+Base.:(==)(c1::CompletedObservable{T1}, c2::CompletedObservable{T2}) where T1 where T2 = false
+
+Base.show(io::IO, observable::CompletedObservable{T}) where T = print(io, "CompletedObservable($T)")

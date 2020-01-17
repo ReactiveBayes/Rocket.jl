@@ -1,7 +1,6 @@
 # [Actors API](@id actors_api)
 
-## Actor traits
-
+## Traits
 
 ```@docs
 ActorTrait
@@ -13,7 +12,7 @@ CompletionActorTrait
 InvalidActorTrait
 ```
 
-## Actor types
+## Types
 
 ```@docs
 AbstractActor
@@ -23,7 +22,7 @@ ErrorActor
 CompletionActor
 ```
 
-## Actor events
+## Events
 
 ```@docs
 next!
@@ -38,7 +37,7 @@ on_error!
 on_complete!
 ```
 
-## Actor factory
+## Factory
 
 ```@docs
 AbstractActorFactory
@@ -46,7 +45,7 @@ create_actor
 MissingCreateActorFactoryImplementationError
 ```
 
-## Actor errors
+## Errors
 
 ```@docs
 InvalidActorTraitUsageError
