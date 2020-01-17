@@ -1,9 +1,12 @@
 export VoidTeardown, as_teardown
 
 """
-    VoidTeardown
+    VoidTeardown()
 
-VoidTeardown object does nothing on unsubscription. It is usefull with synchronous observables.
+VoidTeardown object does nothing on unsubscription.
+It is usefull for synchronous observables.
+
+See also: [`Teardown`](@ref), [`VoidTeardownLogic`](@ref)
 """
 struct VoidTeardown <: Teardown end
 

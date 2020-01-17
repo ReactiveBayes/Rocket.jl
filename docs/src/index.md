@@ -1,6 +1,10 @@
+# Rx.jl Documentation
+
+Welcome to the documentation for Rx.jl.
+
 This documentation is an adaptation of the [RxJS library documentation](https://rxjs.dev).
 
-# Table of Contents
+## Table of Contents
 
 ```@contents
 Pages = [
@@ -16,19 +20,10 @@ Pages = [
   "contributing.md",
   "utils.md"
 ]
-Depth = 3
+Depth = 2
 ```
 
-# Operators
-
-```@contents
-Pages = [
-  "operators/all.md"
-]
-Depth = 3
-```
-
-# Index
+## Index
 
 ```@index
 ```

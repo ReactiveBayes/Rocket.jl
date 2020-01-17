@@ -3,11 +3,11 @@ module RxTeardownTest
 using Test
 
 import Rx
-import Rx: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTeardownLogic, UndefinedTeardownLogic
+import Rx: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTeardownLogic, InvalidTeardownLogic
 import Rx: Teardown, as_teardown
 import Rx: unsubscribe!, teardown!, on_unsubscribe!
 
-import Rx: UndefinedTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+import Rx: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
 
 @testset "Teardown" begin
 
@@ -25,7 +25,7 @@ import Rx: UndefinedTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementa
 
     @testset "as_teardown" begin
         # Check if arbitrary dummy type has undefined teardown logic
-        @test as_teardown(DummyType) === UndefinedTeardownLogic()
+        @test as_teardown(DummyType) === InvalidTeardownLogic()
 
         # Check if as_teardown returns specified teardown logic
         @test as_teardown(AnotherDummyType) === VoidTeardownLogic()
@@ -38,7 +38,7 @@ import Rx: UndefinedTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementa
 
     @testset "unsubscribe!" begin
         # Check if arbitrary dummy type throws an error in unsubscribe!
-        @test_throws UndefinedTeardownLogicTraitUsageError unsubscribe!(DummyType())
+        @test_throws InvalidTeardownLogicTraitUsageError unsubscribe!(DummyType())
 
         # Check if void teardown object does nothing
         @test unsubscribe!(AnotherDummyType()) === nothing

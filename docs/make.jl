@@ -7,9 +7,20 @@ makedocs(
     pages    = [
         "Home"            => "index.md",
         "Getting started" => "getting-started.md",
-        "Observables"     => [
-            "About observables" => "observables/about.md",
-            "Types" => [
+        "Manual"     => [
+            "Observable"   => "observables/about.md",
+            "Actor"        => "actors/about.md",
+            "Subscription" => "teardown/about.md",
+            "Operator"     => [
+                "About"                   => "operators/about.md",
+                "Piping"                  => "operators/piping.md",
+                "Create a new operator"   => "operators/create-new-operator.md",
+                "High-orders observables" => "operators/high-order.md",
+            ],
+            "Subject"      => "subjects/about.md",
+        ],
+        "Library" => [
+            "Observables" => [
                 "Function"          => "observables/types/function.md",
                 "Single"            => "observables/types/single.md",
                 "Array"             => "observables/types/array.md",
@@ -22,15 +33,7 @@ makedocs(
                 "File"              => "observables/types/file.md",
                 "Combined"          => "observables/types/combined.md",
             ],
-            "API"               => "observables/api.md",
-        ],
-        "Subjects" => [
-            "About subjects" => "subjects/about.md",
-            "API"            => "subjects/api.md"
-        ],
-        "Actors"     => [
-            "About actors"  => "actors/about.md",
-            "Types"         => [
+            "Actors" => [
                 "Lambda"        => "actors/types/lambda.md",
                 "Logger"        => "actors/types/logger.md",
                 "Async"         => "actors/types/async.md",
@@ -38,22 +41,11 @@ makedocs(
                 "Keep"          => "actors/types/keep.md",
                 "Void"          => "actors/types/void.md",
             ],
-            "API"           => "actors/api.md",
-        ],
-        "Subscription"    => [
-            "About subscriptions" => "teardown/about.md",
-            "Types"               => [
+            "Subscriptions" => [
                 "Void"  => "teardown/types/void.md",
                 "Chain" => "teardown/types/chain.md",
             ],
-            "API"                 => "teardown/api.md",
-        ],
-        "Operators"       => [
-            "About operators"         => "operators/about.md",
-            "Piping"                  => "operators/piping.md",
-            "Create a new operator"   => "operators/create-new-operator.md",
-            "High-orders Observables" => "operators/high-order.md",
-            "Categories"            => [
+            "Operators" => [
                 "All"            => "operators/all.md",
                 "Creation"       => "operators/creation/about.md",
                 "Transformation" => [
@@ -86,8 +78,14 @@ makedocs(
                     "tap"                     => "operators/utility/tap.md",
                     "delay"                   => "operators/utility/delay.md",
                 ]
-            ],
-            "API"         => "operators/api.md",
+            ]
+        ],
+        "API"          => [
+            "Observables"  => "api/observables.md",
+            "Actors"       => "api/actors.md",
+            "Teardown"     => "api/teardown.md",
+            "Operators"    => "api/operators.md",
+            "Subjects"     => "api/subjects.md"
         ],
         "TODO"         => "todo.md",
         "Contributing" => "contributing.md",
