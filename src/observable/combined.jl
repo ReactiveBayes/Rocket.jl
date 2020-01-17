@@ -149,7 +149,7 @@ end
 
 function complete_1!(wrapper::LatestCombinedObservable2ActorWrapper)
     wrapper.is_completed1 = true
-    if wrapper.latest1 == nothing
+    if wrapper.latest1 === nothing
         wrapper.is_completed = true
     end
     _check_complete(wrapper)
@@ -157,7 +157,7 @@ end
 
 function complete_2!(wrapper::LatestCombinedObservable2ActorWrapper)
     wrapper.is_completed2 = true
-    if wrapper.latest2 == nothing
+    if wrapper.latest2 === nothing
         wrapper.is_completed = true
     end
     _check_complete(wrapper)

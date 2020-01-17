@@ -60,7 +60,7 @@ end
 is_exhausted(actor::MinActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::MinActor{L}, data::L) where L
-    if actor.current == nothing
+    if actor.current === nothing
         actor.current = data
     else
         actor.current = data < actor.current ? data : actor.current

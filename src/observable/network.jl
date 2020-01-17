@@ -7,8 +7,8 @@ struct LocalNetworkObservable{D} <: Subscribable{D}
     port :: Int
 end
 
-function on_subscribe!(observable::LocalNetworkObservable, actor)
-    clientside = connect(observable.port)
+function on_subscribe!(observable::LocalNetworkObservable{D}, actor) where D
+    clientside = Sockets.connect(observable.port)
     @async begin
         try
             while isopen(clientside)

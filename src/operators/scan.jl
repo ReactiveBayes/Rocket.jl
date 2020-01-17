@@ -67,7 +67,7 @@ end
 is_exhausted(actor::ScanActor) = is_exhausted(actor.actor)
 
 function on_next!(r::ScanActor{L, R}, data::L) where L where R
-    if r.current == nothing
+    if r.current === nothing
         r.current = data
     else
         r.current = Base.invokelatest(r.scanFn, data, r.current)

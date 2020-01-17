@@ -21,7 +21,6 @@ end
 as_teardown(::Type{<:LastCollectedSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::LastCollectedSubscription)
-    unsubscribe!(subscription.wrapper.subject_subscription)
     _dispose_inner_subscriptions(subscription.wrapper)
     return nothing
 end
@@ -47,9 +46,11 @@ mutable struct LastCollectedObservableWrapper{D}
 
         wrapper = new(values, size, completed_count, inner_subscriptions, actor)
 
+        is_error = false
+
         try
             for index in 1:size
-                if !subject.is_error
+                if !is_error
                     source = sources[index]
                     collection_actor = LastCollectedActor{D}(index, wrapper)
                     subscription = subscribe!(source, collection_actor)
@@ -57,7 +58,7 @@ mutable struct LastCollectedObservableWrapper{D}
                 end
             end
         catch err
-            error!(subject, err)
+            is_error = true
             _dispose_inner_subscriptions(wrapper)
         end
 
