@@ -2,8 +2,10 @@ export SubjectTrait
 export ValidSubject, InvalidSubject, as_subject
 export AbstractSubjectFactory, create_subject
 
-export InvalidSubjectTraitUsageError
+export InvalidSubjectTraitUsageError, InconsistentSubjectDataTypesError
 export MissingCreateSubjectFactoryImplementationError
+
+import Base: show
 
 """
 Abstract type for all possible subject traits
@@ -77,7 +79,7 @@ end
 """
 InvalidSubject usage error
 
-See also: [`subscribe!`](@ref)
+See also: [`as_subject!`](@ref)
 """
 struct InvalidSubjectTraitUsageError
     subject
@@ -85,4 +87,18 @@ end
 
 function Base.show(io::IO, err::InvalidSubjectTraitUsageError)
     print(io, "Type $(typeof(err.subject)) is not a valid subject type. \nConsider implement as_subject(::Type{<:$(typeof(err.subject))}).")
+end
+
+"""
+InconsistentSubjectDataTypesError
+
+See also: [`as_subject!`](@ref)
+"""
+struct InconsistentSubjectDataTypesError{T1, T2}
+    subject
+end
+
+function Base.show(io::IO, err::InconsistentSubjectDataTypesError{T1, T2}) where T1 where T2
+    # TODO: better error message
+    print(io, "Subject of type $(typeof(err.subject)) operates on data of type $(T2), while context requires subject to operate on data of type $(T1).")
 end

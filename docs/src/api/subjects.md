@@ -21,4 +21,5 @@ MissingCreateSubjectFactoryImplementationError
 
 ```@docs
 InvalidSubjectTraitUsageError
+InconsistentSubjectDataTypesError
 ```
