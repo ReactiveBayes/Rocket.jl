@@ -4,7 +4,7 @@ import Base: |>
 import Base: show
 
 struct LazyObservable{D} <: Subscribable{D}
-    inner :: PendingSubject{Any}
+    inner :: PendingSubject{Any, SynchronousSubject{Any}}
 
     LazyObservable{D}() where D = new(pending_subject(Any; mode = Val(:sync)))
 end

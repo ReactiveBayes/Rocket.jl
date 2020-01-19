@@ -20,17 +20,17 @@ In the example below, we have two Observers attached to a Subject, and we feed s
 ```julia
 using Rx
 
-subject = Subject{Int}()
+source = subject(Int)
 
-subscription1 = subscribe!(subject, LambdaActor{Int}(
+subscription1 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 1: $d")
 ))
 
-subscription2 = subscribe!(subject, LambdaActor{Int}(
+subscription2 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 2: $d")
 ))
 
-next!(subject, 0)
+next!(source, 0)
 
 # Logs
 # Actor 1: 0
@@ -46,18 +46,18 @@ Since a Subject is an actor, this also means you may provide a Subject as the ar
 ```julia
 using Rx
 
-subject = Subject{Int}()
+source = subject(Int)
 
-subscription1 = subscribe!(subject, LambdaActor{Int}(
+subscription1 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 1: $d")
 ))
 
-subscription2 = subscribe!(subject, LambdaActor{Int}(
+subscription2 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 2: $d")
 ))
 
-source = from([ 1, 2, 3 ])
-subscribe!(source, subject);
+other_source = from([ 1, 2, 3 ])
+subscribe!(other_source, source);
 
 # Logs
 # Actor 1: 1

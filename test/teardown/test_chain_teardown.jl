@@ -3,7 +3,7 @@ module RxTeardownChainTest
 using Test
 
 import Rx
-import Rx: Teardown, ChainTeardown
+import Rx: Teardown, ChainTeardown, chain
 
 @testset "ChainTeardown" begin
 
@@ -16,7 +16,7 @@ import Rx: Teardown, ChainTeardown
     @test Rx.unsubscribe!(ChainTeardown(DummyUnsubscribable())) === "unsubscribed"
 
     @test chain(DummyUnsubscribable()) isa Teardown
-    @test unsubscribe!(chain(DummyUnsubscribable())) === "unsubscribed"
+    @test Rx.unsubscribe!(chain(DummyUnsubscribable())) === "unsubscribed"
 
 end
 

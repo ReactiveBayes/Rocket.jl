@@ -47,5 +47,5 @@ See also: [`ErrorObservable`](@ref), [`subscribe!`](@ref)
 """
 throwError(err, T = Any) = ErrorObservable{T}(err)
 
-Base.:(==)(e1::ErrorObservable{D},  e2::ErrorObservable{D})  where D           = e1.error == e2.error
+Base.:(==)(e1::ErrorObservable{D},  e2::ErrorObservable{D})  where D           = e1.err == e2.err
 Base.:(==)(e1::ErrorObservable{D1}, e2::ErrorObservable{D2}) where D1 where D2 = false
