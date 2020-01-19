@@ -1,4 +1,4 @@
-export SynchronousSubject, as_subscribable, on_subscribe!
+export SynchronousSubject, as_subject, as_subscribable, on_subscribe!
 export SynchronousSubjectSubscription, as_teardown, on_unsubscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 
@@ -75,7 +75,7 @@ function on_complete!(subject::SynchronousSubject)
 end
 
 function __sync_subject_unsubscribe_actors(subject::SynchronousSubject{D}, actors) where D
-    foreach((actor) -> unsubscribe!(SyncSubjectSubscription(subject, actor)), actors)
+    foreach((actor) -> unsubscribe!(SynchronousSubjectSubscription(subject, actor)), actors)
 end
 
 function __sync_subject_unsubscribe_all(subject::SynchronousSubject)

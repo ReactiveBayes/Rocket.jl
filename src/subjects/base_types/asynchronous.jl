@@ -1,4 +1,4 @@
-export AsynchronousSubject, as_subscribable, on_subscribe!
+export AsynchronousSubject, as_subject, as_subscribable, on_subscribe!
 export AsynchronousSubjectSubscription, as_teardown, on_unsubscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export close
