@@ -1,7 +1,5 @@
 export share
 export share_replay
-export share_sync_replay
 
-share()                  = publish() + ref_count()
-share_replay(count)      = publish_replay(count) + ref_count() # TODO: WIP
-share_sync_replay(count) = publish_sync_replay(count) + ref_count()
+share(; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = publish(mode = mode) + ref_count()
+share_replay(count; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = publish_replay(count, mode = mode) + ref_count()
