@@ -94,8 +94,6 @@ with a constant interval of time, period of your choosing between those emission
 The first emission happens after the specified `due_time`.
 If `period` is not specified, the output Observable emits only one value, 0.
 Otherwise, it emits an infinite sequence.
-Note that you have to `close` timer observable when you do not need it.
-After closing a time you will always receive a complete event on subscribe!.
 
 # Arguments
 - `due_time`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
