@@ -56,7 +56,7 @@ on_complete!(actor::SwitchMapInnerActor)                            = begin
 end
 
 function on_next!(actor::SwitchMapActor{L, R}, data::L) where L where R
-    if actor.current_subscription != nothing
+    if actor.current_subscription !== nothing
         unsubscribe!(actor.current_subscription)
     end
 
@@ -109,7 +109,7 @@ as_teardown(::Type{<:SwitchMapSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::SwitchMapSubscription)
     unsubscribe!(subscription.subscription)
-    if subscription.actor.current_subscription != nothing
+    if subscription.actor.current_subscription !== nothing
         unsubscribe!(subscription.actor.current_subscription)
     end
 end
@@ -170,7 +170,7 @@ macro CreateSwitchMapOperator(name, mappingFn)
         end
 
         function Rx.on_next!(actor::($actorName){L, R}, data::L) where L where R
-            if actor.current_subscription != nothing
+            if actor.current_subscription !== nothing
                 unsubscribe!(actor.current_subscription)
             end
 

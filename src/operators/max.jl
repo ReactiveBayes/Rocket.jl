@@ -41,7 +41,7 @@ struct MaxOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MaxOperator, source) where L
-    return ProxyObservable{Union{L, Nothing}}(source, MaxProxy{L}(operator.from != nothing ? convert(L, operator.from) : nothing))
+    return ProxyObservable{Union{L, Nothing}}(source, MaxProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
 end
 
 operator_right(operator::MaxOperator, ::Type{L}) where L = Union{L, Nothing}

@@ -1,7 +1,5 @@
 export TimerObservable, on_subscribe!, timer
-export close
-
-import Base: close
+export TimerSubscription, on_unsubscribe!
 
 """
     TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing)
@@ -18,43 +16,74 @@ See also: [`timer`](@ref), [`Subscribable`](@ref)
 mutable struct TimerObservable <: Subscribable{Int}
     due_time   :: Int
     period     :: Union{Int, Nothing}
-    current    :: Int
-    subject    :: AsynchronousSubject{Int}
-    is_stopped :: Bool
 
     TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing) = begin
-        subject = AsynchronousSubject{Int}()
-
-        timer = new(due_time, period, 0, subject, false)
-
-        task = @async begin
-            sleep(due_time / MILLISECONDS_IN_SECOND)
-            if isperiodic(timer)
-                while !timer.is_stopped
-                    next!(timer.subject, timer.current)
-                    timer.current += 1
-                    sleep(period / MILLISECONDS_IN_SECOND)
-                end
-            else
-                next!(timer.subject, 0)
-                complete!(timer.subject)
-            end
+        @assert due_time > 0 "due_time argument value should be positive"
+        if period !== nothing
+            @assert period > 0 "period argument value should be positive"
         end
-
-        timer
+        return new(due_time, period)
     end
 end
 
-isperiodic(observable::TimerObservable) = observable.period != nothing
+mutable struct TimerSubscription <: Teardown
+    is_running :: Bool
+    semaphore  :: Base.Semaphore
+end
+
+as_teardown(::Type{<:TimerSubscription}) = UnsubscribableTeardownLogic()
+
+function __is_running(subscription::TimerSubscription)
+    Base.acquire(subscription.semaphore)
+    is_running = subscription.is_running
+    Base.release(subscription.semaphore)
+    return is_running
+end
 
 function on_subscribe!(observable::TimerObservable, actor)
-    if !observable.is_stopped
-        return subscribe!(observable.subject, actor)
-    else
-        complete!(actor)
-        return VoidTeardown()
+    semaphore = Base.Semaphore(1)
+
+    due_time = observable.due_time
+    period   = observable.period
+
+    subscription = TimerSubscription(true, semaphore)
+
+    task = @async begin
+        try
+            current = 0
+            sleep(due_time / MILLISECONDS_IN_SECOND)
+
+            if __is_running(subscription)
+                next!(actor, current)
+                if period !== nothing
+                    sleep(period / MILLISECONDS_IN_SECOND)
+                    while __is_running(subscription)
+                        current += 1
+                        next!(actor, current)
+                        sleep(period / MILLISECONDS_IN_SECOND)
+                    end
+                else
+                    complete!(actor)
+                end
+            end
+        catch err
+            error!(actor, err)
+        end
     end
+
+    return subscription
 end
+
+function on_unsubscribe!(subscription::TimerSubscription)
+    if __is_running(subscription)
+        Base.acquire(subscription.semaphore)
+        subscription.is_running = false
+        Base.release(subscription.semaphore)
+    end
+    return nothing
+end
+
+
 
 """
     timer(due_time::Int = 0, period = nothing)
@@ -96,7 +125,3 @@ close(source)
 See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
-
-function close(observable::TimerObservable)
-    observable.is_stopped = true
-end

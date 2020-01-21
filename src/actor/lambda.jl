@@ -60,19 +60,19 @@ end
 is_exhausted(actor::LambdaActor) = false
 
 function on_next!(actor::LambdaActor{D}, data::D) where D
-    if actor.on_next != nothing
+    if actor.on_next !== nothing
         Base.invokelatest(actor.on_next, data)
     end
 end
 
 function on_error!(actor::LambdaActor, err)
-    if actor.on_error != nothing
+    if actor.on_error !== nothing
         Base.invokelatest(actor.on_error, err)
     end
 end
 
 function on_complete!(actor::LambdaActor)
-    if actor.on_complete != nothing
+    if actor.on_complete !== nothing
         Base.invokelatest(actor.on_complete)
     end
 end

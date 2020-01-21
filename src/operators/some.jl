@@ -52,7 +52,7 @@ end
 is_exhausted(actor::SomeActor) = is_exhausted(actor.actor)
 
 function on_next!(f::SomeActor{L}, data::Union{L, Nothing}) where L
-    if data != nothing
+    if data !== nothing
         next!(f.actor, data)
     end
 end

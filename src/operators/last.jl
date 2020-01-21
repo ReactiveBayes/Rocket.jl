@@ -96,7 +96,7 @@ function on_error!(actor::LastActor, err)
 end
 
 function on_complete!(actor::LastActor)
-    if actor.last != nothing
+    if actor.last !== nothing
         next!(actor.actor, actor.last)
     end
     complete!(actor.actor)

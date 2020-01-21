@@ -34,8 +34,8 @@ include("observable/error.jl")
 include("observable/never.jl")
 include("observable/completed.jl")
 include("observable/proxy.jl")
-# include("observable/timer.jl")    # TODO
-# include("observable/interval.jl") # TODO
+include("observable/timer.jl")   
+include("observable/interval.jl")
 include("observable/function.jl")
 include("observable/file.jl")
 include("observable/network.jl")

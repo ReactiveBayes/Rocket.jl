@@ -125,7 +125,7 @@ function next_2!(wrapper::LatestCombinedObservable2ActorWrapper{D1, D2}, data::D
 end
 
 function next_check_and_emit!(wrapper::LatestCombinedObservable2ActorWrapper)
-    if !wrapper.is_completed && (wrapper.latest1 != nothing && wrapper.latest2 != nothing)
+    if !wrapper.is_completed && (wrapper.latest1 !== nothing && wrapper.latest2 !== nothing)
         next!(wrapper.actor, (wrapper.latest1, wrapper.latest2))
         # TODO this is wrong but anyway
         if !wrapper.is_completed1
