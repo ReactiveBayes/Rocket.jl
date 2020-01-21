@@ -10,14 +10,14 @@ import Base: close
 
 mutable struct LocalNetworkSubject{D} <: Actor{D}
     port      :: Int
-    subject   :: Subject{D}
+    subject   :: AsynchronousSubject{D}
     server    :: Sockets.TCPServer
     remote    :: Vector{TCPSocket}
     is_closed :: Bool
 
     LocalNetworkSubject{D}(port) where D = begin
         server = listen(port)
-        subject = new(port, Subject{D}(), server, Vector{TCPSocket}(), false)
+        subject = new(port, AsynchronousSubject{D}(), server, Vector{TCPSocket}(), false)
 
         @async begin
             while true
