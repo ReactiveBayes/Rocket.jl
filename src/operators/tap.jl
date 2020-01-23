@@ -55,11 +55,11 @@ struct TapProxy{L} <: ActorProxy
     tapFn :: Function
 end
 
-actor_proxy!(proxy::TapProxy{L}, actor) where L = TapActor{L}(proxy.tapFn, actor)
+actor_proxy!(proxy::TapProxy{L}, actor::A) where L where A = TapActor{L, A}(proxy.tapFn, actor)
 
-struct TapActor{L} <: Actor{L}
+struct TapActor{L, A} <: Actor{L}
     tapFn :: Function
-    actor
+    actor :: A
 end
 
 is_exhausted(actor::TapActor) = is_exhausted(actor.actor)
@@ -125,12 +125,12 @@ macro CreateTapOperator(name, tapFn)
     proxyDefinition = quote
         struct $proxyName{L} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor) where L = ($actorName){L}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName{L} <: Rx.Actor{L}
-            actor
+        struct $actorName{L, A} <: Rx.Actor{L}
+            actor :: A
         end
 
         Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)

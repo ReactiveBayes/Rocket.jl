@@ -54,11 +54,11 @@ struct MapProxy{L} <: ActorProxy
     mappingFn::Function
 end
 
-actor_proxy!(proxy::MapProxy{L}, actor) where L = MapActor{L}(proxy.mappingFn, actor)
+actor_proxy!(proxy::MapProxy{L}, actor::A) where L where A = MapActor{L, A}(proxy.mappingFn, actor)
 
-struct MapActor{L} <: Actor{L}
+struct MapActor{L, A} <: Actor{L}
     mappingFn  :: Function
-    actor
+    actor      :: A
 end
 
 is_exhausted(actor::MapActor) = is_exhausted(actor.actor)
@@ -122,12 +122,12 @@ macro CreateMapOperator(name, L, R, mappingFn)
     proxyDefinition = quote
         struct $proxyName <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor) = ($actorName)(actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName <: Rx.Actor{$L}
-            actor
+        struct $actorName{A} <: Rx.Actor{$L}
+            actor :: A
         end
 
         Rx.is_exhausted(actor::($actorName)) = Rx.is_exhausted(actor.actor)
@@ -166,12 +166,12 @@ macro CreateMapOperator(name, mappingFn)
     proxyDefinition = quote
         struct $proxyName{L} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor) where L = ($actorName){L}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
     end
 
     actorDefinition = quote
-        struct $actorName{L} <: Rx.Actor{L}
-            actor
+        struct $actorName{L, A} <: Rx.Actor{L}
+            actor :: A
         end
 
         Rx.is_exhausted(a::($actorName)) = Rx.is_exhausted(a.actor)

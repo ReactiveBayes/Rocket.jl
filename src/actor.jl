@@ -150,26 +150,26 @@ See also: [`AbstractActor`](@ref)
 is_exhausted(actor) = false # throw(MissingIsExhaustedImplementationError(actor))
 
 actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
-actor_on_next!(::BaseActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::NextActorTrait{T},       actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where T where R  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::BaseActorTrait{T},       actor, data::T) where T = on_next!(actor, data)
-actor_on_next!(::NextActorTrait{T},       actor, data::T) where T = on_next!(actor, data)
-actor_on_next!(::ErrorActorTrait{T},      actor, data::T) where T = begin end
-actor_on_next!(::CompletionActorTrait{T}, actor, data::T) where T = begin end
+actor_on_next!(::BaseActorTrait{T},       actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::NextActorTrait{T},       actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::BaseActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
+actor_on_next!(::NextActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
+actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where { R <: T } where T = begin end
+actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where { R <: T } where T = begin end
 
 actor_on_error!(::InvalidActorTrait,    actor, err) = throw(InvalidActorTraitUsageError(actor))
-actor_on_error!(::BaseActorTrait,       actor, err) = on_error!(actor, err)
+actor_on_error!(::BaseActorTrait,       actor, err) = begin on_error!(actor, err); return nothing end
 actor_on_error!(::NextActorTrait,       actor, err) = begin end
-actor_on_error!(::ErrorActorTrait,      actor, err) = on_error!(actor, err)
+actor_on_error!(::ErrorActorTrait,      actor, err) = begin on_error!(actor, err); return nothing end
 actor_on_error!(::CompletionActorTrait, actor, err) = begin end
 
 actor_on_complete!(::InvalidActorTrait,    actor) = throw(InvalidActorTraitUsageError(actor))
-actor_on_complete!(::BaseActorTrait,       actor) = on_complete!(actor)
+actor_on_complete!(::BaseActorTrait,       actor) = begin on_complete!(actor); return nothing end
 actor_on_complete!(::NextActorTrait,       actor) = begin end
 actor_on_complete!(::ErrorActorTrait,      actor) = begin end
-actor_on_complete!(::CompletionActorTrait, actor) = on_complete!(actor)
+actor_on_complete!(::CompletionActorTrait, actor) = begin on_complete!(actor); return nothing end
 
 """
     on_next!(actor, data)

@@ -41,10 +41,10 @@ operator_right(::UppercaseOperator, ::Type{L}) where L = L
 
 struct UppercaseProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::UppercaseProxy{L}, actor) where L = UppercaseActor{L}(actor)
+actor_proxy!(proxy::UppercaseProxy{L}, actor::A) where L where A = UppercaseActor{L, A}(actor)
 
-struct UppercaseActor{L} <: Actor{L}
-    actor
+struct UppercaseActor{L, A} <: Actor{L}
+    actor :: A
 end
 
 is_exhausted(actor::UppercaseActor) = is_exhausted(actor.actor)

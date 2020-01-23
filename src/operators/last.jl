@@ -76,13 +76,11 @@ struct LastProxy{L} <: ActorProxy
     default :: Union{L, Nothing}
 end
 
-function actor_proxy!(proxy::LastProxy{L}, actor) where L
-    return LastActor{L}(proxy.default, actor)
-end
+actor_proxy!(proxy::LastProxy{L}, actor::A) where L where A = LastActor{L, A}(proxy.default, actor)
 
-mutable struct LastActor{L} <: Actor{L}
+mutable struct LastActor{L, A} <: Actor{L}
     last   :: Union{L, Nothing}
-    actor
+    actor  :: A
 end
 
 is_exhausted(actor::LastActor) = is_exhausted(actor.actor)

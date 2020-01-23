@@ -43,10 +43,10 @@ operator_right(operator::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
 
 struct SomeProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::SomeProxy{L}, actor) where L = SomeActor{L}(actor)
+actor_proxy!(proxy::SomeProxy{L}, actor::A) where L where A = SomeActor{L, A}(actor)
 
-struct SomeActor{L} <: Actor{ Union{L, Nothing} }
-    actor
+struct SomeActor{L, A} <: Actor{Union{L, Nothing}}
+    actor :: A
 end
 
 is_exhausted(actor::SomeActor) = is_exhausted(actor.actor)

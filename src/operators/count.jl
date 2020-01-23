@@ -42,11 +42,11 @@ end
 
 struct CountProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::CountProxy{L}, actor) where L = CountActor{L}(0, actor)
+actor_proxy!(proxy::CountProxy{L}, actor::A) where L where A = CountActor{L, A}(0, actor)
 
-mutable struct CountActor{L} <: Actor{L}
+mutable struct CountActor{L, A} <: Actor{L}
     current :: Int
-    actor
+    actor   :: A
 end
 
 is_exhausted(actor::CountActor) = is_exhausted(actor.actor)

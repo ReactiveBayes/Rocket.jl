@@ -50,11 +50,11 @@ operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{L, Int}
 
 struct EnumerateProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::EnumerateProxy{L}, actor) where L = EnumerateActor{L}(1, actor)
+actor_proxy!(proxy::EnumerateProxy{L}, actor::A) where L where A = EnumerateActor{L, A}(1, actor)
 
-mutable struct EnumerateActor{L} <: Actor{L}
+mutable struct EnumerateActor{L, A} <: Actor{L}
     current :: Int
-    actor
+    actor   :: A
 end
 
 is_exhausted(actor::EnumerateActor) = is_exhausted(actor.actor)

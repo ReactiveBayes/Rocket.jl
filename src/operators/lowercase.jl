@@ -41,10 +41,10 @@ operator_right(::LowercaseOperator, ::Type{L}) where L = L
 
 struct LowercaseProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::LowercaseProxy{L}, actor) where L = LowercaseActor{L}(actor)
+actor_proxy!(proxy::LowercaseProxy{L}, actor::A) where L where A = LowercaseActor{L, A}(actor)
 
-struct LowercaseActor{L} <: Actor{L}
-    actor
+struct LowercaseActor{L, A} <: Actor{L}
+    actor :: A
 end
 
 is_exhausted(actor::LowercaseActor) = is_exhausted(actor.actor)

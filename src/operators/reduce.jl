@@ -70,12 +70,12 @@ struct ReduceProxy{L, R} <: ActorProxy
     seed     :: Union{R, Nothing}
 end
 
-actor_proxy!(proxy::ReduceProxy{L, R}, actor) where L where R = ReduceActor{L, R}(proxy.reduceFn, proxy.seed, actor)
+actor_proxy!(proxy::ReduceProxy{L, R}, actor::A) where L where R where A = ReduceActor{L, R, A}(proxy.reduceFn, proxy.seed, actor)
 
-mutable struct ReduceActor{L, R} <: Actor{L}
+mutable struct ReduceActor{L, R, A} <: Actor{L}
     reduceFn :: Function
     current  :: Union{R, Nothing}
-    actor
+    actor    :: A
 end
 
 is_exhausted(actor::ReduceActor) = is_exhausted(actor.actor)
@@ -154,13 +154,13 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor) = ($actorName)(proxy.seed, actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
     end
 
     actorDefinition = quote
-        mutable struct $actorName <: Rx.Actor{$L}
+        mutable struct $actorName{A} <: Rx.Actor{$L}
             current :: $R
-            actor
+            actor   :: A
         end
 
         Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)

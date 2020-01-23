@@ -56,12 +56,12 @@ struct ScanProxy{L, R} <: ActorProxy
     seed    :: Union{R, Nothing}
 end
 
-actor_proxy!(proxy::ScanProxy{L, R}, actor) where L where R = ScanActor{L, R}(proxy.scanFn, proxy.seed, actor)
+actor_proxy!(proxy::ScanProxy{L, R}, actor::A) where L where R where A = ScanActor{L, R, A}(proxy.scanFn, proxy.seed, actor)
 
-mutable struct ScanActor{L, R} <: Actor{L}
+mutable struct ScanActor{L, R, A} <: Actor{L}
     scanFn  :: Function
     current :: Union{R, Nothing}
-    actor
+    actor   :: A
 end
 
 is_exhausted(actor::ScanActor) = is_exhausted(actor.actor)
@@ -138,13 +138,13 @@ macro CreateScanOperator(name, L, R, scanFn)
             seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor) = ($actorName)(proxy.seed, actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
     end
 
     actorDefinition = quote
-        mutable struct $actorName <: Rx.Actor{$L}
+        mutable struct $actorName{A} <: Rx.Actor{$L}
             current :: $R
-            actor
+            actor   :: A
         end
 
         Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)

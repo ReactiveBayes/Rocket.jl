@@ -34,13 +34,13 @@ struct DelayProxy{L} <: ActorSourceProxy
     delay :: Int
 end
 
-actor_proxy!(proxy::DelayProxy{L}, actor)   where L = DelayActor{L}(false, proxy.delay, actor)
-source_proxy!(proxy::DelayProxy{L}, source) where L = DelayObservable{L}(source)
+actor_proxy!(proxy::DelayProxy{L}, actor::A) where L where A = DelayActor{L, A}(false, proxy.delay, actor)
+source_proxy!(proxy::DelayProxy{L}, source)  where L         = DelayObservable{L}(source)
 
-mutable struct DelayActor{L} <: Actor{L}
+mutable struct DelayActor{L, A} <: Actor{L}
     is_cancelled :: Bool
     delay        :: Int
-    actor
+    actor        :: A
 end
 
 is_exhausted(actor::DelayActor) = is_exhausted(actor.actor)

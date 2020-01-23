@@ -52,11 +52,11 @@ struct FilterProxy{L} <: ActorProxy
     filterFn::Function
 end
 
-actor_proxy!(proxy::FilterProxy{L}, actor) where L = FilterActor{L}(proxy.filterFn, actor)
+actor_proxy!(proxy::FilterProxy{L}, actor::A) where L where A = FilterActor{L, A}(proxy.filterFn, actor)
 
-struct FilterActor{L} <: Actor{L}
+struct FilterActor{L, A} <: Actor{L}
     filterFn :: Function
-    actor
+    actor    :: A
 end
 
 is_exhausted(actor::FilterActor) = is_exhausted(actor.actor)
@@ -118,15 +118,6 @@ macro CreateFilterOperator(name, L, filterFn)
         function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
             return Rx.ProxyObservable{$L}(source, ($proxyName)())
         end
-
-        function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source::SingleObservable{$L})
-            __inlined_lambda = $filterFn
-            if __inlined_lambda(source.value)
-                return of(source.value)
-            else
-                return completed($L)
-            end
-        end
     end
 
     proxyDefinition = quote
@@ -172,15 +163,6 @@ macro CreateFilterOperator(name, filterFn)
 
         function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source) where L
             return Rx.ProxyObservable{L}(source, ($proxyName){L}())
-        end
-
-        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source::SingleObservable{L}) where L
-            __inlined_lambda = $filterFn
-            if __inlined_lambda(source.value)
-                return of(source.value)
-            else
-                return completed(L)
-            end
         end
 
         operator_right(operator::($operatorName){L}, ::Type{L}) where L = L

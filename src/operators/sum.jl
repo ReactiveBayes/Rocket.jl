@@ -68,11 +68,11 @@ struct SumProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::SumProxy{L}, actor) where L = SumActor{L}(proxy.from, actor)
+actor_proxy!(proxy::SumProxy{L}, actor::A) where L where A = SumActor{L, A}(proxy.from, actor)
 
-mutable struct SumActor{L} <: Actor{L}
+mutable struct SumActor{L, A} <: Actor{L}
     current :: Union{L, Nothing}
-    actor
+    actor   :: A
 end
 
 is_exhausted(actor::SumActor) = is_exhausted(actor.actor)

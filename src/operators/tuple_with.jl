@@ -19,11 +19,11 @@ struct TupleWithLeftProxy{T, L} <: ActorProxy
     value :: T
 end
 
-actor_proxy!(proxy::TupleWithLeftProxy{T, L}, actor) where T where L = TupleWithLeftActor{T, L}(proxy.value, actor)
+actor_proxy!(proxy::TupleWithLeftProxy{T, L}, actor::A) where T where L where A = TupleWithLeftActor{T, L, A}(proxy.value, actor)
 
-struct TupleWithLeftActor{T, L} <: Actor{L}
+struct TupleWithLeftActor{T, L, A} <: Actor{L}
     value :: T
-    actor
+    actor :: A
 end
 
 is_exhausted(actor::TupleWithLeftActor) = is_exhausted(actor.actor)
@@ -48,11 +48,11 @@ struct TupleWithRightProxy{T, L} <: ActorProxy
     value :: T
 end
 
-actor_proxy!(proxy::TupleWithRightProxy{T, L}, actor) where T where L = TupleWithRightActor{T, L}(proxy.value, actor)
+actor_proxy!(proxy::TupleWithRightProxy{T, L}, actor::A) where T where L where A = TupleWithRightActor{T, L, A}(proxy.value, actor)
 
-struct TupleWithRightActor{T, L} <: Actor{L}
+struct TupleWithRightActor{T, L, A} <: Actor{L}
     value :: T
-    actor
+    actor :: A
 end
 
 is_exhausted(actor::TupleWithRightActor) = is_exhausted(actor.actor)

@@ -50,11 +50,11 @@ struct MaxProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MaxProxy{L}, actor) where L = MaxActor{L}(proxy.from, actor)
+actor_proxy!(proxy::MaxProxy{L}, actor::A) where L where A = MaxActor{L, A}(proxy.from, actor)
 
-mutable struct MaxActor{L} <: Actor{L}
+mutable struct MaxActor{L, A} <: Actor{L}
     current :: Union{L, Nothing}
-    actor
+    actor   :: A
 end
 
 is_exhausted(actor::MaxActor) = is_exhausted(actor.actor)

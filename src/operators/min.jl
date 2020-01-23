@@ -50,11 +50,11 @@ struct MinProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MinProxy{L}, actor) where L = MinActor{L}(proxy.from, actor)
+actor_proxy!(proxy::MinProxy{L}, actor::A) where L where A = MinActor{L, A}(proxy.from, actor)
 
-mutable struct MinActor{L} <: Actor{L}
+mutable struct MinActor{L, A} <: Actor{L}
     current :: Union{L, Nothing}
-    actor
+    actor   :: A
 end
 
 is_exhausted(actor::MinActor) = is_exhausted(actor.actor)
