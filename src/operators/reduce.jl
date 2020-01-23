@@ -84,7 +84,7 @@ function on_next!(actor::ReduceActor{L, R}, data::L) where L where R
     if actor.current === nothing
         actor.current = data
     else
-        actor.current = Base.invokelatest(actor.reduceFn, data, actor.current)
+        actor.current = actor.reduceFn(data, actor.current)
     end
 end
 

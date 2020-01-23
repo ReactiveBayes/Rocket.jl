@@ -70,7 +70,7 @@ function on_next!(r::ScanActor{L, R}, data::L) where L where R
     if r.current === nothing
         r.current = data
     else
-        r.current = Base.invokelatest(r.scanFn, data, r.current)
+        r.current = r.scanFn(data, r.current)
     end
     next!(r.actor, r.current)
 end

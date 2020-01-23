@@ -62,7 +62,7 @@ end
 is_exhausted(actor::FilterActor) = is_exhausted(actor.actor)
 
 function on_next!(f::FilterActor{L}, data::L) where L
-    if (Base.invokelatest(f.filterFn, data))
+    if f.filterFn(data)
         next!(f.actor, data)
     end
 end

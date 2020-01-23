@@ -138,14 +138,10 @@ function subscribe!(subscribable::T, actor_factory::F) where T where { F <: Abst
     subscribable_on_subscribe_with_factory!(as_subscribable(T), subscribable, actor_factory)
 end
 
-# TODO: Add a posibility for actors to be a supertype of source data type, for example
-# source <: Subscribable{L}
-# actor  <: Actor{Union{L, Nothing}}
-
-subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                   = throw(InvalidSubscribableTraitUsageError(subscribable))
-subscribable_on_subscribe!(::ValidSubscribable,     ::InvalidActorTrait,   subscribable, actor)                   = throw(InvalidActorTraitUsageError(actor))
-subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2 = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-subscribable_on_subscribe!(::ValidSubscribable{T},  ::ActorTrait{T},       subscribable, actor) where T           = begin
+subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                             = throw(InvalidSubscribableTraitUsageError(subscribable))
+subscribable_on_subscribe!(::ValidSubscribable,     ::InvalidActorTrait,   subscribable, actor)                             = throw(InvalidActorTraitUsageError(actor))
+subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2           = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where { T1 <: T2 } where T2 = begin
     if !is_exhausted(actor)
         on_subscribe!(subscribable, actor)
     else

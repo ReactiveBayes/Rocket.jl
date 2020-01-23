@@ -63,7 +63,7 @@ end
 
 is_exhausted(actor::MapActor) = is_exhausted(actor.actor)
 
-on_next!(m::MapActor{L},  data::L) where L = next!(m.actor, Base.invokelatest(m.mappingFn, data))
+on_next!(m::MapActor{L},  data::L) where L = next!(m.actor, m.mappingFn(data))
 on_error!(m::MapActor, err)                = error!(m.actor, err)
 on_complete!(m::MapActor)                  = complete!(m.actor)
 
