@@ -117,11 +117,6 @@ macro CreateMapOperator(name, L, R, mappingFn)
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.ProxyObservable{$R}(source, ($proxyName)())
         end
-
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source::SingleObservable{$L})
-            __inlined_lambda = $mappingFn
-            return Rx.SingleObservable{$R}(__inlined_lambda(source.value))
-        end
     end
 
     proxyDefinition = quote
@@ -135,15 +130,15 @@ macro CreateMapOperator(name, L, R, mappingFn)
             actor
         end
 
-        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
+        Rx.is_exhausted(actor::($actorName)) = Rx.is_exhausted(actor.actor)
 
-        Rx.on_next!(a::($actorName), data::($L))  = begin
-            __inlined_lambda = $mappingFn
-            Rx.next!(a.actor, __inlined_lambda(data))
+        Rx.on_next!(actor::($actorName), data::($L))  = begin
+            __inline_lambda = $mappingFn
+            Rx.next!(actor.actor, __inline_lambda(data))
         end
 
-        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
-        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+        Rx.on_error!(actor::($actorName), err) = Rx.error!(actor.actor, err)
+        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
     end
 
     generated = quote
@@ -166,11 +161,6 @@ macro CreateMapOperator(name, mappingFn)
         function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source) where L where R
             return Rx.ProxyObservable{R}(source, ($proxyName){L}())
         end
-
-        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source::SingleObservable{L}) where L where R
-            __inlined_lambda = $mappingFn
-            return Rx.SingleObservable{R}(__inlined_lambda(source.value))
-        end
     end
 
     proxyDefinition = quote
@@ -184,7 +174,7 @@ macro CreateMapOperator(name, mappingFn)
             actor
         end
 
-        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
+        Rx.is_exhausted(a::($actorName)) = Rx.is_exhausted(a.actor)
 
         Rx.on_next!(a::($actorName){L}, data::L) where L  = begin
             __inlined_lambda = $mappingFn
