@@ -12,7 +12,7 @@ See also: [`Actor`](@ref)
 mutable struct KeepActor{T} <: Actor{T}
     values :: Vector{T}
 
-    KeepActor{T}() where T = new(Vector{Int}())
+    KeepActor{T}(values::Vector{T} = Vector{T}()) where T = new(values)
 end
 
 is_exhausted(actor::KeepActor) = false
@@ -28,4 +28,5 @@ Helper function to create a KeepActor
 
 See also: [`KeepActor`](@ref), [`AbstractActor`](@ref)
 """
-keep(::Type{T}) where T = KeepActor{T}()
+keep(::Type{T})         where T = KeepActor{T}()
+keep(values::Vector{T}) where T = KeepActor{T}(values)

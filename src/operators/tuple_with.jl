@@ -10,7 +10,7 @@ struct TupleWithLeftOperator{T} <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{Tuple{T, L}}, operator::TupleWithLeftOperator{T}, source) where T where L
-    return ProxyObservable{Tuple{T, L}}(source, TupleWithLeftProxy{T, L}(operator.value))
+    return proxy(Tuple{T, L}, source, TupleWithLeftProxy{T, L}(operator.value))
 end
 
 operator_right(operator::TupleWithLeftOperator{T}, ::Type{L}) where T where L = Tuple{T, L}
@@ -39,7 +39,7 @@ struct TupleWithRightOperator{T} <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{Tuple{L, T}}, operator::TupleWithRightOperator{T}, source) where T where L
-    return ProxyObservable{Tuple{L, T}}(source, TupleWithRightProxy{L, T}(operator.value))
+    return proxy(Tuple{L, T}, source, TupleWithRightProxy{L, T}(operator.value))
 end
 
 operator_right(operator::TupleWithRightOperator{T}, ::Type{L}) where T where L = Tuple{L, T}

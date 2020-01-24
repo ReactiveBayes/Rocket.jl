@@ -36,7 +36,7 @@ some() = SomeOperator()
 struct SomeOperator <: InferableOperator end
 
 function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, source) where L
-    return ProxyObservable{L}(source, SomeProxy{L}())
+    return proxy(L, source, SomeProxy{L}())
 end
 
 operator_right(operator::SomeOperator, ::Type{Union{L, Nothing}}) where L = L

@@ -34,7 +34,7 @@ uppercase() = UppercaseOperator()
 struct UppercaseOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::UppercaseOperator, source) where L
-    return ProxyObservable{L}(source, UppercaseProxy{L}())
+    return proxy(L, source, UppercaseProxy{L}())
 end
 
 operator_right(::UppercaseOperator, ::Type{L}) where L = L

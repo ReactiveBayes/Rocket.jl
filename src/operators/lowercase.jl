@@ -34,7 +34,7 @@ lowercase() = LowercaseOperator()
 struct LowercaseOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::LowercaseOperator, source) where L
-    return ProxyObservable{L}(source, LowercaseProxy{L}())
+    return proxy(L, source, LowercaseProxy{L}())
 end
 
 operator_right(::LowercaseOperator, ::Type{L}) where L = L

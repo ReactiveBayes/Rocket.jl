@@ -25,7 +25,7 @@ struct DelayOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::DelayOperator, source) where L
-    return ProxyObservable{L}(source, DelayProxy{L}(operator.delay))
+    return proxy(L, source, DelayProxy{L}(operator.delay))
 end
 
 operator_right(operator::DelayOperator, ::Type{L}) where L = L

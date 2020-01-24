@@ -43,7 +43,7 @@ struct FilterOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator, source) where L
-    return ProxyObservable{L}(source, FilterProxy{L}(operator.filterFn))
+    return proxy(L, source, FilterProxy{L}(operator.filterFn))
 end
 
 operator_right(operator::FilterOperator, ::Type{L}) where L = L
@@ -116,7 +116,7 @@ macro CreateFilterOperator(name, L, filterFn)
         struct $operatorName <: Rx.TypedOperator{$L, $L} end
 
         function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
-            return Rx.ProxyObservable{$L}(source, ($proxyName)())
+            return Rx.proxy($L, source, ($proxyName)())
         end
     end
 
@@ -162,7 +162,7 @@ macro CreateFilterOperator(name, filterFn)
         struct $operatorName{L} <: Rx.LeftTypedOperator{L} end
 
         function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source) where L
-            return Rx.ProxyObservable{L}(source, ($proxyName){L}())
+            return Rx.proxy(L, source, ($proxyName){L}())
         end
 
         operator_right(operator::($operatorName){L}, ::Type{L}) where L = L

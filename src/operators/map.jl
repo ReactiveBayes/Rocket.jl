@@ -47,7 +47,7 @@ struct MapOperator{R} <: RightTypedOperator{R}
 end
 
 function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R}, source) where L where R
-    return ProxyObservable{R}(source, MapProxy{L}(operator.mappingFn))
+    return proxy(R, source, MapProxy{L}(operator.mappingFn))
 end
 
 struct MapProxy{L} <: ActorProxy
@@ -115,7 +115,7 @@ macro CreateMapOperator(name, L, R, mappingFn)
         struct $operatorName <: Rx.TypedOperator{$L, $R} end
 
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
-            return Rx.ProxyObservable{$R}(source, ($proxyName)())
+            return Rx.proxy($R, source, ($proxyName)())
         end
     end
 
@@ -159,7 +159,7 @@ macro CreateMapOperator(name, mappingFn)
         struct $operatorName{L, R} <: Rx.TypedOperator{L, R} end
 
         function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source) where L where R
-            return Rx.ProxyObservable{R}(source, ($proxyName){L}())
+            return Rx.proxy(R, source, ($proxyName){L}())
         end
     end
 

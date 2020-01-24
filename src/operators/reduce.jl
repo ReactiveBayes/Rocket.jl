@@ -62,7 +62,7 @@ struct ReduceOperator{R} <: RightTypedOperator{R}
 end
 
 function on_call!(::Type{L}, ::Type{R}, operator::ReduceOperator{R}, source) where L where R
-    return ProxyObservable{R}(source, ReduceProxy{L, R}(operator.reduceFn, operator.seed))
+    return proxy(R, source, ReduceProxy{L, R}(operator.reduceFn, operator.seed))
 end
 
 struct ReduceProxy{L, R} <: ActorProxy
@@ -145,7 +145,7 @@ macro CreateReduceOperator(name, L, R, reduceFn)
         end
 
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
-            return Rx.ProxyObservable{$R}(source, ($proxyName)(operator.seed))
+            return Rx.proxy($R, source, ($proxyName)(operator.seed))
         end
     end
 

@@ -43,7 +43,7 @@ enumerate() = EnumerateOperator()
 struct EnumerateOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{Tuple{L, Int}}, operator::EnumerateOperator, source) where L
-    return ProxyObservable{Tuple{L, Int}}(source, EnumerateProxy{L}())
+    return proxy(Tuple{L, Int}, source, EnumerateProxy{L}())
 end
 
 operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{L, Int}

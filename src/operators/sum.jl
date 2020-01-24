@@ -59,7 +59,7 @@ struct SumOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::SumOperator, source) where L
-    return ProxyObservable{L}(source, SumProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
+    return proxy(L, source, SumProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
 end
 
 operator_right(operator::SumOperator, ::Type{L}) where L = L

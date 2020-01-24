@@ -41,7 +41,7 @@ struct MinOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MinOperator, source) where L
-    return ProxyObservable{Union{L, Nothing}}(source, MinProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
+    return proxy(Union{L, Nothing}, source, MinProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
 end
 
 operator_right(operator::MinOperator, ::Type{L}) where L = Union{L, Nothing}

@@ -13,18 +13,18 @@ struct SwitchMapOperator{R} <: RightTypedOperator{R}
 end
 
 function on_call!(::Type{L}, ::Type{R}, operator::SwitchMapOperator{R}, source) where L where R
-    return ProxyObservable{R}(source, SwitchMapProxy{L, R}(operator.mappingFn))
+    return proxy(R, source, SwitchMapProxy{L, R}(operator.mappingFn))
 end
 
 struct SwitchMapProxy{L, R} <: ActorSourceProxy
     mappingFn :: Function
 end
 
-actor_proxy!(proxy::SwitchMapProxy{L, R}, actor) where L where R = SwitchMapActor{L, R}(proxy.mappingFn, actor)
+actor_proxy!(proxy::SwitchMapProxy{L, R}, actor::A) where L where R where A = SwitchMapActor{L, R, A}(proxy.mappingFn, actor)
 
-mutable struct SwitchMapActor{L, R} <: Actor{L}
+mutable struct SwitchMapActor{L, R, A} <: Actor{L}
     mappingFn :: Function
-    actor
+    actor     :: A
 
     current_subscription_completed :: Bool
     current_subscription :: Union{Nothing, Teardown}
@@ -32,7 +32,7 @@ mutable struct SwitchMapActor{L, R} <: Actor{L}
     switch_failed        :: Bool
     switch_last_error    :: Union{Nothing, Any}
 
-    SwitchMapActor{L, R}(mappingFn::Function, actor) where L where R = new(mappingFn, actor, false, nothing, false, false, nothing)
+    SwitchMapActor{L, R, A}(mappingFn::Function, actor::A) where L where R where A = new(mappingFn, actor, false, nothing, false, false, nothing)
 end
 
 is_exhausted(actor::SwitchMapActor) = actor.switch_completed || actor.switch_failed || is_exhausted(actor.actor)
@@ -126,27 +126,27 @@ macro CreateSwitchMapOperator(name, mappingFn)
         struct $operatorName{R} <: Rx.RightTypedOperator{R} end
 
         function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){R}, source) where L where R
-            return Rx.ProxyObservable{R}(source, ($proxyName){L, R}())
+            return Rx.proxy(R, source, ($proxyName){L, R}())
         end
     end
 
     proxyDefinition = quote
         struct $proxyName{L, R} <: Rx.ActorSourceProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L, R}, actor)   where L where R = $(actorName){L, R}(actor)
-        Rx.source_proxy!(proxy::($proxyName){L, R}, source) where L where R = Rx.SwitchMapSource{L}(source)
+        Rx.actor_proxy!(proxy::($proxyName){L, R}, actor::A) where L where R where A = $(actorName){L, R, A}(actor)
+        Rx.source_proxy!(proxy::($proxyName){L, R}, source)  where L where R         = Rx.SwitchMapSource{L}(source)
     end
 
     actorDefinition = quote
-        mutable struct $actorName{L, R} <: Rx.Actor{L}
-            actor
+        mutable struct $actorName{L, R, A} <: Rx.Actor{L}
+            actor :: A
             current_subscription_completed :: Bool
             current_subscription :: Union{Nothing, Teardown}
             switch_completed     :: Bool
             switch_failed        :: Bool
             switch_last_error    :: Union{Nothing, Any}
 
-            ($actorName){L, R}(actor) where L where R = new(actor, false, nothing, false, false, nothing)
+            ($actorName){L, R, A}(actor::A) where L where R where A = new(actor, false, nothing, false, false, nothing)
         end
 
         Rx.is_exhausted(actor::($actorName)) = actor.switch_completed || actor.switch_failed || Rx.is_exhausted(actor.actor)

@@ -13,7 +13,7 @@ struct ReplayOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::ReplayOperator, source) where L
-    return ProxyObservable{L}(source, ReplayProxy{L}(operator.count))
+    return proxy(L, source, ReplayProxy{L}(operator.count))
 end
 
 operator_right(operator::ReplayOperator, ::Type{L}) where L = L

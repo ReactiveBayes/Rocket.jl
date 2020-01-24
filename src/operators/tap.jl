@@ -48,7 +48,7 @@ end
 operator_right(operator::TapOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::TapOperator, source) where L
-    return ProxyObservable{L}(source, TapProxy{L}(operator.tapFn))
+    return proxy(L, source, TapProxy{L}(operator.tapFn))
 end
 
 struct TapProxy{L} <: ActorProxy
@@ -116,7 +116,7 @@ macro CreateTapOperator(name, tapFn)
         struct $operatorName <: Rx.InferableOperator end
 
         function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source) where L
-            return Rx.ProxyObservable{L}(source, ($proxyName){L}())
+            return Rx.proxy(L, source, ($proxyName){L}())
         end
 
         Rx.operator_right(operator::($operatorName), ::Type{L}) where L = L

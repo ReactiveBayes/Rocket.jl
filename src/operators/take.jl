@@ -51,7 +51,7 @@ struct TakeOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::TakeOperator, source) where L
-    return ProxyObservable{L}(source, TakeProxy{L}(operator.max_count))
+    return proxy(L, source, TakeProxy{L}(operator.max_count))
 end
 
 operator_right(operator::TakeOperator, ::Type{L}) where L = L
@@ -62,14 +62,14 @@ end
 
 source_proxy!(proxy::TakeProxy{L}, source) where L = TakeSource{L}(proxy.max_count, source)
 
-mutable struct TakeInnerActor{L} <: Actor{L}
+mutable struct TakeInnerActor{L, A} <: Actor{L}
     is_completed :: Bool
     max_count    :: Int
     current      :: Int
-    actor
+    actor        :: A
     subscription
 
-    TakeInnerActor{L}(max_count::Int, actor) where L = begin
+    TakeInnerActor{L, A}(max_count::Int, actor::A) where L where A = begin
         take_actor = new()
 
         take_actor.is_completed = false
@@ -121,8 +121,8 @@ struct TakeSource{L} <: Subscribable{L}
     TakeSource{L}(max_count::Int, source) where L = new(max_count, source)
 end
 
-function on_subscribe!(observable::TakeSource{L}, actor) where L
-    inner_actor  = TakeInnerActor{L}(observable.max_count, actor)
+function on_subscribe!(observable::TakeSource{L}, actor::A) where L where A
+    inner_actor  = TakeInnerActor{L, A}(observable.max_count, actor)
 
     subscription = subscribe!(observable.source, inner_actor)
     inner_actor.subscription = subscription

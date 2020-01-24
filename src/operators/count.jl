@@ -37,7 +37,7 @@ count() = CountOperator()
 struct CountOperator <: RightTypedOperator{Int} end
 
 function on_call!(::Type{L}, ::Type{Int}, operator::CountOperator, source) where L
-    return ProxyObservable{Int}(source, CountProxy{L}())
+    return proxy(Int, source, CountProxy{L}())
 end
 
 struct CountProxy{L} <: ActorProxy end

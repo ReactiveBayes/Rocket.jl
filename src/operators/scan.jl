@@ -48,7 +48,7 @@ struct ScanOperator{R} <: RightTypedOperator{R}
 end
 
 function on_call!(::Type{L}, ::Type{R}, operator::ScanOperator{R}, source) where L where R
-    return ProxyObservable{R}(source, ScanProxy{L, R}(operator.scanFn, operator.seed))
+    return proxy(R, source, ScanProxy{L, R}(operator.scanFn, operator.seed))
 end
 
 struct ScanProxy{L, R} <: ActorProxy
@@ -129,7 +129,7 @@ macro CreateScanOperator(name, L, R, scanFn)
         end
 
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
-            return Rx.ProxyObservable{$R}(source, ($proxyName)(operator.seed))
+            return Rx.proxy($R, source, ($proxyName)(operator.seed))
         end
     end
 

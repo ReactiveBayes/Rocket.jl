@@ -30,7 +30,7 @@ using Rx
 struct MyTypedOperator <: TypedOperator{Int, Int} end
 
 function Rx.on_call!(::Type{Int}, ::Type{Int}, op::MyTypedOperator, s::S) where { S <: Subscribable{Int} }
-    return ProxyObservable{Int}(s, MyTypedOperatorProxy())
+    return proxy(Int, s, MyTypedOperatorProxy())
 end
 
 struct MyTypedOperatorProxy <: ActorProxy end
@@ -79,7 +79,7 @@ using Rx
 struct CountIntegersOperator <: LeftTypedOperator{Int} end
 
 function Rx.on_call!(::Type{Int}, ::Type{Tuple{Int, Int}}, op::CountIntegersOperator, s::S) where { S <: Subscribable{Int} }
-    return ProxyObservable{Tuple{Int, Int}}(s, CountIntegersOperatorProxy())
+    return proxy(Tuple{Int, Int}, s, CountIntegersOperatorProxy())
 end
 
 function Rx.operator_right(::CountIntegersOperator, ::Type{Int})
@@ -133,7 +133,7 @@ using Rx
 struct ConvertToFloatOperator <: RightTypedOperator{Float64} end
 
 function Rx.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, s::S) where { S <: Subscribable{L} } where L
-    return ProxyObservable{Float64}(s, ConvertToFloatProxy{L}())
+    return proxy(Float64, s, ConvertToFloatProxy{L}())
 end
 
 struct ConvertToFloatProxy{L} <: ActorProxy end
@@ -180,7 +180,7 @@ using Rx
 struct IdentityOperator <: InferableOperator end
 
 function Rx.on_call!(::Type{L}, ::Type{L}, op::IdentityOperator, s::S) where { S <: Subscribable{L} } where L
-    return ProxyObservable{L}(s, IdentityProxy{L}())
+    return proxy(L, s, IdentityProxy{L}())
 end
 
 Rx.operator_right(::IdentityOperator, ::Type{L}) where L = L

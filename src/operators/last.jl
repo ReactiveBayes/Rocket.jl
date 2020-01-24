@@ -67,7 +67,7 @@ struct LastOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::LastOperator, source) where L
-    return ProxyObservable{L}(source, LastProxy{L}(operator.default))
+    return proxy(L, source, LastProxy{L}(operator.default))
 end
 
 operator_right(operator::LastOperator, ::Type{L}) where L = L

@@ -10,7 +10,7 @@ ref_count() = RefCountOperator()
 struct RefCountOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::RefCountOperator, source) where L
-    return ProxyObservable{L}(source, RefCountProxy{L}())
+    return proxy(L, source, RefCountProxy{L}())
 end
 
 operator_right(operator::RefCountOperator, ::Type{L}) where L = L

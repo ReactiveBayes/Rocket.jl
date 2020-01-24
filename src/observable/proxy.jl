@@ -3,6 +3,7 @@ export ProxyTrait, ValidProxy, InvalidProxy
 export as_proxy, call_actor_proxy!, call_source_proxy!
 export ProxyObservable, on_subscribe!
 export actor_proxy!, source_proxy!
+export proxy
 
 import Base: show
 
@@ -51,14 +52,22 @@ call_source_proxy!(::ValidActorSourceProxy, as_subscribable,       proxy, source
 struct ProxyObservable{D} <: Subscribable{D}
     proxied_source
     proxy
-
-    ProxyObservable{D}(source, proxy) where D = new(call_source_proxy!(proxy, source), proxy)
 end
 
 function on_subscribe!(observable::ProxyObservable, actor)
-    proxied_actor  = call_actor_proxy!(observable.proxy, actor)
-    return subscribe!(observable.proxied_source, proxied_actor)
+    return subscribe!(observable.proxied_source, call_actor_proxy!(observable.proxy, actor))
 end
 
 actor_proxy!(proxy, actor)   = error("You probably forgot to implement actor_proxy!(proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
 source_proxy!(proxy, source) = error("You probably forgot to implement source_proxy!(proxy::$(typeof(proxy)), source::$(typeof(source)))")
+
+# -------------------------------- #
+# Helpers                          #
+# -------------------------------- #
+
+proxy(::Type{D}, source, proxy) where D = as_proxy_observable(D, call_source_proxy!(proxy, source), proxy)
+
+as_proxy_observable(::Type{D}, proxied_source::S, proxy) where D where S = as_proxy_observable(D, as_subscribable(S), proxied_source, proxy)
+
+as_proxy_observable(::Type{D}, ::InvalidSubscribable,  proxied_source, proxy) where D = throw(InvalidSubscribableTraitUsageError(proxied_source))
+as_proxy_observable(::Type{D}, ::ValidSubscribable,    proxied_source, proxy) where D = ProxyObservable{D}(proxied_source, proxy)
