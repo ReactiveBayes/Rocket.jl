@@ -11,8 +11,8 @@ struct LatestCombined2Observable{D1, D2} <: Subscribable{Tuple{D1, D2}}
     source2
 end
 
-function on_subscribe!(observable::LatestCombined2Observable{D1, D2}, actor) where D1 where D2
-    wrapper = LatestCombinedObservable2ActorWrapper{D1, D2}(observable.source1, observable.source2, actor)
+function on_subscribe!(observable::LatestCombined2Observable{D1, D2}, actor::A) where D1 where D2 where A
+    wrapper = LatestCombinedObservable2ActorWrapper{D1, D2, A}(observable.source1, observable.source2, actor)
     return LatestCombined2Subscription(wrapper)
 end
 
@@ -73,10 +73,10 @@ end
 ### Base Actor wrappers ###
 ### TODO: Again it is better to write a macro for this kind of structures and pregenerate a lot of them
 
-mutable struct LatestCombinedObservable2ActorWrapper{D1, D2}
+mutable struct LatestCombinedObservable2ActorWrapper{D1, D2, A}
     actor1 :: LatestCombinedActor1{D1}
     actor2 :: LatestCombinedActor2{D2}
-    actor
+    actor  :: A
 
     latest1 :: Union{D1, Nothing}
     latest2 :: Union{D2, Nothing}
@@ -88,7 +88,7 @@ mutable struct LatestCombinedObservable2ActorWrapper{D1, D2}
     subscription1 :: Teardown
     subscription2 :: Teardown
 
-    LatestCombinedObservable2ActorWrapper{D1, D2}(source1, source2, actor) where D1 where D2 = begin
+    LatestCombinedObservable2ActorWrapper{D1, D2, A}(source1, source2, actor::A) where D1 where D2 where A = begin
         wrapper = new()
 
         actor1 = LatestCombinedActor1{D1}(wrapper)
