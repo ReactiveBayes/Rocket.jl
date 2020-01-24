@@ -4,6 +4,8 @@ export ScanProxy, actor_proxy!
 export ScanActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateScanOperator
 
+import Base: show
+
 """
     scan(::Type{R}, scanFn::Function, seed::Union{R, Nothing} = nothing) where R
 
@@ -26,7 +28,7 @@ Stream of type `<: Subscribable{R}`
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActor{Vector{Int}}())
+subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
 ;
 
 # output
@@ -38,7 +40,7 @@ subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActo
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
 scan(::Type{R}, scanFn::Function, seed::Union{R, Nothing} = nothing) where T where R = ScanOperator{R}(scanFn, seed)
 
@@ -78,6 +80,9 @@ end
 on_error!(r::ScanActor, err) where L where R = error!(r.actor, err)
 on_complete!(r::ScanActor)   where L where R = complete!(r.actor)
 
+Base.show(io::IO, operator::ScanOperator{R}) where R   = print(io, "ScanOperator( -> $R)")
+Base.show(io::IO, proxy::ScanProxy{L})       where L   = print(io, "ScanProxy($L)")
+Base.show(io::IO, actor::ScanActor{L})       where L   = print(io, "ScanActor($L)")
 
 """
     @CreateScanOperator(name, L, R, scanFn)
@@ -104,7 +109,7 @@ using Rx
 @CreateScanOperator(IntoArray, Int, Vector{Int}, (d, c) -> [ c..., d ])
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> IntoArrayScanOperator(Int[]), LoggerActor{Vector{Int}}())
+subscribe!(source |> IntoArrayScanOperator(Int[]), logger())
 ;
 
 # output
@@ -116,7 +121,7 @@ subscribe!(source |> IntoArrayScanOperator(Int[]), LoggerActor{Vector{Int}}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref)
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref), [`logger`](@ref)
 """
 macro CreateScanOperator(name, L, R, scanFn)
     operatorName   = Symbol(name, "ScanOperator")
@@ -131,6 +136,8 @@ macro CreateScanOperator(name, L, R, scanFn)
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.proxy($R, source, ($proxyName)(operator.seed))
         end
+
+        Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "(", string($L), " -> ", string($R), ")")
     end
 
     proxyDefinition = quote
@@ -139,6 +146,8 @@ macro CreateScanOperator(name, L, R, scanFn)
         end
 
         Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
+
+        Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "()")
     end
 
     actorDefinition = quote
@@ -157,6 +166,8 @@ macro CreateScanOperator(name, L, R, scanFn)
 
         Rx.on_error!(actor::($actorName), err) = Rx.error!(actor.actor, err)
         Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+
+        Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "()")
     end
 
     generated = quote

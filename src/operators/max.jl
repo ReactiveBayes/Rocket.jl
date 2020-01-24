@@ -4,6 +4,7 @@ export MaxProxy, actor_proxy!
 export MaxActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: max
+import Base: show
 
 """
     max(; from = nothing)
@@ -22,7 +23,7 @@ Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of 
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> max(), LoggerActor{Union{Int, Nothing}}())
+subscribe!(source |> max(), logger())
 ;
 
 # output
@@ -32,7 +33,7 @@ subscribe!(source |> max(), LoggerActor{Union{Int, Nothing}}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 max(; from = nothing) = MaxOperator(from)
 
@@ -75,3 +76,7 @@ function on_complete!(actor::MaxActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end
+
+Base.show(io::IO, operator::MaxOperator)         = print(io, "MaxOperator()")
+Base.show(io::IO, proxy::MaxProxy{L})    where L = print(io, "MaxProxy($L)")
+Base.show(io::IO, actor::MaxActor{L})    where L = print(io, "MaxActor($L)")

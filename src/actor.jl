@@ -241,8 +241,6 @@ end
 # Errors                           #
 # -------------------------------- #
 
-
-
 """
 This error will be thrown if `next!`, `error!` or `complete!` functions are called with invalid actor object
 

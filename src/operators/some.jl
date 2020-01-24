@@ -3,6 +3,8 @@ export SomeOperator, on_call!, operator_right
 export SomeProxy, actor_proxy!
 export SomeActor, on_next!, on_error!, on_complete!, is_exhausted
 
+import Base: show
+
 """
     some()
 
@@ -18,7 +20,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream `<
 using Rx
 
 source = Rx.from([ 1, nothing, 3 ])
-subscribe!(source |> some(), LoggerActor{Int}())
+subscribe!(source |> some(), logger())
 ;
 
 # output
@@ -29,7 +31,7 @@ subscribe!(source |> some(), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`max`](@ref), [`min`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`max`](@ref), [`min`](@ref), [`logger`](@ref)
 """
 some() = SomeOperator()
 
@@ -59,3 +61,7 @@ end
 
 on_error!(f::SomeActor, err) = error!(f.actor, err)
 on_complete!(f::SomeActor)   = complete!(f.actor)
+
+Base.show(io::IO, operator::SomeOperator)         = print(io, "SomeOperator()")
+Base.show(io::IO, proxy::SomeProxy{L})    where L = print(io, "SomeProxy($L)")
+Base.show(io::IO, actor::SomeActor{L})    where L = print(io, "SomeActor($L)")

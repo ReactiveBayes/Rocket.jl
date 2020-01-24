@@ -4,6 +4,7 @@ export CountProxy, actor_proxy!
 export CountActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: count
+import Base: show
 
 """
     count()
@@ -20,7 +21,7 @@ Stream of type `<: Subscribable{Int}`
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> count(), LoggerActor{Int}())
+subscribe!(source |> count(), logger())
 ;
 
 # output
@@ -30,7 +31,7 @@ subscribe!(source |> count(), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 count() = CountOperator()
 
@@ -63,3 +64,7 @@ function on_complete!(c::CountActor)
     next!(c.actor, c.current)
     complete!(c.actor)
 end
+
+Base.show(io::IO, operator::CountOperator)      = print(io, "CountOperator()")
+Base.show(io::IO, proxy::CountProxy{L}) where L = print(io, "CountProxy($L)")
+Base.show(io::IO, actor::CountActor{L}) where L = print(io, "CountActor($L)")

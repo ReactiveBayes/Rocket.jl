@@ -4,6 +4,7 @@ export UppercaseProxy, actor_proxy!
 export UppercaseActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: uppercase
+import Base: show
 
 """
     uppercase()
@@ -28,6 +29,8 @@ subscribe!(source |> uppercase(), LoggerActor{String}())
 [LogActor] Data: HELLO, WORLD!
 [LogActor] Completed
 ```
+
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 uppercase() = UppercaseOperator()
 
@@ -52,3 +55,7 @@ is_exhausted(actor::UppercaseActor) = is_exhausted(actor.actor)
 on_next!(actor::UppercaseActor{L}, data::L) where L = next!(actor.actor, uppercase(data))
 on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)
 on_complete!(actor::UppercaseActor)                 = complete!(actor.actor)
+
+Base.show(io::IO, operator::UppercaseOperator)         = print(io, "UppercaseOperator()")
+Base.show(io::IO, proxy::UppercaseProxy{L})    where L = print(io, "UppercaseProxy($L)")
+Base.show(io::IO, actor::UppercaseActor{L})    where L = print(io, "UppercaseActor($L)")

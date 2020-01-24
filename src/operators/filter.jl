@@ -5,6 +5,7 @@ export FilterActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateFilterOperator
 
 import Base: filter
+import Base: show
 
 """
     filter(filterFn::Function)
@@ -24,7 +25,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> filter((d) -> d % 2 == 0), LoggerActor{Int}())
+subscribe!(source |> filter((d) -> d % 2 == 0), logger())
 ;
 
 # output
@@ -34,7 +35,7 @@ subscribe!(source |> filter((d) -> d % 2 == 0), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 filter(filterFn::Function) = FilterOperator(filterFn)
 
@@ -70,6 +71,10 @@ end
 on_error!(f::FilterActor, err) = error!(f.actor, err)
 on_complete!(f::FilterActor)   = complete!(f.actor)
 
+Base.show(io::IO, operator::FilterOperator)         = print(io, "FilterOperator()")
+Base.show(io::IO, proxy::FilterProxy{L})    where L = print(io, "FilterProxy($L)")
+Base.show(io::IO, actor::FilterActor{L})    where L = print(io, "FilterActor($L)")
+
 
 """
     @CreateFilterOperator(name, L, filterFn)
@@ -95,7 +100,7 @@ using Rx
 @CreateFilterOperator(EvenInt, Int, (d) -> d % 2 == 0)
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> EvenIntFilterOperator(), LoggerActor{Int}())
+subscribe!(source |> EvenIntFilterOperator(), logger())
 ;
 
 # output
@@ -105,7 +110,7 @@ subscribe!(source |> EvenIntFilterOperator(), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`filter`](@ref)
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`filter`](@ref), [`logger`](@ref)
 """
 macro CreateFilterOperator(name, L, filterFn)
     operatorName = Symbol(name, "FilterOperator")
@@ -118,17 +123,21 @@ macro CreateFilterOperator(name, L, filterFn)
         function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
             return Rx.proxy($L, source, ($proxyName)())
         end
+
+        Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "()")
     end
 
     proxyDefinition = quote
         struct $proxyName <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor) = ($actorName)(actor)
+        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
+
+        Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "(", string($L), ")")
     end
 
     actorDefintion = quote
-        struct $actorName <: Rx.Actor{$L}
-            actor
+        struct $actorName{A} <: Rx.Actor{$L}
+            actor :: A
         end
 
         Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
@@ -142,6 +151,8 @@ macro CreateFilterOperator(name, L, filterFn)
 
         Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
         Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+
+        Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "(", string($L), ")")
     end
 
     generated = quote
@@ -166,17 +177,21 @@ macro CreateFilterOperator(name, filterFn)
         end
 
         operator_right(operator::($operatorName){L}, ::Type{L}) where L = L
+
+        Base.show(io::IO, operator::($operatorName){L}) where L = print(io, string($operatorName), "(", L, ")")
     end
 
     proxyDefinition = quote
         struct $proxyName{L} <: Rx.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor) where L = ($actorName){L}(actor)
+        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
+
+        Base.show(io::IO, proxy::($proxyName){L}) where L = print(io, string($proxyName), "(", L, ")")
     end
 
     actorDefintion = quote
-        struct $actorName{L} <: Rx.Actor{L}
-            actor
+        struct $actorName{L, A} <: Rx.Actor{L}
+            actor :: A
         end
 
         Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
@@ -190,6 +205,8 @@ macro CreateFilterOperator(name, filterFn)
 
         Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
         Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+
+        Base.show(io::IO, actor::($actorName){L}) where L = print(io, string($actorName), "(", L, ")")
     end
 
     generated = quote

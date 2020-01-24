@@ -4,6 +4,7 @@ export EnumerateProxy, actor_proxy!
 export EnumerateActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: enumerate
+import Base: show
 
 """
     enumerate()
@@ -11,9 +12,7 @@ import Base: enumerate
 Creates an enumerate operator, which converts each value emitted by the source
 Observable into a tuple of its order number and the value itself.
 
-The enumerate operator is similar to
-`scan(Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))`
-(see [`scan`](@ref)).
+The enumerate operator is similar to `scan(Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))` (see [`scan`](@ref)).
 
 # Producing
 
@@ -24,7 +23,7 @@ Stream of type `<: Subscribable{Tuple{L, Int}}` where `L` refers to type of sour
 using Rx
 
 source = from([ i for i in 1:3 ])
-subscribe!(source |> enumerate(), LoggerActor{Tuple{Int, Int}}())
+subscribe!(source |> enumerate(), logger())
 ;
 
 # output
@@ -36,7 +35,7 @@ subscribe!(source |> enumerate(), LoggerActor{Tuple{Int, Int}}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref), [`map`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref), [`map`](@ref), [`logger`](@ref)
 """
 enumerate() = EnumerateOperator()
 
@@ -67,3 +66,7 @@ end
 
 on_error!(c::EnumerateActor, err) = error!(c.actor, err)
 on_complete!(c::EnumerateActor)   = complete!(c.actor)
+
+Base.show(io::IO, operator::EnumerateOperator)         = print(io, "EnumerateOperator()")
+Base.show(io::IO, proxy::EnumerateProxy{L})    where L = print(io, "EnumerateProxy($L)")
+Base.show(io::IO, actor::EnumerateActor{L})    where L = print(io, "EnumerateActor($L)")

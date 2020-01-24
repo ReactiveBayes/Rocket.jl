@@ -4,6 +4,7 @@ export LowercaseProxy, actor_proxy!
 export LowercaseActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: lowercase
+import Base: show
 
 """
     lowercase()
@@ -20,7 +21,7 @@ Stream of type `<: Subscribable{L}` where L referes to type of data of input Obs
 using Rx
 
 source = of("Hello, world!")
-subscribe!(source |> lowercase(), LoggerActor{String}())
+subscribe!(source |> lowercase(), logger())
 ;
 
 # output
@@ -28,6 +29,8 @@ subscribe!(source |> lowercase(), LoggerActor{String}())
 [LogActor] Data: hello, world!
 [LogActor] Completed
 ```
+
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 lowercase() = LowercaseOperator()
 
@@ -52,3 +55,7 @@ is_exhausted(actor::LowercaseActor) = is_exhausted(actor.actor)
 on_next!(actor::LowercaseActor{L}, data::L) where L = next!(actor.actor, lowercase(data))
 on_error!(actor::LowercaseActor, err)       where L = error!(actor.actor, err)
 on_complete!(actor::LowercaseActor)         where L = complete!(actor.actor)
+
+Base.show(io::IO, operator::LowercaseOperator)         = print(io, "LowercaseOperator()")
+Base.show(io::IO, proxy::LowercaseProxy{L})    where L = print(io, "LowercaseProxy($L)")
+Base.show(io::IO, actor::LowercaseActor{L})    where L = print(io, "LowercaseActor($L)")

@@ -61,6 +61,8 @@ end
 actor_proxy!(proxy, actor)   = error("You probably forgot to implement actor_proxy!(proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
 source_proxy!(proxy, source) = error("You probably forgot to implement source_proxy!(proxy::$(typeof(proxy)), source::$(typeof(source)))")
 
+Base.show(io::IO, observable::ProxyObservable{D}) where D = print(io, "ProxyObservable($D, $(observable.proxy))")
+
 # -------------------------------- #
 # Helpers                          #
 # -------------------------------- #

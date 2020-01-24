@@ -3,6 +3,8 @@ export DelayOperator, on_call!
 export DelayProxy, actor_proxy!
 export DelayActor, on_next!, on_error!, on_complete!, is_exhausted
 
+import Base: show
+
 """
     delay(delay::Int)
 
@@ -92,3 +94,9 @@ function on_unsubscribe!(subscription::DelaySubscription)
     unsubscribe!(subscription.subscription)
     return nothing
 end
+
+Base.show(io::IO, operator::DelayOperator)                 = print(io, "DelayOperator()")
+Base.show(io::IO, proxy::DelayProxy{L})            where L = print(io, "DelayProxy($L)")
+Base.show(io::IO, actor::DelayActor{L})            where L = print(io, "DelayActor($L)")
+Base.show(io::IO, observaable::DelayObservable{L}) where L = print(io, "DelayObservable($L)")
+Base.show(io::IO, subscription::DelaySubscription)         = print(io, "DelaySubscription()")

@@ -4,6 +4,7 @@ export MinProxy, actor_proxy!
 export MinActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: min
+import Base: show
 
 """
     min(; from = nothing)
@@ -22,7 +23,7 @@ Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of 
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> min(), LoggerActor{Union{Int, Nothing}}())
+subscribe!(source |> min(), logger())
 ;
 
 # output
@@ -32,7 +33,7 @@ subscribe!(source |> min(), LoggerActor{Union{Int, Nothing}}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 min(; from = nothing) = MinOperator(from)
 
@@ -75,3 +76,7 @@ function on_complete!(actor::MinActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end
+
+Base.show(io::IO, operator::MinOperator)         = print(io, "MinOperator()")
+Base.show(io::IO, proxy::MinProxy{L})    where L = print(io, "MinProxy($L)")
+Base.show(io::IO, actor::MinActor{L})    where L = print(io, "MinActor($L)")

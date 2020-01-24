@@ -23,6 +23,7 @@ on_complete!(actor::KeepActor)                 = begin end
 
 """
     keep(::Type{T}) where T
+    keep(values::Vector{T}) where T
 
 Helper function to create a KeepActor
 

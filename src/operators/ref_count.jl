@@ -2,8 +2,9 @@ export RefCountOperator, on_call!, operator_right
 export RefCountProxy, source_proxy!
 export RefCountSource, connect_source!, disconnect_source!, on_subscribe!
 export RefCountSourceSubscription, as_teardown, on_unsubscribe!
-
 export ref_count
+
+import Base: show
 
 ref_count() = RefCountOperator()
 
@@ -66,3 +67,8 @@ function on_unsubscribe!(subscription::RefCountSourceSubscription)
         subscription.ref_count_source = nothing
     end
 end
+
+Base.show(io::IO, operator::RefCountOperator)         = print(io, "RefCountOperator()")
+Base.show(io::IO, proxy::RefCountProxy{L})    where L = print(io, "RefCountProxy($L)")
+Base.show(io::IO, source::RefCountSource{L})  where L = print(io, "RefCountSource($L)")
+Base.show(io::IO, subscription::RefCountSourceSubscription) = print("RefCountSourceSubscription()")

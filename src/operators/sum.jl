@@ -4,6 +4,7 @@ export SumProxy, actor_proxy!
 export SumActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: sum
+import Base: show
 
 """
     sum(; from = nothing)
@@ -26,7 +27,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> sum(), LoggerActor{Int}())
+subscribe!(source |> sum(), logger())
 ;
 
 # output
@@ -40,7 +41,7 @@ subscribe!(source |> sum(), LoggerActor{Int}())
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> sum(from = 97), LoggerActor{Int}())
+subscribe!(source |> sum(from = 97), logger())
 ;
 
 # output
@@ -50,7 +51,7 @@ subscribe!(source |> sum(from = 97), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
 sum(; from = nothing) = SumOperator(from)
 
@@ -93,3 +94,7 @@ function on_complete!(actor::SumActor)
     next!(actor.actor, actor.current)
     complete!(actor.actor)
 end
+
+Base.show(io::IO, operator::SumOperator)         = print(io, "SumOperator()")
+Base.show(io::IO, proxy::SumProxy{L})    where L = print(io, "SumProxy($L)")
+Base.show(io::IO, actor::SumActor{L})    where L = print(io, "SumActor($L)")

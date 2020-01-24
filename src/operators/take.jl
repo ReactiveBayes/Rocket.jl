@@ -4,6 +4,8 @@ export TakeProxy, source_proxy!
 export TakeInnerActor, on_next!, on_error!, on_complete!, is_exhausted
 export TakeSource, on_subscribe!
 
+import Base: show
+
 """
     take(max_count::Int)
 
@@ -21,20 +23,10 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 ```jldoctest
 using Rx
 
-struct KeepActor{D} <: NextActor{D}
-    values::Vector{D}
-
-    KeepActor{D}() where D = new(Vector{D}())
-end
-
-Rx.on_next!(actor::KeepActor{D}, data::D) where D = push!(actor.values, data)
-
-@sync begin
-    source = from([ i for i in 1:100 ])
-    actor  = KeepActor{Int}()
-    subscription = subscribe!(source |> take(5), actor)
-    println(actor.values)
-end
+source = from([ i for i in 1:100 ])
+actor  = keep(Int)
+subscription = subscribe!(source |> take(5), actor)
+println(actor.values)
 ;
 
 # output
@@ -42,7 +34,7 @@ end
 [1, 2, 3, 4, 5]
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 take(max_count::Int) = TakeOperator(max_count)
 
@@ -129,3 +121,8 @@ function on_subscribe!(observable::TakeSource{L}, actor::A) where L where A
 
     return subscription
 end
+
+Base.show(io::IO, operator::TakeOperator)           = print(io, "TakeOperator()")
+Base.show(io::IO, proxy::TakeProxy{L})      where L = print(io, "TakeProxy($L)")
+Base.show(io::IO, actor::TakeInnerActor{L}) where L = print(io, "TakeInnerActor($L)")
+Base.show(io::IO, source::TakeSource{L})    where L = print(io, "TakeSource($L)")

@@ -5,6 +5,7 @@ export ReplayActor, on_next!, on_error!, on_complete!, is_exhausted
 export replay
 
 import DataStructures: CircularBuffer
+import Base: show
 
 replay(count::Int) = ReplayOperator(count)
 
@@ -52,3 +53,7 @@ function on_subscribe!(observable::ReplayObservable, actor)
     end
     return subscribe!(observable.source, actor)
 end
+
+Base.show(io::IO, operator::ReplayOperator)                = print(io, "ReplayOperator()")
+Base.show(io::IO, proxy::ReplayProxy{L})           where L = print(io, "ReplayProxy($L)")
+Base.show(io::IO, observable::ReplayObservable{L}) where L = print(io, "ReplayObservable($L)")

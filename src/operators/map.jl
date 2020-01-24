@@ -5,6 +5,7 @@ export MapActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateMapOperator
 
 import Base: map
+import Base: show
 
 """
     map(::Type{R}, mappingFn::Function) where R
@@ -26,7 +27,7 @@ Stream of type `<: Subscribable{R}`
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> map(Int, (d) -> d ^ 2), LoggerActor{Int}())
+subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
 ;
 
 # output
@@ -38,7 +39,7 @@ subscribe!(source |> map(Int, (d) -> d ^ 2), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 map(::Type{R}, mappingFn::Function) where R = MapOperator{R}(mappingFn)
 
@@ -67,6 +68,10 @@ on_next!(m::MapActor{L},  data::L) where L = next!(m.actor, m.mappingFn(data))
 on_error!(m::MapActor, err)                = error!(m.actor, err)
 on_complete!(m::MapActor)                  = complete!(m.actor)
 
+Base.show(io::IO, operator::MapOperator{R}) where R   = print(io, "MapOperator( -> $R)")
+Base.show(io::IO, proxy::MapProxy{L})       where L   = print(io, "MapProxy($L)")
+Base.show(io::IO, actor::MapActor{L})       where L   = print(io, "MapActor($L)")
+
 """
     @CreateMapOperator(name, L, R, mappingFn)
 
@@ -92,7 +97,7 @@ using Rx
 @CreateMapOperator(SquaredInt, Int, Int, (d) -> d ^ 2)
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> SquaredIntMapOperator(), LoggerActor{Int}())
+subscribe!(source |> SquaredIntMapOperator(), logger())
 ;
 
 # output
@@ -104,7 +109,7 @@ subscribe!(source |> SquaredIntMapOperator(), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref),, [`ProxyObservable`](@ref), [`map`](@ref)
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref),, [`ProxyObservable`](@ref), [`map`](@ref), [`logger`](@ref)
 """
 macro CreateMapOperator(name, L, R, mappingFn)
     operatorName   = Symbol(name, "MapOperator")
@@ -117,12 +122,16 @@ macro CreateMapOperator(name, L, R, mappingFn)
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.proxy($R, source, ($proxyName)())
         end
+
+        Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "(", string($L), " -> ", string($R), ")")
     end
 
     proxyDefinition = quote
         struct $proxyName <: Rx.ActorProxy end
 
         Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
+
+        Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "()")
     end
 
     actorDefinition = quote
@@ -139,6 +148,8 @@ macro CreateMapOperator(name, L, R, mappingFn)
 
         Rx.on_error!(actor::($actorName), err) = Rx.error!(actor.actor, err)
         Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+
+        Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "()")
     end
 
     generated = quote
@@ -161,12 +172,16 @@ macro CreateMapOperator(name, mappingFn)
         function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source) where L where R
             return Rx.proxy(R, source, ($proxyName){L}())
         end
+
+        Base.show(io::IO, operator::($operatorName){L, R}) where L where R = print(io, string($operatorName), "(", L, " -> ", R, ")")
     end
 
     proxyDefinition = quote
         struct $proxyName{L} <: Rx.ActorProxy end
 
         Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
+
+        Base.show(io::IO, proxy::($proxyName){L}) where L = print(io, string($proxyName), "(", L, ")")
     end
 
     actorDefinition = quote
@@ -183,6 +198,8 @@ macro CreateMapOperator(name, mappingFn)
 
         Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
         Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+
+        Base.show(io::IO, actor::($actorName){L}) where L = print(io, string($actorName), "(", L, ")")
     end
 
     generated = quote

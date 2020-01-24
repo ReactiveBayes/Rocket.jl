@@ -5,6 +5,7 @@ export ReduceActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateReduceOperator
 
 import Base: reduce
+import Base: show
 
 """
     reduce(::Type{R}, reduceFn::Function, seed::Union{R, Nothing} = nothing) where R
@@ -28,7 +29,7 @@ Stream of type `<: Subscribable{R}`
 using Rx
 
 source = from([ i for i in 1:10 ])
-subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerActor{Vector{Int}}())
+subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
 ;
 
 # output
@@ -42,7 +43,7 @@ subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), LoggerAc
 using Rx
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> reduce(Int, +), LoggerActor{Int}())
+subscribe!(source |> reduce(Int, +), logger())
 ;
 
 # output
@@ -52,7 +53,7 @@ subscribe!(source |> reduce(Int, +), LoggerActor{Int}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 reduce(::Type{R}, reduceFn::Function, seed::Union{R, Nothing} = nothing) where R = ReduceOperator{R}(reduceFn, seed)
 
@@ -97,6 +98,10 @@ function on_complete!(actor::ReduceActor)
     complete!(actor.actor)
 end
 
+Base.show(io::IO, operator::ReduceOperator{R}) where R   = print(io, "ReduceOperator( -> $R)")
+Base.show(io::IO, proxy::ReduceProxy{L})       where L   = print(io, "ReduceProxy($L)")
+Base.show(io::IO, actor::ReduceActor{L})       where L   = print(io, "ReduceActor($L)")
+
 """
     @CreateReduceOperator(name, L, R, reduceFn)
 
@@ -122,7 +127,7 @@ using Rx
 @CreateReduceOperator(IntoArray, Int, Vector{Int}, (d, c) -> [ c..., d ])
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> IntoArrayReduceOperator(Int[]), LoggerActor{Vector{Int}}())
+subscribe!(source |> IntoArrayReduceOperator(Int[]), logger())
 ;
 
 # output
@@ -132,7 +137,7 @@ subscribe!(source |> IntoArrayReduceOperator(Int[]), LoggerActor{Vector{Int}}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref)
+See also: [`AbstractOperator`](@ref), [`TypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
 macro CreateReduceOperator(name, L, R, reduceFn)
     operatorName   = Symbol(name, "ReduceOperator")
@@ -147,6 +152,8 @@ macro CreateReduceOperator(name, L, R, reduceFn)
         function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
             return Rx.proxy($R, source, ($proxyName)(operator.seed))
         end
+
+        Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "(", string($L), " -> ", string($R), ")")
     end
 
     proxyDefinition = quote
@@ -155,6 +162,8 @@ macro CreateReduceOperator(name, L, R, reduceFn)
         end
 
         Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
+
+        Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "()")
     end
 
     actorDefinition = quote
@@ -178,6 +187,8 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             Rx.next!(actor.actor, actor.current)
             Rx.complete!(actor.actor)
         end
+
+        Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "()")
     end
 
     generated = quote

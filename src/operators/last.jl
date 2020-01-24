@@ -4,6 +4,7 @@ export LastProxy, actor_proxy!
 export LastActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: last
+import Base: show
 
 """
     last(; default = nothing)
@@ -23,7 +24,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> last(), LoggerActor{Int}())
+subscribe!(source |> last(), logger())
 ;
 
 # output
@@ -37,7 +38,7 @@ subscribe!(source |> last(), LoggerActor{Int}())
 using Rx
 
 source = from(Int[])
-subscribe!(source |> last(), LoggerActor{Int}())
+subscribe!(source |> last(), logger())
 ;
 
 # output
@@ -49,7 +50,7 @@ subscribe!(source |> last(), LoggerActor{Int}())
 using Rx
 
 source = Rx.from(Int[])
-subscribe!(source |> last(default = 1), LoggerActor{Int}())
+subscribe!(source |> last(default = 1), logger())
 ;
 
 # output
@@ -58,7 +59,7 @@ subscribe!(source |> last(default = 1), LoggerActor{Int}())
 [LogActor] Completed
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 last(; default = nothing) = LastOperator(default)
 
@@ -99,3 +100,7 @@ function on_complete!(actor::LastActor)
     end
     complete!(actor.actor)
 end
+
+Base.show(io::IO, operator::LastOperator)         = print(io, "LastOperator()")
+Base.show(io::IO, proxy::LastProxy{L})    where L = print(io, "LastProxy($L)")
+Base.show(io::IO, actor::LastActor{L})    where L = print(io, "LastActor($L)")

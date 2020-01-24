@@ -2,6 +2,8 @@ export MulticastOperator, on_call!, operator_right
 export MulticastWithFactoryOperator, on_call!, operator_right
 export multicast, as_multicast
 
+import Base: show
+
 multicast(subject::S) where S = as_multicast(as_subject(S), subject)
 
 as_multicast(::ValidSubject{D}, subject) where D = MulticastOperator(subject)
@@ -28,3 +30,6 @@ function on_call!(::Type{L}, ::Type{L}, operator::MulticastWithFactoryOperator, 
 end
 
 operator_right(operator::MulticastWithFactoryOperator, ::Type{L}) where L = L
+
+Base.show(io::IO, operator::MulticastOperator)           = print(io, "MulticastOperator()")
+Base.show(io::IO, factory::MulticastWithFactoryOperator) = print(io, "MulticastWithFactoryOperator()")

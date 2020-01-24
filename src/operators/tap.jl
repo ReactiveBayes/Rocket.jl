@@ -4,6 +4,8 @@ export TapProxy, actor_proxy!
 export TapActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateTapOperator
 
+import Base: show
+
 """
     tap(tapFn::Function)
 
@@ -22,7 +24,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 using Rx
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> tap((d) -> println("In tap: \$d")), LoggerActor{Int}())
+subscribe!(source |> tap((d) -> println("In tap: \$d")), logger())
 ;
 
 # output
@@ -72,6 +74,10 @@ end
 on_error!(t::TapActor, err) = error!(t.actor, err)
 on_complete!(t::TapActor)   = complete!(t.actor)
 
+Base.show(io::IO, operator::TapOperator)         = print(io, "TapOperator()")
+Base.show(io::IO, proxy::TapProxy{L})    where L = print(io, "TapProxy($L)")
+Base.show(io::IO, actor::TapActor{L})    where L = print(io, "TapActor($L)")
+
 """
     @CreateTapOperator(name, tapFn)
 
@@ -106,6 +112,7 @@ In tap: 3
 
 ```
 
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 macro CreateTapOperator(name, tapFn)
     operatorName = Symbol(name, "TapOperator")
@@ -120,12 +127,16 @@ macro CreateTapOperator(name, tapFn)
         end
 
         Rx.operator_right(operator::($operatorName), ::Type{L}) where L = L
+
+        Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "()")
     end
 
     proxyDefinition = quote
         struct $proxyName{L} <: Rx.ActorProxy end
 
         Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
+
+        Base.show(io::IO, operator::($proxyName){L}) where L = print(io, string($proxyName), "(", L, ")")
     end
 
     actorDefinition = quote
@@ -143,6 +154,8 @@ macro CreateTapOperator(name, tapFn)
 
         Rx.on_error!(actor::($actorName), err) = Rx.next!(actor.actor, err)
         Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+
+        Base.show(io::IO, operator::($actorName){L}) where L = print(io, string($actorName), "(", L, ")")
     end
 
     generated = quote

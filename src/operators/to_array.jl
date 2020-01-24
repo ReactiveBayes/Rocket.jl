@@ -3,6 +3,8 @@ export ToArrayOperator, on_call!, operator_right
 export ToArrayProxy, actor_proxy!
 export ToArrayActor, on_next!, on_error!, on_complete!, is_exhausted
 
+import Base: show
+
 """
     to_array()
 
@@ -27,7 +29,7 @@ subscribe!(source |> to_array(), LoggerActor{Vector{Int}}())
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 to_array() = ToArrayOperator()
 
@@ -59,3 +61,7 @@ function on_complete!(actor::ToArrayActor)
     next!(actor.actor, actor.values)
     complete!(actor.actor)
 end
+
+Base.show(io::IO, operator::ToArrayOperator)         = print(io, "ToArrayOperator()")
+Base.show(io::IO, proxy::ToArrayProxy{L})    where L = print(io, "ToArrayProxy($L)")
+Base.show(io::IO, actor::ToArrayActor{L})    where L = print(io, "ToArrayActor($L)")
