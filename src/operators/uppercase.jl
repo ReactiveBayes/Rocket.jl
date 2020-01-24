@@ -21,7 +21,7 @@ Stream of type `<: Subscribable{L}` where L referes to type of data of input Obs
 using Rx
 
 source = of("Hello, world!")
-subscribe!(source |> uppercase(), LoggerActor{String}())
+subscribe!(source |> uppercase(), logger())
 ;
 
 # output

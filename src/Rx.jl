@@ -69,6 +69,7 @@ include("operators/multicast.jl")
 include("operators/ref_count.jl")
 include("operators/publish.jl")
 include("operators/share.jl")
+include("operators/noop.jl")
 
 include("extensions/observable/single.jl")
 
