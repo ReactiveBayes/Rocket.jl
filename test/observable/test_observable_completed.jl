@@ -1,13 +1,13 @@
-module RxErrorObservableTest
+module RxCompleteObservableTest
 
 using Test
 using Rx
 
-@testset "ErrorObservable" begin
+@testset "CompletedObservable" begin
 
     @testset begin
-        @test throwError(1)      == ErrorObservable{Any}(1)
-        @test throwError(1, Int) == ErrorObservable{Int}(1)
+        @test completed()    == CompletedObservable{Any}()
+        @test completed(Int) == CompletedObservable{Int}()
     end
 
     @testset begin
@@ -15,19 +15,19 @@ using Rx
         errors      = Vector{Any}()
         completions = Vector{Int}()
 
-        actor  = LambdaActor{Int}(
+        actor  = lambda(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(errors, e),
             on_complete = ()  -> push!(completions, 0)
         )
 
-        source = throwError(1, Int)
+        source = completed(Int)
 
         subscribe!(source, actor)
 
         @test values      == [ ]
-        @test errors      == [ 1 ]
-        @test completions == [ ]
+        @test errors      == [ ]
+        @test completions == [ 0 ]
     end
 
 end

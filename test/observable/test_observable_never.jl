@@ -1,38 +1,34 @@
 module RxNeverObservableTest
 
 using Test
-
-import Rx: LambdaActor, subscribe!
-import Rx: NeverObservable, on_subscribe!, never
+using Rx
 
 @testset "NeverObservable" begin
 
-    @test never()    == NeverObservable{Any}()
-    @test never(Int) == NeverObservable{Int}()
+    @testset begin
+        @test never()    == NeverObservable{Any}()
+        @test never(Int) == NeverObservable{Int}()
+    end
 
-    values      = Vector{Int}()
-    errors      = Vector{Any}()
-    completions = Vector{Int}()
+    @testset begin
+        values      = Vector{Int}()
+        errors      = Vector{Any}()
+        completions = Vector{Int}()
 
-    actor  = LambdaActor{Int}(
-        on_next     = (d) -> push!(values, d),
-        on_error    = (e) -> push!(errors, e),
-        on_complete = ()  -> push!(completions, 0)
-    )
+        actor  = LambdaActor{Int}(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(errors, e),
+            on_complete = ()  -> push!(completions, 0)
+        )
 
-    source = never(Int)
+        source = never(Int)
 
-    subscribe!(source, actor)
+        subscribe!(source, actor)
 
-    @test values      == [ ]
-    @test errors      == [ ]
-    @test completions == [ ]
-
-    subscribe!(source |> map(Int, (d) -> d ^ 2), actor)
-
-    @test values      == [ ]
-    @test errors      == [ ]
-    @test completions == [ ]
+        @test values      == [ ]
+        @test errors      == [ ]
+        @test completions == [ ]
+    end
 
 end
 

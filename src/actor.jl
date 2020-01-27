@@ -198,7 +198,6 @@ See also: [`Actor`](@ref), [`ErrorActor`](@ref)
 """
 on_complete!(actor)     = throw(MissingOnCompleteImplementationError(actor))
 
-
 # -------------------------------- #
 # Actor factory                    #
 # -------------------------------- #
@@ -231,8 +230,6 @@ end
 function Base.show(io::IO, err::MissingCreateActorFactoryImplementationError)
     print(io, "You probably forgot to implement create_actor(::Type{L}, factory::$(typeof(err.factory))).")
 end
-
-
 
 # -------------------------------- #
 # Errors                           #

@@ -20,7 +20,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 ```jldoctest
 using Rx
 
-source = from(1:3) |> map(Int, (d) -> d > 1 ? error("Error") : d) |> rerun(3)
+source = from(1:3) |> safe() |> map(Int, (d) -> d > 1 ? error("Error") : d) |> rerun(3)
 
 subscribe!(source, logger())
 ;
@@ -33,7 +33,7 @@ subscribe!(source, logger())
 [LogActor] Error: ErrorException("Error")
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`catch_error`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`catch_error`](@ref), [`logger`](@ref), [`safe`](@ref)
 """
 rerun(count::Int = -1) = RerunOperator(count)
 

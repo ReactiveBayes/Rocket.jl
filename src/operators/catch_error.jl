@@ -18,7 +18,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 ```jldoctest
 using Rx
 
-source = from(1:5) |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> of(1))
+source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> of(1))
 
 subscribe!(source, logger())
 ;
@@ -31,7 +31,7 @@ subscribe!(source, logger())
 [LogActor] Completed
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`rerun`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`rerun`](@ref), [`logger`](@ref), [`safe`](@ref)
 """
 catch_error(selectorFn::Function) = CatchErrorOperator(selectorFn)
 
@@ -49,13 +49,14 @@ struct CatchErrorProxy{L} <: ActorSourceProxy
     selectorFn :: Function
 end
 
-actor_proxy!(proxy::CatchErrorProxy{L},  actor::A) where L where A  = CatchErrorActor{L, A}(proxy.selectorFn, actor, nothing, nothing)
+actor_proxy!(proxy::CatchErrorProxy{L},  actor::A)  where L where A = CatchErrorActor{L, A}(proxy.selectorFn, actor, false, nothing, nothing)
 source_proxy!(proxy::CatchErrorProxy{L}, source::S) where L where S = CatchErrorSource{L, S}(source)
 
 mutable struct CatchErrorActor{L, A} <: Actor{L}
     selectorFn           :: Function
     actor                :: A
 
+    is_completed         :: Bool
     current_source       :: Union{Nothing, Any}
     current_subscription :: Union{Nothing, Teardown}
 end
@@ -63,22 +64,29 @@ end
 is_exhausted(actor::CatchErrorActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::CatchErrorActor{L}, data::L) where L
-    next!(actor.actor, data)
+    if !actor.is_completed
+        next!(actor.actor, data)
+    end
 end
 
 function on_error!(actor::CatchErrorActor, err)
-    if actor.current_subscription !== nothing
-        unsubscribe!(actor.current_subscription)
+    if !actor.is_completed
+        if actor.current_subscription !== nothing
+            unsubscribe!(actor.current_subscription)
+        end
+
+        fallback_source = actor.selectorFn(err, actor.current_source)
+
+        actor.current_source       = fallback_source
+        actor.current_subscription = subscribe!(fallback_source, actor)
     end
-
-    fallback_source = actor.selectorFn(err, actor.current_source)
-
-    actor.current_source       = fallback_source
-    actor.current_subscription = subscribe!(fallback_source, actor)
 end
 
 function on_complete!(actor::CatchErrorActor)
-    complete!(actor.actor)
+    if !actor.is_completed
+        actor.is_completed = true
+        complete!(actor.actor)
+    end
 end
 
 struct CatchErrorSource{L, S} <: Subscribable{L}

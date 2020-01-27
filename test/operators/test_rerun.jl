@@ -6,7 +6,7 @@ using Rx
 @testset "rerun operator" begin
 
     @testset begin
-        source = from(1:5) |> map(Int, (d) -> d == 4 ? error(4) : d) |> rerun(3)
+        source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> rerun(3)
         actor  = keep(Int)
 
         @test_throws ErrorException subscribe!(source, actor)
@@ -15,7 +15,7 @@ using Rx
 
     @testset begin
         values  = []
-        source = timer(0, 1) |> map(Int, (d) -> d > 2 ? error("d") : d) |> rerun(2)
+        source = timer(0, 1) |> safe() |> map(Int, (d) -> d > 2 ? error("d") : d) |> rerun(2)
         actor  = sync(LambdaActor{Int}(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(values, e),
@@ -30,7 +30,7 @@ using Rx
 
     @testset begin
         values = []
-        source = timer(0, 1) |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2)
+        source = timer(0, 1) |> safe() |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2)
         actor  = sync(LambdaActor{Int}(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(values, e),

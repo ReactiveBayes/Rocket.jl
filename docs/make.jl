@@ -83,6 +83,7 @@ makedocs(
                     "About utility operators" => "operators/utility/about.md",
                     "tap"                     => "operators/utility/tap.md",
                     "delay"                   => "operators/utility/delay.md",
+                    "safe"                    => "operators/utility/safe.md",
                 ]
             ]
         ],

@@ -71,6 +71,7 @@ include("operators/publish.jl")
 include("operators/share.jl")
 include("operators/catch_error.jl")
 include("operators/rerun.jl")
+include("operators/safe.jl")
 include("operators/noop.jl")
 
 include("extensions/observable/single.jl")
