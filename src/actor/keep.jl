@@ -1,18 +1,30 @@
-export KeepActor
-export on_next!, on_error!, on_complete!, is_exhausted
-export keep
+export KeepActor, keep
 
 """
     KeepActor{D}() where D
 
 Keep actor provides a storage actor. It saves all incoming successful `next` events in a `values` array.
 
+# Examples
+```jldoctest
+using Rx
+
+source = from(1:5)
+actor  = KeepActor{Int}()
+
+subscribe!(source, actor)
+show(actor.values)
+
+# output
+[1, 2, 3, 4, 5]
+```
+
 See also: [`Actor`](@ref)
 """
-mutable struct KeepActor{T} <: Actor{T}
+struct KeepActor{T} <: Actor{T}
     values :: Vector{T}
 
-    KeepActor{T}(values::Vector{T} = Vector{T}()) where T = new(values)
+    KeepActor{T}() where T = new(Vector{T}())
 end
 
 is_exhausted(actor::KeepActor) = false
@@ -23,11 +35,24 @@ on_complete!(actor::KeepActor)                 = begin end
 
 """
     keep(::Type{T}) where T
-    keep(values::Vector{T}) where T
 
-Helper function to create a KeepActor
+# Arguments
+- `::Type{T}`: Type of keep data
+
+Creation operator for the `KeepActor` actor.
+
+# Examples
+
+```jldoctest
+using Rx
+
+actor = keep(Int)
+actor isa KeepActor{Int}
+
+# output
+true
+```
 
 See also: [`KeepActor`](@ref), [`AbstractActor`](@ref)
 """
-keep(::Type{T})         where T = KeepActor{T}()
-keep(values::Vector{T}) where T = KeepActor{T}(values)
+keep(::Type{T}) where T = KeepActor{T}()

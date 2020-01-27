@@ -12,15 +12,18 @@ Void actor does nothing with input data, error and complete events, can be usefu
 
 ```jldoctest
 using Rx
+
 source = from([ 0, 1, 2 ])
-subscribe!(source, VoidActor{Int}())
+actor  = VoidActor{Int}()
+
+subscribe!(source, actor)
 ;
 
 # output
 
 ```
 
-See also: [`Actor`](@ref), [`tap`](@ref)
+See also: [`Actor`](@ref), [`void`](@ref), [`tap`](@ref)
 """
 struct VoidActor{T} <: Actor{T} end
 
@@ -38,7 +41,20 @@ create_actor(::Type{L}, factory::VoidActorFactory) where L = VoidActor{L}()
     void()
     void(::Type{T}) where T
 
-Helper function to create a VoidActor
+Creation operator for the `VoidActor` actor.
+
+# Examples
+
+```jldoctest
+using Rx
+
+actor = void(Int)
+actor isa VoidActor{Int}
+
+# output
+true
+
+```
 
 See also: [`VoidActor`](@ref), [`AbstractActor`](@ref)
 """

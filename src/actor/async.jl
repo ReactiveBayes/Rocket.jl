@@ -1,11 +1,10 @@
 export AsyncActor, async
-export on_next!, on_error!, on_complete!, is_exhausted
 export close
 
 import Base: close
 
 """
-    AsyncActor{D}(actor) where D
+    AsyncActor{D, A}(actor::A) where D where A
 
 AsyncActor wraps an actor and send a data from a stream to this actor asynchronously in a different `Task`.
 You have to `close` this actor when you do not need it.
@@ -15,18 +14,18 @@ You have to `close` this actor when you do not need it.
 
 See also: [`Actor`](@ref), [`async`](@ref)
 """
-struct AsyncActor{D} <: Actor{D}
+struct AsyncActor{D, A} <: Actor{D}
     channel :: Channel{D}
-    actor
+    actor   :: A
 
-    AsyncActor{D}(actor) where D = begin
+    AsyncActor{D, A}(actor::A) where D where A = begin
         channel = Channel{D}(Inf, spawn = true) do ch
             while true
                 message = take!(ch)::D
                 next!(actor, message)
             end
         end
-        new(channel, actor)
+        return new(channel, actor)
     end
 end
 
@@ -40,15 +39,27 @@ on_error!(actor::AsyncActor, err) = error!(actor.actor, err)
 on_complete!(actor::AsyncActor)   = complete!(actor.actor)
 
 """
-    async(actor)
+    async(actor::A) where A
 
-Helper function to create an AsyncActor
+Creation operator for the `AsyncActor` actor.
+
+# Examples
+
+```jldoctest
+using Rx
+
+actor = async(keep(Int))
+actor isa AsyncActor{Int, KeepActor{Int}}
+
+# output
+true
+```
 
 See also: [`AsyncActor`](@ref), [`AbstractActor`](@ref)
 """
 async(actor::A) where A = as_async(as_actor(A), actor)
 
-as_async(::InvalidActorTrait, actor)         = throw(InvalidActorTraitUsageError(actor))
-as_async(::ActorTrait{D},     actor) where D = AsyncActor{D}(actor)
+as_async(::InvalidActorTrait, actor)                    = throw(InvalidActorTraitUsageError(actor))
+as_async(::ActorTrait{D},     actor::A) where D where A = AsyncActor{D, A}(actor)
 
 close(actor::AsyncActor) = close(actor.channel)

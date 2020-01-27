@@ -199,12 +199,9 @@ See also: [`Actor`](@ref), [`ErrorActor`](@ref)
 on_complete!(actor)     = throw(MissingOnCompleteImplementationError(actor))
 
 
-
 # -------------------------------- #
 # Actor factory                    #
 # -------------------------------- #
-
-
 
 """
 Abstract type for all possible actor factories

@@ -5,19 +5,42 @@ export sync
 import Base: wait
 
 """
-    SyncActor{D}() where D
+    SyncActor{D, A}(actor::A) where D where A
 
-Sync actor provides a synchronized interface to `wait` for an actor be notified with a `complete` event.
+Sync actor provides a synchronized interface to `wait` for an actor to be notified with a `complete` event.
 
-See also: [`Actor`](@ref)
+# Examples
+
+```jldoctest
+using Rx
+
+source = timer(0, 1) |> take(3)
+actor  = LoggerActor{Int}()
+synced = SyncActor{Int, LoggerActor{Int}}(actor)
+
+subscrption = subscribe!(source, synced)
+
+wait(synced)
+;
+
+# output
+
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Completed
+
+```
+
+See also: [`Actor`](@ref), [`sync`](@ref)
 """
-mutable struct SyncActor{T} <: Actor{T}
+mutable struct SyncActor{T, A} <: Actor{T}
     completed_condition :: Condition
     is_completed        :: Bool
     is_failed           :: Bool
-    actor
+    actor               :: A
 
-    SyncActor{T}(actor) where T = new(Condition(), false, false, actor)
+    SyncActor{T, A}(actor::A) where T where A = new(Condition(), false, false, actor)
 end
 
 is_exhausted(actor::SyncActor) = actor.is_completed || actor.is_failed || is_exhausted(actor.actor)
@@ -45,13 +68,26 @@ function Base.wait(actor::SyncActor)
 end
 
 """
-    sync(actor)
+    sync(actor::A) where A
 
-Helper function to create an SyncActor
+Creation operator for the `SyncActor` actor.
+
+# Examples
+```jldoctest
+using Rx
+
+actor  = LoggerActor{Int}()
+synced = sync(actor)
+synced isa SyncActor{Int, LoggerActor{Int}}
+
+# output
+true
+
+```
 
 See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 """
 sync(actor::A) where A = as_sync(as_actor(A), actor)
 
-as_sync(::InvalidActorTrait, actor)         = throw(InvalidActorTraitUsageError(actor))
-as_sync(::ActorTrait{D},     actor) where D = SyncActor{D}(actor)
+as_sync(::InvalidActorTrait, actor)                    = throw(InvalidActorTraitUsageError(actor))
+as_sync(::ActorTrait{D},     actor::A) where D where A = SyncActor{D, A}(actor)

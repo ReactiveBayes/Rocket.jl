@@ -1,17 +1,14 @@
-export LambdaActor
-export on_next!, on_error!, on_complete!, is_exhausted
-export LambdaActorFactory, create_actor
-export lambda
+export LambdaActor, lambda
 
 """
     LambdaActor{D}(; on_next = nothing, on_error = nothing, on_complete = nothing) where D
 
-Lambda actors wraps `on_next`, `on_error`, `on_complete` callbacks for data, error and complete events processing and can be useful for debugging.
+Lambda actor wraps `on_next`, `on_error`, `on_complete` callbacks for data, error and complete events.
 
 # Constructor arguments
-- `on_next`: Callback for data event, optional
-- `on_error`: Callback for error event, optional
-- `on_complete`: Callback for complete event, optional
+- `on_next`: Callback for data event. Optional. Default is `nothing`.
+- `on_error`: Callback for error event. Optional. Default is `nothing`.
+- `on_complete`: Callback for complete event. Optional. Default is `nothing`.
 
 # Examples
 
@@ -29,7 +26,6 @@ subscribe!(source, LambdaActor{Int}(
 Data event: 0
 Data event: 1
 Data event: 2
-
 ```
 
 ```jldoctest
@@ -91,9 +87,21 @@ end
     lambda(; on_next = nothing, on_error = nothing, on_complete = nothing)
     lambda(::Type{T}; on_next = nothing, on_error = nothing, on_complete = nothing) where T
 
-Helper function to create a LambdaActor
+Creation operator for the 'LambdaActor' actor.
+
+# Examples
+
+```jldoctest
+using Rx
+
+actor = lambda(Int; on_next = (d) -> println(d))
+actor isa LambdaActor{Int}
+
+# output
+true
+```
 
 See also: [`LambdaActor`](@ref), [`AbstractActor`](@ref)
 """
 lambda(; on_next = nothing, on_error = nothing, on_complete = nothing) = LambdaActorFactory(on_next, on_error, on_complete)
-lambda(::Type{T}, on_next = nothing, on_error = nothing, on_complete = nothing) where T = LambdaActor{T}(on_next = on_next, on_error = on_error, on_complete = on_complete)
+lambda(::Type{T}; on_next = nothing, on_error = nothing, on_complete = nothing) where T = LambdaActor{T}(on_next = on_next, on_error = on_error, on_complete = on_complete)

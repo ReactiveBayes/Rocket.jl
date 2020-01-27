@@ -1,44 +1,47 @@
-module RxCatchErrorOperatorTest
+module RxRerunOperatorTest
 
 using Test
 using Rx
 
 @testset "rerun operator" begin
 
-    source1 = from(1:5) |> map(Int, (d) -> d == 4 ? error(4) : d) |> rerun(3)
-    actor1  = keep(Int)
+    @testset begin
+        source = from(1:5) |> map(Int, (d) -> d == 4 ? error(4) : d) |> rerun(3)
+        actor  = keep(Int)
 
-    @test_throws ErrorException subscribe!(source1, actor1)
-    @test actor1.values == [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3]
+        @test_throws ErrorException subscribe!(source, actor)
+        @test actor.values == [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3]
+    end
 
+    @testset begin
+        values  = []
+        source = timer(0, 1) |> map(Int, (d) -> d > 2 ? error("d") : d) |> rerun(2)
+        actor  = sync(LambdaActor{Int}(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        ))
 
-    values2  = []
-    source2 = timer(0, 1) |> map(Int, (d) -> d > 2 ? error("d") : d) |> rerun(2)
-    actor2  = sync(LambdaActor{Int}(
-        on_next     = (d) -> push!(values2, d),
-        on_error    = (e) -> push!(values2, e),
-        on_complete = ()  -> push!(values2, "completed")
-    ))
+        subscribe!(source, actor)
+        wait(actor)
 
-    subscribe!(source2, actor2)
+        @test values == [0, 1, 2, 0, 1, 2, 0, 1, 2, ErrorException("d")]
+    end
 
-    wait(actor2)
+    @testset begin
+        values = []
+        source = timer(0, 1) |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2)
+        actor  = sync(LambdaActor{Int}(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        ))
 
-    @test values2 == [0, 1, 2, 0, 1, 2, 0, 1, 2, ErrorException("d")]
+        subscribe!(source, actor)
+        wait(actor)
 
-    values3 = []
-    source3 = timer(0, 1) |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2)
-    actor3  = sync(LambdaActor{Int}(
-        on_next     = (d) -> push!(values3, d),
-        on_error    = (e) -> push!(values3, e),
-        on_complete = ()  -> push!(values3, "completed")
-    ))
-
-    subscribe!(source3, actor3)
-
-    wait(actor3)
-
-    @test values3 == [0, 1, 0, 1, 0, 1, "2"]
+        @test values == [0, 1, 0, 1, 0, 1, "2"]
+    end
 end
 
 end

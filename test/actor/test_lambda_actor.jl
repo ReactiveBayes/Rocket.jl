@@ -1,25 +1,42 @@
 module RxLambdaActorTest
 
 using Test
-
-import Rx
-import Rx: LambdaActor, next!, error!, complete!
-import Rx: InconsistentSourceActorDataTypesError
+using Rx
 
 @testset "LambdaActor" begin
 
-    actor = LambdaActor{Int}(
-        on_next     = (d) -> d + 1,
-        on_error    = (e) -> e,
-        on_complete = ()  -> "Lambda: completed"
-    )
+    @testset begin
+        values = []
+        source = from(1:3)
+        actor  = LambdaActor{Int}(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        )
 
-    # TODO
-    # @test next!(actor, 1)        === 2
-    # @test error!(actor, "error") === "error"
-    # @test complete!(actor)       === "Lambda: completed"
+        subscribe!(source, actor)
 
-    @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
+        @test values == [ 1, 2, 3, "completed" ]
+    end
+
+    @testset begin
+        values = []
+        source = from(1:3)
+        actor  = lambda(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        )
+
+        subscribe!(source, actor)
+
+        @test values == [ 1, 2, 3, "completed" ]
+    end
+
+    @testset begin
+        @test lambda(Int; on_next = (d) -> println(d)) isa LambdaActor{Int}
+        @test lambda(on_next = (d) -> println(d))      isa Rx.LambdaActorFactory
+    end
 end
 
 end

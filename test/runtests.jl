@@ -14,6 +14,8 @@ doctest(Rx)
     include("./actor/test_void_actor.jl")
     include("./actor/test_lambda_actor.jl")
     include("./actor/test_logger_actor.jl")
+    include("./actor/test_keep_actor.jl")
+    include("./actor/test_sync_actor.jl")
 
     include("./test_subscribable.jl")
     include("./observable/test_observable_array.jl")

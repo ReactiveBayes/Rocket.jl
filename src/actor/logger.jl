@@ -1,15 +1,12 @@
-export LoggerActor
-export on_next!, on_error!, on_complete!, is_exhausted
-export LoggerActorFactory, create_actor
-export logger
+export LoggerActor, logger
 
 """
     LoggerActor{D}(name::String = "LogActor") where D
 
-Logger actors logs every data emission or error/complete events into standart output
+The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent from an Observable.
 
 # Constructor arguments
-- `name`: name of the logger, optional
+- `name`: name of the logger. Optional. Default is `LogActor`.
 
 # Examples
 
@@ -33,20 +30,19 @@ subscribe!(source, LoggerActor{Int}())
 using Rx
 
 source = from([ 0, 1, 2 ])
-subscribe!(source, LoggerActor{Int}("MyName"))
+subscribe!(source, LoggerActor{Int}("CustomName"))
 ;
 
 # output
 
-[MyName] Data: 0
-[MyName] Data: 1
-[MyName] Data: 2
-[MyName] Completed
+[CustomName] Data: 0
+[CustomName] Data: 1
+[CustomName] Data: 2
+[CustomName] Completed
 
 ```
 
-
-See also: [`Actor`](@ref)
+See also: [`Actor`](@ref), [`logger`](@ref)
 """
 struct LoggerActor{D} <: Actor{D}
     name :: String
@@ -67,10 +63,22 @@ end
 create_actor(::Type{L}, factory::LoggerActorFactory) where L = LoggerActor{L}(factory.name)
 
 """
-    lambda(name = "LogActor")
+    logger(name = "LogActor")
     logger(::Type{T}, name = "LogActor") where T
 
-Helper function to create a LoggerActor
+Creation operator for the `LoggerActor` actor.
+
+# Examples
+
+```jldoctest
+using Rx
+
+actor = logger(Int)
+actor isa LoggerActor{Int}
+
+# output
+true
+```
 
 See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
 """

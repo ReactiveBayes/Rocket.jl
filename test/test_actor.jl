@@ -1,17 +1,7 @@
 module RxActorTest
 
 using Test
-
-import Rx
-import Rx: InvalidActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
-import Rx: AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
-import Rx: next!, error!, complete!
-import Rx: on_next!, on_error!, on_complete!
-import Rx: as_actor
-
-import Rx: InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
-import Rx: MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
-import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
+using Rx
 
 @testset "Actor" begin
 
@@ -103,12 +93,11 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
             @test next!(NotImplementedCompletionActor(), 1) === nothing
             @test next!(ImplementedCompletionActor(), 1)    === nothing
 
-            # Check next! function for implemented actors
-            # TODO
-            # @test next!(ImplementedActor(),     1) === 1
-            # @test next!(ImplementedActor(),     2) === 2
-            # @test next!(ImplementedNextActor(), 1) === 1
-            # @test next!(ImplementedNextActor(), 2) === 2
+            # Check next! returns nothing function for implemented actors
+            @test next!(ImplementedActor(),     1) === nothing
+            @test next!(ImplementedActor(),     2) === nothing
+            @test next!(ImplementedNextActor(), 1) === nothing
+            @test next!(ImplementedNextActor(), 2) === nothing
 
             # Check next! function throws an error for wrong type of message
             @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerActor(), "string")
@@ -139,12 +128,11 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
             @test error!(NotImplementedCompletionActor(), 1) === nothing
             @test error!(ImplementedCompletionActor(), 1)    === nothing
 
-            # Check error! function for implemented actors
-            # TODO
-            # @test error!(ImplementedActor(),      1) === 1
-            # @test error!(ImplementedActor(),      2) === 2
-            # @test error!(ImplementedErrorActor(), 1) === 1
-            # @test error!(ImplementedErrorActor(), 2) === 2
+            # Check error! function returns nothing for implemented actors
+            @test error!(ImplementedActor(),      1) === nothing
+            @test error!(ImplementedActor(),      2) === nothing
+            @test error!(ImplementedErrorActor(), 1) === nothing
+            @test error!(ImplementedErrorActor(), 2) === nothing
     end
 
     @testset "complete!" begin
@@ -165,10 +153,27 @@ import Rx: MissingOnNextImplementationError, MissingOnErrorImplementationError, 
             @test complete!(NotImplementedErrorActor()) === nothing
             @test complete!(ImplementedErrorActor())    === nothing
 
-            # Check complete! function for implemented actors
-            # TODO
-            # @test complete!(ImplementedActor())           === "ImplementedActor:complete"
-            # @test complete!(ImplementedCompletionActor()) === "ImplementedCompletionActor:complete"
+            # Check complete! function returns nothing for implemented actors
+            @test complete!(ImplementedActor())           === nothing
+            @test complete!(ImplementedCompletionActor()) === nothing
+    end
+
+    struct CustomActor{L} <: Actor{L} end
+
+    Rx.on_next!(actor::CustomActor{L}, data::L) where L = begin end
+    Rx.on_error!(actor::CustomActor, err)               = begin end
+    Rx.on_complete!(actor::CustomActor)                 = begin end
+
+    struct NotImplementedCustomActorFactory <: AbstractActorFactory end
+    struct ImplementedCustomActorFactory    <: AbstractActorFactory end
+
+    Rx.create_actor(::Type{L}, factory::ImplementedCustomActorFactory) where L = CustomActor{L}()
+
+    @testset "Actor Factory" begin
+            @test_throws MissingCreateActorFactoryImplementationError create_actor(Int, NotImplementedCustomActorFactory())
+
+            @inferred CustomActor{Int}    create_actor(Int, ImplementedCustomActorFactory())
+            @inferred CustomActor{String} create_actor(String, ImplementedCustomActorFactory())
     end
 
 end
