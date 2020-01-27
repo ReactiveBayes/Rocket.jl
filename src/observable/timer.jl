@@ -1,6 +1,8 @@
 export TimerObservable, on_subscribe!, timer
 export TimerSubscription, on_unsubscribe!
 
+import Base: ==
+
 """
     TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing)
 
@@ -123,3 +125,5 @@ close(source)
 See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
+
+Base.:(==)(t1::TimerObservable, t2::TimerObservable) = t1.due_time === t2.due_time && t1.period === t2.period

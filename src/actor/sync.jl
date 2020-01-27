@@ -1,6 +1,4 @@
-export SyncActor
-export on_next!, on_error!, on_complete!, is_exhausted
-export sync
+export SyncActor, sync
 
 import Base: wait
 

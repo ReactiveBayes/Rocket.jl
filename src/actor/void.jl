@@ -1,7 +1,4 @@
-export VoidActor
-export on_next!, on_error!, on_complete!, is_exhausted
-export VoidActorFactory, create_actor
-export void
+export VoidActor, void
 
 """
     VoidActor{D}() where D

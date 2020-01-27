@@ -18,10 +18,15 @@ doctest(Rx)
     include("./actor/test_sync_actor.jl")
 
     include("./test_subscribable.jl")
+    include("./observable/test_observable_function.jl")
+    include("./observable/test_observable_single.jl")
     include("./observable/test_observable_array.jl")
     include("./observable/test_observable_error.jl")
     include("./observable/test_observable_never.jl")
-    include("./observable/test_observable_single.jl")
+    include("./observable/test_observable_completed.jl")
+    include("./observable/test_observable_timer.jl")
+    include("./observable/test_observable_interval.jl")
+
 
     include("./test_operator.jl")
     include("./operators/test_catch_error.jl")
