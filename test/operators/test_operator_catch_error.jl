@@ -3,7 +3,7 @@ module RxCatchErrorOperatorTest
 using Test
 using Rx
 
-@testset "catch_error operator" begin
+@testset "catch_error()" begin
 
     @testset begin
         source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> from(1:3))

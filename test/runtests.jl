@@ -29,7 +29,15 @@ doctest(Rx)
 
 
     include("./test_operator.jl")
-    include("./operators/test_catch_error.jl")
+    include("./operators/test_operator_map.jl")
+    # include("./operators/test_operator_scan.jl")
+    # include("./operators/test_operator_enumerate.jl")
+    include("./operators/test_operator_uppercase.jl")
+    include("./operators/test_operator_lowercase.jl")
+    include("./operators/test_operator_to_array.jl")
+
+    include("./operators/test_operator_catch_error.jl")
+    include("./operators/test_operator_rerun.jl")
 end
 
 end

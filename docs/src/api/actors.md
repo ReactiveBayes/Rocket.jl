@@ -3,7 +3,7 @@
 ## How to create a custom Actor
 
 At first custom actor should implement a custom method for the [`as_actor`](@ref) function.
-Rx.jl also provides a number of helper actor abstract types with predefined [`as_actor`](@ref) method behavior (see [Traits API section](@ref actors_api_traits)). Optionally custom actor may implemented a custom method for the [`is_exhausted`](@ref) function which is used to check if actor can handle any further message events.
+Rx.jl also provides a number of helper actor abstract types with predefined [`as_actor`](@ref) method behavior (see [Traits API section](@ref actors_api_traits)). Optionally custom actor may implement a custom method for the [`is_exhausted`](@ref) function which is used to check if actor can handle any further message events.
 
 ```julia
 using Rx

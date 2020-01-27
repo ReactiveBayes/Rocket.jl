@@ -3,7 +3,7 @@ module RxRerunOperatorTest
 using Test
 using Rx
 
-@testset "rerun operator" begin
+@testset "operator: rerun()" begin
 
     @testset begin
         source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> rerun(3)
