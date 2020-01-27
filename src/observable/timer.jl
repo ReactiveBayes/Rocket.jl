@@ -18,9 +18,9 @@ mutable struct TimerObservable <: Subscribable{Int}
     period     :: Union{Int, Nothing}
 
     TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing) = begin
-        @assert due_time > 0 "due_time argument value should be positive"
+        @assert due_time >= 0 "due_time argument value should be positive"
         if period !== nothing
-            @assert period > 0 "period argument value should be positive"
+            @assert period >= 0 "period argument value should be positive"
         end
         return new(due_time, period)
     end

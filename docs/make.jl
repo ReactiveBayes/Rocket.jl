@@ -74,6 +74,11 @@ makedocs(
                     "reduce"                       => "operators/mathematical/reduce.md",
                     "sum"                          => "operators/mathematical/sum.md",
                 ],
+                "Error handling" => [
+                    "About error handling operators" => "operators/errors/about.md",
+                    "catch_error"                    => "operators/errors/catch_error.md",
+                    "rerun"                          => "operators/errors/rerun.md"
+                ],
                 "Utility" => [
                     "About utility operators" => "operators/utility/about.md",
                     "tap"                     => "operators/utility/tap.md",

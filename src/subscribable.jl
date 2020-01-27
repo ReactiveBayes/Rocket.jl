@@ -143,7 +143,16 @@ subscribable_on_subscribe!(::ValidSubscribable,     ::InvalidActorTrait,   subsc
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where T1 where T2           = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ActorTrait{T2},      subscribable, actor) where { T1 <: T2 } where T2 = begin
     if !is_exhausted(actor)
-        return on_subscribe!(subscribable, actor)::Teardown
+        try
+            return on_subscribe!(subscribable, actor)::Teardown
+        catch err
+            if !(err isa MissingOnSubscribeImplementationError)
+                error!(actor, err)
+                return VoidTeardown()
+            else
+                rethrow()
+            end
+        end
     else
         complete!(actor)
         return VoidTeardown()

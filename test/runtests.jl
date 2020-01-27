@@ -5,7 +5,7 @@ using Test, Documenter, Rx
 doctest(Rx)
 
 @testset "Rx" begin
-    
+
     include("./test_teardown.jl")
     include("./teardown/test_void_teardown.jl")
     include("./teardown/test_chain_teardown.jl")
@@ -22,6 +22,7 @@ doctest(Rx)
     include("./observable/test_observable_single.jl")
 
     include("./test_operator.jl")
+    include("./operators/test_catch_error.jl")
 end
 
 end

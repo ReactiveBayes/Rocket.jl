@@ -39,6 +39,11 @@ There are operators for different purposes, and they may be categorized as: crea
 - [reduce](@ref operator_reduce)
 - [sum](@ref operator_sum)
 
+## Error handling operators
+
+- [catch_error](@ref operator_catch_error)
+- [rerun](@ref operator_rerun)
+
 ## Utility operators
 
 - [tap](@ref operator_tap)
