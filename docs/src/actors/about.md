@@ -2,7 +2,7 @@
 
 An __Actor__ is the most primitive unit of computation: it receives a message and performs a computation.
 
-An actor is analogous to an object in an object-oriented languages. An object receives a message (a method call) and does something depending on which message it receives (the method we are calling). The main difference is that actors are completely isolated from each other, and they will never share memory. It’s also worth mentioning that an actor can maintain a private state that can never be changed directly by another actor.
+An actor is analogous to an object in an object-oriented languages. An object receives a message (a method call) and does something depending on which message it receives (the method we are calling). The main difference is that actors are completely isolated from each other, and they will never share memory. It’s also worth mentioning that an actor can maintain a private state that should never be changed directly by another actor.
 
 For a quick introduction to Actor models, see [this article](https://www.brianstorti.com/the-actor-model/).
 
@@ -15,18 +15,18 @@ The following example implements an Actor that retains each received value from 
 ```julia
 using Rx
 
-struct KeepActor <: Actor{Int}
+struct CustomKeepActor <: Actor{Int}
     values::Vector{Int}
 
-    KeepActor() = new(Vector{Int}())
+    CustomKeepActor() = new(Vector{Int}())
 end
 
-Rx.on_next!(actor::KeepActor, data::Int) = push!(actor.values, data)
-Rx.on_error!(actor::KeepActor, err)      = error(err)
-Rx.on_complete!(actor::KeepActor)        = println("Completed!")
+Rx.on_next!(actor::CustomKeepActor, data::Int) = push!(actor.values, data)
+Rx.on_error!(actor::CustomKeepActor, err)      = error(err)
+Rx.on_complete!(actor::CustomKeepActor)        = println("Completed!")
 
 source     = from([ 1, 2, 3 ])
-keep_actor = KeepActor()
+keep_actor = CustomKeepActor()
 subscribe!(source, keep_actor)
 
 # Logs
@@ -63,7 +63,7 @@ using Rx
 
 source = from([1, 2, 3])
 
-subscribe!(source, LambdaActor{Int}(
+subscribe!(source, lambda(
     on_next     = (d) -> println(d),
     on_error    = (e) -> error(e),
     on_complete = ()  -> println("Completed")
@@ -75,6 +75,3 @@ subscribe!(source, LambdaActor{Int}(
 # 3
 # Completed
 ```
-
-!!! tip "Performance tip"
-    It is better to avoid `LambdaActor`s in production code. Because a `LambdaActor` uses `Base.invokelatest` for callback invocation, it may affect performance dramatically.

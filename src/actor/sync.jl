@@ -14,7 +14,7 @@ Sync actor provides a synchronized interface to `wait` for an actor to be notifi
 ```jldoctest
 using Rx
 
-source = timer(0, 1) |> take(3)
+source = timer(1, 1) |> take(3)
 actor  = LoggerActor{Int}()
 synced = SyncActor{Int, LoggerActor{Int}}(actor)
 
