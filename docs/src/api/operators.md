@@ -14,7 +14,8 @@ Rx.as_operator(::Type{<:MyFancyOperator}) = InferableOperatorTrait()
 
 trait behavior.
 
-In addition, an operator must implement
+In addition, an operator must implement a specific method for `on_call!` function with custom logic which has to return another Observable as a result of applying `MyFancyOperator` to a `source`.
+
 ```julia
 Rx.on_call!(::Type{L}, ::Type{R}, operator::MyFancyOperator, source) where L = # some custom logic here
 
@@ -25,8 +26,6 @@ Rx.on_call(::Type{L}, ::Type{R}, operator::MyFancyOperator, source) where L = # 
 Rx.operator_right(::MyFancyOperator, ::Type{L}) where L = R # where R should be an actual type, Int or even L itself e.g.
 
 ```
-
-logic which has to return another Observable as a result of applying `MyFancyOperator` to a `source`.
 
 !!! note
     It is not allowed to modify the `source` Observable in any way; you have to return a new observable.
