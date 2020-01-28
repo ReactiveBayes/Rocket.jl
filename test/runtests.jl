@@ -27,6 +27,8 @@ doctest(Rx)
     include("./observable/test_observable_timer.jl")
     include("./observable/test_observable_interval.jl")
 
+    include("./test_subject.jl")
+
     include("./test_operator.jl")
     include("./operators/test_operator_map.jl")
     include("./operators/test_operator_scan.jl")

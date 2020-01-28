@@ -23,6 +23,7 @@ RightTypedOperator
 InferableOperator
 on_call!
 operator_right
+OperatorsComposition
 ```
 
 ## Errors

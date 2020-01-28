@@ -2,14 +2,7 @@ module RxSubscribableTest
 
 using Test
 using Suppressor
-
-import Rx
-import Rx: SubscribableTrait, ValidSubscribable, InvalidSubscribable
-import Rx: Subscribable, as_subscribable
-import Rx: subscribe!
-
-import Rx: InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableDataTypesError
-import Rx: MissingOnSubscribeImplementationError
+using Rx
 
 @testset "Subscribable" begin
 
@@ -37,8 +30,8 @@ import Rx: MissingOnSubscribeImplementationError
     end
 
     @testset "subscribe!" begin
-        actor   = Rx.VoidActor{Int}()
-        actor_s = Rx.VoidActor{String}()
+        actor   = void(Int)
+        actor_s = void(String)
 
         # Check if subscribe! throws an error for not valid subscribable
         @test_throws InvalidSubscribableTraitUsageError subscribe!(DummyType(), actor)
@@ -49,7 +42,7 @@ import Rx: MissingOnSubscribeImplementationError
         @test subscribe!(ImplementedSubscribable(), actor) === Rx.VoidTeardown()
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match
-        @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedSubscribable(), Rx.VoidActor{String}())
+        @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedSubscribable(), actor_s)
     end
 
 end

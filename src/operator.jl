@@ -29,19 +29,19 @@ using Rx
 
 struct MyTypedOperator <: TypedOperator{Int, Int} end
 
-function Rx.on_call!(::Type{Int}, ::Type{Int}, op::MyTypedOperator, s::S) where { S <: Subscribable{Int} }
-    return proxy(Int, s, MyTypedOperatorProxy())
+function Rx.on_call!(::Type{Int}, ::Type{Int}, op::MyTypedOperator, source)
+    return proxy(Int, ssource, MyTypedOperatorProxy())
 end
 
 struct MyTypedOperatorProxy <: ActorProxy end
 
-Rx.actor_proxy!(::MyTypedOperatorProxy, actor::A) where { A <: AbstractActor{Int} } = MyTypedOperatorProxiedActor{A}(actor)
+Rx.actor_proxy!(::MyTypedOperatorProxy, actor::A) where A = MyTypedOperatorProxiedActor{A}(actor)
 
-struct MyTypedOperatorProxiedActor{ A <: AbstractActor{Int} } <: Actor{Int}
+struct MyTypedOperatorProxiedActor{A} <: Actor{Int}
     actor :: A
 end
 
-function Rx.on_next!(actor::MyTypedOperatorProxiedActor{A}, data::Int) where { A <: AbstractActor{Int} }
+function Rx.on_next!(actor::MyTypedOperatorProxiedActor, data::Int)
     # Do something with a data and/or redirect it to actor.actor
     next!(actor.actor, data + 1)
 end
@@ -50,7 +50,7 @@ Rx.on_error!(actor::MyTypedOperatorProxiedActor, err) = error!(actor.actor, err)
 Rx.on_complete!(actor::MyTypedOperatorProxiedActor)   = complete!(actor.actor)
 
 source = from([ 0, 1, 2 ])
-subscribe!(source |> MyTypedOperator(), LoggerActor{Int}())
+subscribe!(source |> MyTypedOperator(), logger())
 ;
 
 # output
@@ -61,7 +61,7 @@ subscribe!(source |> MyTypedOperator(), LoggerActor{Int}())
 [LogActor] Completed
 ```
 
-See also: [`TypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
+See also: [`TypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
 struct TypedOperatorTrait{L, R}   <: OperatorTrait end
 
@@ -69,7 +69,7 @@ struct TypedOperatorTrait{L, R}   <: OperatorTrait end
 Left typed operator trait specifies operator to be statically typed with input data type.
 To infer output data type this object should specify a special function `operator_right(operator, ::Type{L}) where L` which will be
 used to infer output data type. Left typed operator with input type `L` can only operate on input Observable with data type `L` and
-will always produce an Observable with data type `operator_right(operator, ::Type{L})`.
+will always produce an Observable with data type inferred from `operator_right(operator, ::Type{L})`.
 
 # Examples
 
@@ -78,26 +78,22 @@ using Rx
 
 struct CountIntegersOperator <: LeftTypedOperator{Int} end
 
-function Rx.on_call!(::Type{Int}, ::Type{Tuple{Int, Int}}, op::CountIntegersOperator, s::S) where { S <: Subscribable{Int} }
-    return proxy(Tuple{Int, Int}, s, CountIntegersOperatorProxy())
+function Rx.on_call!(::Type{Int}, ::Type{Tuple{Int, Int}}, op::CountIntegersOperator, source)
+    return proxy(Tuple{Int, Int}, source, CountIntegersOperatorProxy())
 end
 
-function Rx.operator_right(::CountIntegersOperator, ::Type{Int})
-    return Tuple{Int, Int}
-end
+Rx.operator_right(::CountIntegersOperator, ::Type{Int}) = Tuple{Int, Int}
 
 struct CountIntegersOperatorProxy <: ActorProxy end
 
-function Rx.actor_proxy!(::CountIntegersOperatorProxy, actor::A) where { A <: AbstractActor{ Tuple{Int, Int} } }
-    return CountIntegersProxiedActor{A}(0, actor)
-end
+Rx.actor_proxy!(::CountIntegersOperatorProxy, actor::A) where A = CountIntegersProxiedActor{A}(0, actor)
 
-mutable struct CountIntegersProxiedActor{ A <: AbstractActor{ Tuple{Int, Int} } } <: Actor{Int}
+mutable struct CountIntegersProxiedActor{A} <: Actor{Int}
     current :: Int
     actor   :: A
 end
 
-function Rx.on_next!(actor::CountIntegersProxiedActor{A}, data::Int) where { A <: AbstractActor{ Tuple{Int, Int} } }
+function Rx.on_next!(actor::CountIntegersProxiedActor, data::Int)
     current = actor.current
     actor.current += 1
     next!(actor.actor, (current, data)) # e.g.
@@ -107,7 +103,7 @@ Rx.on_error!(actor::CountIntegersProxiedActor, err) = error!(actor.actor, err)
 Rx.on_complete!(actor::CountIntegersProxiedActor)   = complete!(actor.actor)
 
 source = from([ 0, 0, 0 ])
-subscribe!(source |> CountIntegersOperator(), LoggerActor{Tuple{Int, Int}}())
+subscribe!(source |> CountIntegersOperator(), logger())
 ;
 
 # output
@@ -118,12 +114,13 @@ subscribe!(source |> CountIntegersOperator(), LoggerActor{Tuple{Int, Int}}())
 [LogActor] Completed
 ```
 
-See also: [`LeftTypedOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
+See also: [`LeftTypedOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`enumerate`](@ref), [`logger`](@ref)
 """
 struct LeftTypedOperatorTrait{L}  <: OperatorTrait end
 
 """
-Right typed operator trait specifies operator to be statically typed with output data type.
+Right typed operator trait specifies operator to be statically typed with output data type. It can operate on input Observable with any data type `L`
+but will always produce an Observable with data type `R`.
 
 # Examples
 
@@ -132,21 +129,21 @@ using Rx
 
 struct ConvertToFloatOperator <: RightTypedOperator{Float64} end
 
-function Rx.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, s::S) where { S <: Subscribable{L} } where L
-    return proxy(Float64, s, ConvertToFloatProxy{L}())
+function Rx.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, source)
+    return proxy(Float64, source, ConvertToFloatProxy{L}())
 end
 
 struct ConvertToFloatProxy{L} <: ActorProxy end
 
-function Rx.actor_proxy!(proxy::ConvertToFloatProxy{L}, actor::A) where { A <: AbstractActor{Float64} } where L
+function Rx.actor_proxy!(proxy::ConvertToFloatProxy{L}, actor::A) where L where A
     return ConvertToFloatProxyActor{L, A}(actor)
 end
 
-mutable struct ConvertToFloatProxyActor{ L, A <: AbstractActor{Float64} } <: Actor{L}
+mutable struct ConvertToFloatProxyActor{L, A} <: Actor{L}
     actor :: A
 end
 
-function Rx.on_next!(actor::ConvertToFloatProxyActor{L, A}, data::L) where { A <: AbstractActor{Float64} } where L
+function Rx.on_next!(actor::ConvertToFloatProxyActor{L}, data::L) where L
     next!(actor.actor, convert(Float64, data)) # e.g.
 end
 
@@ -154,7 +151,7 @@ Rx.on_error!(actor::ConvertToFloatProxyActor, err) = error!(actor.actor, err)
 Rx.on_complete!(actor::ConvertToFloatProxyActor)   = complete!(actor.actor)
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> ConvertToFloatOperator(), LoggerActor{Float64}())
+subscribe!(source |> ConvertToFloatOperator(), logger())
 ;
 
 # output
@@ -165,7 +162,7 @@ subscribe!(source |> ConvertToFloatOperator(), LoggerActor{Float64}())
 [LogActor] Completed
 ```
 
-See also: [`RightTypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
+See also: [`RightTypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
 struct RightTypedOperatorTrait{R} <: OperatorTrait end
 
@@ -179,23 +176,21 @@ using Rx
 
 struct IdentityOperator <: InferableOperator end
 
-function Rx.on_call!(::Type{L}, ::Type{L}, op::IdentityOperator, s::S) where { S <: Subscribable{L} } where L
-    return proxy(L, s, IdentityProxy{L}())
+function Rx.on_call!(::Type{L}, ::Type{L}, op::IdentityOperator, source) where L
+    return proxy(L, source, IdentityProxy{L}())
 end
 
 Rx.operator_right(::IdentityOperator, ::Type{L}) where L = L
 
 struct IdentityProxy{L} <: ActorProxy end
 
-function Rx.actor_proxy!(proxy::IdentityProxy{L}, actor::A) where { A <: AbstractActor{L} } where L
-    return IdentityProxyActor{L, A}(actor)
-end
+Rx.actor_proxy!(proxy::IdentityProxy{L}, actor::A) where L where A = IdentityProxyActor{L, A}(actor)
 
-mutable struct IdentityProxyActor{ L, A <: AbstractActor{L} } <: Actor{L}
+mutable struct IdentityProxyActor{L, A} <: Actor{L}
     actor :: A
 end
 
-function Rx.on_next!(actor::IdentityProxyActor{L, A}, data::L) where { A <: AbstractActor{L} } where L
+function Rx.on_next!(actor::IdentityProxyActor{L}, data::L) where L
     next!(actor.actor, data) # e.g.
 end
 
@@ -203,10 +198,10 @@ Rx.on_error!(actor::IdentityProxyActor, err) = error!(actor.actor, err)
 Rx.on_complete!(actor::IdentityProxyActor)   = complete!(actor.actor)
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> IdentityOperator(), LoggerActor{Int}())
+subscribe!(source |> IdentityOperator(), logger())
 
 source = from([ 1.0, 2.0, 3.0 ])
-subscribe!(source |> IdentityOperator(), LoggerActor{Float64}())
+subscribe!(source |> IdentityOperator(), logger())
 ;
 
 # output
@@ -222,7 +217,7 @@ subscribe!(source |> IdentityOperator(), LoggerActor{Float64}())
 
 ```
 
-See also: [`InferableOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref)
+See also: [`InferableOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
 struct InferableOperatorTrait     <: OperatorTrait end
 
@@ -380,7 +375,7 @@ on_call!(::Type, ::Type, operator, source) = throw(MissingOnCallImplementationEr
     operator_right(operator, L)
 
 Both LeftTypedOperator and InferableOperator must implement its own method for `operator_right` function. This function is used to infer
-type of data of output Observable given type of data of input Observable.
+type of data of output Observable given the type of data of input Observable.
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOperator`](@ref)
 """
@@ -392,6 +387,29 @@ operator_right(operator, L) = throw(MissingOperatorRightImplementationError(oper
 # Operators composition            #
 # -------------------------------- #
 
+"""
+    OperatorsComposition(operators)
+
+OperatorsComposition is an object which helps to create a composition of multiple operators. To create a composition of two or more operators
+overloaded `+` can be used.
+
+```jldoctest
+using Rx
+
+composition = map(Int, (d) -> d ^ 2) + filter(d -> d % 2 == 0)
+
+source = from(1:5) |> composition
+
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 4
+[LogActor] Data: 16
+[LogActor] Completed
+```
+"""
 struct OperatorsComposition
     operators
 end

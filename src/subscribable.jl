@@ -93,7 +93,7 @@ Passing not valid subscribable or/and actor object will throw an error.
 using Rx
 
 source = from((1, 2, 3))
-subscribe!(source, LoggerActor{Int}())
+subscribe!(source, logger())
 ;
 
 # output
@@ -121,7 +121,7 @@ ERROR: Type Int64 is not a valid actor type.
 using Rx
 
 source = from((1, 2, 3))
-subscribe!(1, LoggerActor{Int}());
+subscribe!(1, logger();
 ;
 
 # output
@@ -172,13 +172,13 @@ using Rx
 
 struct MySubscribable <: Subscribable{Int} end
 
-function Rx.on_subscribe!(subscribable::MySubscribable, actor::A) where { A <: AbstractActor{Int} }
+function Rx.on_subscribe!(subscribable::MySubscribable, actor)
     next!(actor, 0)
     complete!(actor)
     return VoidTeardown()
 end
 
-subscribe!(MySubscribable(), LoggerActor{Int}())
+subscribe!(MySubscribable(), logger())
 ;
 
 # output
@@ -187,7 +187,7 @@ subscribe!(MySubscribable(), LoggerActor{Int}())
 [LogActor] Completed
 ```
 
-See also: [`Subscribable`](@ref), [`Teardown`](@ref)
+See also: [`Subscribable`](@ref), [`Teardown`](@ref), [`logger`](@ref)
 """
 on_subscribe!(subscribable, actor) = throw(MissingOnSubscribeImplementationError(subscribable))
 
