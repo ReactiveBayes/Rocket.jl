@@ -18,7 +18,6 @@ include("subscribable.jl")
 include("operator.jl")
 include("subject.jl")
 
-
 include("subjects/base_types/asynchronous.jl")
 include("subjects/base_types/synchronous.jl")
 include("subjects/default.jl")
