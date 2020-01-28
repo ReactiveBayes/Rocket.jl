@@ -49,3 +49,4 @@ There are operators for different purposes, and they may be categorized as: crea
 - [tap](@ref operator_tap)
 - [delay](@ref operator_delay)
 - [safe](@ref operator_safe)
+- [noop](@ref operator_noop)

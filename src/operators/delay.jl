@@ -36,43 +36,54 @@ struct DelayProxy{L} <: ActorSourceProxy
     delay :: Int
 end
 
-actor_proxy!(proxy::DelayProxy{L}, actor::A) where L where A = DelayActor{L, A}(false, proxy.delay, actor)
+actor_proxy!(proxy::DelayProxy{L}, actor::A) where L where A = DelayActor{L, A}(proxy.delay, actor)
 source_proxy!(proxy::DelayProxy{L}, source)  where L         = DelayObservable{L}(source)
+
+struct DelayDataMessage{L}
+    data :: L
+end
+
+struct DelayErrorMessage
+    err
+end
+
+struct DelayCompleteMessage end
+
+const DelayMessage{L} = Union{DelayDataMessage{L}, DelayErrorMessage, DelayCompleteMessage}
 
 mutable struct DelayActor{L, A} <: Actor{L}
     is_cancelled :: Bool
     delay        :: Int
     actor        :: A
+    channel      :: Channel{DelayMessage{L}}
+
+    DelayActor{L, A}(delay::Int, actor::A) where L where A = begin
+        channel = Channel{DelayMessage{L}}(Inf)
+        actor   = new(false, delay, actor, channel)
+
+        task = @async begin
+            while !actor.is_cancelled
+                message = take!(channel)::DelayMessage{L}
+                sleep(actor.delay / MILLISECONDS_IN_SECOND)
+                __process_delayed_message(actor, message)
+            end
+        end
+
+        bind(channel, task)
+
+        return actor
+    end
 end
+
+__process_delayed_message(actor::DelayActor{L}, message::DelayDataMessage{L}) where L = next!(actor.actor, message.data)
+__process_delayed_message(actor::DelayActor,    message::DelayErrorMessage)           = error!(actor.actor, message.err)
+__process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)        = complete!(actor.actor)
 
 is_exhausted(actor::DelayActor) = is_exhausted(actor.actor)
 
-function on_next!(actor::DelayActor{L}, data::L) where L
-    @async begin
-        sleep(actor.delay / MILLISECONDS_IN_SECOND)
-        if !actor.is_cancelled
-            next!(actor.actor, data)
-        end
-    end
-end
-
-function on_error!(actor::DelayActor, err)
-    @async begin
-        sleep(actor.delay / MILLISECONDS_IN_SECOND)
-        if !actor.is_cancelled
-            error!(actor.actor, err)
-        end
-    end
-end
-
-function on_complete!(actor::DelayActor)
-    @async begin
-        sleep(actor.delay / MILLISECONDS_IN_SECOND)
-        if !actor.is_cancelled
-            complete!(actor.actor)
-        end
-    end
-end
+on_next!(actor::DelayActor{L}, data::L) where L = push!(actor.channel, DelayDataMessage{L}(data))
+on_error!(actor::DelayActor, err)               = push!(actor.channel, DelayErrorMessage(err))
+on_complete!(actor::DelayActor)                 = push!(actor.channel, DelayCompleteMessage())
 
 struct DelayObservable{L} <: Subscribable{L}
     source
@@ -90,6 +101,9 @@ end
 as_teardown(::Type{<:DelaySubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::DelaySubscription)
+    if !subscription.actor.is_cancelled
+        close(actor.channel)
+    end
     subscription.actor.is_cancelled = true
     unsubscribe!(subscription.subscription)
     return nothing

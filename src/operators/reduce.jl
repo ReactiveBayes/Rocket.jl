@@ -94,7 +94,9 @@ function on_error!(actor::ReduceActor, err)
 end
 
 function on_complete!(actor::ReduceActor)
-    next!(actor.actor, actor.current)
+    if actor.current !== nothing
+        next!(actor.actor, actor.current)
+    end
     complete!(actor.actor)
 end
 

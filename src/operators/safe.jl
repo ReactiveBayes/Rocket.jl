@@ -5,7 +5,7 @@ import Base: show
 """
     safe()
 
-Creates a `SafeOperator`, which wraps either `on_subscribe!` and each `next!`, `error!` and `complete!` callbacks into try-catch block.
+Creates a `SafeOperator`, which wraps `on_subscribe!` and each `next!`, `error!` and `complete!` callbacks into try-catch block.
 
 # Producing
 

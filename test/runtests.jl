@@ -27,17 +27,29 @@ doctest(Rx)
     include("./observable/test_observable_timer.jl")
     include("./observable/test_observable_interval.jl")
 
-
     include("./test_operator.jl")
     include("./operators/test_operator_map.jl")
-    # include("./operators/test_operator_scan.jl")
-    # include("./operators/test_operator_enumerate.jl")
+    include("./operators/test_operator_scan.jl")
+    include("./operators/test_operator_enumerate.jl")
     include("./operators/test_operator_uppercase.jl")
     include("./operators/test_operator_lowercase.jl")
     include("./operators/test_operator_to_array.jl")
-
+    include("./operators/test_operator_filter.jl")
+    include("./operators/test_operator_some.jl")
+    include("./operators/test_operator_take.jl")
+    include("./operators/test_operator_first.jl")
+    include("./operators/test_operator_last.jl")
+    include("./operators/test_operator_count.jl")
+    include("./operators/test_operator_max.jl")
+    include("./operators/test_operator_min.jl")
+    include("./operators/test_operator_reduce.jl")
+    include("./operators/test_operator_sum.jl")
     include("./operators/test_operator_catch_error.jl")
     include("./operators/test_operator_rerun.jl")
+    include("./operators/test_operator_tap.jl")
+    include("./operators/test_operator_delay.jl")
+    include("./operators/test_operator_safe.jl")
+    include("./operators/test_operator_noop.jl")
 end
 
 end

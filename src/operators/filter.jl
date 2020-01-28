@@ -176,7 +176,7 @@ macro CreateFilterOperator(name, filterFn)
             return Rx.proxy(L, source, ($proxyName){L}())
         end
 
-        operator_right(operator::($operatorName){L}, ::Type{L}) where L = L
+        Rx.operator_right(operator::($operatorName){L}, ::Type{L}) where L = L
 
         Base.show(io::IO, operator::($operatorName){L}) where L = print(io, string($operatorName), "(", L, ")")
     end

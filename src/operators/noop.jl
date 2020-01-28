@@ -12,7 +12,29 @@ Creates a noop operator, which does nothing, but breaks operator composition typ
 It might be useful for very long chain of operators, because Julia tries to statically infer data types at compile-time for the whole chain and
 can run into StackOverflow issues.
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref)
+```
+using Rx
+
+source = from(1:5)
+
+for i in 1:1000
+    source = source |> map(Int, d -> d + 1) |> noop()
+end
+
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 1001
+[LogActor] Data: 1002
+[LogActor] Data: 1003
+[LogActor] Data: 1004
+[LogActor] Data: 1005
+[LogActor] Completed
+```
+
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`logger`](@ref), [`map`](@ref)
 """
 noop() = NoopOperator()
 

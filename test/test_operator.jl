@@ -91,6 +91,18 @@ import Rx: MissingOnCallImplementationError, MissingOperatorRightImplementationE
         @test float_source  |> InferableIntoZeroTupleOperator() == Rx.from([ (0.0, 0.0) ])
     end
 
+    @testset "Operators composition" begin
+        int_source    = SomeSubscribable{Int}()
+
+        operators = IdentityIntOperator() + IdentityIntOperator()
+
+        @test operators isa OperatorsComposition
+        @test operators + IdentityIntOperator() isa OperatorsComposition
+        @test IdentityIntOperator() + operators isa OperatorsComposition
+
+        @test int_source |> operators === int_source
+    end
+
 end
 
 end
