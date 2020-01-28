@@ -11,12 +11,7 @@ makedocs(
             "Observable"   => "observables/about.md",
             "Actor"        => "actors/about.md",
             "Subscription" => "teardown/about.md",
-            "Operator"     => [
-                "About"                   => "operators/about.md",
-                "Piping"                  => "operators/piping.md",
-                "Create a new operator"   => "operators/create-new-operator.md",
-                "High-orders observables" => "operators/high-order.md",
-            ],
+            "Operator"     => "operators/about.md",
             "Subject"      => "subjects/about.md",
         ],
         "Library" => [

@@ -37,7 +37,7 @@ end
 In contrast, Rx.jl uses observables.
 
 ```Julia
-subscription = subscribe!(source_of_values, LambdaActor{TypeOfData}(
+subscription = subscribe!(source_of_values, lambda(
     on_next  = (data)  -> doSomethingWithMyData(data),
     on_error = (error) -> doSomethingWithAnError(error),
     complete = ()      -> println("Completed! You deserve some coffee man")
@@ -66,9 +66,9 @@ An actor can also have its own local state.
 
 ```Julia
 struct StoreActor{D} <: Rx.Actor{}
-    values::Array{D, 1}
+    values :: Vector{D}
 
-    StoreActor{D}() where D = new(Array{D, 1}())
+    StoreActor{D}() where D = new(Vector{D}())
 end
 
 Rx.on_next!(actor::StoreActor{D}, data::D) where D = push!(actor.values, data)

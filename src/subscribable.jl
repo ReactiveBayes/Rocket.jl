@@ -121,7 +121,7 @@ ERROR: Type Int64 is not a valid actor type.
 using Rx
 
 source = from((1, 2, 3))
-subscribe!(1, logger();
+subscribe!(1, logger())
 ;
 
 # output

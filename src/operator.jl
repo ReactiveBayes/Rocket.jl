@@ -30,7 +30,7 @@ using Rx
 struct MyTypedOperator <: TypedOperator{Int, Int} end
 
 function Rx.on_call!(::Type{Int}, ::Type{Int}, op::MyTypedOperator, source)
-    return proxy(Int, ssource, MyTypedOperatorProxy())
+    return proxy(Int, source, MyTypedOperatorProxy())
 end
 
 struct MyTypedOperatorProxy <: ActorProxy end
@@ -129,7 +129,7 @@ using Rx
 
 struct ConvertToFloatOperator <: RightTypedOperator{Float64} end
 
-function Rx.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, source)
+function Rx.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, source) where L
     return proxy(Float64, source, ConvertToFloatProxy{L}())
 end
 

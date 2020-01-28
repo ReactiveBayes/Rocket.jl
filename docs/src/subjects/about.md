@@ -5,9 +5,6 @@ An Rx.jl Subject is a special type of Observable that allows values to be multic
 !!! note
     A Subject is like an Observable, but can multicast to many Actors. Subjects are like event emitters: they maintain a registry of many listeners.
 
-```@docs
-Subject
-```
 
 Every Subject is an Observable. Given a Subject, you can subscribe to it, providing an Actor, which will start receiving values normally. From the perspective of the Actor, it cannot tell whether the Observable execution is coming from a plain unicast Observable or a Subject.
 
