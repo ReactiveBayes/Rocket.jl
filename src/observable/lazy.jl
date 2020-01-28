@@ -6,7 +6,7 @@ import Base: show
 struct LazyObservable{D} <: Subscribable{D}
     inner :: PendingSubject{Any, SynchronousSubject{Any}}
 
-    LazyObservable{D}() where D = new(pending_subject(Any; mode = Val(:sync)))
+    LazyObservable{D}() where D = new(make_pending_subject(Any; mode = Val(:sync)))
 end
 
 set!(lazy::LazyObservable{D}, observable::S) where D where S = on_lazy_set!(lazy, as_subscribable(S), observable)

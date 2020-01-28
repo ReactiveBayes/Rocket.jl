@@ -67,89 +67,57 @@ subscribe!(other_source, source);
 
 Here, we essentially convert a unicast Observable execution to multicast, through the Subject. This demonstrates how Subjects offer a unique way to share Observable execution with multiple Observers.
 
-There are a few specializations of the Subject type: [`BehaviorSubject`](@ref), and [`ReplaySubject`](@ref).
+There are a two base-type specializations of the Subject type: [`AsynchronousSubject`](@ref), and [`SynchronousSubject`](@ref).
 
-## BehaviorSubject
+## AsynchronousSubject
 
-One of the variants of Subjects is the BehaviorSubject, which has a notion of "the current value". It stores the latest value emitted to its consumers and, whenever a new Actor subscribes, it will immediately receive the "current value" from the BehaviorSubject.
+One of the variants of Subjects is the `AsynchronousSubject`, which delivers each message to attached listeners asynchronously (but still ordered) using
+a Julia's built-in `Task` object.
 
 ```@docs
-BehaviorSubject
+AsynchronousSubject
 ```
-
-!!! note
-    BehaviorSubjects are useful for representing "values over time". For instance, an event stream of birthdays is a Subject, but the stream of a person's age would be a BehaviorSubject.
-
-In the following example, the BehaviorSubject is initialized with the value 0 which the first Actor receives when it subscribes. The second Actor receives the value 2 even though it subscribed after the value 2 was sent.
 
 ```julia
 using Rx
 
-b = BehaviorSubject{Int}(0)
+subject = make_subject(Int, mode = ASYNCHRONOUS_SUBJECT_MODE)
 
-subscription1 = subscribe!(b, LoggerActor{Int}("Actor 1"))
+subscription1 = subscribe!(subject, logger("Actor 1"))
 
-next!(b, 1)
-next!(b, 2)
+next!(subject, 1)
+next!(subject, 2)
+print
 
-yield()
+subscription2 = subscribe!(subject, logger("Actor 2"))
 
-subscription2 = subscribe!(b, LoggerActor{Int}("Actor 2"))
-
-next!(b, 3)
+next!(subject, 3)
 
 # Logs
-# [Actor 1] Data: 0
 # [Actor 1] Data: 1
 # [Actor 1] Data: 2
-# [Actor 2] Data: 2
 # [Actor 1] Data: 3
 # [Actor 2] Data: 3
 
 ```
 
-## ReplaySubject
+## SynchronousSubject
 
-A `ReplaySubject` is similar to a [`BehaviorSubject`](@ref). Both send old values to new subscribers,
-but a `ReplaySubject` can also record a part of the Observable execution.
+A `SynchronousSubject` is similar to a [`AsynchronousSubject`](@ref). Both multicast values to multiple listeners,
+but a `SynchronousSubject` delivers all messages synchronously.
 
 ```@docs
-ReplaySubject
+SynchronousSubject
 ```
-
-!!! note
-    A ReplaySubject records multiple values from the Observable execution and replays them to new subscribers.
-
-When creating a ReplaySubject, you can specify how many values to replay:
 
 ```julia
 using Rx
 
-b = ReplaySubject{Int}(4)
+subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+```
 
-subscription1 = subscribe!(b, LoggerActor{Int}("Actor 1"))
+## Subject creation
 
-next!(b, 1)
-next!(b, 2)
-
-yield()
-
-subscription2 = subscribe!(b, LoggerActor{Int}("Actor 2"))
-
-next!(b, 3)
-
-subscription3 = subscribe!(b, LoggerActor{Int}("Actor 3"))
-;
-
-# Logs
-# [Actor 1] Data: 1
-# [Actor 1] Data: 2
-# [Actor 2] Data: 1
-# [Actor 2] Data: 2
-# [Actor 3] Data: 1
-# [Actor 3] Data: 2
-# [Actor 3] Data: 3
-# [Actor 1] Data: 3
-# [Actor 2] Data: 3
-# [Actor 3] Data: 3
+```@docs
+make_subject
 ```

@@ -1,8 +1,9 @@
 export BehaviorSubject, as_subject, as_subscribable, on_subscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export BehaviorSubjectFactory, create_subject
+export make_behavior_subject, make_behavior_subject_factory
 
-export behaviour_subject, behaviour_subject_factory
+import Base: show
 
 """
     BehaviorSubject{D, S}(current, subject)
@@ -13,6 +14,7 @@ A variant of Subject that requires an initial value and emits its current value 
 - `current`: Default current value
 - `subject`: Subject base type
 
+See also: [`make_behavior_subject`](@ref), [`make_subject`](@ref)
 """
 mutable struct BehaviorSubject{D, S} <: Actor{D}
     current :: D
@@ -46,14 +48,22 @@ end
 # Behavior subject create operators #
 # --------------------------------- #
 
-behaviour_subject(::Type{T}, current::T, subject_factory::F) where T where { F <: AbstractSubjectFactory } = behaviour_subject(T, current, create_subject(T, subject_factory))
-behaviour_subject(::Type{T}, current::T, subject::S)         where T where S                               = as_behaviour_subject(T, as_subject(S), current, subject)
+make_behavior_subject(::Type{T}, current::T, subject_factory::F) where T where { F <: AbstractSubjectFactory } = make_behavior_subject(T, current, create_subject(T, subject_factory))
+make_behavior_subject(::Type{T}, current::T, subject::S)         where T where S                               = as_behavior_subject(T, as_subject(S), current, subject)
 
-as_behaviour_subject(::Type{T},  ::InvalidSubject,   current,     subject)    where T                   = throw(InvalidSubjectTraitUsageError(subject))
-as_behaviour_subject(::Type{T1}, ::ValidSubject{T2}, current::T1, subject::S) where T1 where T2 where S = throw(InconsistentSubjectDataTypesError{T1, T2}(subject))
-as_behaviour_subject(::Type{T},  ::ValidSubject{T},  current::T,  subject::S) where T where S           = BehaviorSubject{T, S}(current, subject)
+as_behavior_subject(::Type{T},  ::InvalidSubject,   current,     subject)    where T                   = throw(InvalidSubjectTraitUsageError(subject))
+as_behavior_subject(::Type{T1}, ::ValidSubject{T2}, current::T1, subject::S) where T1 where T2 where S = throw(InconsistentSubjectDataTypesError{T1, T2}(subject))
+as_behavior_subject(::Type{T},  ::ValidSubject{T},  current::T,  subject::S) where T where S           = BehaviorSubject{T, S}(current, subject)
 
-behaviour_subject(::Type{T}, current::T; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M = behaviour_subject(T, current, subject_factory(mode = mode))
+
+"""
+    make_behavior_subject(::Type{T}, current::T; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M
+
+Creation operator for the `BehaviorSubject`
+
+See also: [`BehaviorSubject`](@ref), [`make_subject`](@ref)
+"""
+make_behavior_subject(::Type{T}, current::T; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M = make_behavior_subject(T, current, make_subject_factory(mode = mode))
 
 # ------------------------- #
 # Behavior subject factory  #
@@ -63,6 +73,9 @@ struct BehaviorSubjectFactory{M} <: AbstractSubjectFactory
     default
 end
 
-create_subject(::Type{L}, factory::BehaviorSubjectFactory{M}) where L where M = behaviour_subject(L, convert(L, factory.default); mode = Val(M))
+create_subject(::Type{L}, factory::BehaviorSubjectFactory{M}) where L where M = make_behavior_subject(L, convert(L, factory.default); mode = Val(M))
 
-behaviour_subject_factory(default; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = BehaviorSubjectFactory{M}(default)
+make_behavior_subject_factory(default; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = BehaviorSubjectFactory{M}(default)
+
+Base.show(io::IO, subject::BehaviorSubject{T, S})     where T where S = print(io, "BehaviorSubject($T, $S)")
+Base.show(io::IO, subject::BehaviorSubjectFactory{M}) where M         = print(io, "BehaviorSubjectFactory($M)")

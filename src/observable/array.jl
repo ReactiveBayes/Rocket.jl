@@ -48,9 +48,9 @@ end
 """
     from(x)
 
-Creation operator for the ArrayObservable that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
+Creation operator for the `ArrayObservable` that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
 Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
-for `scalarness(::Type{<:MyType})` function and to specify scalarness behaviour.
+for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior.
 
 # Arguments
 - `x`: an object to be wrapped into array of values

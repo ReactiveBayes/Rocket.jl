@@ -80,6 +80,10 @@ makedocs(
                     "delay"                   => "operators/utility/delay.md",
                     "safe"                    => "operators/utility/safe.md",
                 ]
+            ],
+            "Subjects" => [
+                "Behavior" => "subjects/types/behavior.md",
+                "Replay"   => "subjects/types/replay.md",
             ]
         ],
         "API"          => [

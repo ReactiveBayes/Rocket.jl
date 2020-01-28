@@ -2,7 +2,7 @@ export ReplaySubject, as_subject, as_subscribable, on_subscribe!
 export on_next!, on_error!, on_complete!, is_exhausted
 export ReplaySubjectFactory, create_subject
 
-export replay_subject, replay_subject_factory
+export make_replay_subject, make_replay_subject_factory
 
 import DataStructures: CircularBuffer
 
@@ -17,6 +17,7 @@ in addition to emitting new values to existing subscribers.
 - `capacity`: how many values to replay
 - `subject`: Subject base type
 
+See
 """
 struct ReplaySubject{D, S} <: Actor{D}
     cb      :: CircularBuffer{D}
@@ -54,14 +55,21 @@ end
 # Replay subject create operators #
 # --------------------------------- #
 
-replay_subject(::Type{T}, count::Int, subject_factory::F) where T where { F <: AbstractSubjectFactory } = replay_subject(T, count, create_subject(T, subject_factory))
-replay_subject(::Type{T}, count::Int, subject::S)         where T where S                               = as_replay_subject(T, as_subject(S), count, subject)
+make_replay_subject(::Type{T}, count::Int, subject_factory::F) where T where { F <: AbstractSubjectFactory } = make_replay_subject(T, count, create_subject(T, subject_factory))
+make_replay_subject(::Type{T}, count::Int, subject::S)         where T where S                               = as_replay_subject(T, as_subject(S), count, subject)
 
 as_replay_subject(::Type{T},  ::InvalidSubject,   count::Int, subject)    where T                   = throw(InvalidSubjectTraitUsageError(subject))
 as_replay_subject(::Type{T1}, ::ValidSubject{T2}, count::Int, subject::S) where T1 where T2 where S = throw(InconsistentSubjectDataTypesError{T1, T2}(subject))
 as_replay_subject(::Type{T},  ::ValidSubject{T},  count::Int, subject::S) where T where S           = ReplaySubject{T, S}(count, subject)
 
-replay_subject(::Type{T}, count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M = replay_subject(T, count, subject_factory(mode = mode))
+"""
+    make_replay_subject(::Type{T}, count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M
+
+Creation operator for the `ReplaySubject`
+
+See also: [`ReplaySubject`](@ref), [`make_subject`](@ref)
+"""
+make_replay_subject(::Type{T}, count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M = make_replay_subject(T, count, make_subject_factory(mode = mode))
 
 # ----------------------- #
 # Replay subject factory  #
@@ -71,6 +79,6 @@ struct ReplaySubjectFactory{M} <: AbstractSubjectFactory
     count :: Int
 end
 
-create_subject(::Type{L}, factory::ReplaySubjectFactory{M}) where L where M = replay_subject(L, factory.count; mode = Val(M))
+create_subject(::Type{L}, factory::ReplaySubjectFactory{M}) where L where M = make_replay_subject(L, factory.count; mode = Val(M))
 
-replay_subject_factory(count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = ReplaySubjectFactory{M}(count)
+make_replay_subject_factory(count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = ReplaySubjectFactory{M}(count)

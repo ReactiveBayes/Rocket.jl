@@ -23,6 +23,13 @@ struct AsynchronousSubjectCompleteMessage end
 
 const AsynchronousSubjectMessage{D} = Union{AsynchronousSubjectNextMessage{D}, AsynchronousSubjectErrorMessage, AsynchronousSubjectCompleteMessage}
 
+"""
+    AsynchronousSubject{D}()
+
+AsynchronousSubject is a base-type subject that asynchronously delivers all messages to the attached listeners using a different asynchronous task for each listener.
+
+See also: [`as_subject`](@ref), [`make_subject`](@ref)
+"""
 mutable struct AsynchronousSubject{D} <: Actor{D}
     subscribers  :: Vector{Channel{AsynchronousSubjectMessage{D}}}
     is_completed :: Bool
