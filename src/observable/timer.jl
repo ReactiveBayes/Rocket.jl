@@ -90,7 +90,7 @@ end
 """
     timer(due_time::Int = 0, period = nothing)
 
-Its like `interval`(@ref), but you can specify when should the emissions start.
+Creation operator for the `TimerObservable`. Its like `interval`(@ref), but you can specify when should the emissions start.
 `timer` returns an Observable that emits an infinite sequence of ascending integers,
 with a constant interval of time, period of your choosing between those emissions.
 The first emission happens after the specified `due_time`.

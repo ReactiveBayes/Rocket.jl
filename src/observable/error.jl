@@ -22,7 +22,7 @@ end
 """
     throwError(error, T = Any)
 
-Creates an Observable that emits no items to the Actor and immediately sends an error notification.
+Creation operator for the `ErrorObservable` that emits no items to the Actor and immediately sends an error notification.
 
 # Arguments
 - `error`: the particular Error to pass to the error notification.

@@ -22,7 +22,7 @@ end
 """
     never(T = Any)
 
-Creates a simple Observable that emits neither values nor errors nor the completion notification.
+Creation operator for the `NeverObservable` that emits neither values nor errors nor the completion notification.
 It can be used for testing purposes or for composing with other Observables.
 Please note that by never emitting a complete notification, this Observable keeps
 the subscription from being disposed automatically. Subscriptions need to be manually

@@ -147,7 +147,7 @@ This function is used to check if actor can handle any further message events
 
 See also: [`AbstractActor`](@ref)
 """
-is_exhausted(actor) = false # throw(MissingIsExhaustedImplementationError(actor))
+is_exhausted(actor) = false
 
 actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
@@ -333,17 +333,4 @@ end
 
 function Base.show(io::IO, err::MissingOnCompleteImplementationError)
     print(io, "You probably forgot to implement on_complete!(actor::$(typeof(err.actor))).")
-end
-
-"""
-This error will be throw if Julia cannot find specific method of 'is_exhausted()' function for given actor
-
-See also: [`is_exhausted`](@ref)
-"""
-struct MissingIsExhaustedImplementationError
-    actor
-end
-
-function Base.show(io::IO, err::MissingIsExhaustedImplementationError)
-    print(io, "You probably forgot to implement is_exhausted(actor::$(typeof(err.actor))).")
 end

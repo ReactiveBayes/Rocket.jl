@@ -79,7 +79,7 @@ end
 """
 InvalidSubject usage error
 
-See also: [`as_subject!`](@ref)
+See also: [`as_subject`](@ref)
 """
 struct InvalidSubjectTraitUsageError
     subject
@@ -92,7 +92,7 @@ end
 """
 InconsistentSubjectDataTypesError
 
-See also: [`as_subject!`](@ref)
+See also: [`as_subject`](@ref)
 """
 struct InconsistentSubjectDataTypesError{T1, T2}
     subject

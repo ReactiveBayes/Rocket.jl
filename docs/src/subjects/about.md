@@ -17,7 +17,7 @@ In the example below, we have two Observers attached to a Subject, and we feed s
 ```julia
 using Rx
 
-source = subject(Int)
+source = make_subject(Int)
 
 subscription1 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 1: $d")
@@ -43,7 +43,7 @@ Since a Subject is an actor, this also means you may provide a Subject as the ar
 ```julia
 using Rx
 
-source = subject(Int)
+source = make_subject(Int)
 
 subscription1 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 1: $d")

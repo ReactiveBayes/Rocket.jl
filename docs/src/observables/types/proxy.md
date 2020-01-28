@@ -1,3 +1,5 @@
+# [Proxy Observable](@id observable_proxy)
+
 ```@docs
 ProxyObservable
 ```

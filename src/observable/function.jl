@@ -63,7 +63,7 @@ end
 """
     make(f::Function, type::Type{D})
 
-Creates a FunctionObservable.
+Creation operator for the `FunctionObservable`.
 
 # Arguments
 - `f`: function to be invoked on subscription

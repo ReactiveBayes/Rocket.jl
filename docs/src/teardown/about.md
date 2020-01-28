@@ -6,7 +6,7 @@ A __Subscription__ represents a disposable resource, usually the execution of an
 ```julia
 using Rx
 
-source = subject(Int)
+source = make_subject(Int)
 
 next!(source, 0) # Logs nothing as there is no subscribers
 

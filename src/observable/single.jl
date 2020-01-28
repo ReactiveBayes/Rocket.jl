@@ -22,7 +22,7 @@ end
 """
     of(x)
 
-Creates a SingleObservable that emits a single value x and then completes.
+Creation operator for the `SingleObservable` that emits a single value x and then completes.
 
 # Arguments
 - `x`: value to be emmited before completion
@@ -43,7 +43,7 @@ subscribe!(source, logger())
 
 ```
 
-See also: [`SingleObservable`], [`subscribe!`](@ref), [`logger`](@ref)
+See also: [`SingleObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 of(x::T) where T = SingleObservable{T}(x)
 

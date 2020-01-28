@@ -21,7 +21,7 @@ end
 """
     completed(T = Any)
 
-Creates an Observable that emits no items to the Actor and immediately sends a complete notification on subscription.
+Creation operator for the `CompletedObservable` that emits no items to the Actor and immediately sends a complete notification on subscription.
 
 # Arguments
 - `T`: type of output data source, optional, `Any` is the default

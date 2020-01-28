@@ -1,14 +1,7 @@
 module RxOperatorTest
 
 using Test
-
-import Rx
-import Rx: OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferableOperatorTrait, InvalidOperatorTrait
-import Rx: AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
-import Rx: as_operator, call_operator!, on_call!, operator_right
-
-import Rx: InvalidOperatorTraitUsageError, InconsistentSourceOperatorDataTypesError
-import Rx: MissingOnCallImplementationError, MissingOperatorRightImplementationError
+using Rx
 
 
 @testset "Operator" begin

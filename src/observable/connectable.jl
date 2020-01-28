@@ -32,7 +32,7 @@ Creates a `ConnectableObservable` with a given subject object and a source obser
 ```jldoctest
 using Rx
 
-c = connectable(subject(Int; mode = Val(:sync)), from(1:3))
+c = connectable(make_subject(Int; mode = Val(:sync)), from(1:3))
 
 subscribe!(c, logger());
 

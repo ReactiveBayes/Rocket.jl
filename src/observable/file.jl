@@ -27,7 +27,7 @@ end
 """
     file(path::String)
 
-Helper function to creates a `SyncFileObservable` with a given path.
+Creation operator for the `SyncFileObservable` with a given path.
 
 See also: [`SyncFileObservable`](@ref)
 """
