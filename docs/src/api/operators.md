@@ -33,7 +33,7 @@ Rx.operator_right(::MyFancyOperator, ::Type{L}) where L = R # where R should be 
 See more examples on custom operators in [Traits API section](@ref operators_api_traits)
 
 !!! note
-    It might be useful to return a [`ProxyObservable`](@ref) from an `on_call!` function.
+    It might be useful to return a [ProxyObservable](@ref observable_proxy) from an `on_call!` function.
     ProxyObservable is a special Observable which proxying actors with the source and/or source with actors.
 
 ## [Traits](@id operators_api_traits)

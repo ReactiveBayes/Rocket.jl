@@ -64,7 +64,7 @@ abstract type AbstractActor{T} end
 
 """
 Can be used as a super type for common actor. Automatically specifies a `BaseActorTrait` trait behavior.
-Each `Actor` must implement its own methods for 'on_next!(actor, data)', 'on_error!(actor, err)' and 'on_complete!(actor)' functions.
+Each `Actor` must implement its own methods for `on_next!(actor, data)`, `on_error!(actor, err)` and `on_complete!(actor)` functions.
 
 See also: [`AbstractActor`](@ref), [`BaseActorTrait`](@ref), [`ActorTrait`](@ref), [`on_next!`](@ref), [`on_error!`](@ref), [`on_complete!`](@ref)
 """
@@ -72,7 +72,7 @@ abstract type Actor{T}           <: AbstractActor{T} end
 
 """
 Can be used as a super type for "next-only" actor. Automatically specifies a `NextActorTrait` trait behavior.
-Each `NextActor` must implement its own methods for 'on_next!(actor, data)' function only.
+Each `NextActor` must implement its own methods for `on_next!(actor, data)` function only.
 
 See also: [`AbstractActor`](@ref), [`NextActorTrait`](@ref), [`ActorTrait`](@ref), [`on_next!`](@ref)
 """
@@ -80,7 +80,7 @@ abstract type NextActor{T}       <: AbstractActor{T} end
 
 """
 Can be used as a super type for "error-only" actor. Automatically specifies a `ErrorActorTrait` trait behavior.
-Each `ErrorActor` must implement its own methods for 'on_error!(actor, err)' function only.
+Each `ErrorActor` must implement its own methods for `on_error!(actor, err)` function only.
 
 See also: [`AbstractActor`](@ref), [`ErrorActorTrait`](@ref), [`ActorTrait`](@ref), [`on_error!`](@ref)
 """
@@ -88,7 +88,7 @@ abstract type ErrorActor{T}      <: AbstractActor{T} end
 
 """
 Can be used as a super type for "completion-only" actor. Automatically specifies a `CompletionActorTrait` trait behavior.
-Each `CompletionActor` must implement its own methods for 'on_complete!(actor)' function only.
+Each `CompletionActor` must implement its own methods for `on_complete!(actor)` function only.
 
 See also: [`AbstractActor`](@ref), [`CompletionActorTrait`](@ref), [`ActorTrait`](@ref), [`on_complete!`](@ref)
 """
