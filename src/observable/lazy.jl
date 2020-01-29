@@ -3,6 +3,8 @@ export LazyObservable, lazy, set!
 import Base: |>
 import Base: show
 
+# TODO: Untested and undocumented
+
 struct LazyObservable{D} <: Subscribable{D}
     inner :: PendingSubject{Any, SynchronousSubject{Any}}
 

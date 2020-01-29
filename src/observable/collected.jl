@@ -4,6 +4,7 @@ export LastCollectedActor, on_next!, on_error!, on_complete!
 export collectLast
 
 # TODO: WIP fix if some source emits only complete
+# TODO: Untested and undocumented
 
 struct LastCollectedObservable{D} <: Subscribable{Vector{D}}
     sources :: Vector{Any}

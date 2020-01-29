@@ -4,6 +4,8 @@ export PendingSubjectFactory, create_subject
 
 export make_pending_subject, make_pending_subject_factory
 
+# TODO: Untested and undocumented
+
 mutable struct PendingSubject{D, S} <: Actor{D}
     value        :: Union{Nothing, D}
     subject      :: Union{Nothing, S}

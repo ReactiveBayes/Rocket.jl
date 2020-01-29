@@ -5,6 +5,7 @@ export switchMap
 export @CreateSwitchMapOperator
 
 # TODO: Work in progress
+# TODO: Untested and undocumented
 
 switchMap(::Type{R}, mappingFn::Function) where R = SwitchMapOperator{R}(mappingFn)
 

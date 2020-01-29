@@ -28,6 +28,10 @@ doctest(Rx)
     include("./observable/test_observable_interval.jl")
 
     include("./test_subject.jl")
+    include("./subjects/base_types/test_subject_synchronous.jl")
+    include("./subjects/base_types/test_subject_asynchronous.jl")
+    include("./subjects/types/test_subject_behavior.jl")
+    include("./subjects/types/test_subject_replay.jl")
 
     include("./test_operator.jl")
     include("./operators/test_operator_map.jl")
@@ -52,6 +56,8 @@ doctest(Rx)
     include("./operators/test_operator_delay.jl")
     include("./operators/test_operator_safe.jl")
     include("./operators/test_operator_noop.jl")
+    include("./operators/test_operator_multicast.jl")
+    include("./operators/test_operator_ref_count.jl")
 end
 
 end

@@ -74,11 +74,22 @@ makedocs(
                     "catch_error"                    => "operators/errors/catch_error.md",
                     "rerun"                          => "operators/errors/rerun.md"
                 ],
+                "Multicasting" => [
+                    "About multicasting operators" => "operators/multicasting/about.md",
+                    "multicast"                    => "operators/multicasting/multicast.md",
+                    "publish"                      => "operators/multicasting/publish.md",
+                    "publish_behavior"             => "operators/multicasting/publish.md",
+                    "publish_replay"               => "operators/multicasting/publish.md",
+                    "share"                        => "operators/multicasting/share.md",
+                    "share_replay"                 => "operators/multicasting/share.md",
+                ],
                 "Utility" => [
                     "About utility operators" => "operators/utility/about.md",
                     "tap"                     => "operators/utility/tap.md",
                     "delay"                   => "operators/utility/delay.md",
                     "safe"                    => "operators/utility/safe.md",
+                    "noop"                    => "operators/utility/noop.md",
+                    "ref_count"               => "operators/utility/ref_count.md",
                 ]
             ],
             "Subjects" => [

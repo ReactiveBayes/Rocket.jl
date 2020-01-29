@@ -95,8 +95,8 @@ You can also use a special macro which is defined for some operators to produce 
 squared_int_values = source_of_int_values |> SquaredIntMapOperator()
 ```
 
-Below is a performance comparison between different approaches, with an Observable of 1000 integers and a `StoreActor`.
+Below is a performance comparison between different approaches, with an Observable of 500 integers and a `StoreActor`.
 
-|   _  | Using regular array | Using macro generated map operator | Using lambda based map operator |
+|      | Using regular array | Using macro generated map operator | Using lambda based map operator |
 |------|---------------------|------------------------------------|---------------------------------|
-| Time |6.908 μs (11 allocations: 24.33 KiB)|7.244 μs (15 allocations: 24.41 KiB)|80.367 μs (2483 allocations: 62.98 KiB)|
+| Time |3.174 μs (9 allocations: 8.33 KiB)|3.489 μs (11 allocations: 8.36 KiB)|25.780 μs (489 allocations: 15.84 KiB)|

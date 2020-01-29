@@ -2,6 +2,8 @@ export make_subject, make_subject_factory
 export ASYNCHRONOUS_SUBJECT_MODE, SYNCHRONOUS_SUBJECT_MODE
 export DEFAULT_SUBJECT_MODE
 
+# TODO: Consider using Scheduler instead of different Subject types
+
 # Default type for subject is an AsynchronousSubject
 const ASYNCHRONOUS_SUBJECT_MODE = Val(:async)
 const SYNCHRONOUS_SUBJECT_MODE  = Val(:sync)

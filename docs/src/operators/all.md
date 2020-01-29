@@ -44,9 +44,19 @@ There are operators for different purposes, and they may be categorized as: crea
 - [catch_error](@ref operator_catch_error)
 - [rerun](@ref operator_rerun)
 
+## Multicasting operators
+
+- [multicast](@ref operator_multicast)
+- [publish](@ref operator_publish)
+- [publish_behavior](@ref operator_publish)
+- [publish_replay](@ref operator_publish)
+- [share](@ref operator_share)
+- [share_replay](@ref operator_share)
+
 ## Utility operators
 
 - [tap](@ref operator_tap)
 - [delay](@ref operator_delay)
 - [safe](@ref operator_safe)
 - [noop](@ref operator_noop)
+- [ref_count](@ref operator_ref_count)

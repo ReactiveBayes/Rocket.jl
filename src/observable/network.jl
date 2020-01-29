@@ -3,6 +3,8 @@ export LocalNetworkObservableSubscritpion, as_teardown, on_unsubscribe
 
 using Sockets
 
+# TODO: Untested and undocumented
+
 struct LocalNetworkObservable{D} <: Subscribable{D}
     port :: Int
 end
