@@ -1,6 +1,4 @@
-export MulticastOperator, on_call!, operator_right
-export MulticastWithFactoryOperator, on_call!, operator_right
-export multicast, as_multicast
+export multicast
 
 import Base: show
 

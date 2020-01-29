@@ -1,7 +1,3 @@
-export RefCountOperator, on_call!, operator_right
-export RefCountProxy, source_proxy!
-export RefCountSource, connect_source!, disconnect_source!, on_subscribe!
-export RefCountSourceSubscription, as_teardown, on_unsubscribe!
 export ref_count
 
 import Base: show

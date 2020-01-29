@@ -1,7 +1,4 @@
 export count
-export CountOperator, on_call!
-export CountProxy, actor_proxy!
-export CountActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: count
 import Base: show

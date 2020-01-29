@@ -1,6 +1,4 @@
-export ConnectableObservable, on_subscribe!
-export connectable, as_connectable
-export connect
+export ConnectableObservable, connectable, connect
 
 import Base: ==
 import Base: show

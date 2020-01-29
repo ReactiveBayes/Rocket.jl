@@ -1,7 +1,4 @@
-export PendingSubject, as_subject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!, is_exhausted
-export PendingSubjectFactory, create_subject
-
+export PendingSubject, PendingSubjectFactory
 export make_pending_subject, make_pending_subject_factory
 
 # TODO: Untested and undocumented

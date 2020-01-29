@@ -1,7 +1,4 @@
-export ReplaySubject, as_subject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!, is_exhausted
-export ReplaySubjectFactory, create_subject
-
+export ReplaySubject, ReplaySubjectFactory
 export make_replay_subject, make_replay_subject_factory
 
 import DataStructures: CircularBuffer

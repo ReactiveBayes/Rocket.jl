@@ -1,8 +1,4 @@
 export take
-export TakeOperator, on_call!
-export TakeProxy, source_proxy!
-export TakeInnerActor, on_next!, on_error!, on_complete!, is_exhausted
-export TakeSource, on_subscribe!
 
 import Base: show
 

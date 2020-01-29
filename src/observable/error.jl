@@ -1,5 +1,4 @@
-export ErrorObservable, on_subscribe!
-export throwError
+export ErrorObservable, throwError
 
 import Base: ==
 

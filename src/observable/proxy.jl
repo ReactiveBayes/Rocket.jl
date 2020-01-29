@@ -1,9 +1,5 @@
 export ActorProxy, SourceProxy, ActorSourceProxy
-export ProxyTrait, ValidProxy, InvalidProxy
-export as_proxy, call_actor_proxy!, call_source_proxy!
-export ProxyObservable, on_subscribe!
-export actor_proxy!, source_proxy!
-export proxy
+export ProxyObservable, proxy
 
 import Base: show
 

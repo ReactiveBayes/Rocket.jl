@@ -4,6 +4,8 @@ export LatestCombinedActor1, on_next!, on_error!, on_complete!
 export LatestCombinedActor2, on_next!, on_error!, on_complete!
 export combineLatest
 
+# TODO: Untested and undocumented
+
 # TODO It is better to use macro to create this structures and actors
 # Consider to reimplement it in the future. For now implement just a two combined
 struct LatestCombined2Observable{D1, D2} <: Subscribable{Tuple{D1, D2}}

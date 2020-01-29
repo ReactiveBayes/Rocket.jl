@@ -1,7 +1,4 @@
 export last
-export LastOperator, on_call!
-export LastProxy, actor_proxy!
-export LastActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: last
 import Base: show

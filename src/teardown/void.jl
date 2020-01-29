@@ -1,4 +1,4 @@
-export VoidTeardown, as_teardown
+export VoidTeardown
 
 import Base: ==
 

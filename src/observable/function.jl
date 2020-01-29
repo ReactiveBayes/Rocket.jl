@@ -1,7 +1,4 @@
-export FunctionObservable, on_subscribe!
-export FunctionObservableActorWrapper, on_next!, on_error!, on_complete!
-export FunctionObservableSubscription, as_teardown, on_unsubscribe!
-export make
+export FunctionObservable, make
 
 """
     FunctionObservable{D}(f::Function)

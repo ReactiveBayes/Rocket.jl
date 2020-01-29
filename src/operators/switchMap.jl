@@ -1,6 +1,3 @@
-export SwitchMapOperator, on_call!
-export SwitchMapProxy, actor_proxy!
-export SwitchMapInnerActor, SwitchMapActor, on_next!, on_error!, on_complete!, is_exhausted
 export switchMap
 export @CreateSwitchMapOperator
 

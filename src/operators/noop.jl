@@ -1,7 +1,4 @@
 export noop
-export NoopOperator, on_call!, operator_right
-export NoopProxy, actor_proxy!
-export NoopActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: show
 

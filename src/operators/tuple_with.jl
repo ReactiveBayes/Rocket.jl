@@ -1,7 +1,4 @@
 export tuple_with_left, tuple_with_right
-export TupleWithLeftOperator, TupleWithRightOperator, on_call!, operator_right
-export TupleWithLeftProxy, TupleWithRightProxy, actor_proxy!
-export TupleWithLeftActor, TupleWithRightActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: show
 

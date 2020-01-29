@@ -1,7 +1,4 @@
 export some
-export SomeOperator, on_call!, operator_right
-export SomeProxy, actor_proxy!
-export SomeActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: show
 

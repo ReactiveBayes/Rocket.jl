@@ -1,5 +1,4 @@
-export NeverObservable, on_subscribe!
-export never
+export NeverObservable, never
 
 import Base: show
 

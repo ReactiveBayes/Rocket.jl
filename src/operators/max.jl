@@ -1,7 +1,4 @@
 export max
-export MaxOperator, on_call!
-export MaxProxy, actor_proxy!
-export MaxActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: max
 import Base: show

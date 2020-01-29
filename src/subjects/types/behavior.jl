@@ -1,6 +1,4 @@
-export BehaviorSubject, as_subject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!, is_exhausted
-export BehaviorSubjectFactory, create_subject
+export BehaviorSubject, BehaviorSubjectFactory
 export make_behavior_subject, make_behavior_subject_factory
 
 import Base: show

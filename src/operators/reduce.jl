@@ -1,7 +1,4 @@
 export reduce
-export ReduceOperator, on_call!
-export ReduceProxy, actor_proxy!
-export ReduceActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateReduceOperator
 
 import Base: reduce

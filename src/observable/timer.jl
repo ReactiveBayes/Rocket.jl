@@ -1,5 +1,4 @@
-export TimerObservable, on_subscribe!, timer
-export TimerSubscription, on_unsubscribe!
+export TimerObservable, timer
 
 import Base: ==
 

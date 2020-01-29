@@ -1,7 +1,4 @@
 export min
-export MinOperator, on_call!
-export MinProxy, actor_proxy!
-export MinActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: min
 import Base: show

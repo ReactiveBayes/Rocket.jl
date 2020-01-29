@@ -1,7 +1,4 @@
 export sum
-export SumOperator, on_call!
-export SumProxy, actor_proxy!
-export SumActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: sum
 import Base: show

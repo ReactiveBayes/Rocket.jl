@@ -1,6 +1,4 @@
-export SynchronousSubject, as_subject, as_subscribable, on_subscribe!
-export SynchronousSubjectSubscription, as_teardown, on_unsubscribe!
-export on_next!, on_error!, on_complete!, is_exhausted
+export SynchronousSubject, SynchronousSubjectFactory
 
 import Base: show
 

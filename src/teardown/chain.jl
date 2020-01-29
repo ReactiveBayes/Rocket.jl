@@ -1,5 +1,4 @@
-export ChainTeardown, as_teardown, on_unsubscribe!
-export chain
+export ChainTeardown, chain
 
 import Base: ==
 import Base: show

@@ -1,7 +1,4 @@
 export enumerate
-export EnumerateOperator, on_call!, operator_right
-export EnumerateProxy, actor_proxy!
-export EnumerateActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: enumerate
 import Base: show

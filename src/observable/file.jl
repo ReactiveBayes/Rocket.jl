@@ -1,5 +1,4 @@
-export SyncFileObservable, on_subscribe!
-export file
+export SyncFileObservable, file
 
 import Base: ==
 

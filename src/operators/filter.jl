@@ -1,7 +1,4 @@
 export filter
-export FilterOperator, on_call!, operator_right
-export FilterProxy, actor_proxy!
-export FilterActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateFilterOperator
 
 import Base: filter

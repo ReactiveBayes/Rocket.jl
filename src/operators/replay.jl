@@ -1,11 +1,9 @@
-export ReplayOperator, on_call!, operator_right
-export ReplayProxy, source_proxy!
-export ReplayObservable, on_subscribe!
-export ReplayActor, on_next!, on_error!, on_complete!, is_exhausted
 export replay
 
 import DataStructures: CircularBuffer
 import Base: show
+
+# TODO: Undocumented and untested
 
 replay(count::Int) = ReplayOperator(count)
 

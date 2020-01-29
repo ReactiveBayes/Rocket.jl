@@ -1,5 +1,4 @@
-export ArrayObservable, on_subscribe!
-export from
+export ArrayObservable, from
 
 import Base: ==
 import Base: show

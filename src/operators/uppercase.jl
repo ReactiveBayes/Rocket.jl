@@ -1,7 +1,4 @@
 export uppercase
-export UppercaseOperator, on_call!, operator_right
-export UppercaseProxy, actor_proxy!
-export UppercaseActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: uppercase
 import Base: show

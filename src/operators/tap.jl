@@ -1,7 +1,4 @@
 export tap
-export TapOperator, on_call!, operator_right
-export TapProxy, actor_proxy!
-export TapActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateTapOperator
 
 import Base: show

@@ -1,7 +1,4 @@
 export to_array
-export ToArrayOperator, on_call!, operator_right
-export ToArrayProxy, actor_proxy!
-export ToArrayActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: show
 

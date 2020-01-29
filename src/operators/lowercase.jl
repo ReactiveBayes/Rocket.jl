@@ -1,7 +1,4 @@
 export lowercase
-export LowercaseOperator, on_call!, operator_right
-export LowercaseProxy, actor_proxy!
-export LowercaseActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: lowercase
 import Base: show

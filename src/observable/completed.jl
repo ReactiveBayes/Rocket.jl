@@ -1,5 +1,4 @@
-export CompletedObservable, on_subscribe!
-export completed
+export CompletedObservable, completed
 
 import Base: ==
 import Base: show

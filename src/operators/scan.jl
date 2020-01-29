@@ -1,7 +1,4 @@
 export scan
-export ScanOperator, on_call!
-export ScanProxy, actor_proxy!
-export ScanActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateScanOperator
 
 import Base: show

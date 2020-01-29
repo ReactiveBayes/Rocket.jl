@@ -1,7 +1,4 @@
 export map
-export MapOperator, on_call!
-export MapProxy, actor_proxy!
-export MapActor, on_next!, on_error!, on_complete!, is_exhausted
 export @CreateMapOperator
 
 import Base: map

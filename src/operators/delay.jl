@@ -1,7 +1,4 @@
 export delay
-export DelayOperator, on_call!
-export DelayProxy, actor_proxy!
-export DelayActor, on_next!, on_error!, on_complete!, is_exhausted
 
 import Base: show
 

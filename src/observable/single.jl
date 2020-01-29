@@ -1,4 +1,4 @@
-export SingleObservable, on_subscribe!, of
+export SingleObservable, of
 
 import Base: ==
 
