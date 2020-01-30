@@ -8,7 +8,9 @@ import Base: show
 # Combine latest macro
 #####################################################################################################################
 
-macro GenerateCombineLatest(N, creation_name, observable_name, wrapper_name, type, batch, mappingFn)
+macro GenerateCombineLatest(N, creation_name, type, batch, mappingFn)
+    observable_name = Symbol(creation_name, "Observable")
+    wrapper_name    = Symbol(creation_name, "ActorWrapper")
     return esc(quote
         Rx.@GenerateCombineLatestCreationOperator($N, $creation_name, $observable_name)
         Rx.@GenerateCombineLatestObservable($N, $observable_name, $wrapper_name, $type)
@@ -267,12 +269,12 @@ end
 @GenerateLatestCombinedActor(9)
 @GenerateLatestCombinedActor(10)
 
-@GenerateCombineLatest(2, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(3, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(4, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(5, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(6, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(7, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(8, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(9, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
-@GenerateCombineLatest(10, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(2,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(3,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(4,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(5,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(6,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(7,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(8,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(9,  "combineLatest", nothing, false, d -> d)
+@GenerateCombineLatest(10, "combineLatest", nothing, false, d -> d)
