@@ -10,13 +10,11 @@ import Base: show
 
 macro GenerateCombineLatest(N, creation_name, observable_name, wrapper_name, type, batch, mappingFn)
     return esc(quote
-        #Rx.@GenerateCombineLatestCreationOperator(N, creation_name, observable_name)
-        #Rx.@GenerateCombineLatestObservable(N, observable_name, wrapper_name, type)
-        Rx.@GenerateCombineLatestObservableActorWrapper(N, wrapper_name, $batch, $mappingFn)
+        Rx.@GenerateCombineLatestCreationOperator($N, $creation_name, $observable_name)
+        Rx.@GenerateCombineLatestObservable($N, $observable_name, $wrapper_name, $type)
+        Rx.@GenerateCombineLatestObservableActorWrapper($N, $wrapper_name, $batch, $mappingFn)
     end)
 end
-
-# @GenerateCombineLatest(2, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
 
 #####################################################################################################################
 # Combine latest creation operator macro
@@ -96,7 +94,7 @@ macro GenerateCombineLatestObservable(N, name, wrapper_name, type)
     # Base.show function generation
     show_f = Expr(:call, :(Base.show), Expr(:(::), :io, :IO), Expr(:(::), :observable, observable))
     show_f = reduce((current, i) -> Expr(:where, current, Symbol(:D, i)), collect(1:N), init = show_f)
-    show_b = Expr(:call, :(print), :io, string(name), "(Tuple(", collect(Iterators.flatten((map(t -> [ t, "," ], types))))..., "))")
+    show_b = Expr(:call, :(print), :io, string(name), "(", tupled, ")")
     show   = Expr(:function, show_f, show_b)
 
     generated = quote
@@ -269,32 +267,12 @@ end
 @GenerateLatestCombinedActor(9)
 @GenerateLatestCombinedActor(10)
 
-@GenerateCombineLatestCreationOperator(2, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(3, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(4, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(5, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(6, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(7, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(8, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(9, "combineLatest", "CombineLatestObservable")
-@GenerateCombineLatestCreationOperator(10, "combineLatest", "CombineLatestObservable")
-
-@GenerateCombineLatestObservable(2, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(3, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(4, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(5, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(6, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(7, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(8, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(9, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-@GenerateCombineLatestObservable(10, "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing)
-
-@GenerateCombineLatestObservableActorWrapper(2, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(3, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(4, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(5, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(6, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(7, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(8, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(9, "CombineLatestObservableActorWrapper", false, d -> d)
-@GenerateCombineLatestObservableActorWrapper(10, "CombineLatestObservableActorWrapper", false, d -> d)
+@GenerateCombineLatest(2, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(3, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(4, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(5, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(6, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(7, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(8, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(9, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
+@GenerateCombineLatest(10, "combineLatest", "CombineLatestObservable", "CombineLatestObservableActorWrapper", nothing, false, d -> d)
