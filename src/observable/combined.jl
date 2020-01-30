@@ -124,7 +124,7 @@ macro GenerateLatestCombinedActor(n)
 
         function Rx.on_next!(actor::($actor){D}, data::D) where D
             actor.wrapper.$latest = data
-            Rx.__next_check_and_emit!(actor.wrapper)
+            Rx.__next_check_and_emit(actor.wrapper)
         end
 
         function Rx.on_error!(actor::($actor), err)
@@ -159,6 +159,8 @@ function __dispose(wrapper)
         unsubscribe!(subscription)
     end
 end
+
+__next_check_and_emit(wrapper) = error("__next_check_and_emit is not implemented for wrapper::$(typeof(wrapper))")
 
 #####################################################################################################################
 # Combine latest actor wrapper generation macro
@@ -218,26 +220,25 @@ macro GenerateCombineLatestObservableActorWrapper(N, pname, batched, mappingFn)
     structure    = Expr(:struct, true, wrapper, fields)
 
     # __next_check_and_emit! generation
-    check_f = Expr(:call, :__next_check_and_emit!, Expr(:(::), :wrapper, name))
-    check_b = quote
-        if !wrapper.is_completed && !wrapper.is_failed && $(reduce((current, i) -> Expr(:(&&), current, begin l = Symbol(:latest, i); quote wrapper.$l !== nothing end end), collect(2:N), init = begin l = Symbol(:latest, 1); quote wrapper.$l !== nothing end end))
-            __inline_lambda = $mappingFn
-            next!(wrapper.actor, $(Expr(:call, :__inline_lambda, Expr(:tuple, map(i -> begin l = Symbol(:latest, i); quote wrapper.$l end  end, collect(1:N))...))))
-            if $batched
-                $(Expr(:block, map(i -> begin
-                    c = Expr(:ref, :(wrapper.complete_status), i)
-                    l = Symbol(:latest, i)
-                    return quote
-                        if !$c
-                            wrapper.$l = nothing
+    check = quote
+        function Rx.__next_check_and_emit(wrapper::($name))
+            if !wrapper.is_completed && !wrapper.is_failed && $(reduce((current, i) -> Expr(:(&&), current, begin l = Symbol(:latest, i); quote wrapper.$l !== nothing end end), collect(2:N), init = begin l = Symbol(:latest, 1); quote wrapper.$l !== nothing end end))
+                __inline_lambda = $mappingFn
+                next!(wrapper.actor, $(Expr(:call, :__inline_lambda, Expr(:tuple, map(i -> begin l = Symbol(:latest, i); quote wrapper.$l end  end, collect(1:N))...))))
+                if $batched
+                    $(Expr(:block, map(i -> begin
+                        c = Expr(:ref, :(wrapper.complete_status), i)
+                        l = Symbol(:latest, i)
+                        return quote
+                            if !$c
+                                wrapper.$l = nothing
+                            end
                         end
-                    end
-                end, collect(1:N))...))
+                    end, collect(1:N))...))
+                end
             end
         end
     end
-
-    check = Expr(:function, check_f, check_b)
 
     # Base.show generation
     show_f = Expr(:call, :(Base.show), Expr(:(::), :io, :IO), Expr(:(::), :wrapper, name))
