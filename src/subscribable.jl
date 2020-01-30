@@ -1,6 +1,7 @@
 export SubscribableTrait, ValidSubscribable, InvalidSubscribable
 export Subscribable, as_subscribable
 export subscribe!, on_subscribe!
+export subscribable_extract_type
 
 export InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableDataTypesError
 export MissingOnSubscribeImplementationError
@@ -75,6 +76,11 @@ true
 """
 as_subscribable(::Type)                            = InvalidSubscribable()
 as_subscribable(::Type{<:Subscribable{T}}) where T = ValidSubscribable{T}()
+
+subscribable_extract_type(source::S) where S = subscribable_extract_type(as_subscribable(S), source)
+
+subscribable_extract_type(::ValidSubscribable{T}, source) where T = T
+subscribable_extract_type(::InvalidSubscribable, source)          = throw(InvalidSubscribableTraitUsageError(source))
 
 """
     subscribe!(subscribable::T, actor::S) where T where S
