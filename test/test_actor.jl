@@ -172,8 +172,8 @@ using Rx
     @testset "Actor Factory" begin
             @test_throws MissingCreateActorFactoryImplementationError create_actor(Int, NotImplementedCustomActorFactory())
 
-            @inferred CustomActor{Int}    create_actor(Int, ImplementedCustomActorFactory())
-            @inferred CustomActor{String} create_actor(String, ImplementedCustomActorFactory())
+            @test create_actor(Int, ImplementedCustomActorFactory())    === CustomActor{Int}()
+            @test create_actor(String, ImplementedCustomActorFactory()) === CustomActor{String}()
     end
 
 end
