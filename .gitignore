@@ -12,3 +12,5 @@ demo/*.jl
 **/*.DS_Store
 
 .ipynb_checkpoints
+
+Manifest.toml
