@@ -81,7 +81,7 @@ function on_subscribe!(subject::AsynchronousSubject{D}, actor) where D
         complete!(actor)
         return VoidTeardown()
     else
-        channel = Channel{AsynchronousSubjectMessage{D}}()
+        channel = Channel{AsynchronousSubjectMessage{D}}(Inf)
 
         task = @async begin
             while true

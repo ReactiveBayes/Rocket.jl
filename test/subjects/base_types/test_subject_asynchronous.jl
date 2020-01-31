@@ -11,12 +11,14 @@ using Rx
         actor1 = keep(Int)
         actor2 = keep(Int)
 
+        synced2 = sync(actor2)
+
         subscription1 = subscribe!(subject, actor1)
 
         next!(subject, 0)
         next!(subject, 1)
 
-        subscription2 = subscribe!(subject, actor2)
+        subscription2 = subscribe!(subject, synced2)
 
         next!(subject, 3)
         next!(subject, 4)
@@ -26,7 +28,11 @@ using Rx
         next!(subject, 5)
         next!(subject, 6)
 
+        complete!(subject)
+
         unsubscribe!(subscription2)
+
+        wait(synced2)
 
         @test actor1.values == [ 0, 1, 3, 4 ]
         @test actor2.values == [ 3, 4, 5, 6 ]
@@ -38,13 +44,21 @@ using Rx
         actor1 = keep(Int)
         actor2 = keep(Int)
 
+        synced1 = sync(actor1)
+        synced2 = sync(actor2)
+
         values = Int[]
         source = from(1:5) |> tap(d -> push!(values, d))
 
-        subscription1 = subscribe!(subject, actor1)
-        subscription2 = subscribe!(subject, actor2)
+        subscription1 = subscribe!(subject, synced1)
+        subscription2 = subscribe!(subject, synced2)
 
         subscribe!(source, subject)
+
+        complete!(subject)
+
+        wait(synced1)
+        wait(synced2)
 
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
@@ -61,13 +75,21 @@ using Rx
         actor1 = keep(Int)
         actor2 = keep(Int)
 
+        synced1 = sync(actor1)
+        synced2 = sync(actor2)
+
         values = Int[]
         source = from(1:5) |> tap(d -> push!(values, d))
 
-        subscription1 = subscribe!(subject, actor1)
-        subscription2 = subscribe!(subject, actor2)
+        subscription1 = subscribe!(subject, synced1)
+        subscription2 = subscribe!(subject, synced2)
 
         subscribe!(source, subject)
+
+        complete!(subject)
+
+        wait(synced1)
+        wait(synced2)
 
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
