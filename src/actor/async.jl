@@ -19,12 +19,17 @@ struct AsyncActor{D, A} <: Actor{D}
     actor   :: A
 
     AsyncActor{D, A}(actor::A) where D where A = begin
-        channel = Channel{D}(Inf, spawn = true) do ch
+
+        channel = Channel{D}(Inf)
+        task    = @async begin
             while true
                 message = take!(ch)::D
                 next!(actor, message)
             end
         end
+
+        bind(channel, task)
+
         return new(channel, actor)
     end
 end
