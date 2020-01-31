@@ -14,4 +14,4 @@ notifications:
   email: false
 
 script:
-  - julie -e 'import Pkg; Pkg.test("Rx")'
+  - julia -e 'import Pkg; Pkg.test("Rx")'
