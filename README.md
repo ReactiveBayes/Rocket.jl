@@ -18,7 +18,7 @@ The essential concepts in Rx.jl are:
 
 ## Documentation
 
-A full documentation is available at ???
+A full documentation is available at [BIASlab website](http://biaslab.github.io/rx/docs/).
 
 It is also possible to build a documentation locally. Just use
 
