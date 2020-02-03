@@ -1,7 +1,7 @@
-module RxSumOperatorTest
+module RocketSumOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: sum()" begin
 

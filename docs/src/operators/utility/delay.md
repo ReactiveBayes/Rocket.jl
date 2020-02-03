@@ -13,7 +13,7 @@ Delays the emission of items from the source Observable by a given timeout
 Delay every value with 1 second to the output
 
 ```julia
-using Rx
+using Rocket
 using Dates
 
 source = from([ 1, 2, 3 ])

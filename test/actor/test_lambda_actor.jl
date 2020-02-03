@@ -1,7 +1,7 @@
-module RxLambdaActorTest
+module RocketLambdaActorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "LambdaActor" begin
 
@@ -35,7 +35,7 @@ using Rx
 
     @testset begin
         @test lambda(Int; on_next = (d) -> println(d)) isa LambdaActor{Int}
-        @test lambda(on_next = (d) -> println(d))      isa Rx.LambdaActorFactory
+        @test lambda(on_next = (d) -> println(d))      isa Rocket.LambdaActorFactory
     end
 end
 

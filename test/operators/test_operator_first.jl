@@ -1,7 +1,7 @@
-module RxFirstOperatorTest
+module RocketFirstOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: first()" begin
 

@@ -1,7 +1,7 @@
-module RxCompleteObservableTest
+module RocketCompleteObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "CompletedObservable" begin
 

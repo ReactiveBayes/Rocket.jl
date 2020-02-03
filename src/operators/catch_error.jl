@@ -16,7 +16,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> of(1))
 

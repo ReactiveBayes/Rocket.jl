@@ -15,7 +15,7 @@ It returns an Observable that applies a specified accumulator function to each i
 
 ## @CreateReduceOperator macro
 
-For performance reasons Rx.jl library provides a special macro for creating custom (and pure) reduce operators.
+For performance reasons Rocket.jl library provides a special macro for creating custom (and pure) reduce operators.
 
 ```@docs
 @CreateReduceOperator

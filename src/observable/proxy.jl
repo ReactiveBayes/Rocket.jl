@@ -112,7 +112,7 @@ Creation operator for the `ProxyObservable` with a given source and proxy object
 # Example
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(1:5)
 
@@ -122,11 +122,11 @@ struct MyCustomActor{A} <: Actor{Int}
     actor :: A
 end
 
-Rx.on_next!(actor::MyCustomActor, data::Int) = next!(actor.actor, data ^ 2)
-Rx.on_error!(actor::MyCustomActor, err)      = error!(actor.actor, err)
-Rx.on_complete!(actor::MyCustomActor)        = complete!(actor.actor)
+Rocket.on_next!(actor::MyCustomActor, data::Int) = next!(actor.actor, data ^ 2)
+Rocket.on_error!(actor::MyCustomActor, err)      = error!(actor.actor, err)
+Rocket.on_complete!(actor::MyCustomActor)        = complete!(actor.actor)
 
-Rx.actor_proxy!(proxy::MyCustomProxy, actor::A) where A = MyCustomActor{A}(actor)
+Rocket.actor_proxy!(proxy::MyCustomProxy, actor::A) where A = MyCustomActor{A}(actor)
 
 proxied = proxy(Int, source, MyCustomProxy())
 

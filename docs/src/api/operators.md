@@ -7,9 +7,9 @@ If you need to write an operator that cannot be made from a combination of exist
 Each operator (e.g. `MyFancyOperator`) needs to either be (1) a subtype of one of abstract [`OperatorTrait`](@ref) trait types, or (2) define a
 
 ```julia
-Rx.as_operator(::Type{<:MyFancyOperator}) = TypedOperatorTrait{T, R}()
+Rocket.as_operator(::Type{<:MyFancyOperator}) = TypedOperatorTrait{T, R}()
 # or
-Rx.as_operator(::Type{<:MyFancyOperator}) = InferableOperatorTrait()
+Rocket.as_operator(::Type{<:MyFancyOperator}) = InferableOperatorTrait()
 ```
 
 trait behavior.
@@ -17,13 +17,13 @@ trait behavior.
 In addition, an operator must implement a specific method for `on_call!` function with custom logic which has to return another Observable as a result of applying `MyFancyOperator` to a `source`.
 
 ```julia
-Rx.on_call!(::Type{L}, ::Type{R}, operator::MyFancyOperator, source) where L = # some custom logic here
+Rocket.on_call!(::Type{L}, ::Type{R}, operator::MyFancyOperator, source) where L = # some custom logic here
 
 # or
-# for inferable trait types you have to specify 'right' type with Rx.operator_right which should specify a type of data of produced Observable
+# for inferable trait types you have to specify 'right' type with Rocket.operator_right which should specify a type of data of produced Observable
 
-Rx.on_call(::Type{L}, ::Type{R}, operator::MyFancyOperator, source) where L = # some custom logic here
-Rx.operator_right(::MyFancyOperator, ::Type{L}) where L = R # where R should be an actual type, Int or even L itself e.g.
+Rocket.on_call(::Type{L}, ::Type{R}, operator::MyFancyOperator, source) where L = # some custom logic here
+Rocket.operator_right(::MyFancyOperator, ::Type{L}) where L = R # where R should be an actual type, Int or even L itself e.g.
 
 ```
 

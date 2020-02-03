@@ -12,7 +12,7 @@ Observables are lazy Push collections of multiple values. They fill the missing 
 For example, the following code specifies an Observable that pushes the values `1, 2, 3` immediately (synchronously) when subscribed to, and the value `4` after one second has passed since subscription.
 
 ```julia
-using Rx
+using Rocket
 
 source = make(Int) do actor
     next!(actor, 1)
@@ -28,7 +28,7 @@ end
 To invoke the Observable and inspect these values, we need to subscribe to it.
 
 ```julia
-using Rx
+using Rocket
 
 source = make(Int) do actor
     next!(actor, 1)
@@ -74,7 +74,7 @@ In Push systems, the Producer determines when to send data to the Consumer. The 
 
 [Futures and promises](https://en.wikipedia.org/wiki/Futures_and_promises) are the most common type of Push systems today. A Promise (the Producer) delivers a resolved value to registered callbacks (the Consumers). Unlike functions, it is the Promise that determines precisely when a value is "pushed" to the callbacks.
 
-Rx.jl introduces Observables, a new Push system for Julia. An Observable is a Producer of multiple values, "pushing" them to Observers (Consumers or [`Actors`](@ref section_actors)).
+Rocket.jl introduces Observables, a new Push system for Julia. An Observable is a Producer of multiple values, "pushing" them to Observers (Consumers or [`Actors`](@ref section_actors)).
 
 - A __Function__ is a lazily evaluated computation that synchronously returns a single value on invocation.
 - A __Generator__ is a lazily evaluated computation that synchronously returns zero to (potentially) infinite values on iteration.
@@ -96,7 +96,7 @@ end
 Observables, however, can do this:
 
 ```julia
-using Rx
+using Rocket
 
 foo = make(Int) do actor
     next!(actor, 0)
@@ -109,7 +109,7 @@ end
 Observables can also "return" values asynchronously:
 
 ```julia
-using Rx
+using Rocket
 
 foo = make(Int) do actor
     setTimeout(1000) do
@@ -144,7 +144,7 @@ You can also build an Observable from scratch. To see how you can build an Obser
 The Observable `source` in the example can be subscribed to.
 
 ```julia
-using Rx
+using Rocket
 
 subscribe!(source, lambda(
     on_next = (d) -> println(d)
@@ -176,7 +176,7 @@ An Observable Execution can deliver three types of notifications:
 The following is an example of an Observable execution that delivers three Next notifications and subsequently completes:
 
 ```julia
-using Rx
+using Rocket
 
 source = make(Int) do actor
     next!(actor, 1)
@@ -193,7 +193,7 @@ source = from([ 1, 2, 3 ])
 It is advised to wrap any code in subscribe by a try/catch block that delivers an Error notification upon an exception:
 
 ```julia
-using Rx
+using Rocket
 
 source = make(Int) do actor
     try

@@ -33,7 +33,7 @@ disposed.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = never()
 subscribe!(source, logger())

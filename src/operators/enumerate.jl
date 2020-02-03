@@ -17,7 +17,7 @@ Stream of type `<: Subscribable{Tuple{L, Int}}` where `L` refers to type of sour
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:3 ])
 subscribe!(source |> enumerate(), logger())

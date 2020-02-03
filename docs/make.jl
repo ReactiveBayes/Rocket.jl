@@ -1,9 +1,9 @@
-using Documenter, Rx
+using Documenter, Rocket
 
 makedocs(
-    modules  = [ Rx ],
+    modules  = [ Rocket ],
     clean    = true,
-    sitename = "Rx.jl",
+    sitename = "Rocket.jl",
     pages    = [
         "Home"            => "index.md",
         "Getting started" => "getting-started.md",

@@ -1,7 +1,7 @@
-module RxTapOperatorTest
+module RocketTapOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: tap()" begin
 

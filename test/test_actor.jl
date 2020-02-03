@@ -1,7 +1,7 @@
-module RxActorTest
+module RocketActorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "Actor" begin
 
@@ -9,7 +9,7 @@ using Rx
     struct AbstractDummyActor <: AbstractActor{Any} end
 
     struct SpecifiedAbstractActor <: AbstractActor{Any} end
-    Rx.as_actor(::Type{<:SpecifiedAbstractActor}) = BaseActorTrait{Any}()
+    Rocket.as_actor(::Type{<:SpecifiedAbstractActor}) = BaseActorTrait{Any}()
 
     struct NotImplementedActor           <: Actor{Any} end
     struct NotImplementedNextActor       <: NextActor{Any} end
@@ -17,32 +17,32 @@ using Rx
     struct NotImplementedCompletionActor <: CompletionActor{Any} end
 
     struct ImplementedActor <: Actor{Any} end
-    Rx.on_next!(::ImplementedActor, data)   = data
-    Rx.on_error!(::ImplementedActor, error) = error
-    Rx.on_complete!(::ImplementedActor)     = "ImplementedActor:complete"
+    Rocket.on_next!(::ImplementedActor, data)   = data
+    Rocket.on_error!(::ImplementedActor, error) = error
+    Rocket.on_complete!(::ImplementedActor)     = "ImplementedActor:complete"
 
     struct ImplementedNextActor <: NextActor{Any} end
-    Rx.on_next!(::ImplementedNextActor, data) = data
+    Rocket.on_next!(::ImplementedNextActor, data) = data
 
     struct ImplementedErrorActor <: ErrorActor{Any} end
-    Rx.on_error!(::ImplementedErrorActor, error) = error
+    Rocket.on_error!(::ImplementedErrorActor, error) = error
 
     struct ImplementedCompletionActor <: CompletionActor{Any} end
-    Rx.on_complete!(::ImplementedCompletionActor) = "ImplementedCompletionActor:complete"
+    Rocket.on_complete!(::ImplementedCompletionActor) = "ImplementedCompletionActor:complete"
 
     struct IntegerActor <: Actor{Int} end
-    Rx.on_next!(::IntegerActor,  data::Int) = data
-    Rx.on_error!(::IntegerActor, err)       = err
-    Rx.on_complete!(::IntegerActor)         = "IntegerActor:complete"
+    Rocket.on_next!(::IntegerActor,  data::Int) = data
+    Rocket.on_error!(::IntegerActor, err)       = err
+    Rocket.on_complete!(::IntegerActor)         = "IntegerActor:complete"
 
     struct IntegerNextActor <: NextActor{Int} end
-    Rx.on_next!(::IntegerNextActor, data::Int) = data
+    Rocket.on_next!(::IntegerNextActor, data::Int) = data
 
     struct IntegerErrorActor <: ErrorActor{Int} end
-    Rx.on_error!(::IntegerErrorActor, err) = err
+    Rocket.on_error!(::IntegerErrorActor, err) = err
 
     struct IntegerCompletionActor <: CompletionActor{Int} end
-    Rx.on_complete!(::IntegerCompletionActor) = "IntegerCompletionActor:complete"
+    Rocket.on_complete!(::IntegerCompletionActor) = "IntegerCompletionActor:complete"
 
     @testset "as_actor" begin
             # Check if arbitrary dummy type has undefined actor type
@@ -160,14 +160,14 @@ using Rx
 
     struct CustomActor{L} <: Actor{L} end
 
-    Rx.on_next!(actor::CustomActor{L}, data::L) where L = begin end
-    Rx.on_error!(actor::CustomActor, err)               = begin end
-    Rx.on_complete!(actor::CustomActor)                 = begin end
+    Rocket.on_next!(actor::CustomActor{L}, data::L) where L = begin end
+    Rocket.on_error!(actor::CustomActor, err)               = begin end
+    Rocket.on_complete!(actor::CustomActor)                 = begin end
 
     struct NotImplementedCustomActorFactory <: AbstractActorFactory end
     struct ImplementedCustomActorFactory    <: AbstractActorFactory end
 
-    Rx.create_actor(::Type{L}, factory::ImplementedCustomActorFactory) where L = CustomActor{L}()
+    Rocket.create_actor(::Type{L}, factory::ImplementedCustomActorFactory) where L = CustomActor{L}()
 
     @testset "Actor Factory" begin
             @test_throws MissingCreateActorFactoryImplementationError create_actor(Int, NotImplementedCustomActorFactory())

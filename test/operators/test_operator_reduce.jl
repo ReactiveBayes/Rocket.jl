@@ -1,7 +1,7 @@
-module RxReduceOperatorTest
+module RocketReduceOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: reduce()" begin
 

@@ -57,7 +57,7 @@ for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 0, 1, 2 ])
 subscribe!(source, logger())
@@ -73,7 +73,7 @@ subscribe!(source, logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(( 0, 1, 2 ))
 subscribe!(source, logger())
@@ -89,7 +89,7 @@ subscribe!(source, logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(0)
 subscribe!(source, logger())
@@ -103,7 +103,7 @@ subscribe!(source, logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from("Hello, world!")
 subscribe!(source, logger())

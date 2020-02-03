@@ -18,7 +18,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> tap((d) -> println("In tap: \$d")), logger())
@@ -89,7 +89,7 @@ Creates a custom tap operator, which can be used as `nameTapOperator()`.
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 @CreateTapOperator("Print", (d) -> println("In tap: \$d"))
 
@@ -117,40 +117,40 @@ macro CreateTapOperator(name, tapFn)
     actorName    = Symbol(name, "TapActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Rx.InferableOperator end
+        struct $operatorName <: Rocket.InferableOperator end
 
-        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source) where L
-            return Rx.proxy(L, source, ($proxyName){L}())
+        function Rocket.on_call!(::Type{L}, ::Type{L}, operator::($operatorName), source) where L
+            return Rocket.proxy(L, source, ($proxyName){L}())
         end
 
-        Rx.operator_right(operator::($operatorName), ::Type{L}) where L = L
+        Rocket.operator_right(operator::($operatorName), ::Type{L}) where L = L
 
         Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "()")
     end
 
     proxyDefinition = quote
-        struct $proxyName{L} <: Rx.ActorProxy end
+        struct $proxyName{L} <: Rocket.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
+        Rocket.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
 
         Base.show(io::IO, operator::($proxyName){L}) where L = print(io, string($proxyName), "(", L, ")")
     end
 
     actorDefinition = quote
-        struct $actorName{L, A} <: Rx.Actor{L}
+        struct $actorName{L, A} <: Rocket.Actor{L}
             actor :: A
         end
 
-        Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
+        Rocket.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
 
-        function Rx.on_next!(actor::($actorName){L}, data::L) where L
+        function Rocket.on_next!(actor::($actorName){L}, data::L) where L
             __inlined_lambda = $tapFn
             __inlined_lambda(data)
-            Rx.next!(actor.actor, data)
+            Rocket.next!(actor.actor, data)
         end
 
-        Rx.on_error!(actor::($actorName), err) = Rx.next!(actor.actor, err)
-        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+        Rocket.on_error!(actor::($actorName), err) = Rocket.next!(actor.actor, err)
+        Rocket.on_complete!(actor::($actorName))   = Rocket.complete!(actor.actor)
 
         Base.show(io::IO, operator::($actorName){L}) where L = print(io, string($actorName), "(", L, ")")
     end

@@ -102,7 +102,7 @@ Otherwise, it emits an infinite sequence.
 
 # Examples
 ```
-using Rx
+using Rocket
 
 source = timer(0, 50)
 

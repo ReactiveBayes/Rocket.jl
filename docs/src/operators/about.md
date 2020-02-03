@@ -1,6 +1,6 @@
 # [Operators](@id section_operators)
 
-Even though the Observable is the foundation, Rx is mostly useful because of its __operators__. Operators are the essential pieces that allow complex asynchronous code to be easily composed in a declarative manner.
+Even though the Observable is the foundation, reactive extensions is mostly useful because of its __operators__. Operators are the essential pieces that allow complex asynchronous code to be easily composed in a declarative manner.
 
 ## [What are operators?](@id what_are_operators)
 
@@ -70,10 +70,10 @@ subscribe!(source, LambdaActor{Int}(
 ## Operators piping
 
 Pipeable operators are special objects that can be used like ordinary functions with
-`on_call!(operator, source)`. In practice however they tend to accumulate and quickly grow unreadable: `on_call!(operator1, on_call!(operator2, on_call!(operator3, source)))`. Therefore, Rx.jl overloads `|>` for operators and Observables:
+`on_call!(operator, source)`. In practice however they tend to accumulate and quickly grow unreadable: `on_call!(operator1, on_call!(operator2, on_call!(operator3, source)))`. Therefore, Rocket.jl overloads `|>` for operators and Observables:
 
 ```julia
-using Rx
+using Rocket
 
 source = from([ i for i in 1:100 ]) |> filter((d) -> d % 2 === 0) |> map(Int, (d) -> d ^ 2) |> sum()
 
@@ -87,7 +87,7 @@ subscribe!(source, logger())
 It is also possible to create an operator composition. It might be useful to create an alias for some often used operator chain
 
 ```julia
-using Rx
+using Rocket
 
 mapAndFilter = map(Int, d -> d ^ 2) + filter(d -> d % 2 == 0)
 

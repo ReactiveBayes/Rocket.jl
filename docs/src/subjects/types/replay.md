@@ -20,7 +20,7 @@ A `ReplaySubject` is similar to a `BehaviorSubject` in that it can send old valu
 When creating a `ReplaySubject`, you can specify how many values to replay:
 
 ```julia
-using Rx
+using Rocket
 
 subject = make_replay_subject(Int, 3) # buffer 3 values for new subscribers
 

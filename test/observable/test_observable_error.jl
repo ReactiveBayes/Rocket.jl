@@ -1,7 +1,7 @@
-module RxErrorObservableTest
+module RocketErrorObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "ErrorObservable" begin
 

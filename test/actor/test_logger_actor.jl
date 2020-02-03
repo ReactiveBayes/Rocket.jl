@@ -1,8 +1,8 @@
-module RxLoggerActorTest
+module RocketLoggerActorTest
 
 using Test
 using Suppressor
-using Rx
+using Rocket
 
 @testset "LoggerActor" begin
 
@@ -28,7 +28,7 @@ using Rx
 
     @testset begin
         @test logger(Int) isa LoggerActor{Int}
-        @test logger()    isa Rx.LoggerActorFactory
+        @test logger()    isa Rocket.LoggerActorFactory
     end
 end
 

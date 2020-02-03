@@ -22,7 +22,7 @@ Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
@@ -101,7 +101,7 @@ Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 @CreateScanOperator(IntoArray, Int, Vector{Int}, (d, c) -> [ c..., d ])
 
@@ -126,43 +126,43 @@ macro CreateScanOperator(name, L, R, scanFn)
     actorName      = Symbol(name, "ScanActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Rx.TypedOperator{$L, $R}
+        struct $operatorName <: Rocket.TypedOperator{$L, $R}
             seed :: $R
         end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
-            return Rx.proxy($R, source, ($proxyName)(operator.seed))
+        function Rocket.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
+            return Rocket.proxy($R, source, ($proxyName)(operator.seed))
         end
 
         Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "(", string($L), " -> ", string($R), ")")
     end
 
     proxyDefinition = quote
-        struct $proxyName <: Rx.ActorProxy
+        struct $proxyName <: Rocket.ActorProxy
             seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
+        Rocket.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
 
         Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "()")
     end
 
     actorDefinition = quote
-        mutable struct $actorName{A} <: Rx.Actor{$L}
+        mutable struct $actorName{A} <: Rocket.Actor{$L}
             current :: $R
             actor   :: A
         end
 
-        Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
+        Rocket.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
 
-        Rx.on_next!(actor::($actorName), data::($L)) = begin
+        Rocket.on_next!(actor::($actorName), data::($L)) = begin
             __inlined_lambda = $scanFn
             actor.current = __inlined_lambda(data, actor.current)
-            Rx.next!(actor.actor, actor.current)
+            Rocket.next!(actor.actor, actor.current)
         end
 
-        Rx.on_error!(actor::($actorName), err) = Rx.error!(actor.actor, err)
-        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+        Rocket.on_error!(actor::($actorName), err) = Rocket.error!(actor.actor, err)
+        Rocket.on_complete!(actor::($actorName))   = Rocket.complete!(actor.actor)
 
         Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "()")
     end

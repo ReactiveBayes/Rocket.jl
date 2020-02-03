@@ -1,6 +1,6 @@
 # [About subjects](@id section_subjects)
 
-An Rx.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
+An Rocket.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
 
 !!! note
     A Subject is like an Observable, but can multicast to many Actors. Subjects are like event emitters: they maintain a registry of many listeners.
@@ -15,7 +15,7 @@ Every Subject is an Actor itself. It is an object with the methods `next!`, `err
 In the example below, we have two Observers attached to a Subject, and we feed some values to the Subject:
 
 ```julia
-using Rx
+using Rocket
 
 source = make_subject(Int)
 
@@ -41,7 +41,7 @@ unsubscribe!(subscription2)
 Since a Subject is an actor, this also means you may provide a Subject as the argument to the subscribe of any Observable:
 
 ```julia
-using Rx
+using Rocket
 
 source = make_subject(Int)
 
@@ -79,7 +79,7 @@ AsynchronousSubject
 ```
 
 ```julia
-using Rx
+using Rocket
 
 subject = make_subject(Int, mode = ASYNCHRONOUS_SUBJECT_MODE)
 
@@ -111,7 +111,7 @@ SynchronousSubject
 ```
 
 ```julia
-using Rx
+using Rocket
 
 subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
 ```

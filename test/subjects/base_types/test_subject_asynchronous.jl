@@ -1,7 +1,7 @@
-module RxAsynchronousSubjectTest
+module RocketAsynchronousSubjectTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "AsynchronousSubject" begin
 

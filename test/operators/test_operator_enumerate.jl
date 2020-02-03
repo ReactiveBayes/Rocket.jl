@@ -1,7 +1,7 @@
-module RxEnumerateOperatorTest
+module RocketEnumerateOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: enumerate()" begin
 

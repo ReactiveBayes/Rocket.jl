@@ -17,7 +17,7 @@ Note: this operator differs from a subscribe on the Observable. If the Observabl
 
 ## @CreateTapOperator macro
 
-For performance reasons Rx.jl library provides a special macro for creating custom tap operators.
+For performance reasons Rocket.jl library provides a special macro for creating custom tap operators.
 
 ```@docs
 @CreateTapOperator

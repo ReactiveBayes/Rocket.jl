@@ -30,7 +30,7 @@ Creation operator for the `ErrorObservable` that emits no items to the Actor and
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = throwError("Error!")
 subscribe!(source, logger())

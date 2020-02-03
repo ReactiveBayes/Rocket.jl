@@ -13,7 +13,7 @@ Like `filter(f, array)`, this operator takes values from the source Observable, 
 
 ## @CreateFilterOperator macro
 
-For performance reasons, the Rx.jl library provides a special macro for creating custom (and pure) filter operators.
+For performance reasons, the Rocket.jl library provides a special macro for creating custom (and pure) filter operators.
 
 ```@docs
 @CreateFilterOperator

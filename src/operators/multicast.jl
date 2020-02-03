@@ -12,7 +12,7 @@ which has a connect() method. It has one simple job - subscribes to the source w
 # Example
 
 ```jldoctest
-using Rx
+using Rocket
 
 subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
 source  = from(1:5) |> multicast(subject)

@@ -1,7 +1,7 @@
-module RxIntervalObservableTest
+module RocketIntervalObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "IntervalObservable" begin
 

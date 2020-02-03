@@ -34,11 +34,11 @@ Super type for any subscribable object. Automatically specifies a `ValidSubscrib
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 struct MySubscribable <: Subscribable{Int} end
 
-println(Rx.as_subscribable(MySubscribable) === ValidSubscribable{Int}())
+println(Rocket.as_subscribable(MySubscribable) === ValidSubscribable{Int}())
 ;
 
 # output
@@ -59,10 +59,10 @@ This function checks subscribable trait behavior specification. Can be used expl
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct MyArbitraryType end
-Rx.as_subscribable(::Type{<:MyArbitraryType}) = ValidSubscribable{Int}()
+Rocket.as_subscribable(::Type{<:MyArbitraryType}) = ValidSubscribable{Int}()
 
 println(as_subscribable(MyArbitraryType) ===ValidSubscribable{Int}())
 ;
@@ -96,7 +96,7 @@ Passing not valid subscribable or/and actor object will throw an error.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from((1, 2, 3))
 subscribe!(source, logger())
@@ -111,7 +111,7 @@ subscribe!(source, logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from((1, 2, 3))
 subscribe!(source, 1)
@@ -124,7 +124,7 @@ ERROR: Type Int64 is not a valid actor type.
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from((1, 2, 3))
 subscribe!(1, logger())
@@ -174,11 +174,11 @@ and has return a valid `Teardown` object.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct MySubscribable <: Subscribable{Int} end
 
-function Rx.on_subscribe!(subscribable::MySubscribable, actor)
+function Rocket.on_subscribe!(subscribable::MySubscribable, actor)
     next!(actor, 0)
     complete!(actor)
     return VoidTeardown()

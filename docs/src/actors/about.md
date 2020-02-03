@@ -6,14 +6,14 @@ An actor is analogous to an object in an object-oriented languages. An object re
 
 For a quick introduction to Actor models, see [this article](https://www.brianstorti.com/the-actor-model/).
 
-The API of Rx.jl's Actors is similar to [RxJS](https://rxjs.dev/guide/overview) subscribers.
+The API of Rocket.jl's Actors is similar to [RxJS](https://rxjs.dev/guide/overview) subscribers.
 
 ## First example
 
 The following example implements an Actor that retains each received value from an Observable.
 
 ```julia
-using Rx
+using Rocket
 
 struct CustomKeepActor <: Actor{Int}
     values::Vector{Int}
@@ -21,9 +21,9 @@ struct CustomKeepActor <: Actor{Int}
     CustomKeepActor() = new(Vector{Int}())
 end
 
-Rx.on_next!(actor::CustomKeepActor, data::Int) = push!(actor.values, data)
-Rx.on_error!(actor::CustomKeepActor, err)      = error(err)
-Rx.on_complete!(actor::CustomKeepActor)        = println("Completed!")
+Rocket.on_next!(actor::CustomKeepActor, data::Int) = push!(actor.values, data)
+Rocket.on_error!(actor::CustomKeepActor, err)      = error(err)
+Rocket.on_complete!(actor::CustomKeepActor)        = println("Completed!")
 
 source     = from([ 1, 2, 3 ])
 keep_actor = CustomKeepActor()
@@ -38,14 +38,14 @@ println(keep_actor.values)
 # [1, 2, 3]
 ```
 
-An actor may be not interested in the values itself, but merely the completion of an event. In this case, Rx.jl provides a [`CompletionActor`](@ref) abstract type.
+An actor may be not interested in the values itself, but merely the completion of an event. In this case, Rocket.jl provides a [`CompletionActor`](@ref) abstract type.
 
 ```julia
-using Rx
+using Rocket
 
 struct CompletionNotificationActor <: CompletionActor{Int} end
 
-Rx.on_complete!(::CompletionNotificationActor) = println("Completed!")
+Rocket.on_complete!(::CompletionNotificationActor) = println("Completed!")
 
 source     = from([ 1, 2, 3 ])
 subscribe!(source, CompletionNotificationActor());
@@ -59,7 +59,7 @@ subscribe!(source, CompletionNotificationActor());
 For debugging purposes it may be convenient to work with a [`LambdaActor`](@ref). This provides an interface that defines callbacks for "next", "error" and "complete" events.
 
 ```julia
-using Rx
+using Rocket
 
 source = from([1, 2, 3])
 

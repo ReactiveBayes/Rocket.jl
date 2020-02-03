@@ -1,7 +1,7 @@
-module RxKeepActorTest
+module RocketKeepActorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "KeepActor" begin
 

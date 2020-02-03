@@ -51,7 +51,7 @@ Creation operator for the `AsyncActor` actor.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 actor = async(keep(Int))
 actor isa AsyncActor{Int, KeepActor{Int}}

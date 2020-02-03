@@ -28,7 +28,7 @@ Creation operator for the `CompletedObservable` that emits no items to the Actor
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = completed(Int)
 subscribe!(source, logger())

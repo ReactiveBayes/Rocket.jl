@@ -15,7 +15,7 @@ Creates a `Task` which will asynchornously invoke fucntion `f` after specified `
 # Examples
 
 ```
-using Rx
+using Rocket
 using Dates
 
 println("Before: ", Dates.format(now(), "MM:SS"))

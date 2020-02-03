@@ -15,7 +15,7 @@ Returns an Observable that applies a specified accumulator function to each item
 
 ## @CreateScanOperator macro
 
-For performance reasons, the Rx.jl library provides a special macro for creating custom (and pure) scan operators.
+For performance reasons, the Rocket.jl library provides a special macro for creating custom (and pure) scan operators.
 
 ```@docs
 @CreateScanOperator

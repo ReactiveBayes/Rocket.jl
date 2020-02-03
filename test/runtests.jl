@@ -1,10 +1,10 @@
-module RxTest
+module RocketTest
 
-using Test, Documenter, Rx
+using Test, Documenter, Rocket
 
-doctest(Rx)
+doctest(Rocket)
 
-@testset "Rx" begin
+@testset "Rocket" begin
 
     include("./test_teardown.jl")
     include("./teardown/test_void_teardown.jl")

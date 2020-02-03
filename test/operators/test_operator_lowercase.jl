@@ -1,7 +1,7 @@
-module RxLowercaseOperatorTest
+module RocketLowercaseOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "lowercase()" begin
 

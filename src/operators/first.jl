@@ -14,7 +14,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:100 ])
 actor  = keep(Int)

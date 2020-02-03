@@ -1,7 +1,7 @@
-module RxSynchronousSubjectTest
+module RocketSynchronousSubjectTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "SynchronousSubject" begin
 

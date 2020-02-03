@@ -1,7 +1,7 @@
-module RxTakeOperatorTest
+module RocketTakeOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: take()" begin
 

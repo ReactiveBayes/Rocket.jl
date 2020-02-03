@@ -1,7 +1,7 @@
-module RxFunctionObservableTest
+module RocketFunctionObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "FunctionObservable" begin
 

@@ -30,7 +30,7 @@ Creation operator for the `SingleObservable` that emits a single value x and the
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = of(1)
 subscribe!(source, logger())

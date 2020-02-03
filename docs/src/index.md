@@ -1,6 +1,6 @@
-# Rx.jl Documentation
+# Rocket.jl Documentation
 
-Welcome to the documentation for Rx.jl.
+Welcome to the documentation for Rocket.jl.
 
 This documentation is an adaptation of the [RxJS library documentation](https://rxjs.dev).
 

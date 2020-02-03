@@ -1,7 +1,7 @@
-module RxMinOperatorTest
+module RocketMinOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: min()" begin
 

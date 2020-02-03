@@ -1,15 +1,13 @@
-module RxTeardownVoidTest
+module RocketTeardownVoidTest
 
 using Test
-
-import Rx
-import Rx: Teardown, VoidTeardown
+using Rocket
 
 @testset "VoidTeardown" begin
 
     @test VoidTeardown() isa Teardown
-    @test Rx.as_teardown(VoidTeardown) === Rx.VoidTeardownLogic()
-    @test Rx.unsubscribe!(VoidTeardown()) === nothing
+    @test Rocket.as_teardown(VoidTeardown) === Rocket.VoidTeardownLogic()
+    @test Rocket.unsubscribe!(VoidTeardown()) === nothing
 
 end
 

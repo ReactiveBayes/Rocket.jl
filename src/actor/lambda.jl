@@ -13,7 +13,7 @@ Lambda actor wraps `on_next`, `on_error`, `on_complete` callbacks for data, erro
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 0, 1, 2 ])
 subscribe!(source, LambdaActor{Int}(
@@ -29,7 +29,7 @@ Data event: 2
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 0, 1, 2 ])
 subscribe!(source, LambdaActor{Int}(
@@ -92,7 +92,7 @@ Creation operator for the 'LambdaActor' actor.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 actor = lambda(Int; on_next = (d) -> println(d))
 actor isa LambdaActor{Int}

@@ -1,14 +1,14 @@
 # Reactive extensions library for Julia
 
-Rx.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
+Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
-In order to achieve best performance and convenient API Rx.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
+In order to achieve best performance and convenient API Rocket.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
 Inspired by [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
 
-Rx.jl has been designed with a focus on performance and modularity.
+Rocket.jl has been designed with a focus on performance and modularity.
 
-The essential concepts in Rx.jl are:
+The essential concepts in Rocket.jl are:
 
 - __Observable__: represents a collection of future messages (data or/and events).
 - __Actor__: is an object that knows how to react on incoming messages delivered by the __Observable__.
@@ -38,7 +38,7 @@ for value in array_of_values
 end
 ```
 
-In Rx.jl you will use an observable.
+In Rocket.jl you will use an observable.
 
 ```Julia
 subscription = subscribe!(source_of_values, lambda(
@@ -62,32 +62,32 @@ unsubscribe!(subscription)
 To process messages from an observable you have to define an Actor that know how to react on incoming messages.
 
 ```Julia
-struct MyActor <: Rx.Actor{Int} end
+struct MyActor <: Rocket.Actor{Int} end
 
-Rx.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
-Rx.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
-Rx.on_complete!(actor::MyActor)        = println("Completed!")
+Rocket.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
+Rocket.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
+Rocket.on_complete!(actor::MyActor)        = println("Completed!")
 ```
 
 Actor can also have its own local state
 
 ```Julia
-struct StoreActor{D} <: Rx.Actor{}
+struct StoreActor{D} <: Rocket.Actor{}
     values :: Vector{D}
 
     StoreActor{D}() where D = new(Vector{D}())
 end
 
-Rx.on_next!(actor::StoreActor{D}, data::D) where D = push!(actor.values, data)
-Rx.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(error)
-Rx.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
+Rocket.on_next!(actor::StoreActor{D}, data::D) where D = push!(actor.values, data)
+Rocket.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(error)
+Rocket.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
 ```
 
 For debugging purposes you can use a general `LambdaActor` actor.
 
 ## Operators
 
-What makes Rx.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
+What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
 
 ```Julia
 squared_int_values = source_of_int_values |> map(Int, (d) -> d ^ 2)

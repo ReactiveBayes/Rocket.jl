@@ -23,7 +23,7 @@ Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:10 ])
 subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
@@ -37,7 +37,7 @@ subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger()
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:42 ])
 subscribe!(source |> reduce(Int, +), logger())
@@ -121,7 +121,7 @@ Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 @CreateReduceOperator(IntoArray, Int, Vector{Int}, (d, c) -> [ c..., d ])
 
@@ -144,12 +144,12 @@ macro CreateReduceOperator(name, L, R, reduceFn)
     actorName      = Symbol(name, "ReduceActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Rx.TypedOperator{$L, $R}
+        struct $operatorName <: Rocket.TypedOperator{$L, $R}
             seed :: $R
         end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
-            return Rx.proxy($R, source, ($proxyName)(operator.seed))
+        function Rocket.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
+            return Rocket.proxy($R, source, ($proxyName)(operator.seed))
         end
 
         Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "(", string($L), " -> ", string($R), ")")
@@ -160,31 +160,31 @@ macro CreateReduceOperator(name, L, R, reduceFn)
             seed :: $R
         end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
+        Rocket.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(proxy.seed, actor)
 
         Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "()")
     end
 
     actorDefinition = quote
-        mutable struct $actorName{A} <: Rx.Actor{$L}
+        mutable struct $actorName{A} <: Rocket.Actor{$L}
             current :: $R
             actor   :: A
         end
 
-        Rx.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
+        Rocket.is_exhausted(actor::($actorName)) = is_exhausted(actor.actor)
 
-        Rx.on_next!(actor::($actorName), data::($L)) = begin
+        Rocket.on_next!(actor::($actorName), data::($L)) = begin
             __inlined_lambda = $reduceFn
             actor.current = __inlined_lambda(data, actor.current)
         end
 
-        Rx.on_error!(actor::($actorName), err) = begin
-            Rx.error!(actor.actor, err)
+        Rocket.on_error!(actor::($actorName), err) = begin
+            Rocket.error!(actor.actor, err)
         end
 
-        Rx.on_complete!(actor::($actorName))   = begin
-            Rx.next!(actor.actor, actor.current)
-            Rx.complete!(actor.actor)
+        Rocket.on_complete!(actor::($actorName))   = begin
+            Rocket.next!(actor.actor, actor.current)
+            Rocket.complete!(actor.actor)
         end
 
         Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "()")

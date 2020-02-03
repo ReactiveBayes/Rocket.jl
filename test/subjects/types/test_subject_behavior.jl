@@ -1,7 +1,7 @@
-module RxBehaviorSubjectTest
+module RocketBehaviorSubjectTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "BehaviorSubject" begin
 

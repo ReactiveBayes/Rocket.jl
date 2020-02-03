@@ -1,7 +1,7 @@
-module RxSomeOperatorTest
+module RocketSomeOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: some()" begin
 

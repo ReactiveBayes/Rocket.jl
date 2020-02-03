@@ -28,7 +28,7 @@ Creates a `ConnectableObservable` with a given subject object and a source obser
 # Example
 
 ```jldoctest
-using Rx
+using Rocket
 
 c = connectable(make_subject(Int; mode = Val(:sync)), from(1:3))
 
@@ -61,7 +61,7 @@ as_connectable(::ValidSubject{D},  ::ValidSubscribable{D},  subject, source) whe
     connect(connectable::ConnectableObservable)
 
 When `connect` is called, the subject passed to the multicast operator is subscribed to the source and the subject’s observers receive the multicast notifications,
-which fits our basic mental model of RxJS multicasting. Returns a subscription.
+which fits our basic mental model of stream multicasting. Returns a subscription.
 
 See also: [`connectable`](@ref), [`ConnectableObservable`](@ref)
 """

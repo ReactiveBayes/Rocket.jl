@@ -13,7 +13,7 @@ The first emission is not sent immediately, but only after the first period has 
 # Examples
 
 ```
-using Rx
+using Rocket
 
 source = interval(50)
 

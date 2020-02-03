@@ -11,7 +11,7 @@ The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent fro
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 0, 1, 2 ])
 subscribe!(source, LoggerActor{Int}())
@@ -27,7 +27,7 @@ subscribe!(source, LoggerActor{Int}())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 0, 1, 2 ])
 subscribe!(source, LoggerActor{Int}("CustomName"))
@@ -71,7 +71,7 @@ Creation operator for the `LoggerActor` actor.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 actor = logger(Int)
 actor isa LoggerActor{Int}

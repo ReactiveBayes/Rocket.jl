@@ -1,7 +1,7 @@
-module RxTimerObservableTest
+module RocketTimerObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "TimerObservable" begin
 

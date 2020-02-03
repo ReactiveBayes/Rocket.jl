@@ -1,7 +1,7 @@
-module RxMapOperatorTest
+module RocketMapOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: map()" begin
 

@@ -1,7 +1,7 @@
-module RxLastOperatorTest
+module RocketLastOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: last()" begin
 

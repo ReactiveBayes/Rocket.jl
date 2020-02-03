@@ -21,7 +21,7 @@ Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
@@ -89,7 +89,7 @@ Stream of type `<: Subscribable{R}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 @CreateMapOperator(SquaredInt, Int, Int, (d) -> d ^ 2)
 
@@ -114,37 +114,37 @@ macro CreateMapOperator(name, L, R, mappingFn)
     actorName      = Symbol(name, "MapActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Rx.TypedOperator{$L, $R} end
+        struct $operatorName <: Rocket.TypedOperator{$L, $R} end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
-            return Rx.proxy($R, source, ($proxyName)())
+        function Rocket.on_call!(::Type{$L}, ::Type{$R}, operator::($operatorName), source)
+            return Rocket.proxy($R, source, ($proxyName)())
         end
 
         Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "(", string($L), " -> ", string($R), ")")
     end
 
     proxyDefinition = quote
-        struct $proxyName <: Rx.ActorProxy end
+        struct $proxyName <: Rocket.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
+        Rocket.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
 
         Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "()")
     end
 
     actorDefinition = quote
-        struct $actorName{A} <: Rx.Actor{$L}
+        struct $actorName{A} <: Rocket.Actor{$L}
             actor :: A
         end
 
-        Rx.is_exhausted(actor::($actorName)) = Rx.is_exhausted(actor.actor)
+        Rocket.is_exhausted(actor::($actorName)) = Rocket.is_exhausted(actor.actor)
 
-        Rx.on_next!(actor::($actorName), data::($L))  = begin
+        Rocket.on_next!(actor::($actorName), data::($L))  = begin
             __inline_lambda = $mappingFn
-            Rx.next!(actor.actor, __inline_lambda(data))
+            Rocket.next!(actor.actor, __inline_lambda(data))
         end
 
-        Rx.on_error!(actor::($actorName), err) = Rx.error!(actor.actor, err)
-        Rx.on_complete!(actor::($actorName))   = Rx.complete!(actor.actor)
+        Rocket.on_error!(actor::($actorName), err) = Rocket.error!(actor.actor, err)
+        Rocket.on_complete!(actor::($actorName))   = Rocket.complete!(actor.actor)
 
         Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "()")
     end
@@ -164,37 +164,37 @@ macro CreateMapOperator(name, mappingFn)
     actorName      = Symbol(name, "MapActor")
 
     operatorDefinition = quote
-        struct $operatorName{L, R} <: Rx.TypedOperator{L, R} end
+        struct $operatorName{L, R} <: Rocket.TypedOperator{L, R} end
 
-        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source) where L where R
-            return Rx.proxy(R, source, ($proxyName){L}())
+        function Rocket.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){L, R}, source) where L where R
+            return Rocket.proxy(R, source, ($proxyName){L}())
         end
 
         Base.show(io::IO, operator::($operatorName){L, R}) where L where R = print(io, string($operatorName), "(", L, " -> ", R, ")")
     end
 
     proxyDefinition = quote
-        struct $proxyName{L} <: Rx.ActorProxy end
+        struct $proxyName{L} <: Rocket.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
+        Rocket.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
 
         Base.show(io::IO, proxy::($proxyName){L}) where L = print(io, string($proxyName), "(", L, ")")
     end
 
     actorDefinition = quote
-        struct $actorName{L, A} <: Rx.Actor{L}
+        struct $actorName{L, A} <: Rocket.Actor{L}
             actor :: A
         end
 
-        Rx.is_exhausted(a::($actorName)) = Rx.is_exhausted(a.actor)
+        Rocket.is_exhausted(a::($actorName)) = Rocket.is_exhausted(a.actor)
 
-        Rx.on_next!(a::($actorName){L}, data::L) where L  = begin
+        Rocket.on_next!(a::($actorName){L}, data::L) where L  = begin
             __inlined_lambda = $mappingFn
-            Rx.next!(a.actor, __inlined_lambda(data))
+            Rocket.next!(a.actor, __inlined_lambda(data))
         end
 
-        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
-        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+        Rocket.on_error!(a::($actorName), err) = Rocket.error!(a.actor, err)
+        Rocket.on_complete!(a::($actorName))   = Rocket.complete!(a.actor)
 
         Base.show(io::IO, actor::($actorName){L}) where L = print(io, string($actorName), "(", L, ")")
     end

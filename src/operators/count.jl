@@ -15,7 +15,7 @@ Stream of type `<: Subscribable{Int}`
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:42 ])
 subscribe!(source |> count(), logger())

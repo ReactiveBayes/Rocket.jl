@@ -1,8 +1,8 @@
-module RxSubscribableTest
+module RocketSubscribableTest
 
 using Test
 using Suppressor
-using Rx
+using Rocket
 
 @testset "Subscribable" begin
 
@@ -11,11 +11,11 @@ using Rx
     struct NotImplementedSubscribable <: Subscribable{Int} end
 
     struct ExplicitlyDefinedSubscribable end
-    Rx.as_subscribable(::Type{<:ExplicitlyDefinedSubscribable}) = ValidSubscribable{String}()
+    Rocket.as_subscribable(::Type{<:ExplicitlyDefinedSubscribable}) = ValidSubscribable{String}()
 
     struct ImplementedSubscribable <: Subscribable{Int} end
-    function Rx.on_subscribe!(::ImplementedSubscribable, actor)
-        return Rx.VoidTeardown()
+    function Rocket.on_subscribe!(::ImplementedSubscribable, actor)
+        return Rocket.VoidTeardown()
     end
 
     @testset "as_subscribable" begin
@@ -39,7 +39,7 @@ using Rx
         @test_throws MissingOnSubscribeImplementationError subscribe!(ExplicitlyDefinedSubscribable(), actor_s)
 
         # Check if subscribe! subscribes to a valid subscribable
-        @test subscribe!(ImplementedSubscribable(), actor) === Rx.VoidTeardown()
+        @test subscribe!(ImplementedSubscribable(), actor) === Rocket.VoidTeardown()
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match
         @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedSubscribable(), actor_s)

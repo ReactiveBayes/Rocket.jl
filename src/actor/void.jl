@@ -8,7 +8,7 @@ Void actor does nothing with input data, error and complete events, can be usefu
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 0, 1, 2 ])
 actor  = VoidActor{Int}()
@@ -43,7 +43,7 @@ Creation operator for the `VoidActor` actor.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 actor = void(Int)
 actor isa VoidActor{Int}

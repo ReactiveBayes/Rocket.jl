@@ -1,7 +1,7 @@
-module RxArrayObservableTest
+module RocketArrayObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "ArrayObservable" begin
 

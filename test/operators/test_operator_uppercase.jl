@@ -1,7 +1,7 @@
-module RxUppercaseOperatorTest
+module RocketUppercaseOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: uppercase()" begin
 

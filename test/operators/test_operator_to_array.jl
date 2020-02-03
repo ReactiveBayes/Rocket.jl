@@ -1,7 +1,7 @@
-module RxToArrayOperatorTest
+module RocketToArrayOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: to_array()" begin
 

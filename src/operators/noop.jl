@@ -10,7 +10,7 @@ It might be useful for very long chain of operators, because Julia tries to stat
 can run into StackOverflow issues.
 
 ```
-using Rx
+using Rocket
 
 source = from(1:5)
 

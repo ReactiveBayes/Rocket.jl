@@ -1,7 +1,7 @@
-module RxCountOperatorTest
+module RocketCountOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: count()" begin
 

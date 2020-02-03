@@ -4,7 +4,7 @@
 A __Subscription__ represents a disposable resource, usually the execution of an Observable. A Subscription has one important method: `unsubscribe!(teardown)`, which takes some teardown logic object as one argument and disposes the resource held by the subscription.
 
 ```julia
-using Rx
+using Rocket
 
 source = make_subject(Int)
 

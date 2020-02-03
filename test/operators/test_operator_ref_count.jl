@@ -1,7 +1,7 @@
-module RxRefCountOperatorTest
+module RocketRefCountOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: ref_count()" begin
 

@@ -5,13 +5,13 @@ Any subscription-like object should implement a valid teardown logic.
 ## Example
 
 ```julia
-using Rx
+using Rocket
 
 struct MuCustomSubscription <: Teardown
     # some fields here
 end
 
-Rx.as_teardown(::Type{<:MuCustomSubscription}) = UnsubscribableTeardownLogic()
+Rocket.as_teardown(::Type{<:MuCustomSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::MyCustomSubscription)
     # dispose resources here

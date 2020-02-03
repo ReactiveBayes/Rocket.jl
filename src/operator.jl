@@ -25,29 +25,29 @@ and will always produce an Observable with data type `R`.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct MyTypedOperator <: TypedOperator{Int, Int} end
 
-function Rx.on_call!(::Type{Int}, ::Type{Int}, op::MyTypedOperator, source)
+function Rocket.on_call!(::Type{Int}, ::Type{Int}, op::MyTypedOperator, source)
     return proxy(Int, source, MyTypedOperatorProxy())
 end
 
 struct MyTypedOperatorProxy <: ActorProxy end
 
-Rx.actor_proxy!(::MyTypedOperatorProxy, actor::A) where A = MyTypedOperatorProxiedActor{A}(actor)
+Rocket.actor_proxy!(::MyTypedOperatorProxy, actor::A) where A = MyTypedOperatorProxiedActor{A}(actor)
 
 struct MyTypedOperatorProxiedActor{A} <: Actor{Int}
     actor :: A
 end
 
-function Rx.on_next!(actor::MyTypedOperatorProxiedActor, data::Int)
+function Rocket.on_next!(actor::MyTypedOperatorProxiedActor, data::Int)
     # Do something with a data and/or redirect it to actor.actor
     next!(actor.actor, data + 1)
 end
 
-Rx.on_error!(actor::MyTypedOperatorProxiedActor, err) = error!(actor.actor, err)
-Rx.on_complete!(actor::MyTypedOperatorProxiedActor)   = complete!(actor.actor)
+Rocket.on_error!(actor::MyTypedOperatorProxiedActor, err) = error!(actor.actor, err)
+Rocket.on_complete!(actor::MyTypedOperatorProxiedActor)   = complete!(actor.actor)
 
 source = from([ 0, 1, 2 ])
 subscribe!(source |> MyTypedOperator(), logger())
@@ -74,33 +74,33 @@ will always produce an Observable with data type inferred from `operator_right(o
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct CountIntegersOperator <: LeftTypedOperator{Int} end
 
-function Rx.on_call!(::Type{Int}, ::Type{Tuple{Int, Int}}, op::CountIntegersOperator, source)
+function Rocket.on_call!(::Type{Int}, ::Type{Tuple{Int, Int}}, op::CountIntegersOperator, source)
     return proxy(Tuple{Int, Int}, source, CountIntegersOperatorProxy())
 end
 
-Rx.operator_right(::CountIntegersOperator, ::Type{Int}) = Tuple{Int, Int}
+Rocket.operator_right(::CountIntegersOperator, ::Type{Int}) = Tuple{Int, Int}
 
 struct CountIntegersOperatorProxy <: ActorProxy end
 
-Rx.actor_proxy!(::CountIntegersOperatorProxy, actor::A) where A = CountIntegersProxiedActor{A}(0, actor)
+Rocket.actor_proxy!(::CountIntegersOperatorProxy, actor::A) where A = CountIntegersProxiedActor{A}(0, actor)
 
 mutable struct CountIntegersProxiedActor{A} <: Actor{Int}
     current :: Int
     actor   :: A
 end
 
-function Rx.on_next!(actor::CountIntegersProxiedActor, data::Int)
+function Rocket.on_next!(actor::CountIntegersProxiedActor, data::Int)
     current = actor.current
     actor.current += 1
     next!(actor.actor, (current, data)) # e.g.
 end
 
-Rx.on_error!(actor::CountIntegersProxiedActor, err) = error!(actor.actor, err)
-Rx.on_complete!(actor::CountIntegersProxiedActor)   = complete!(actor.actor)
+Rocket.on_error!(actor::CountIntegersProxiedActor, err) = error!(actor.actor, err)
+Rocket.on_complete!(actor::CountIntegersProxiedActor)   = complete!(actor.actor)
 
 source = from([ 0, 0, 0 ])
 subscribe!(source |> CountIntegersOperator(), logger())
@@ -125,17 +125,17 @@ but will always produce an Observable with data type `R`.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct ConvertToFloatOperator <: RightTypedOperator{Float64} end
 
-function Rx.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, source) where L
+function Rocket.on_call!(::Type{L}, ::Type{Float64}, op::ConvertToFloatOperator, source) where L
     return proxy(Float64, source, ConvertToFloatProxy{L}())
 end
 
 struct ConvertToFloatProxy{L} <: ActorProxy end
 
-function Rx.actor_proxy!(proxy::ConvertToFloatProxy{L}, actor::A) where L where A
+function Rocket.actor_proxy!(proxy::ConvertToFloatProxy{L}, actor::A) where L where A
     return ConvertToFloatProxyActor{L, A}(actor)
 end
 
@@ -143,12 +143,12 @@ mutable struct ConvertToFloatProxyActor{L, A} <: Actor{L}
     actor :: A
 end
 
-function Rx.on_next!(actor::ConvertToFloatProxyActor{L}, data::L) where L
+function Rocket.on_next!(actor::ConvertToFloatProxyActor{L}, data::L) where L
     next!(actor.actor, convert(Float64, data)) # e.g.
 end
 
-Rx.on_error!(actor::ConvertToFloatProxyActor, err) = error!(actor.actor, err)
-Rx.on_complete!(actor::ConvertToFloatProxyActor)   = complete!(actor.actor)
+Rocket.on_error!(actor::ConvertToFloatProxyActor, err) = error!(actor.actor, err)
+Rocket.on_complete!(actor::ConvertToFloatProxyActor)   = complete!(actor.actor)
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> ConvertToFloatOperator(), logger())
@@ -172,30 +172,30 @@ To infer output data type this object should specify a special function `operato
 which will be used to infer output data type.
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct IdentityOperator <: InferableOperator end
 
-function Rx.on_call!(::Type{L}, ::Type{L}, op::IdentityOperator, source) where L
+function Rocket.on_call!(::Type{L}, ::Type{L}, op::IdentityOperator, source) where L
     return proxy(L, source, IdentityProxy{L}())
 end
 
-Rx.operator_right(::IdentityOperator, ::Type{L}) where L = L
+Rocket.operator_right(::IdentityOperator, ::Type{L}) where L = L
 
 struct IdentityProxy{L} <: ActorProxy end
 
-Rx.actor_proxy!(proxy::IdentityProxy{L}, actor::A) where L where A = IdentityProxyActor{L, A}(actor)
+Rocket.actor_proxy!(proxy::IdentityProxy{L}, actor::A) where L where A = IdentityProxyActor{L, A}(actor)
 
 mutable struct IdentityProxyActor{L, A} <: Actor{L}
     actor :: A
 end
 
-function Rx.on_next!(actor::IdentityProxyActor{L}, data::L) where L
+function Rocket.on_next!(actor::IdentityProxyActor{L}, data::L) where L
     next!(actor.actor, data) # e.g.
 end
 
-Rx.on_error!(actor::IdentityProxyActor, err) = error!(actor.actor, err)
-Rx.on_complete!(actor::IdentityProxyActor)   = complete!(actor.actor)
+Rocket.on_error!(actor::IdentityProxyActor, err) = error!(actor.actor, err)
+Rocket.on_complete!(actor::IdentityProxyActor)   = complete!(actor.actor)
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> IdentityOperator(), logger())
@@ -237,7 +237,7 @@ Can be used as a supertype for any operator. Automatically specifies TypedOperat
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 struct MyOperator <: TypedOperator{Int, String} end
 
@@ -257,7 +257,7 @@ Can be used as a supertype for any operator. Automatically specifies LeftTypedOp
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 struct MyOperator <: LeftTypedOperator{Int} end
 
@@ -277,7 +277,7 @@ Can be used as a supertype for any operator. Automatically specifies RightTypedO
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 struct MyOperator <: RightTypedOperator{Int} end
 
@@ -297,7 +297,7 @@ Can be used as a supertype for any operator. Automatically specifies InferableOp
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 struct MyOperator <: InferableOperator end
 
@@ -394,7 +394,7 @@ OperatorsComposition is an object which helps to create a composition of multipl
 overloaded `+` can be used.
 
 ```jldoctest
-using Rx
+using Rocket
 
 composition = map(Int, (d) -> d ^ 2) + filter(d -> d % 2 == 0)
 
@@ -442,7 +442,7 @@ struct InvalidOperatorTraitUsageError
 end
 
 function Base.show(io::IO, err::InvalidOperatorTraitUsageError)
-    print(io, "Type $(typeof(err.operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rx.as_operator(::Type{<:$(typeof(err.operator))}).")
+    print(io, "Type $(typeof(err.operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rocket.as_operator(::Type{<:$(typeof(err.operator))}).")
 end
 
 """

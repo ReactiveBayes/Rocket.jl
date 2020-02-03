@@ -1,7 +1,7 @@
-module RxSingleObservableTest
+module RocketSingleObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "SingleObservable" begin
 

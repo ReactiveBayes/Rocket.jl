@@ -1,7 +1,7 @@
-module RxDelayOperatorTest
+module RocketDelayOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: delay()" begin
 

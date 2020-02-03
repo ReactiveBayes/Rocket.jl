@@ -1,8 +1,8 @@
-module RxVoidActorTest
+module RocketVoidActorTest
 
 using Test
 using Suppressor
-using Rx
+using Rocket
 
 @testset "VoidActor" begin
 
@@ -18,7 +18,7 @@ using Rx
 
     @testset begin
         @test void(Int) isa VoidActor{Int}
-        @test void()    isa Rx.VoidActorFactory
+        @test void()    isa Rocket.VoidActorFactory
     end
 end
 

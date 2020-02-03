@@ -14,9 +14,9 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream `<
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
-source = Rx.from([ 1, nothing, 3 ])
+source = from([ 1, nothing, 3 ])
 subscribe!(source |> some(), logger())
 ;
 

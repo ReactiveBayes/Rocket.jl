@@ -13,7 +13,7 @@ Like `map(f, array)`, the `map` operator applies a function to each source value
 
 ## @CreateMapOperator macro
 
-For performance reasons Rx.jl library provides a special macro for creating custom (and pure) map operators.
+For performance reasons Rocket.jl library provides a special macro for creating custom (and pure) map operators.
 
 ```@docs
 @CreateMapOperator

@@ -1,7 +1,7 @@
-module RxReplaySubjectTest
+module RocketReplaySubjectTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "ReplaySubject" begin
 

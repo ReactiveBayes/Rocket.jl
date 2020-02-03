@@ -1,27 +1,27 @@
-module RxTeardownTest
+module RocketTeardownTest
 
 using Test
 
-import Rx
-import Rx: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTeardownLogic, InvalidTeardownLogic
-import Rx: Teardown, as_teardown
-import Rx: unsubscribe!, teardown!, on_unsubscribe!
+import Rocket
+import Rocket: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTeardownLogic, InvalidTeardownLogic
+import Rocket: Teardown, as_teardown
+import Rocket: unsubscribe!, teardown!, on_unsubscribe!
 
-import Rx: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+import Rocket: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
 
 @testset "Teardown" begin
 
     struct DummyType end
 
     struct AnotherDummyType end
-    Rx.as_teardown(::Type{<:AnotherDummyType}) = VoidTeardownLogic()
+    Rocket.as_teardown(::Type{<:AnotherDummyType}) = VoidTeardownLogic()
 
     struct DummySubscription end
-    Rx.as_teardown(::Type{<:DummySubscription}) = UnsubscribableTeardownLogic()
+    Rocket.as_teardown(::Type{<:DummySubscription}) = UnsubscribableTeardownLogic()
 
     struct ImplementedSubscription end
-    Rx.as_teardown(::Type{<:ImplementedSubscription}) = UnsubscribableTeardownLogic()
-    Rx.on_unsubscribe!(::ImplementedSubscription)     = "unsubscribed"
+    Rocket.as_teardown(::Type{<:ImplementedSubscription}) = UnsubscribableTeardownLogic()
+    Rocket.on_unsubscribe!(::ImplementedSubscription)     = "unsubscribed"
 
     @testset "as_teardown" begin
         # Check if arbitrary dummy type has undefined teardown logic

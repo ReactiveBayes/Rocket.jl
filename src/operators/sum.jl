@@ -21,7 +21,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:42 ])
 subscribe!(source |> sum(), logger())
@@ -35,7 +35,7 @@ subscribe!(source |> sum(), logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:42 ])
 subscribe!(source |> sum(from = 97), logger())

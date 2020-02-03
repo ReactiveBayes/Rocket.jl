@@ -68,7 +68,7 @@ Creation operator for the `FunctionObservable`.
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = make(Int) do actor
     next!(actor, 0)
@@ -87,7 +87,7 @@ unsubscribe!(subscription)
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = make(Int) do actor
     next!(actor, 0)

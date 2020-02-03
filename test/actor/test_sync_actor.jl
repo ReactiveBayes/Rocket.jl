@@ -1,7 +1,7 @@
-module RxSyncActorTest
+module RocketSyncActorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "SyncActor" begin
 

@@ -7,7 +7,7 @@ Keep actor provides a storage actor. It saves all incoming successful `next` eve
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(1:5)
 actor  = KeepActor{Int}()
@@ -44,7 +44,7 @@ Creation operator for the `KeepActor` actor.
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 actor = keep(Int)
 actor isa KeepActor{Int}

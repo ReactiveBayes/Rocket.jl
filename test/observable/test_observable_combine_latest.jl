@@ -1,7 +1,7 @@
-module RxCombineLatestObservableTest
+module RocketCombineLatestObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "CombineLatestObservable" begin
 

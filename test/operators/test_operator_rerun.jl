@@ -1,7 +1,7 @@
-module RxRerunOperatorTest
+module RocketRerunOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: rerun()" begin
 

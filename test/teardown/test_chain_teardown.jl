@@ -1,22 +1,21 @@
-module RxTeardownChainTest
+module RocketTeardownChainTest
 
 using Test
 
-import Rx
-import Rx: Teardown, ChainTeardown, chain
+using Rocket
 
 @testset "ChainTeardown" begin
 
     struct DummyUnsubscribable <: Teardown end
-    Rx.as_teardown(::Type{<:DummyUnsubscribable}) = Rx.UnsubscribableTeardownLogic()
-    Rx.unsubscribe!(::DummyUnsubscribable) = "unsubscribed"
+    Rocket.as_teardown(::Type{<:DummyUnsubscribable}) = Rocket.UnsubscribableTeardownLogic()
+    Rocket.unsubscribe!(::DummyUnsubscribable) = "unsubscribed"
 
     @test ChainTeardown(DummyUnsubscribable()) isa Teardown
-    @test Rx.as_teardown(ChainTeardown) === Rx.UnsubscribableTeardownLogic()
-    @test Rx.unsubscribe!(ChainTeardown(DummyUnsubscribable())) === "unsubscribed"
+    @test Rocket.as_teardown(ChainTeardown) === Rocket.UnsubscribableTeardownLogic()
+    @test Rocket.unsubscribe!(ChainTeardown(DummyUnsubscribable())) === "unsubscribed"
 
     @test chain(DummyUnsubscribable()) isa Teardown
-    @test Rx.unsubscribe!(chain(DummyUnsubscribable())) === "unsubscribed"
+    @test Rocket.unsubscribe!(chain(DummyUnsubscribable())) === "unsubscribed"
 
 end
 

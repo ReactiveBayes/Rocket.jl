@@ -17,7 +17,7 @@ Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of 
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ i for i in 1:42 ])
 subscribe!(source |> max(), logger())

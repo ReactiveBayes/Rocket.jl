@@ -14,7 +14,7 @@ Note that using the [`share`](@ref) operator is exactly the same as using the [`
 # Example
 
 ```jldoctest
-using Rx
+using Rocket
 
 subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
 source  = from(1:5) |> multicast(subject) |> ref_count()

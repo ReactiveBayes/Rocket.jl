@@ -15,7 +15,7 @@ Combines multiple Observables to create an Observable whose values are calculate
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 latest = combineLatest(of(1), from(2:5))
 
@@ -39,9 +39,9 @@ macro GenerateCombineLatest(N, creation_name, type, batch, mappingFn)
     observable_name = Symbol(creation_name, "Observable")
     wrapper_name    = Symbol(creation_name, "ActorWrapper")
     return esc(quote
-        Rx.@GenerateCombineLatestCreationOperator($N, $creation_name, $observable_name)
-        Rx.@GenerateCombineLatestObservable($N, $observable_name, $wrapper_name, $type)
-        Rx.@GenerateCombineLatestObservableActorWrapper($N, $wrapper_name, $batch, $mappingFn)
+        Rocket.@GenerateCombineLatestCreationOperator($N, $creation_name, $observable_name)
+        Rocket.@GenerateCombineLatestObservable($N, $observable_name, $wrapper_name, $type)
+        Rocket.@GenerateCombineLatestObservableActorWrapper($N, $wrapper_name, $batch, $mappingFn)
     end)
 end
 
@@ -102,21 +102,21 @@ macro GenerateCombineLatestObservable(N, name, wrapper_name, type)
     name         = Symbol(name, N)
     types        = map(i -> Symbol(:D, i), collect(1:N))
     tupled       = type === :nothing ? Expr(:curly, :Tuple, types...) : type
-    subscribable = Expr(:curly, :(Rx.Subscribable), tupled)
+    subscribable = Expr(:curly, :(Rocket.Subscribable), tupled)
     wrapper      = Expr(:curly, Symbol(wrapper_name, N), types..., :A)
     fields       = Expr(:block, map(i -> Symbol(:source, i), collect(1:N))...)
     observable   = Expr(:curly, name, types...)
     structure    = Expr(:struct, false, Expr(:<:, observable, subscribable), fields)
 
     # on_subscribe! function generation
-    on_subscribe_f = Expr(:call, :(Rx.on_subscribe!), Expr(:(::), :observable, observable), Expr(:(::), :actor, :A))
+    on_subscribe_f = Expr(:call, :(Rocket.on_subscribe!), Expr(:(::), :observable, observable), Expr(:(::), :actor, :A))
     on_subscribe_f = Expr(:where, on_subscribe_f, :A)
     on_subscribe_f = reduce((current, i) -> Expr(:where, current, Symbol(:D, i)), collect(1:N), init = on_subscribe_f)
 
     on_subscribe_wrapper = Expr(:(=), :wrapper, Expr(:call, wrapper, map(i -> begin s = Symbol(:source, i); :(observable.$s) end, collect(1:N))..., :actor))
     on_subscribe_b = quote
         $on_subscribe_wrapper
-        return Rx.CombineLatestSubscription(wrapper)
+        return Rocket.CombineLatestSubscription(wrapper)
     end
     on_subscribe = Expr(:function, on_subscribe_f, on_subscribe_b)
 
@@ -149,22 +149,22 @@ macro GenerateLatestCombinedActor(n)
             wrapper :: W
         end
 
-        function Rx.on_next!(actor::($actor){D}, data::D) where D
+        function Rocket.on_next!(actor::($actor){D}, data::D) where D
             actor.wrapper.$latest = data
-            Rx.__next_check_and_emit(actor.wrapper)
+            Rocket.__next_check_and_emit(actor.wrapper)
         end
 
-        function Rx.on_error!(actor::($actor), err)
-            Rx.__dispose_on_error(actor.wrapper)
-            Rx.error!(actor.wrapper.actor, err)
+        function Rocket.on_error!(actor::($actor), err)
+            Rocket.__dispose_on_error(actor.wrapper)
+            Rocket.error!(actor.wrapper.actor, err)
         end
 
-        function Rx.on_complete!(actor::($actor))
+        function Rocket.on_complete!(actor::($actor))
             actor.wrapper.complete_status[$n] = true
             if actor.wrapper.$latest === nothing
                 actor.wrapper.is_completed = true
             end
-            Rx.__check_completed(actor.wrapper)
+            Rocket.__check_completed(actor.wrapper)
         end
 
         Base.show(io::IO, a::($actor){D}) where D = print(io, string($actor), "($D)")
@@ -248,7 +248,7 @@ macro GenerateCombineLatestObservableActorWrapper(N, pname, batched, mappingFn)
 
     # __next_check_and_emit! generation
     check = quote
-        function Rx.__next_check_and_emit(wrapper::($name))
+        function Rocket.__next_check_and_emit(wrapper::($name))
             if !wrapper.is_completed && !wrapper.is_failed && $(reduce((current, i) -> Expr(:(&&), current, begin l = Symbol(:latest, i); quote wrapper.$l !== nothing end end), collect(2:N), init = begin l = Symbol(:latest, 1); quote wrapper.$l !== nothing end end))
                 __inline_lambda = $mappingFn
                 next!(wrapper.actor, $(Expr(:call, :__inline_lambda, Expr(:tuple, map(i -> begin l = Symbol(:latest, i); quote wrapper.$l end  end, collect(1:N))...))))

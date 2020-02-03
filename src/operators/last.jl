@@ -18,7 +18,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> last(), logger())
@@ -32,7 +32,7 @@ subscribe!(source |> last(), logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(Int[])
 subscribe!(source |> last(), logger())
@@ -44,9 +44,9 @@ subscribe!(source |> last(), logger())
 ```
 
 ```jldoctest
-using Rx
+using Rocket
 
-source = Rx.from(Int[])
+source = from(Int[])
 subscribe!(source |> last(default = 1), logger())
 ;
 

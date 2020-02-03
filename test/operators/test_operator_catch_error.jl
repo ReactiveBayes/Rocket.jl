@@ -1,7 +1,7 @@
-module RxCatchErrorOperatorTest
+module RocketCatchErrorOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: catch_error()" begin
 

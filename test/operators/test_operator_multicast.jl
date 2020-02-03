@@ -1,7 +1,7 @@
-module RxNoopOperatorTest
+module RocketNoopOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: multicast()" begin
 

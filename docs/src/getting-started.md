@@ -1,22 +1,22 @@
 # Getting started
 
-Rx.jl is a Julia package for reactive programming that makes it easier to work with asynchronous data. It is inspired by the [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
+Rocket.jl is a Julia package for reactive programming that makes it easier to work with asynchronous data. It is inspired by the [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
 
-In order to combine good performance with a convenient API, Rx.jl employs [Observer patterns](https://en.wikipedia.org/wiki/Observer_pattern), [Actor models](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
+In order to combine good performance with a convenient API, Rocket.jl employs [Observer patterns](https://en.wikipedia.org/wiki/Observer_pattern), [Actor models](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
 ## Installation
 
-Install Rx.jl through the Julia package manager:
+Install Rocket.jl through the Julia package manager:
 
 ```Julia
-] add Rx
+] add Rocket
 ```
 
 ## Concepts
 
-Rx.jl has been designed with a focus on performance and modularity.
+Rocket.jl has been designed with a focus on performance and modularity.
 
-The essential concepts in Rx.jl are:
+The essential concepts in Rocket.jl are:
 
 - [__Observable__](@ref section_observables): represents a collection of future messages (data or/and events).
 - [__Actor__](@ref section_actors): is an object that knows how to react on incoming messages delivered by the __Observable__.
@@ -34,7 +34,7 @@ for value in array_of_values
 end
 ```
 
-In contrast, Rx.jl uses observables.
+In contrast, Rocket.jl uses observables.
 
 ```Julia
 subscription = subscribe!(source_of_values, lambda(
@@ -55,32 +55,32 @@ unsubscribe!(subscription)
 In order to process messages from an observable you will need to define an Actor that knows how to react to incoming messages.
 
 ```Julia
-struct MyActor <: Rx.Actor{Int} end
+struct MyActor <: Rocket.Actor{Int} end
 
-Rx.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
-Rx.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
-Rx.on_complete!(actor::MyActor)        = println("Completed!")
+Rocket.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
+Rocket.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
+Rocket.on_complete!(actor::MyActor)        = println("Completed!")
 ```
 
 An actor can also have its own local state.
 
 ```Julia
-struct StoreActor{D} <: Rx.Actor{}
+struct StoreActor{D} <: Rocket.Actor{}
     values :: Vector{D}
 
     StoreActor{D}() where D = new(Vector{D}())
 end
 
-Rx.on_next!(actor::StoreActor{D}, data::D) where D = push!(actor.values, data)
-Rx.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(error)
-Rx.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
+Rocket.on_next!(actor::StoreActor{D}, data::D) where D = push!(actor.values, data)
+Rocket.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(error)
+Rocket.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
 ```
 
 For debugging purposes you can use a general [`LambdaActor`](@ref) actor.
 
 ## Operators
 
-What makes Rx.jl powerful is its ability to help you process, transform and modify the messages that flow through your observables, using [__Operators__](@ref section_operators).
+What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages that flow through your observables, using [__Operators__](@ref section_operators).
 
 ```Julia
 subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), LambdaActor{Int}(

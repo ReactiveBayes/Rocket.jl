@@ -1,7 +1,7 @@
-module RxNeverObservableTest
+module RocketNeverObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "NeverObservable" begin
 

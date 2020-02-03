@@ -1,7 +1,7 @@
-module RxFilterOperatorTest
+module RocketFilterOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: filter()" begin
 

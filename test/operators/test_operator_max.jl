@@ -1,7 +1,7 @@
-module RxMaxOperatorTest
+module RocketMaxOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: max()" begin
 

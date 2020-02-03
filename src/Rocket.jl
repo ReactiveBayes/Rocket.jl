@@ -1,4 +1,4 @@
-module Rx
+module Rocket
 
 include("utils.jl")
 

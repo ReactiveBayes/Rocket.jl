@@ -1,7 +1,7 @@
-module RxProxyObservableTest
+module RocketProxyObservableTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "ProxyObservable" begin
 
@@ -17,11 +17,11 @@ using Rx
         actor :: A
     end
 
-    Rx.actor_proxy!(proxy::MyActorProxy{L}, actor::A) where L where A = MyActor{L, A}(actor)
+    Rocket.actor_proxy!(proxy::MyActorProxy{L}, actor::A) where L where A = MyActor{L, A}(actor)
 
-    Rx.on_next!(actor::MyActor{L}, data::L) where L = next!(actor.actor, data + 1)
-    Rx.on_error!(actor::MyActor, err)               = error!(actor.actor, err)
-    Rx.on_complete!(actor::MyActor)                 = complete!(actor.actor)
+    Rocket.on_next!(actor::MyActor{L}, data::L) where L = next!(actor.actor, data + 1)
+    Rocket.on_error!(actor::MyActor, err)               = error!(actor.actor, err)
+    Rocket.on_complete!(actor::MyActor)                 = complete!(actor.actor)
 
     @testset begin
 
@@ -39,9 +39,9 @@ using Rx
         source :: S
     end
 
-    Rx.source_proxy!(proxy::MySourceProxy{L}, source::S) where L where S = MySource{L, S}(source)
+    Rocket.source_proxy!(proxy::MySourceProxy{L}, source::S) where L where S = MySource{L, S}(source)
 
-    function Rx.on_subscribe!(source::MySource, actor)
+    function Rocket.on_subscribe!(source::MySource, actor)
         next!(actor, 0)
         return subscribe!(source.source, actor)
     end

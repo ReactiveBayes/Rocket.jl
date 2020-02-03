@@ -1,7 +1,7 @@
-module RxSageOperatorTest
+module RocketSafeOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: safe()" begin
 

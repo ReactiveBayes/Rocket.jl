@@ -15,7 +15,7 @@ Stream of type `<: Subscribable{L}` where L referes to type of data of input Obs
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = of("Hello, world!")
 subscribe!(source |> lowercase(), logger())

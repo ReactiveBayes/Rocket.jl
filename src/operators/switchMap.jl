@@ -121,22 +121,22 @@ macro CreateSwitchMapOperator(name, mappingFn)
     innerActorName = Symbol(name, "SwitchMapInnerActor")
 
     operatorDefinition = quote
-        struct $operatorName{R} <: Rx.RightTypedOperator{R} end
+        struct $operatorName{R} <: Rocket.RightTypedOperator{R} end
 
-        function Rx.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){R}, source) where L where R
-            return Rx.proxy(R, source, ($proxyName){L, R}())
+        function Rocket.on_call!(::Type{L}, ::Type{R}, operator::($operatorName){R}, source) where L where R
+            return Rocket.proxy(R, source, ($proxyName){L, R}())
         end
     end
 
     proxyDefinition = quote
-        struct $proxyName{L, R} <: Rx.ActorSourceProxy end
+        struct $proxyName{L, R} <: Rocket.ActorSourceProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L, R}, actor::A) where L where R where A = $(actorName){L, R, A}(actor)
-        Rx.source_proxy!(proxy::($proxyName){L, R}, source)  where L where R         = Rx.SwitchMapSource{L}(source)
+        Rocket.actor_proxy!(proxy::($proxyName){L, R}, actor::A) where L where R where A = $(actorName){L, R, A}(actor)
+        Rocket.source_proxy!(proxy::($proxyName){L, R}, source)  where L where R         = Rocket.SwitchMapSource{L}(source)
     end
 
     actorDefinition = quote
-        mutable struct $actorName{L, R, A} <: Rx.Actor{L}
+        mutable struct $actorName{L, R, A} <: Rocket.Actor{L}
             actor :: A
             current_subscription_completed :: Bool
             current_subscription :: Union{Nothing, Teardown}
@@ -147,17 +147,17 @@ macro CreateSwitchMapOperator(name, mappingFn)
             ($actorName){L, R, A}(actor::A) where L where R where A = new(actor, false, nothing, false, false, nothing)
         end
 
-        Rx.is_exhausted(actor::($actorName)) = actor.switch_completed || actor.switch_failed || Rx.is_exhausted(actor.actor)
+        Rocket.is_exhausted(actor::($actorName)) = actor.switch_completed || actor.switch_failed || Rocket.is_exhausted(actor.actor)
 
-        struct $innerActorName{L, R} <: Rx.Actor{R}
+        struct $innerActorName{L, R} <: Rocket.Actor{R}
             switch_actor :: ($actorName){L, R}
         end
 
-        Rx.is_exhausted(actor::$innerActorName) = Rx.is_exhausted(actor.switch_actor)
+        Rocket.is_exhausted(actor::$innerActorName) = Rocket.is_exhausted(actor.switch_actor)
 
-        Rx.on_next!(actor::($innerActorName){L, R}, data::R) where L where R = Rx.next!(actor.switch_actor.actor, data)
-        Rx.on_error!(actor::($innerActorName),   err)                        = Rx.error!(actor.switch_actor, err)
-        Rx.on_complete!(actor::($innerActorName))                            = begin
+        Rocket.on_next!(actor::($innerActorName){L, R}, data::R) where L where R = Rocket.next!(actor.switch_actor.actor, data)
+        Rocket.on_error!(actor::($innerActorName),   err)                        = Rocket.error!(actor.switch_actor, err)
+        Rocket.on_complete!(actor::($innerActorName))                            = begin
             if actor.switch_actor.switch_completed
                 complete!(actor.switch_actor.actor)
             elseif actor.switch_actor.switch_failed
@@ -167,7 +167,7 @@ macro CreateSwitchMapOperator(name, mappingFn)
             end
         end
 
-        function Rx.on_next!(actor::($actorName){L, R}, data::L) where L where R
+        function Rocket.on_next!(actor::($actorName){L, R}, data::L) where L where R
             if actor.current_subscription !== nothing
                 unsubscribe!(actor.current_subscription)
             end
@@ -183,22 +183,22 @@ macro CreateSwitchMapOperator(name, mappingFn)
             end
         end
 
-        Rx.on_error!(actor::($actorName), err) = begin
+        Rocket.on_error!(actor::($actorName), err) = begin
             if !actor.switch_completed && !actor.switch_failed
                 actor.switch_failed     = true
                 actor.switch_last_error = err
 
                 if actor.current_subscription == nothing
-                    Rx.error!(actor.actor, err)
+                    Rocket.error!(actor.actor, err)
                 end
             end
         end
 
-        Rx.on_complete!(actor::($actorName))   = begin
+        Rocket.on_complete!(actor::($actorName))   = begin
             if !actor.switch_completed && !actor.switch_failed
                 actor.switch_completed = true
                 if actor.current_subscription == nothing
-                    Rx.complete!(actor.actor)
+                    Rocket.complete!(actor.actor)
                 end
             end
         end
@@ -213,6 +213,6 @@ macro CreateSwitchMapOperator(name, mappingFn)
     return esc(generated)
 end
 
-@CreateSwitchMapOperator(__RxGeneratedIdentity, (d) -> d)
+@CreateSwitchMapOperator(__RocketGeneratedIdentity, (d) -> d)
 
-switchMap(::Type{T}) where T = __RxGeneratedIdentitySwitchMapOperator{T}()
+switchMap(::Type{T}) where T = __RocketGeneratedIdentitySwitchMapOperator{T}()

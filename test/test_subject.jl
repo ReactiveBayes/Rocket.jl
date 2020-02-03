@@ -1,23 +1,23 @@
-module RxSubjectTest
+module RocketSubjectTest
 
 using Test
 using Suppressor
-using Rx
+using Rocket
 
 @testset "Subject" begin
 
     struct DummySubjectType end
 
     struct NotImplementedSubject{T} end
-    Rx.as_subject(::Type{<:NotImplementedSubject{T}}) where T = ValidSubject{T}()
+    Rocket.as_subject(::Type{<:NotImplementedSubject{T}}) where T = ValidSubject{T}()
 
     struct ActorMissingSubject{T} end
-    Rx.as_subject(::Type{<:ActorMissingSubject{T}})      where T = ValidSubject{T}()
-    Rx.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = ValidSubscribable{T}()
+    Rocket.as_subject(::Type{<:ActorMissingSubject{T}})      where T = ValidSubject{T}()
+    Rocket.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = ValidSubscribable{T}()
 
     struct SubscribableMissingSubject{T} end
-    Rx.as_subject(::Type{<:SubscribableMissingSubject{T}})      where T = ValidSubject{T}()
-    Rx.as_actor(::Type{<:SubscribableMissingSubject{T}})        where T = BaseActorTrait{T}()
+    Rocket.as_subject(::Type{<:SubscribableMissingSubject{T}})      where T = ValidSubject{T}()
+    Rocket.as_actor(::Type{<:SubscribableMissingSubject{T}})        where T = BaseActorTrait{T}()
 
     struct ImplementedSubject{T}
         values :: Vector{T}
@@ -25,15 +25,15 @@ using Rx
         ImplementedSubject{T}() where T = new(Vector{T}())
     end
 
-    Rx.as_subject(::Type{<:ImplementedSubject{T}})      where T = ValidSubject{T}()
-    Rx.as_actor(::Type{<:ImplementedSubject{T}})        where T = BaseActorTrait{T}()
-    Rx.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = ValidSubscribable{T}()
+    Rocket.as_subject(::Type{<:ImplementedSubject{T}})      where T = ValidSubject{T}()
+    Rocket.as_actor(::Type{<:ImplementedSubject{T}})        where T = BaseActorTrait{T}()
+    Rocket.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = ValidSubscribable{T}()
 
-    Rx.on_next!(subject::ImplementedSubject{T}, data::T) where T = push!(subject.values, data)
-    Rx.on_error!(subject::ImplementedSubject, err)               = error(err)
-    Rx.on_complete!(subject::ImplementedSubject)                 = begin end
+    Rocket.on_next!(subject::ImplementedSubject{T}, data::T) where T = push!(subject.values, data)
+    Rocket.on_error!(subject::ImplementedSubject, err)               = error(err)
+    Rocket.on_complete!(subject::ImplementedSubject)                 = begin end
 
-    function Rx.on_subscribe!(subject::ImplementedSubject, actor)
+    function Rocket.on_subscribe!(subject::ImplementedSubject, actor)
         complete!(actor)
         return VoidTeardown()
     end

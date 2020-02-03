@@ -18,7 +18,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from(1:3) |> safe() |> map(Int, (d) -> d > 1 ? error("Error") : d) |> rerun(3)
 

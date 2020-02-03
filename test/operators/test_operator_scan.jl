@@ -1,7 +1,7 @@
-module RxScanOperatorTest
+module RocketScanOperatorTest
 
 using Test
-using Rx
+using Rocket
 
 @testset "operator: scan()" begin
 

@@ -10,7 +10,7 @@ Sync actor provides a synchronized interface to `wait` for an actor to be notifi
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 source = timer(1, 1) |> take(3)
 actor  = LoggerActor{Int}()
@@ -72,7 +72,7 @@ Creation operator for the `SyncActor` actor.
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 actor  = LoggerActor{Int}()
 synced = sync(actor)

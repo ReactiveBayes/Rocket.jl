@@ -20,7 +20,7 @@ One of the variants of Subjects is the `BehaviorSubject`, which has a notion of 
 In the following example, the `BehaviorSubject` is initialized with the value 0 which the first Observer receives when it subscribes. The second Observer receives the value 2 even though it subscribed after the value 2 was sent.
 
 ```julia
-using Rx
+using Rocket
 
 subject = make_behavior_subject(Int, 0)
 

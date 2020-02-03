@@ -19,7 +19,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> filter((d) -> d % 2 == 0), logger())
@@ -92,7 +92,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Examples
 ```jldoctest
-using Rx
+using Rocket
 
 @CreateFilterOperator(EvenInt, Int, (d) -> d % 2 == 0)
 
@@ -115,39 +115,39 @@ macro CreateFilterOperator(name, L, filterFn)
     actorName    = Symbol(name, "FilterActor")
 
     operatorDefinition = quote
-        struct $operatorName <: Rx.TypedOperator{$L, $L} end
+        struct $operatorName <: Rocket.TypedOperator{$L, $L} end
 
-        function Rx.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
-            return Rx.proxy($L, source, ($proxyName)())
+        function Rocket.on_call!(::Type{$L}, ::Type{$L}, operator::($operatorName), source)
+            return Rocket.proxy($L, source, ($proxyName)())
         end
 
         Base.show(io::IO, operator::($operatorName)) = print(io, string($operatorName), "()")
     end
 
     proxyDefinition = quote
-        struct $proxyName <: Rx.ActorProxy end
+        struct $proxyName <: Rocket.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
+        Rocket.actor_proxy!(proxy::($proxyName), actor::A) where A = ($actorName){A}(actor)
 
         Base.show(io::IO, proxy::($proxyName)) = print(io, string($proxyName), "(", string($L), ")")
     end
 
     actorDefintion = quote
-        struct $actorName{A} <: Rx.Actor{$L}
+        struct $actorName{A} <: Rocket.Actor{$L}
             actor :: A
         end
 
-        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
+        Rocket.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
 
-        Rx.on_next!(a::($actorName), data::($L)) = begin
+        Rocket.on_next!(a::($actorName), data::($L)) = begin
             __inlined_lambda = $filterFn
             if (__inlined_lambda(data))
-                Rx.next!(a.actor, data)
+                Rocket.next!(a.actor, data)
             end
         end
 
-        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
-        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+        Rocket.on_error!(a::($actorName), err) = Rocket.error!(a.actor, err)
+        Rocket.on_complete!(a::($actorName))   = Rocket.complete!(a.actor)
 
         Base.show(io::IO, actor::($actorName)) = print(io, string($actorName), "(", string($L), ")")
     end
@@ -167,41 +167,41 @@ macro CreateFilterOperator(name, filterFn)
     actorName    = Symbol(name, "FilterActor")
 
     operatorDefinition = quote
-        struct $operatorName{L} <: Rx.LeftTypedOperator{L} end
+        struct $operatorName{L} <: Rocket.LeftTypedOperator{L} end
 
-        function Rx.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source) where L
-            return Rx.proxy(L, source, ($proxyName){L}())
+        function Rocket.on_call!(::Type{L}, ::Type{L}, operator::($operatorName){L}, source) where L
+            return Rocket.proxy(L, source, ($proxyName){L}())
         end
 
-        Rx.operator_right(operator::($operatorName){L}, ::Type{L}) where L = L
+        Rocket.operator_right(operator::($operatorName){L}, ::Type{L}) where L = L
 
         Base.show(io::IO, operator::($operatorName){L}) where L = print(io, string($operatorName), "(", L, ")")
     end
 
     proxyDefinition = quote
-        struct $proxyName{L} <: Rx.ActorProxy end
+        struct $proxyName{L} <: Rocket.ActorProxy end
 
-        Rx.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
+        Rocket.actor_proxy!(proxy::($proxyName){L}, actor::A) where L where A = ($actorName){L, A}(actor)
 
         Base.show(io::IO, proxy::($proxyName){L}) where L = print(io, string($proxyName), "(", L, ")")
     end
 
     actorDefintion = quote
-        struct $actorName{L, A} <: Rx.Actor{L}
+        struct $actorName{L, A} <: Rocket.Actor{L}
             actor :: A
         end
 
-        Rx.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
+        Rocket.is_exhausted(a::($actorName)) = is_exhausted(a.actor)
 
-        Rx.on_next!(a::($actorName){L}, data::L) where L = begin
+        Rocket.on_next!(a::($actorName){L}, data::L) where L = begin
             __inlined_lambda = $filterFn
             if (__inlined_lambda(data))
-                Rx.next!(a.actor, data)
+                Rocket.next!(a.actor, data)
             end
         end
 
-        Rx.on_error!(a::($actorName), err) = Rx.error!(a.actor, err)
-        Rx.on_complete!(a::($actorName))   = Rx.complete!(a.actor)
+        Rocket.on_error!(a::($actorName), err) = Rocket.error!(a.actor, err)
+        Rocket.on_complete!(a::($actorName))   = Rocket.complete!(a.actor)
 
         Base.show(io::IO, actor::($actorName){L}) where L = print(io, string($actorName), "(", L, ")")
     end

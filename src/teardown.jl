@@ -57,12 +57,12 @@ This function checks teardown trait behavior specification. Should be used expli
 # Examples
 
 ```jldoctest
-using Rx
+using Rocket
 
 struct MySubscription <: Teardown end
 
-Rx.as_teardown(::Type{<:MySubscription}) = UnsubscribableTeardownLogic()
-Rx.on_unsubscribe!(s::MySubscription)    = println("Unsubscribed!")
+Rocket.as_teardown(::Type{<:MySubscription}) = UnsubscribableTeardownLogic()
+Rocket.on_unsubscribe!(s::MySubscription)    = println("Unsubscribed!")
 
 subscription = MySubscription()
 unsubscribe!(subscription)
