@@ -1,5 +1,8 @@
 # Reactive extensions library for Julia
 
+[![Build Status](https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master)](https://travis-ci.org/biaslab/Rocket.jl)
+[![Documentation](https://img.shields.io/badge/doc-stable-blue.svg)](https://biaslab.github.io/rx/docs)
+
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
 In order to achieve best performance and convenient API Rocket.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
