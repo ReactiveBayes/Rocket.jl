@@ -1,7 +1,7 @@
 # Reactive extensions library for Julia
 
 [![Build Status](https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master)](https://travis-ci.org/biaslab/Rocket.jl)
-[![Documentation](https://img.shields.io/badge/doc-stable-blue.svg)](https://biaslab.github.io/rx/docs)
+[![Documentation](https://img.shields.io/badge/doc-stable-blue.svg)](https://biaslab.github.io/rocket/docs)
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
@@ -21,7 +21,7 @@ The essential concepts in Rocket.jl are:
 
 ## Documentation
 
-A full documentation is available at [BIASlab website](http://biaslab.github.io/rx/docs/).
+A full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
 
 It is also possible to build a documentation locally. Just use
 
