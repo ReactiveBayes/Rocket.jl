@@ -118,9 +118,9 @@ Rocket.jl has been designed with a focus on efficiency, scalability and maximum 
 
 Code is available in [demos folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
 
-![Rocket.jl vs Reactive.jl](https://github.com/biaslab/Rocket.jl/tree/master/demo/pics/reactive-rocket.png)
+![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.png?raw=true "Rocket.jl vs Reactive.jl")
 
-![Rocket.jl vs Signals.jl](https://github.com/biaslab/Rocket.jl/tree/master/demo/pics/signals-rocket.png)
+![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.png?raw=true "Rocket.jl vs Signals.jl")
 
 ## TODO
 
