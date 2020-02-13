@@ -36,6 +36,7 @@ makedocs(
                 "Sync"          => "actors/types/sync.md",
                 "Keep"          => "actors/types/keep.md",
                 "Void"          => "actors/types/void.md",
+                "Function"      => "actors/types/function.md",
             ],
             "Subscriptions" => [
                 "Void"  => "teardown/types/void.md",

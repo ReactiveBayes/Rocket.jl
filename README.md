@@ -19,6 +19,10 @@ The essential concepts in Rocket.jl are:
 - __Operators__: are objects that enable a functional programming style to dealing with collections with operations like `map`, `filter`, `reduce`, etc.
 - __Subject__: the way of multicasting a message to multiple Observers.
 
+## Quick start
+
+For a quick start and basic introduction take a look at the [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo) and [Quick Start notebook](https://github.com/biaslab/Rocket.jl/blob/master/demo/00_quick_start.ipynb).
+
 ## Documentation
 
 A full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
@@ -45,9 +49,9 @@ In Rocket.jl you will use an observable.
 
 ```Julia
 subscription = subscribe!(source_of_values, lambda(
-    on_next  = (data)  -> doSomethingWithMyData(data),
-    on_error = (error) -> doSomethingWithAnError(error),
-    complete = ()      -> println("Completed! You deserve some coffee man")
+    on_next     = (data)  -> doSomethingWithMyData(data),
+    on_error    = (error) -> doSomethingWithAnError(error),
+    on_complete = ()      -> println("Completed!")
 ))
 ```
 
@@ -86,11 +90,13 @@ Rocket.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(
 Rocket.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
 ```
 
-For debugging purposes you can use a general `LambdaActor` actor.
+For debugging purposes you can use a general `LambdaActor` actor or just pass a function object as an actor in `subscribe!` function.
 
 ## Operators
 
 What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
+
+List of all available operators can be found in the documentation ([link](https://biaslab.github.io/rocket/docs/operators/all.html)).
 
 ```Julia
 squared_int_values = source_of_int_values |> map(Int, (d) -> d ^ 2)

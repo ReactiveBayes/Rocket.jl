@@ -38,9 +38,9 @@ In contrast, Rocket.jl uses observables.
 
 ```Julia
 subscription = subscribe!(source_of_values, lambda(
-    on_next  = (data)  -> doSomethingWithMyData(data),
-    on_error = (error) -> doSomethingWithAnError(error),
-    complete = ()      -> println("Completed! You deserve some coffee man")
+    on_next     = (data)  -> doSomethingWithMyData(data),
+    on_error    = (error) -> doSomethingWithAnError(error),
+    on_complete = ()      -> println("Completed!")
 ))
 ```
 
