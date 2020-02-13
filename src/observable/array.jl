@@ -130,8 +130,8 @@ subscribe!(source, logger())
 
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-from(x)                      = from(as_array(x))
-from(a::Array{D, 1}) where D = ArrayObservable{D}(a)
+from(x)                    = from(as_array(x))
+from(a::Vector{D}) where D = ArrayObservable{D}(a)
 
 Base.:(==)(left::ArrayObservable{D},  right::ArrayObservable{D})  where D           = left.values == right.values
 Base.:(==)(left::ArrayObservable{D1}, right::ArrayObservable{D2}) where D1 where D2 = false

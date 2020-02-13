@@ -112,6 +112,16 @@ Below is a performance comparison between different approaches, with an Observab
 |------|---------------------|------------------------------------|---------------------------------|
 | Time |3.174 μs (9 allocations: 8.33 KiB)|3.489 μs (11 allocations: 8.36 KiB)|25.780 μs (489 allocations: 15.84 KiB)|
 
+## Rocket.jl is fast
+
+Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl) and [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl).
+
+Code is available in [demos folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
+
+![Rocket.jl vs Reactive.jl](https://github.com/biaslab/Rocket.jl/tree/master/demo/pics/reactive-rocket.png)
+
+![Rocket.jl vs Signals.jl](https://github.com/biaslab/Rocket.jl/tree/master/demo/pics/signals-rocket.png)
+
 ## TODO
 
 This package in under development and some features of reactive framework may be missing

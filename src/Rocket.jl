@@ -7,6 +7,7 @@ include("teardown/void.jl")
 include("teardown/chain.jl")
 
 include("actor.jl")
+include("actor/function.jl")
 include("actor/lambda.jl")
 include("actor/logger.jl")
 include("actor/void.jl")
