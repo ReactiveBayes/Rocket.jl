@@ -251,7 +251,7 @@ macro GenerateCombineLatestObservableActorWrapper(N, pname, batched, mappingFn)
         function Rocket.__next_check_and_emit(wrapper::($name))
             if !wrapper.is_completed && !wrapper.is_failed && $(reduce((current, i) -> Expr(:(&&), current, begin l = Symbol(:latest, i); quote wrapper.$l !== nothing end end), collect(2:N), init = begin l = Symbol(:latest, 1); quote wrapper.$l !== nothing end end))
                 __inline_lambda = $mappingFn
-                next!(wrapper.actor, $(Expr(:call, :__inline_lambda, Expr(:tuple, map(i -> begin l = Symbol(:latest, i); quote wrapper.$l end  end, collect(1:N))...))))
+                Rocket.next!(wrapper.actor, $(Expr(:call, :__inline_lambda, Expr(:tuple, map(i -> begin l = Symbol(:latest, i); quote wrapper.$l end  end, collect(1:N))...))))
                 if $batched
                     $(Expr(:block, map(i -> begin
                         c = Expr(:ref, :(wrapper.complete_status), i)

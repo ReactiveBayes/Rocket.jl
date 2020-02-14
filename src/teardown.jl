@@ -40,7 +40,7 @@ Default teardown logic trait behavour. Invalid teardwon object cannot be used in
 
 See also: [`TeardownLogic`](@ref), [`on_unsubscribe!`](@ref), [`unsubscribe!`](@ref)
 """
-struct InvalidTeardownLogic      <: TeardownLogic end
+struct InvalidTeardownLogic        <: TeardownLogic end
 
 """
 Abstract type for any teardown object. Each teardown object must be a subtype of `Teardown`.
