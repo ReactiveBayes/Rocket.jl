@@ -33,8 +33,8 @@ struct DelayProxy{L} <: ActorSourceProxy
     delay :: Int
 end
 
-actor_proxy!(proxy::DelayProxy{L}, actor::A) where L where A = DelayActor{L, A}(proxy.delay, actor)
-source_proxy!(proxy::DelayProxy{L}, source)  where L         = DelayObservable{L}(source)
+actor_proxy!(proxy::DelayProxy{L}, actor::A) where { L, A } = DelayActor{L, A}(proxy.delay, actor)
+source_proxy!(proxy::DelayProxy{L}, source)  where L        = DelayObservable{L}(source)
 
 struct DelayDataMessage{L}
     data :: L

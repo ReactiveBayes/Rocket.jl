@@ -76,7 +76,7 @@ Rocket.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(
 Rocket.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
 ```
 
-For debugging purposes you can use a general [`LambdaActor`](@ref) actor.
+For debugging purposes you can use a general [`LambdaActor`](@ref) actor or just pass a function object as an actor in `subscribe!` function..
 
 ## Operators
 
@@ -87,16 +87,3 @@ subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), LambdaActor{Int}(
     on_next = (data) -> println(data)
 ))
 ```
-
-You can also use a special macro which is defined for some operators to produce an optimized version of some operations on observables, without using the callbacks.
-
-```Julia
-@CreateMapOperator("SquaredInt", Int, Int, (d) -> d ^ 2)
-squared_int_values = source_of_int_values |> SquaredIntMapOperator()
-```
-
-Below is a performance comparison between different approaches, with an Observable of 500 integers and a `StoreActor`.
-
-|      | Using regular array | Using macro generated map operator | Using lambda based map operator |
-|------|---------------------|------------------------------------|---------------------------------|
-| Time |3.174 μs (9 allocations: 8.33 KiB)|3.489 μs (11 allocations: 8.36 KiB)|25.780 μs (489 allocations: 15.84 KiB)|

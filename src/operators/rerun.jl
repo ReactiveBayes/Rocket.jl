@@ -51,8 +51,8 @@ struct RerunProxy{L} <: ActorSourceProxy
     count :: Int
 end
 
-actor_proxy!(proxy::RerunProxy{L}, actor::A)   where L where A = RerunActor{L, A}(proxy.count, actor, nothing, nothing)
-source_proxy!(proxy::RerunProxy{L}, source::S) where L where S = RerunSource{L, S}(source)
+actor_proxy!(proxy::RerunProxy{L}, actor::A)   where { L, A } = RerunActor{L, A}(proxy.count, actor, nothing, nothing)
+source_proxy!(proxy::RerunProxy{L}, source::S) where { L, S } = RerunSource{L, S}(source)
 
 mutable struct RerunActor{L, A} <: Actor{L}
     count :: Int

@@ -6,7 +6,7 @@ using Rocket
 @testset "operator: reduce()" begin
 
     @testset begin
-        source = from(1:5) |> reduce(Int, (d, c) -> c + d)
+        source = from(1:5) |> reduce(Int, +, 0)
         actor  = keep(Int)
 
         subscribe!(source, actor)
@@ -24,7 +24,7 @@ using Rocket
     end
 
     @testset begin
-        source = completed() |> reduce(Int, (d, c) -> c + d)
+        source = completed(Int) |> reduce(+)
         actor  = keep(Int)
 
         subscribe!(source, actor)
@@ -32,15 +32,13 @@ using Rocket
         @test actor.values == [ ]
     end
 
-    @CreateReduceOperator(Accumulate, Int, Int, (d, c) -> c + d)
-
     @testset begin
-        source = from(1:5) |> AccumulateReduceOperator(0)
+        source = completed(Int) |> reduce(Int, +, 2)
         actor  = keep(Int)
 
         subscribe!(source, actor)
 
-        @test actor.values == [ 15 ]
+        @test actor.values == [ 2 ]
     end
 
 end

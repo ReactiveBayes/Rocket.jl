@@ -32,6 +32,12 @@ using Rocket
         @test actor.values == [ ]
     end
 
+    @testset begin
+        source = of(1)
+
+        @test_throws ErrorException source |> some()
+    end
+
 end
 
 end

@@ -49,8 +49,8 @@ struct CatchErrorProxy{L} <: ActorSourceProxy
     selectorFn :: Function
 end
 
-actor_proxy!(proxy::CatchErrorProxy{L},  actor::A)  where L where A = CatchErrorActor{L, A}(proxy.selectorFn, actor, false, nothing, nothing)
-source_proxy!(proxy::CatchErrorProxy{L}, source::S) where L where S = CatchErrorSource{L, S}(source)
+actor_proxy!(proxy::CatchErrorProxy{L},  actor::A)  where { L, A } = CatchErrorActor{L, A}(proxy.selectorFn, actor, false, nothing, nothing)
+source_proxy!(proxy::CatchErrorProxy{L}, source::S) where { L, S } = CatchErrorSource{L, S}(source)
 
 mutable struct CatchErrorActor{L, A} <: Actor{L}
     selectorFn           :: Function

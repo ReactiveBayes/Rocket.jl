@@ -66,7 +66,7 @@ struct SumProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::SumProxy{L}, actor::A) where L where A = SumActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::SumProxy{L}, actor::A) where { L, A } = SumActor{L, A}(proxy.from, actor)
 
 mutable struct SumActor{L, A} <: Actor{L}
     current :: Union{L, Nothing}

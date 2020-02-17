@@ -38,11 +38,12 @@ function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, 
     return proxy(L, source, SomeProxy{L}())
 end
 
+operator_right(operator::SomeOperator, ::Type{L})                 where L = error("some() operator can operate on streams with data type '<: Union{Nothing, L}', but '<: L' was found.")
 operator_right(operator::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
 
 struct SomeProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::SomeProxy{L}, actor::A) where L where A = SomeActor{L, A}(actor)
+actor_proxy!(proxy::SomeProxy{L}, actor::A) where { L, A } = SomeActor{L, A}(actor)
 
 struct SomeActor{L, A} <: Actor{Union{L, Nothing}}
     actor :: A

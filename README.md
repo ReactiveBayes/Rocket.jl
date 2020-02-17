@@ -61,9 +61,6 @@ At some point of time you may decide to stop listening for new messages.
 unsubscribe!(subscription)
 ```
 
-| Tip | Do not use lambda functions for real computations as it lacks of performance. Use an Actor based approach instead. |
-| --- | - |
-
 ## Actors
 
 To process messages from an observable you have to define an Actor that know how to react on incoming messages.
@@ -104,19 +101,6 @@ subscribe!(squared_int_values, lambda(
     on_next = (data) -> println(data)
 ))
 ```
-
-You can also use a special macro which is defined for some operators to produce an optimized versions of some operations on observables without using the callbacks.
-
-```Julia
-@CreateMapOperator("Squared", Int, Int, (d) -> d ^ 2)
-squared_int_values = source_of_int_values |> SquaredMapOperator()
-```
-
-Below is a performance comparison between different approaches, with an Observable of 500 integers and a `StoreActor`.
-
-|      | Using regular array | Using macro generated map operator | Using lambda based map operator |
-|------|---------------------|------------------------------------|---------------------------------|
-| Time |3.174 μs (9 allocations: 8.33 KiB)|3.489 μs (11 allocations: 8.36 KiB)|25.780 μs (489 allocations: 15.84 KiB)|
 
 ## Rocket.jl is fast
 

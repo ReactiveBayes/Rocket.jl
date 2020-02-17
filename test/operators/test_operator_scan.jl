@@ -6,12 +6,21 @@ using Rocket
 @testset "operator: scan()" begin
 
     @testset begin
-        source = from(1:5) |> scan(Int, (d, c) -> c + d)
+        source = from(1:5) |> scan(+)
         actor  = keep(Int)
 
         subscribe!(source, actor)
 
         @test actor.values == [1, 3, 6, 10, 15]
+    end
+
+    @testset begin
+        source = from(1:5) |> scan(Int, +, 2)
+        actor  = keep(Int)
+
+        subscribe!(source, actor)
+
+        @test actor.values == [3, 5, 8, 12, 17]
     end
 
     @testset begin
@@ -24,7 +33,7 @@ using Rocket
     end
 
     @testset begin
-        source = completed() |> scan(Int, (d, c) -> c + d)
+        source = completed(Int) |> scan(+)
         actor  = keep(Int)
 
         subscribe!(source, actor)
@@ -32,15 +41,13 @@ using Rocket
         @test actor.values == [ ]
     end
 
-    @CreateScanOperator(Accumulate, Int, Int, (d, c) -> c + d)
-
     @testset begin
-        source = from(1:5) |> AccumulateScanOperator(0)
+        source = completed(Int) |> scan(Int, +, 0)
         actor  = keep(Int)
 
         subscribe!(source, actor)
 
-        @test actor.values == [1, 3, 6, 10, 15]
+        @test actor.values == [ ]
     end
 
 end

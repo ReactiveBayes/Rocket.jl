@@ -74,7 +74,7 @@ struct LastProxy{L} <: ActorProxy
     default :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::LastProxy{L}, actor::A) where L where A = LastActor{L, A}(proxy.default, actor)
+actor_proxy!(proxy::LastProxy{L}, actor::A) where { L, A } = LastActor{L, A}(proxy.default, actor)
 
 mutable struct LastActor{L, A} <: Actor{L}
     last   :: Union{L, Nothing}

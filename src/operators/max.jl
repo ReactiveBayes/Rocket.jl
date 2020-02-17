@@ -48,7 +48,7 @@ struct MaxProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MaxProxy{L}, actor::A) where L where A = MaxActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::MaxProxy{L}, actor::A) where { L, A } = MaxActor{L, A}(proxy.from, actor)
 
 mutable struct MaxActor{L, A} <: Actor{L}
     current :: Union{L, Nothing}

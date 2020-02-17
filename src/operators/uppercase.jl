@@ -41,7 +41,7 @@ operator_right(::UppercaseOperator, ::Type{L}) where L = L
 
 struct UppercaseProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::UppercaseProxy{L}, actor::A) where L where A = UppercaseActor{L, A}(actor)
+actor_proxy!(proxy::UppercaseProxy{L}, actor::A) where { L, A } = UppercaseActor{L, A}(actor)
 
 struct UppercaseActor{L, A} <: Actor{L}
     actor :: A

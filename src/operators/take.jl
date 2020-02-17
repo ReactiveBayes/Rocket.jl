@@ -57,7 +57,7 @@ mutable struct TakeInnerActor{L, A} <: Actor{L}
     actor        :: A
     subscription
 
-    TakeInnerActor{L, A}(max_count::Int, actor::A) where L where A = begin
+    TakeInnerActor{L, A}(max_count::Int, actor::A) where { L, A } = begin
         take_actor = new()
 
         take_actor.is_completed = false
@@ -109,7 +109,7 @@ struct TakeSource{L} <: Subscribable{L}
     TakeSource{L}(max_count::Int, source) where L = new(max_count, source)
 end
 
-function on_subscribe!(observable::TakeSource{L}, actor::A) where L where A
+function on_subscribe!(observable::TakeSource{L}, actor::A) where { L, A }
     inner_actor  = TakeInnerActor{L, A}(observable.max_count, actor)
 
     subscription = subscribe!(observable.source, inner_actor)

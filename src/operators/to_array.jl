@@ -40,13 +40,13 @@ operator_right(operator::ToArrayOperator, ::Type{L}) where L = Vector{L}
 
 struct ToArrayProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::ToArrayProxy{L}, actor::A) where L where A = ToArrayActor{L, A}(actor)
+actor_proxy!(proxy::ToArrayProxy{L}, actor::A) where { L, A } = ToArrayActor{L, A}(actor)
 
 struct ToArrayActor{L, A} <: Actor{L}
     values :: Vector{L}
     actor  :: A
 
-    ToArrayActor{L, A}(actor::A) where L where A = new(Vector{L}(), actor)
+    ToArrayActor{L, A}(actor::A) where { L, A } = new(Vector{L}(), actor)
 end
 
 is_exhausted(actor::ToArrayActor) = is_exhausted(actor.actor)

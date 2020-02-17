@@ -40,7 +40,7 @@ end
 
 struct CountProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::CountProxy{L}, actor::A) where L where A = CountActor{L, A}(0, actor)
+actor_proxy!(proxy::CountProxy{L}, actor::A) where { L, A } = CountActor{L, A}(0, actor)
 
 mutable struct CountActor{L, A} <: Actor{L}
     current :: Int

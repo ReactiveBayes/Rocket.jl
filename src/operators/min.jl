@@ -48,7 +48,7 @@ struct MinProxy{L} <: ActorProxy
     from :: Union{L, Nothing}
 end
 
-actor_proxy!(proxy::MinProxy{L}, actor::A) where L where A = MinActor{L, A}(proxy.from, actor)
+actor_proxy!(proxy::MinProxy{L}, actor::A) where { L, A } = MinActor{L, A}(proxy.from, actor)
 
 mutable struct MinActor{L, A} <: Actor{L}
     current :: Union{L, Nothing}

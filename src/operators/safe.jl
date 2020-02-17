@@ -25,8 +25,8 @@ operator_right(operator::SafeOperator, ::Type{L}) where L = L
 
 struct SafeProxy{L} <: ActorSourceProxy end
 
-actor_proxy!(proxy::SafeProxy{L}, actor::A)   where L where A = SafeActor{L, A}(actor, false, nothing)
-source_proxy!(proxy::SafeProxy{L}, source::S) where L where S = SafeSource{L, S}(source)
+actor_proxy!(proxy::SafeProxy{L}, actor::A)   where { L, A } = SafeActor{L, A}(actor, false, nothing)
+source_proxy!(proxy::SafeProxy{L}, source::S) where { L, S } = SafeSource{L, S}(source)
 
 mutable struct SafeActor{L, A} <: Actor{L}
     actor :: A

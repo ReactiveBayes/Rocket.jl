@@ -46,7 +46,7 @@ operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{L, Int}
 
 struct EnumerateProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::EnumerateProxy{L}, actor::A) where L where A = EnumerateActor{L, A}(1, actor)
+actor_proxy!(proxy::EnumerateProxy{L}, actor::A) where { L, A } = EnumerateActor{L, A}(1, actor)
 
 mutable struct EnumerateActor{L, A} <: Actor{L}
     current :: Int

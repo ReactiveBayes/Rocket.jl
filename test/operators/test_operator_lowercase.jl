@@ -3,7 +3,7 @@ module RocketLowercaseOperatorTest
 using Test
 using Rocket
 
-@testset "lowercase()" begin
+@testset "operator: lowercase()" begin
 
     @testset begin
         source = from("Hello, world") |> lowercase()
