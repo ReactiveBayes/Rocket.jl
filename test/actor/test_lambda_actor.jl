@@ -42,7 +42,18 @@ using Rocket
         @test lambda(Int; on_next     = n) isa LambdaActor{Int, typeof(n), Nothing, Nothing}
         @test lambda(Int; on_error    = e) isa LambdaActor{Int, Nothing, typeof(e), Nothing}
         @test lambda(Int; on_complete = c) isa LambdaActor{Int, Nothing, Nothing, typeof(c)}
-        @test lambda(on_next = (d) -> println(d))      isa Rocket.LambdaActorFactory
+        @test lambda(Int; on_next     = n, on_error    = e) isa LambdaActor{Int, typeof(n), typeof(e), Nothing  }
+        @test lambda(Int; on_error    = e, on_complete = c) isa LambdaActor{Int, Nothing,   typeof(e), typeof(c)}
+        @test lambda(Int; on_complete = c, on_next     = n) isa LambdaActor{Int, typeof(n), Nothing,   typeof(c)}
+        @test lambda(Int; on_next     = n, on_error    = e, on_complete = c) isa LambdaActor{Int, typeof(n), typeof(e), typeof(c)}
+
+        @test lambda(on_next     = n) isa Rocket.LambdaActorFactory{typeof(n), Nothing, Nothing}
+        @test lambda(on_error    = e) isa Rocket.LambdaActorFactory{Nothing, typeof(e), Nothing}
+        @test lambda(on_complete = c) isa Rocket.LambdaActorFactory{Nothing, Nothing, typeof(c)}
+        @test lambda(on_next     = n, on_error    = e) isa Rocket.LambdaActorFactory{typeof(n), typeof(e), Nothing}
+        @test lambda(on_error    = e, on_complete = c) isa Rocket.LambdaActorFactory{Nothing, typeof(e), typeof(c)}
+        @test lambda(on_complete = c, on_next     = n) isa Rocket.LambdaActorFactory{typeof(n), Nothing, typeof(c)}
+        @test lambda(on_next     = n, on_error    = e, on_complete = c) isa Rocket.LambdaActorFactory{typeof(n), typeof(e), typeof(c)}
     end
 end
 
