@@ -27,20 +27,20 @@ subscribe!(source, (t) -> println(t))
 
 See also: [`Actor`](@ref), [`subscribe!`](@ref)
 """
-struct FunctionActor{D} <: Actor{D}
-    on_next :: Function
+struct FunctionActor{D, F} <: Actor{D}
+    on_next :: F
 end
 
 on_next!(actor::FunctionActor{D}, data::D) where D = actor.on_next(data)
 on_error!(actor::FunctionActor, err)               = error(err)
 on_complete!(actor::FunctionActor)                 = begin end
 
-struct FunctionActorFactory <: AbstractActorFactory
-    on_next :: Function
+struct FunctionActorFactory{F} <: AbstractActorFactory
+    on_next :: F
 end
 
-create_actor(::Type{L}, factory::FunctionActorFactory) where L = FunctionActor{L}(factory.on_next)
+create_actor(::Type{L}, factory::FunctionActorFactory{F}) where { L, F } = FunctionActor{L, F}(factory.on_next)
 
-function subscribe!(source, fn::Function)
-    return subscribe!(source, FunctionActorFactory(fn))
+function subscribe!(source, fn::F) where { F <: Function }
+    return subscribe!(source, FunctionActorFactory{F}(fn))
 end
