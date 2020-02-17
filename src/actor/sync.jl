@@ -103,7 +103,27 @@ synced isa SyncActor{Int, LoggerActor{Int}}
 
 # output
 true
+```
 
+Can also be used with an `<: AbstractActorFactory` as an argument. In this case `sync` function will return a special actor factory object, which
+will store all created actors in array and wrap them with a `sync` function. `wait(sync_factory)` method will wait for all of the created actors to be completed in the order of creation (but only once for each of them).
+
+```jldoctest
+using Rocket
+
+values = Int[]
+
+factory  = lambda(on_next = (d) -> push!(values, d))
+synced   = sync(factory)
+
+subscribe!(interval(10) |> take(5), synced)
+
+wait(synced)
+
+println(values)
+
+# output
+[0, 1, 2, 3, 4]
 ```
 
 See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
