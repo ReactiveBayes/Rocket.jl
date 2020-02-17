@@ -16,7 +16,7 @@ using Rocket
     @testset begin
         values  = []
         source = timer(0, 1) |> safe() |> map(Int, (d) -> d > 2 ? error("d") : d) |> rerun(2)
-        actor  = sync(LambdaActor{Int}(
+        actor  = sync(lambda(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(values, e),
             on_complete = ()  -> push!(values, "completed")
@@ -31,7 +31,7 @@ using Rocket
     @testset begin
         values = []
         source = timer(0, 1) |> safe() |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2)
-        actor  = sync(LambdaActor{Int}(
+        actor  = sync(lambda(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(values, e),
             on_complete = ()  -> push!(values, "completed")

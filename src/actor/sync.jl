@@ -65,8 +65,31 @@ function Base.wait(actor::SyncActor)
     end
 end
 
+mutable struct SyncActorFactoryHandler
+    is_completed :: Bool
+    actor
+end
+
+struct SyncActorFactory{F} <: AbstractActorFactory
+    factory :: F
+    created :: Vector{SyncActorFactoryHandler}
+
+    SyncActorFactory{F}(factory::F) where { F <: AbstractActorFactory } = new(factory, Vector{SyncActorFactoryHandler}())
+end
+
+function create_actor(::Type{L}, factory::SyncActorFactory) where L
+    actor = sync(create_actor(L, factory.factory))
+    push!(factory.created, SyncActorFactoryHandler(false, actor))
+    return actor
+end
+
+function Base.wait(factory::SyncActorFactory)
+    foreach((h) -> begin wait(h.actor); h.is_completed = true end, filter((h) -> !(h.is_completed), factory.created))
+end
+
 """
     sync(actor::A) where A
+    sync(factory::F) where { F <: AbstractActorFactory }
 
 Creation operator for the `SyncActor` actor.
 
@@ -86,6 +109,7 @@ true
 See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 """
 sync(actor::A) where A = as_sync(as_actor(A), actor)
+sync(factory::F) where { F <: AbstractActorFactory } = SyncActorFactory{F}(factory)
 
 as_sync(::InvalidActorTrait, actor)                    = throw(InvalidActorTraitUsageError(actor))
 as_sync(::ActorTrait{D},     actor::A) where D where A = SyncActor{D, A}(actor)

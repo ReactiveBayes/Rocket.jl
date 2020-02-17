@@ -1,49 +1,17 @@
 export LambdaActor, lambda
 
 """
-    LambdaActor{D}(; on_next = nothing, on_error = nothing, on_complete = nothing) where D
+    LambdaActor{D, N, E, C}(on_next::N, on_error::E, on_complete::C) where D
 
 Lambda actor wraps `on_next`, `on_error`, `on_complete` callbacks for data, error and complete events.
+Should not be used explicitly, use [`lambda`](@ref) creation operator instead.
 
 # Constructor arguments
 - `on_next`: Callback for data event. Optional. Default is `nothing`.
 - `on_error`: Callback for error event. Optional. Default is `nothing`.
 - `on_complete`: Callback for complete event. Optional. Default is `nothing`.
 
-# Examples
-
-```jldoctest
-using Rocket
-
-source = from([ 0, 1, 2 ])
-subscribe!(source, LambdaActor{Int}(
-    on_next = (d) -> println("Data event: \$d")
-))
-;
-
-# output
-
-Data event: 0
-Data event: 1
-Data event: 2
-```
-
-```jldoctest
-using Rocket
-
-source = from([ 0, 1, 2 ])
-subscribe!(source, LambdaActor{Int}(
-    on_complete = () -> println("Completed")
-));
-;
-
-# output
-
-Completed
-
-```
-
-See also: [`Actor`](@ref)
+See also: [`Actor`](@ref), [`lambda`](@ref)
 """
 struct LambdaActor{D, NextCallback, ErrorCallback, CompleteCallback} <: Actor{D}
     on_next     :: NextCallback

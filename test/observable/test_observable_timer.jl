@@ -14,7 +14,7 @@ using Rocket
         errors      = Vector{Any}()
         completions = Vector{Int}()
 
-        actor  = LambdaActor{Int}(
+        actor  = lambda(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(errors, e),
             on_complete = ()  -> push!(completions, 0)
@@ -37,7 +37,7 @@ using Rocket
         errors      = Vector{Any}()
         completions = Vector{Int}()
 
-        actor  = LambdaActor{Int}(
+        actor  = lambda(
             on_next     = (d) -> push!(values, d),
             on_error    = (e) -> push!(errors, e),
             on_complete = ()  -> push!(completions, 0)
