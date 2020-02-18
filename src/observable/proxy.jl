@@ -69,9 +69,9 @@ An interface for proxied Observables.
 
 See also: [`proxy`](@ref)
 """
-struct ProxyObservable{D} <: Subscribable{D}
-    proxied_source
-    proxy
+struct ProxyObservable{D, S, P} <: Subscribable{D}
+    proxied_source :: S
+    proxy          :: P
 end
 
 function on_subscribe!(observable::ProxyObservable, actor)
@@ -150,4 +150,4 @@ proxy(::Type{D}, source, proxy) where D = as_proxy_observable(D, call_source_pro
 as_proxy_observable(::Type{D}, proxied_source::S, proxy) where D where S = as_proxy_observable(D, as_subscribable(S), proxied_source, proxy)
 
 as_proxy_observable(::Type{D}, ::InvalidSubscribable,  proxied_source, proxy) where D = throw(InvalidSubscribableTraitUsageError(proxied_source))
-as_proxy_observable(::Type{D}, ::ValidSubscribable,    proxied_source, proxy) where D = ProxyObservable{D}(proxied_source, proxy)
+as_proxy_observable(::Type{D}, ::ValidSubscribable,    proxied_source::S, proxy::P) where { D, S, P } = ProxyObservable{D, S, P}(proxied_source, proxy)
