@@ -1,4 +1,4 @@
-module RocketNoopOperatorTest
+module RocketMulticastOperatorTest
 
 using Test
 using Rocket
