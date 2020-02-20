@@ -1,6 +1,3 @@
-export rmap
-export @CreateMapOperator
-
 import Base: map
 import Base: show
 

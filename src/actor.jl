@@ -9,7 +9,6 @@ export is_exhausted
 export InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
 export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
 export MissingOnNextImplementationError, MissingOnErrorImplementationError, MissingOnCompleteImplementationError
-export MissingIsExhaustedImplementationError
 export MissingCreateActorFactoryImplementationError
 
 import Base: show
