@@ -23,7 +23,7 @@ struct AsyncActor{D, A} <: Actor{D}
         channel = Channel{D}(Inf)
         task    = @async begin
             while true
-                message = take!(ch)::D
+                message = take!(channel)::D
                 next!(actor, message)
             end
         end

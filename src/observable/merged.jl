@@ -111,7 +111,11 @@ using Rocket
 
 observable = merged((timer(100, 1), of(2.0), from("Hello"))) |> take(10)
 
-subscribe!(observable, logger())
+actor = sync(logger())
+
+subscribe!(observable, actor)
+
+wait(actor)
 ;
 
 # output
