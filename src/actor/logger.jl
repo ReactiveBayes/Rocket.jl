@@ -3,46 +3,46 @@ export LoggerActor, logger
 """
     LoggerActor{D}(name::String = "LogActor") where D
 
-    The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent from an Observable.
+The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent from an Observable.
 
-    # Constructor arguments
-    - `name`: name of the logger. Optional. Default is `LogActor`.
+# Constructor arguments
+- `name`: name of the logger. Optional. Default is `LogActor`.
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from([ 0, 1, 2 ])
-    subscribe!(source, LoggerActor{Int}())
-    ;
+source = from([ 0, 1, 2 ])
+subscribe!(source, LoggerActor{Int}())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 0
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Completed
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Completed
 
-    ```
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from([ 0, 1, 2 ])
-    subscribe!(source, LoggerActor{Int}("CustomName"))
-    ;
+source = from([ 0, 1, 2 ])
+subscribe!(source, LoggerActor{Int}("CustomName"))
+;
 
-    # output
+# output
 
-    [CustomName] Data: 0
-    [CustomName] Data: 1
-    [CustomName] Data: 2
-    [CustomName] Completed
+[CustomName] Data: 0
+[CustomName] Data: 1
+[CustomName] Data: 2
+[CustomName] Completed
 
-    ```
+```
 
-    See also: [`Actor`](@ref), [`logger`](@ref)
+See also: [`Actor`](@ref), [`logger`](@ref)
 """
 struct LoggerActor{D} <: Actor{D}
     name :: String
@@ -66,21 +66,21 @@ create_actor(::Type{L}, factory::LoggerActorFactory) where L = LoggerActor{L}(fa
     logger(name = "LogActor")
     logger(::Type{T}, name = "LogActor") where T
 
-    Creation operator for the `LoggerActor` actor.
+Creation operator for the `LoggerActor` actor.
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    actor = logger(Int)
-    actor isa LoggerActor{Int}
+actor = logger(Int)
+actor isa LoggerActor{Int}
 
-    # output
-    true
-    ```
+# output
+true
+```
 
-    See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
+See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
 """
 logger(name = "LogActor")                    = LoggerActorFactory(name)
 logger(::Type{T}, name = "LogActor") where T = LoggerActor{T}(name)

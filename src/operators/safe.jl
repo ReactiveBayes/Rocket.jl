@@ -5,13 +5,13 @@ import Base: show
 """
     safe()
 
-    Creates a `SafeOperator`, which wraps `on_subscribe!` and each `next!`, `error!` and `complete!` callbacks into try-catch block.
+Creates a `SafeOperator`, which wraps `on_subscribe!` and each `next!`, `error!` and `complete!` callbacks into try-catch block.
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 safe() = SafeOperator()
 

@@ -13,9 +13,9 @@ const DEFAULT_SUBJECT_MODE = ASYNCHRONOUS_SUBJECT_MODE
 """
     make_subject(::Type{T}; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M
 
-    Creation operator for the base-type subject objects. By default `AsynchronousSubject{T}` is created.
+Creation operator for the base-type subject objects. By default `AsynchronousSubject{T}` is created.
 
-    See also: [`SynchronousSubject`](@ref), [`AsynchronousSubject`](@ref)
+See also: [`SynchronousSubject`](@ref), [`AsynchronousSubject`](@ref)
 """
 function make_subject(::Type{T}; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M
     if M === :async

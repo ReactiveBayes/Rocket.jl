@@ -9,9 +9,9 @@ import Base: show
 """
     SynchronousSubject{D}()
 
-    SynchronousSubject is a base-type subject that synchronously delivers all messages to the attached listeners using a simple for-loop.
+SynchronousSubject is a base-type subject that synchronously delivers all messages to the attached listeners using a simple for-loop.
 
-    See also: [`as_subject`](@ref), [`make_subject`](@ref)
+See also: [`as_subject`](@ref), [`make_subject`](@ref)
 """
 mutable struct SynchronousSubject{D} <: Actor{D}
     actors       :: Vector{Any}

@@ -6,33 +6,33 @@ import Base: show
 """
     enumerate()
 
-    Creates an enumerate operator, which converts each value emitted by the source
-    Observable into a tuple of its order number and the value itself.
+Creates an enumerate operator, which converts each value emitted by the source
+Observable into a tuple of its order number and the value itself.
 
-    The enumerate operator is similar to `scan(Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))` (see [`scan`](@ref)).
+The enumerate operator is similar to `scan(Tuple{Int, Int}, (d, c) -> (d, c[2] + 1), (0, 0))` (see [`scan`](@ref)).
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{Tuple{L, Int}}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{Tuple{L, Int}}` where `L` refers to type of source stream
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    source = from([ i for i in 1:3 ])
-    subscribe!(source |> enumerate(), logger())
-    ;
+source = from([ i for i in 1:3 ])
+subscribe!(source |> enumerate(), logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: (1, 1)
-    [LogActor] Data: (2, 2)
-    [LogActor] Data: (3, 3)
-    [LogActor] Completed
+[LogActor] Data: (1, 1)
+[LogActor] Data: (2, 2)
+[LogActor] Data: (3, 3)
+[LogActor] Completed
 
-    ```
+```
 
-    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref), [`map`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`scan`](@ref), [`map`](@ref), [`logger`](@ref)
 """
 enumerate() = EnumerateOperator()
 

@@ -5,30 +5,30 @@ import Base: show
 """
     some()
 
-    Creates a some operator, which filters out `nothing` items by the source Observable by emitting only
-    those that not equal to `nothing`.
+Creates a some operator, which filters out `nothing` items by the source Observable by emitting only
+those that not equal to `nothing`.
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream `<: Subscribable{Union{L, Nothing}}`
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream `<: Subscribable{Union{L, Nothing}}`
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    source = from([ 1, nothing, 3 ])
-    subscribe!(source |> some(), logger())
-    ;
+source = from([ 1, nothing, 3 ])
+subscribe!(source |> some(), logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 1
-    [LogActor] Data: 3
-    [LogActor] Completed
+[LogActor] Data: 1
+[LogActor] Data: 3
+[LogActor] Completed
 
-    ```
+```
 
-    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`max`](@ref), [`min`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`max`](@ref), [`min`](@ref), [`logger`](@ref)
 """
 some() = SomeOperator()
 

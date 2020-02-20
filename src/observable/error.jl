@@ -5,9 +5,9 @@ import Base: ==
 """
     ErrorObservable{D}(err)
 
-    Observable that emits no items to the Actor and immediately sends an error notification on subscription.
+Observable that emits no items to the Actor and immediately sends an error notification on subscription.
 
-    See also: [`throwError`](@ref)
+See also: [`throwError`](@ref)
 """
 struct ErrorObservable{D} <: Subscribable{D}
     err
@@ -21,28 +21,28 @@ end
 """
     throwError(error, T = Any)
 
-    Creation operator for the `ErrorObservable` that emits no items to the Actor and immediately sends an error notification.
+Creation operator for the `ErrorObservable` that emits no items to the Actor and immediately sends an error notification.
 
-    # Arguments
-    - `error`: the particular Error to pass to the error notification.
-    - `T`: type of output data source, optional, `Any` is the default
+# Arguments
+- `error`: the particular Error to pass to the error notification.
+- `T`: type of output data source, optional, `Any` is the default
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = throwError("Error!")
-    subscribe!(source, logger())
-    ;
+source = throwError("Error!")
+subscribe!(source, logger())
+;
 
-    # output
+# output
 
-    [LogActor] Error: Error!
+[LogActor] Error: Error!
 
-    ```
+```
 
-    See also: [`ErrorObservable`](@ref), [`subscribe!`](@ref)
+See also: [`ErrorObservable`](@ref), [`subscribe!`](@ref)
 """
 throwError(err, T = Any) = ErrorObservable{T}(err)
 

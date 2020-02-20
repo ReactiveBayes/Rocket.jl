@@ -5,32 +5,32 @@ import Base: show
 """
     take(max_count::Int)
 
-    Creates a take operator, which returns an Observable
-    that emits only the first `max_count` values emitted by the source Observable.
+Creates a take operator, which returns an Observable
+that emits only the first `max_count` values emitted by the source Observable.
 
-    # Arguments
-    - `max_count::Int`: the maximum number of next values to emit.
+# Arguments
+- `max_count::Int`: the maximum number of next values to emit.
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    source = from([ i for i in 1:100 ])
-    actor  = keep(Int)
-    subscription = subscribe!(source |> take(5), actor)
-    println(actor.values)
-    ;
+source = from([ i for i in 1:100 ])
+actor  = keep(Int)
+subscription = subscribe!(source |> take(5), actor)
+println(actor.values)
+;
 
-    # output
+# output
 
-    [1, 2, 3, 4, 5]
-    ```
+[1, 2, 3, 4, 5]
+```
 
-    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 take(max_count::Int) = TakeOperator(max_count)
 

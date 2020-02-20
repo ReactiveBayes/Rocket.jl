@@ -5,41 +5,41 @@ import Base: show
 """
     ref_count()
 
-    Make a ConnectableObservable behave like a ordinary observable and automates the way you can connect to it.
-    Internally it counts the subscriptions to the observable and subscribes (only once) to the source if the number of subscriptions is larger than 0. If the number of subscriptions is smaller than 1, it unsubscribes from the source.
-    This way you can make sure that everything before the published refCount has only a single subscription independently of the number of subscribers to the target observable.
+Make a ConnectableObservable behave like a ordinary observable and automates the way you can connect to it.
+Internally it counts the subscriptions to the observable and subscribes (only once) to the source if the number of subscriptions is larger than 0. If the number of subscriptions is smaller than 1, it unsubscribes from the source.
+This way you can make sure that everything before the published refCount has only a single subscription independently of the number of subscribers to the target observable.
 
-    Note that using the [`share`](@ref) operator is exactly the same as using the [`publish`](@ref) operator (making the observable hot) and the [`ref_count()`](@ref) operator in a sequence.
+Note that using the [`share`](@ref) operator is exactly the same as using the [`publish`](@ref) operator (making the observable hot) and the [`ref_count()`](@ref) operator in a sequence.
 
-    # Example
+# Example
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-    source  = from(1:5) |> multicast(subject) |> ref_count()
+subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+source  = from(1:5) |> multicast(subject) |> ref_count()
 
-    actor1 = logger("1")
-    actor2 = logger("2")
+actor1 = logger("1")
+actor2 = logger("2")
 
-    subscription1 = subscribe!(source, actor1)
-    subscription2 = subscribe!(source, actor2)
+subscription1 = subscribe!(source, actor1)
+subscription2 = subscribe!(source, actor2)
 
-    unsubscribe!(subscription1)
-    unsubscribe!(subscription2)
-    ;
+unsubscribe!(subscription1)
+unsubscribe!(subscription2)
+;
 
-    # output
-    [1] Data: 1
-    [1] Data: 2
-    [1] Data: 3
-    [1] Data: 4
-    [1] Data: 5
-    [1] Completed
-    [2] Completed
-    ```
+# output
+[1] Data: 1
+[1] Data: 2
+[1] Data: 3
+[1] Data: 4
+[1] Data: 5
+[1] Completed
+[2] Completed
+```
 
-    See also: [`AbstractOperator`](@ref), [`publish`](@ref), [`multicast`](@ref), [`share`](@ref)
+See also: [`AbstractOperator`](@ref), [`publish`](@ref), [`multicast`](@ref), [`share`](@ref)
 """
 ref_count() = RefCountOperator()
 

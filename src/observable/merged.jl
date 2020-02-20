@@ -77,58 +77,58 @@ on_unsubscribe!(subscription::MergeSubscription) = foreach(s -> unsubscribe!(s),
 """
     merged(sources::T) where { T <: Tuple }
 
-    Creation operator for the `MergeObservable` with a given `sources` collected in a tuple. 
-    `merge` subscribes to each given input Observable (as arguments), and simply forwards (without doing any transformation) all the values from all the input 
-    Observables to the output Observable. The output Observable only completes once all input Observables have completed. 
-    Any error delivered by an input Observable will be immediately emitted on the output Observable.
+Creation operator for the `MergeObservable` with a given `sources` collected in a tuple. 
+`merge` subscribes to each given input Observable (as arguments), and simply forwards (without doing any transformation) all the values from all the input 
+Observables to the output Observable. The output Observable only completes once all input Observables have completed. 
+Any error delivered by an input Observable will be immediately emitted on the output Observable.
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    observable = merged((from(1:4), of(2.0), from("Hello")))
+observable = merged((from(1:4), of(2.0), from("Hello")))
 
-    subscribe!(observable, logger())
-    ;
+subscribe!(observable, logger())
+;
 
-    # output
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Data: 3
-    [LogActor] Data: 4
-    [LogActor] Data: 2.0
-    [LogActor] Data: H
-    [LogActor] Data: e
-    [LogActor] Data: l
-    [LogActor] Data: l
-    [LogActor] Data: o
-    [LogActor] Completed
-    ```
+# output
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Data: 4
+[LogActor] Data: 2.0
+[LogActor] Data: H
+[LogActor] Data: e
+[LogActor] Data: l
+[LogActor] Data: l
+[LogActor] Data: o
+[LogActor] Completed
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    observable = merged((timer(100, 1), of(2.0), from("Hello"))) |> take(10)
+observable = merged((timer(100, 1), of(2.0), from("Hello"))) |> take(10)
 
-    subscribe!(observable, logger())
-    ;
+subscribe!(observable, logger())
+;
 
-    # output
-    [LogActor] Data: 2.0
-    [LogActor] Data: H
-    [LogActor] Data: e
-    [LogActor] Data: l
-    [LogActor] Data: l
-    [LogActor] Data: o
-    [LogActor] Data: 0
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Data: 3
-    [LogActor] Completed
-    ```
+# output
+[LogActor] Data: 2.0
+[LogActor] Data: H
+[LogActor] Data: e
+[LogActor] Data: l
+[LogActor] Data: l
+[LogActor] Data: o
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Completed
+```
 
-    See also: [`Subscribable`](@ref)
+See also: [`Subscribable`](@ref)
 """
 merged(sources::T) where { T <: Tuple }         = MergeObservable{ Union{ subscribable_extract_type.(sources)... }, T }(sources)
 merged(sources::T) where { T <: AbstractArray } = error("Rocket.merge takes a tuple of sources as an argument, not an array")

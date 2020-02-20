@@ -6,15 +6,15 @@ import DataStructures: CircularBuffer
 """
     ReplaySubject{D, S}(capacity, subject)
 
-    A variant of Subject that "replays" or emits old values to new subscribers.
-    It buffers a set number of values and will emit those values immediately to any new subscribers
-    in addition to emitting new values to existing subscribers.
+A variant of Subject that "replays" or emits old values to new subscribers.
+It buffers a set number of values and will emit those values immediately to any new subscribers
+in addition to emitting new values to existing subscribers.
 
-    # Arguments
-    - `capacity`: how many values to replay
-    - `subject`: Subject base type
+# Arguments
+- `capacity`: how many values to replay
+- `subject`: Subject base type
 
-    See also: [`make_replay_subject`](@ref), [`make_subject`](@ref)
+See also: [`make_replay_subject`](@ref), [`make_subject`](@ref)
 """
 struct ReplaySubject{D, S} <: Actor{D}
     cb      :: CircularBuffer{D}
@@ -62,9 +62,9 @@ as_replay_subject(::Type{T},  ::ValidSubject{T},  count::Int, subject::S) where 
 """
     make_replay_subject(::Type{T}, count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M
 
-    Creation operator for the `ReplaySubject`
+Creation operator for the `ReplaySubject`
 
-    See also: [`ReplaySubject`](@ref), [`make_subject`](@ref)
+See also: [`ReplaySubject`](@ref), [`make_subject`](@ref)
 """
 make_replay_subject(::Type{T}, count::Int; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M = make_replay_subject(T, count, make_subject_factory(mode = mode))
 

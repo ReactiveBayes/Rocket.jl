@@ -6,13 +6,13 @@ import Base: close
 """
     AsyncActor{D, A}(actor::A) where D where A
 
-    AsyncActor wraps an actor and send a data from a stream to this actor asynchronously in a different `Task`.
-    You have to `close` this actor when you do not need it.
+AsyncActor wraps an actor and send a data from a stream to this actor asynchronously in a different `Task`.
+You have to `close` this actor when you do not need it.
 
-    # Constructor arguments
-    - `actor`: any actor to be wrapped
+# Constructor arguments
+- `actor`: any actor to be wrapped
 
-    See also: [`Actor`](@ref), [`async`](@ref)
+See also: [`Actor`](@ref), [`async`](@ref)
 """
 struct AsyncActor{D, A} <: Actor{D}
     channel :: Channel{D}
@@ -46,21 +46,21 @@ on_complete!(actor::AsyncActor)   = complete!(actor.actor)
 """
     async(actor::A) where A
 
-    Creation operator for the `AsyncActor` actor.
+Creation operator for the `AsyncActor` actor.
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    actor = async(keep(Int))
-    actor isa AsyncActor{Int, KeepActor{Int}}
+actor = async(keep(Int))
+actor isa AsyncActor{Int, KeepActor{Int}}
 
-    # output
-    true
-    ```
+# output
+true
+```
 
-    See also: [`AsyncActor`](@ref), [`AbstractActor`](@ref)
+See also: [`AsyncActor`](@ref), [`AbstractActor`](@ref)
 """
 async(actor::A) where A = as_async(as_actor(A), actor)
 

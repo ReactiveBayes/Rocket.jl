@@ -25,12 +25,12 @@ as_array(::UndefinedScalarness, x) = error("Value of type $(typeof(x)) has undef
 """
     ArrayObservable{D}(values::Vector{D})
 
-    ArrayObservable wraps a regular Julia array into a synchronous observable
+ArrayObservable wraps a regular Julia array into a synchronous observable
 
-    # Constructor arguments
-    - `values`: array of values to be wrapped
+# Constructor arguments
+- `values`: array of values to be wrapped
 
-    See also: [`Subscribable`](@ref), [`from`](@ref)
+See also: [`Subscribable`](@ref), [`from`](@ref)
 """
 struct ArrayObservable{D} <: Subscribable{D}
     values :: Vector{D}
@@ -47,88 +47,88 @@ end
 """
     from(x)
 
-    Creation operator for the `ArrayObservable` that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
-    Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
-    for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior.
+Creation operator for the `ArrayObservable` that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
+Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
+for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior.
 
-    # Arguments
-    - `x`: an object to be wrapped into array of values
+# Arguments
+- `x`: an object to be wrapped into array of values
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from([ 0, 1, 2 ])
-    subscribe!(source, logger())
-    ;
+source = from([ 0, 1, 2 ])
+subscribe!(source, logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 0
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Completed
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Completed
 
-    ```
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from(( 0, 1, 2 ))
-    subscribe!(source, logger())
-    ;
+source = from(( 0, 1, 2 ))
+subscribe!(source, logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 0
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Completed
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Completed
 
-    ```
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from(0)
-    subscribe!(source, logger())
-    ;
+source = from(0)
+subscribe!(source, logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 0
-    [LogActor] Completed
+[LogActor] Data: 0
+[LogActor] Completed
 
-    ```
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from("Hello, world!")
-    subscribe!(source, logger())
-    ;
+source = from("Hello, world!")
+subscribe!(source, logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: H
-    [LogActor] Data: e
-    [LogActor] Data: l
-    [LogActor] Data: l
-    [LogActor] Data: o
-    [LogActor] Data: ,
-    [LogActor] Data:
-    [LogActor] Data: w
-    [LogActor] Data: o
-    [LogActor] Data: r
-    [LogActor] Data: l
-    [LogActor] Data: d
-    [LogActor] Data: !
-    [LogActor] Completed
+[LogActor] Data: H
+[LogActor] Data: e
+[LogActor] Data: l
+[LogActor] Data: l
+[LogActor] Data: o
+[LogActor] Data: ,
+[LogActor] Data:
+[LogActor] Data: w
+[LogActor] Data: o
+[LogActor] Data: r
+[LogActor] Data: l
+[LogActor] Data: d
+[LogActor] Data: !
+[LogActor] Completed
 
-    ```
+```
 
-    See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 from(x)                    = from(as_array(x))
 from(a::Vector{D}) where D = ArrayObservable{D}(a)

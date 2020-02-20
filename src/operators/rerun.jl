@@ -5,35 +5,35 @@ import Base: show
 """
     rerun(count::Int = -1)
 
-    Returns an Observable that mirrors the source Observable with the exception of an error.
-    If the source Observable calls error, this method will resubscribe to the source Observable for a maximum of `count`
-    resubscriptions (given as a number parameter) rather than propagating the error call.
+Returns an Observable that mirrors the source Observable with the exception of an error.
+If the source Observable calls error, this method will resubscribe to the source Observable for a maximum of `count`
+resubscriptions (given as a number parameter) rather than propagating the error call.
 
-    # Arguments:
-    - `count::Int`: Number of retry attempts before failing. Optional. Default is `-1`.
+# Arguments:
+- `count::Int`: Number of retry attempts before failing. Optional. Default is `-1`.
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    source = from(1:3) |> safe() |> map(Int, (d) -> d > 1 ? error("Error") : d) |> rerun(3)
+source = from(1:3) |> safe() |> map(Int, (d) -> d > 1 ? error("Error") : d) |> rerun(3)
 
-    subscribe!(source, logger())
-    ;
+subscribe!(source, logger())
+;
 
-    # output
-    [LogActor] Data: 1
-    [LogActor] Data: 1
-    [LogActor] Data: 1
-    [LogActor] Data: 1
-    [LogActor] Error: ErrorException("Error")
-    ```
+# output
+[LogActor] Data: 1
+[LogActor] Data: 1
+[LogActor] Data: 1
+[LogActor] Data: 1
+[LogActor] Error: ErrorException("Error")
+```
 
-    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`catch_error`](@ref), [`logger`](@ref), [`safe`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`catch_error`](@ref), [`logger`](@ref), [`safe`](@ref)
 """
 rerun(count::Int = -1) = RerunOperator(count)
 

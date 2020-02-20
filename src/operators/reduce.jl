@@ -8,50 +8,50 @@ import Base: show
     reduce(::Type{R}, reduceFn::Function, seed::R) where R
     reduce(reduceFn::F) where { F <: Function }
 
-    Creates a reduce operator, which applies a given accumulator `reduceFn` function
-    over the source Observable, and returns the accumulated result when the source completes,
-    given an optional seed value. If a `seed` value is specified, then that value will be used as
-    the initial value for the accumulator. If no `seed` value is specified, the first item of the source is used as the seed.
+Creates a reduce operator, which applies a given accumulator `reduceFn` function
+over the source Observable, and returns the accumulated result when the source completes,
+given an optional seed value. If a `seed` value is specified, then that value will be used as
+the initial value for the accumulator. If no `seed` value is specified, the first item of the source is used as the seed.
 
-    # Arguments
-    - `::Type{R}`: the type of data of transformed value
-    - `reduceFn::Function`: transformation function with `(data::T, current::R) -> R` signature
-    - `seed::R`: optional seed accumulation value
+# Arguments
+- `::Type{R}`: the type of data of transformed value
+- `reduceFn::Function`: transformation function with `(data::T, current::R) -> R` signature
+- `seed::R`: optional seed accumulation value
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{R}`
+Stream of type `<: Subscribable{R}`
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    source = from([ i for i in 1:10 ])
-    subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
-    ;
+source = from([ i for i in 1:10 ])
+subscribe!(source |> reduce(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    [LogActor] Completed
+[LogActor] Data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+[LogActor] Completed
 
-    ```
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from([ i for i in 1:42 ])
-    subscribe!(source |> reduce(+), logger())
-    ;
+source = from([ i for i in 1:42 ])
+subscribe!(source |> reduce(+), logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 903
-    [LogActor] Completed
+[LogActor] Data: 903
+[LogActor] Completed
 
-    ```
+```
 
-    See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 reduce(::Type{R}, reduceFn::F, seed::R) where { R, F <: Function } = ReduceOperator{R, F}(reduceFn, seed)
 

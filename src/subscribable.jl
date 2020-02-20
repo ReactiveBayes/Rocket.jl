@@ -9,68 +9,69 @@ export MissingOnSubscribeImplementationError
 import Base: show
 
 """
-    Abstract type for all possible subscribable traits
+Abstract type for all possible subscribable traits
 
-    See also: [`ValidSubscribable`](@ref), [`InvalidSubscribable`](@ref)
+See also: [`ValidSubscribable`](@ref), [`InvalidSubscribable`](@ref)
 """
 abstract type SubscribableTrait end
 
 """
-    Valid subscribable trait behavior. Valid subscribable can be used in subscribe! function.
+Valid subscribable trait behavior. Valid subscribable can be used in subscribe! function.
 
-    See also: [`SubscribableTrait`](@ref), [`Subscribable`](@ref)
+See also: [`SubscribableTrait`](@ref), [`Subscribable`](@ref)
 """
 struct ValidSubscribable{T} <: SubscribableTrait end
 
 """
-    Default subscribable trait behavior for all types. Invalid subscribable cannot be used in subscribe! function, doing so will throw an error.
+Default subscribable trait behavior for all types. Invalid subscribable cannot be used in subscribe! function, doing so will throw an error.
 
-    See also: [`SubscribableTrait`](@ref), [`subscribe!`](@ref)
+See also: [`SubscribableTrait`](@ref), [`subscribe!`](@ref)
 """
 struct InvalidSubscribable  <: SubscribableTrait end
 
 """
-    Super type for any subscribable object. Automatically specifies a `ValidSubscribable` trait behavior.
+Super type for any subscribable object. Automatically specifies a `ValidSubscribable` trait behavior.
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    struct MySubscribable <: Subscribable{Int} end
+struct MySubscribable <: Subscribable{Int} end
 
-    println(Rocket.as_subscribable(MySubscribable) === ValidSubscribable{Int}())
-    ;
+println(Rocket.as_subscribable(MySubscribable) === ValidSubscribable{Int}())
+;
 
-    # output
+# output
 
-    true
+true
 
-    ```
+```
 
-    See also: [`SubscribableTrait`](@ref), [`ValidSubscribable`](@ref)
+See also: [`SubscribableTrait`](@ref), [`ValidSubscribable`](@ref)
 """
 abstract type Subscribable{T} end
 
 """
     as_subscribable(::Type)
 
-    This function checks subscribable trait behavior specification. Can be used explicitly to specify subscribable trait behavior for any object.
+This function checks subscribable trait behavior specification. Can be used explicitly to specify subscribable trait behavior for any object.
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    struct MyArbitraryType end
-    Rocket.as_subscribable(::Type{<:MyArbitraryType}) = ValidSubscribable{Int}()
+struct MyArbitraryType end
+Rocket.as_subscribable(::Type{<:MyArbitraryType}) = ValidSubscribable{Int}()
 
-    println(as_subscribable(MyArbitraryType) ===ValidSubscribable{Int}())
-    ;
+println(as_subscribable(MyArbitraryType) ===ValidSubscribable{Int}())
+;
 
-    # output
-    true
-    ```
+# output
+true
+```
 
+See also: [`subscribe!`](@ref)
 """
 as_subscribable(::Type)                            = InvalidSubscribable()
 as_subscribable(::Type{<:Subscribable{T}}) where T = ValidSubscribable{T}()
@@ -83,56 +84,58 @@ subscribable_extract_type(::InvalidSubscribable, source)          = throw(Invali
 """
     subscribe!(subscribable::T, actor::S) where T where S
 
-    `subscribe!` function is used to attach an actor to subscribable.
-    It also checks types of subscribable and actors to be a valid Subscribable and Actor objects respectively.
-    Passing not valid subscribable or/and actor object will throw an error.
+`subscribe!` function is used to attach an actor to subscribable.
+It also checks types of subscribable and actors to be a valid Subscribable and Actor objects respectively.
+Passing not valid subscribable or/and actor object will throw an error.
 
-    # Arguments
-    - `subscribable`: valid subscribable object
-    - `actor`: valid actor object
+# Arguments
+- `subscribable`: valid subscribable object
+- `actor`: valid actor object
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from((1, 2, 3))
-    subscribe!(source, logger())
-    ;
+source = from((1, 2, 3))
+subscribe!(source, logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Data: 3
-    [LogActor] Completed
-    ```
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Completed
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from((1, 2, 3))
-    subscribe!(source, 1)
-    ;
+source = from((1, 2, 3))
+subscribe!(source, 1)
+;
 
-    # output
+# output
 
-    ERROR: Type Int64 is not a valid actor type.
-    [...]
-    ```
+ERROR: Type Int64 is not a valid actor type.
+[...]
+```
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    source = from((1, 2, 3))
-    subscribe!(1, logger())
-    ;
+source = from((1, 2, 3))
+subscribe!(1, logger())
+;
 
-    # output
+# output
 
-    ERROR: Type Int64 is not a valid subscribable type.
-    [...]
-    ```
+ERROR: Type Int64 is not a valid subscribable type.
+[...]
+```
+
+See also: [`on_subscribe!`](@ref), [`as_subscribable`](@ref)
 """
 function subscribe!(subscribable::T, actor::S) where T where S
     subscribable_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
@@ -162,36 +165,36 @@ end
 """
     on_subscribe!(subscribable, actor)
 
-    Each valid subscribable object have to define its own method for `on_subscribe!` function which specifies subscription logic
-    and has return a valid `Teardown` object.
+Each valid subscribable object have to define its own method for `on_subscribe!` function which specifies subscription logic
+and has return a valid `Teardown` object.
 
-    # Arguments
-    - `subscribable`: Subscribable object
-    - `actor`: Actor object
+# Arguments
+- `subscribable`: Subscribable object
+- `actor`: Actor object
 
-    # Examples
+# Examples
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    struct MySubscribable <: Subscribable{Int} end
+struct MySubscribable <: Subscribable{Int} end
 
-    function Rocket.on_subscribe!(subscribable::MySubscribable, actor)
-        next!(actor, 0)
-        complete!(actor)
-        return VoidTeardown()
-    end
+function Rocket.on_subscribe!(subscribable::MySubscribable, actor)
+    next!(actor, 0)
+    complete!(actor)
+    return VoidTeardown()
+end
 
-    subscribe!(MySubscribable(), logger())
-    ;
+subscribe!(MySubscribable(), logger())
+;
 
-    # output
+# output
 
-    [LogActor] Data: 0
-    [LogActor] Completed
-    ```
+[LogActor] Data: 0
+[LogActor] Completed
+```
 
-    See also: [`Subscribable`](@ref), [`Teardown`](@ref), [`logger`](@ref)
+See also: [`Subscribable`](@ref), [`Teardown`](@ref), [`logger`](@ref)
 """
 on_subscribe!(subscribable, actor) = throw(MissingOnSubscribeImplementationError(subscribable))
 
@@ -200,9 +203,9 @@ on_subscribe!(subscribable, actor) = throw(MissingOnSubscribeImplementationError
 # -------------------------------- #
 
 """
-    This error will be thrown if `subscribe!` function is called with invalid subscribable object
+This error will be thrown if `subscribe!` function is called with invalid subscribable object
 
-    See also: [`subscribe!`](@ref)
+See also: [`subscribe!`](@ref)
 """
 struct InvalidSubscribableTraitUsageError
     subscribable
@@ -213,9 +216,9 @@ function Base.show(io::IO, err::InvalidSubscribableTraitUsageError)
 end
 
 """
-    This error will be thrown if `subscribe!` function is called with inconsistent subscribable and actor objects
+This error will be thrown if `subscribe!` function is called with inconsistent subscribable and actor objects
 
-    See also: [`subscribe!`](@ref)
+See also: [`subscribe!`](@ref)
 """
 struct InconsistentActorWithSubscribableDataTypesError{T1, T2}
     subscribable
@@ -227,9 +230,9 @@ function Base.show(io::IO, err::InconsistentActorWithSubscribableDataTypesError{
 end
 
 """
-    This error will be thrown if Julia cannot find specific method of 'on_subscribe!()' function for given subscribable and actor
+This error will be thrown if Julia cannot find specific method of 'on_subscribe!()' function for given subscribable and actor
 
-    See also: [`on_subscribe!`](@ref)
+See also: [`on_subscribe!`](@ref)
 """
 struct MissingOnSubscribeImplementationError
     subscribable

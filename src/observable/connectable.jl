@@ -6,10 +6,10 @@ import Base: show
 """
     ConnectableObservable{D}(subject, source)
 
-    A connectable observable encapsulates the multicasting infrastructure with provided subject, but does not immediately subscribe to the source.
-    It subscribes to the source when its `connect` method is called.
+A connectable observable encapsulates the multicasting infrastructure with provided subject, but does not immediately subscribe to the source.
+It subscribes to the source when its `connect` method is called.
 
-    See also: [`connect`](@ref), [`Subscribable`](@ref)
+See also: [`connect`](@ref), [`Subscribable`](@ref)
 """
 struct ConnectableObservable{D} <: Subscribable{D}
     subject
@@ -23,30 +23,30 @@ end
 """
     connectable(subject::J, source::S) where J where S
 
-    Creates a `ConnectableObservable` with a given subject object and a source observable.
+Creates a `ConnectableObservable` with a given subject object and a source observable.
 
-    # Example
+# Example
 
-    ```jldoctest
-    using Rocket
+```jldoctest
+using Rocket
 
-    c = connectable(make_subject(Int; mode = Val(:sync)), from(1:3))
+c = connectable(make_subject(Int; mode = Val(:sync)), from(1:3))
 
-    subscribe!(c, logger());
+subscribe!(c, logger());
 
-    connect(c);
-    ;
+connect(c);
+;
 
-    # output
+# output
 
-    [LogActor] Data: 1
-    [LogActor] Data: 2
-    [LogActor] Data: 3
-    [LogActor] Completed
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Completed
 
-    ```
+```
 
-    See also: [`ConnectableObservable`](@ref), [`connect`](@ref), [`subscribe!`](@ref)
+See also: [`ConnectableObservable`](@ref), [`connect`](@ref), [`subscribe!`](@ref)
 """
 connectable(subject::J, source::S) where J where S = as_connectable(as_subject(J), as_subscribable(S), subject, source)
 
@@ -60,10 +60,10 @@ as_connectable(::ValidSubject{D},  ::ValidSubscribable{D},  subject, source) whe
 """
     connect(connectable::ConnectableObservable)
 
-    When `connect` is called, the subject passed to the multicast operator is subscribed to the source and the subject’s observers receive the multicast notifications,
-    which fits our basic mental model of stream multicasting. Returns a subscription.
+When `connect` is called, the subject passed to the multicast operator is subscribed to the source and the subject’s observers receive the multicast notifications,
+which fits our basic mental model of stream multicasting. Returns a subscription.
 
-    See also: [`connectable`](@ref), [`ConnectableObservable`](@ref)
+See also: [`connectable`](@ref), [`ConnectableObservable`](@ref)
 """
 connect(connectable::ConnectableObservable) = subscribe!(connectable.source, connectable.subject)
 

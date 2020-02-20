@@ -60,52 +60,52 @@ end
 """
     make(f::Function, type::Type{D})
 
-    Creation operator for the `FunctionObservable`.
+Creation operator for the `FunctionObservable`.
 
-    # Arguments
-    - `f`: function to be invoked on subscription
-    - `type`: type of data in observable
+# Arguments
+- `f`: function to be invoked on subscription
+- `type`: type of data in observable
 
-    # Examples
-    ```jldoctest
-    using Rocket
+# Examples
+```jldoctest
+using Rocket
 
-    source = make(Int) do actor
-        next!(actor, 0)
+source = make(Int) do actor
+    next!(actor, 0)
+    complete!(actor)
+end
+
+subscription = subscribe!(source, logger());
+unsubscribe!(subscription)
+;
+
+# output
+
+[LogActor] Data: 0
+[LogActor] Completed
+
+```
+
+```jldoctest
+using Rocket
+
+source = make(Int) do actor
+    next!(actor, 0)
+    setTimeout(100) do
+        next!(actor, 1)
         complete!(actor)
     end
+end
 
-    subscription = subscribe!(source, logger());
-    unsubscribe!(subscription)
-    ;
+subscription = subscribe!(source, logger())
+unsubscribe!(subscription)
+;
 
-    # output
+# output
 
-    [LogActor] Data: 0
-    [LogActor] Completed
+[LogActor] Data: 0
+```
 
-    ```
-
-    ```jldoctest
-    using Rocket
-
-    source = make(Int) do actor
-        next!(actor, 0)
-        setTimeout(100) do
-            next!(actor, 1)
-            complete!(actor)
-        end
-    end
-
-    subscription = subscribe!(source, logger())
-    unsubscribe!(subscription)
-    ;
-
-    # output
-
-    [LogActor] Data: 0
-    ```
-
-    See also: [`FunctionObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+See also: [`FunctionObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 make(f::Function, type::Type{D}) where D = FunctionObservable{D}(f)

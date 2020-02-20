@@ -5,17 +5,17 @@ import Base: show
 """
     delay(delay::Int)
 
-    Creates a delay operators, which delays the emission of items from the source Observable
-    by a given timeout.
+Creates a delay operators, which delays the emission of items from the source Observable
+by a given timeout.
 
-    # Arguments:
-    - `delay::Int`: the delay duration in milliseconds (a number) until which the emission of the source items is delayed.
+# Arguments:
+- `delay::Int`: the delay duration in milliseconds (a number) until which the emission of the source items is delayed.
 
-    # Producing
+# Producing
 
-    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref)
 """
 delay(delay::Int) = DelayOperator(delay)
 
