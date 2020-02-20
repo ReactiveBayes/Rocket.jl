@@ -6,28 +6,28 @@ import Base: show
 """
     lowercase()
 
-Creates an lowercase operator, which forces each value to be in lower case
+    Creates an lowercase operator, which forces each value to be in lower case
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where L referes to type of data of input Observable
+    Stream of type `<: Subscribable{L}` where L referes to type of data of input Observable
 
-# Examples
+    # Examples
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = of("Hello, world!")
-subscribe!(source |> lowercase(), logger())
-;
+    source = of("Hello, world!")
+    subscribe!(source |> lowercase(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: hello, world!
-[LogActor] Completed
-```
+    [LogActor] Data: hello, world!
+    [LogActor] Completed
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 lowercase() = LowercaseOperator()
 

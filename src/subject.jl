@@ -8,32 +8,32 @@ export MissingCreateSubjectFactoryImplementationError
 import Base: show
 
 """
-Abstract type for all possible subject traits
+    Abstract type for all possible subject traits
 
-See also: [`ValidSubject`](@ref), [`InvalidSubject`](@ref), [`as_subject`](@ref)
+    See also: [`ValidSubject`](@ref), [`InvalidSubject`](@ref), [`as_subject`](@ref)
 """
 abstract type SubjectTrait end
 
 """
-Valid subject trait behavior
+    Valid subject trait behavior
 
-See also: [`SubjectTrait`](@ref)
+    See also: [`SubjectTrait`](@ref)
 """
 struct ValidSubject{D} <: SubjectTrait end
 
 """
-Default subject trait behavior for all types.
+    Default subject trait behavior for all types.
 
-See also: [`SubjectTrait`](@ref)
+    See also: [`SubjectTrait`](@ref)
 """
 struct InvalidSubject  <: SubjectTrait end
 
 """
     as_subject(::Type)
 
-This function checks subject trait behavior specification. Should be used explicitly to specify subject trait behavior for any object type.
+    This function checks subject trait behavior specification. Should be used explicitly to specify subject trait behavior for any object type.
 
-See also: [`SubjectTrait`](@ref)
+    See also: [`SubjectTrait`](@ref)
 """
 as_subject(::Type) = InvalidSubject()
 
@@ -43,25 +43,25 @@ as_subject(::Type) = InvalidSubject()
 # -------------------------------- #
 
 """
-Abstract type for all possible subject factories
+    Abstract type for all possible subject factories
 
-See also: [`SubjectTrait`](@ref), [`ValidSubject`](@ref), [`InvalidSubject`](@ref)
+    See also: [`SubjectTrait`](@ref), [`ValidSubject`](@ref), [`InvalidSubject`](@ref)
 """
 abstract type AbstractSubjectFactory end
 
 """
     create_subject(::Type{L}, factory::F) where L where { F <: AbstractSubjectFactory }
 
-Actor creator function for a given factory `F`. Should be implemented explicitly for any `AbstractActorFactory` object
+    Actor creator function for a given factory `F`. Should be implemented explicitly for any `AbstractActorFactory` object
 
-See also: [`AbstractSubjectFactory`](@ref), [`MissingCreateActorFactoryImplementationError`](@ref)
+    See also: [`AbstractSubjectFactory`](@ref), [`MissingCreateActorFactoryImplementationError`](@ref)
 """
 create_subject(::Type{L}, factory::F) where L where { F <: AbstractSubjectFactory } = throw(MissingCreateSubjectFactoryImplementationError(factory))
 
 """
-This error will be throw if Julia cannot find specific method of 'create_subject()' function for given subject factory
+    This error will be throw if Julia cannot find specific method of 'create_subject()' function for given subject factory
 
-See also: [`AbstractSubjectFactory`](@ref), [`create_subject`](@ref)
+    See also: [`AbstractSubjectFactory`](@ref), [`create_subject`](@ref)
 """
 struct MissingCreateSubjectFactoryImplementationError
     factory
@@ -77,9 +77,9 @@ end
 # -------------------------------- #
 
 """
-InvalidSubject usage error
+    InvalidSubject usage error
 
-See also: [`as_subject`](@ref)
+    See also: [`as_subject`](@ref)
 """
 struct InvalidSubjectTraitUsageError
     subject
@@ -90,9 +90,9 @@ function Base.show(io::IO, err::InvalidSubjectTraitUsageError)
 end
 
 """
-InconsistentSubjectDataTypesError
+    InconsistentSubjectDataTypesError
 
-See also: [`as_subject`](@ref)
+    See also: [`as_subject`](@ref)
 """
 struct InconsistentSubjectDataTypesError{T1, T2}
     subject

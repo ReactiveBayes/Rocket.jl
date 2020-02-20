@@ -5,14 +5,14 @@ import Base: ==
 """
     TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing)
 
-An Observable that starts emitting after an `dueTime` and emits
-ever increasing numbers after each `period` of time thereafter.
+    An Observable that starts emitting after an `dueTime` and emits
+    ever increasing numbers after each `period` of time thereafter.
 
-# Fields
-- `due_time`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
-- `period`: The period of time in milliseconds between emissions of the subsequent numbers.
+    # Fields
+    - `due_time`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
+    - `period`: The period of time in milliseconds between emissions of the subsequent numbers.
 
-See also: [`timer`](@ref), [`Subscribable`](@ref)
+    See also: [`timer`](@ref), [`Subscribable`](@ref)
 """
 mutable struct TimerObservable <: Subscribable{Int}
     due_time   :: Int
@@ -89,39 +89,39 @@ end
 """
     timer(due_time::Int = 0, period = nothing)
 
-Creation operator for the `TimerObservable`. Its like `interval`(@ref), but you can specify when should the emissions start.
-`timer` returns an Observable that emits an infinite sequence of ascending integers,
-with a constant interval of time, period of your choosing between those emissions.
-The first emission happens after the specified `due_time`.
-If `period` is not specified, the output Observable emits only one value, 0.
-Otherwise, it emits an infinite sequence.
+    Creation operator for the `TimerObservable`. Its like `interval`(@ref), but you can specify when should the emissions start.
+    `timer` returns an Observable that emits an infinite sequence of ascending integers,
+    with a constant interval of time, period of your choosing between those emissions.
+    The first emission happens after the specified `due_time`.
+    If `period` is not specified, the output Observable emits only one value, 0.
+    Otherwise, it emits an infinite sequence.
 
-# Arguments
-- `due_time`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
-- `period`: the period of time between emissions of the subsequent numbers.
+    # Arguments
+    - `due_time`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
+    - `period`: the period of time between emissions of the subsequent numbers.
 
-# Examples
-```
-using Rocket
+    # Examples
+    ```
+    using Rocket
 
-source = timer(0, 50)
+    source = timer(0, 50)
 
-sleep(0.075)
-subscription = subscribe!(source, logger())
-sleep(0.105)
-unsubscribe!(subscription)
+    sleep(0.075)
+    subscription = subscribe!(source, logger())
+    sleep(0.105)
+    unsubscribe!(subscription)
 
-close(source)
-;
+    close(source)
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 2
-[LogActor] Data: 3
+    [LogActor] Data: 2
+    [LogActor] Data: 3
 
-```
+    ```
 
-See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+    See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
 

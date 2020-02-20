@@ -5,9 +5,9 @@ import Base: ==
 """
     SyncFileObservable(path::String)
 
-File observable, which synchronously emits content of the file line by line as a `String` objects on subscription.
+    File observable, which synchronously emits content of the file line by line as a `String` objects on subscription.
 
-See also: [`file`](@ref), [`Subscribable`](@ref)
+    See also: [`file`](@ref), [`Subscribable`](@ref)
 """
 struct SyncFileObservable <: Subscribable{String}
     path :: String
@@ -26,9 +26,9 @@ end
 """
     file(path::String)
 
-Creation operator for the `SyncFileObservable` with a given path.
+    Creation operator for the `SyncFileObservable` with a given path.
 
-See also: [`SyncFileObservable`](@ref)
+    See also: [`SyncFileObservable`](@ref)
 """
 file(path::String) = SyncFileObservable(path)
 

@@ -5,9 +5,9 @@ import Base: ==
 """
     SingleObservable{D}(value::D)
 
-SingleObservable wraps single value of type `D` into a synchronous observable
+    SingleObservable wraps single value of type `D` into a synchronous observable
 
-# See also: [`of`](@ref), [`Subscribable`](@ref)
+    # See also: [`of`](@ref), [`Subscribable`](@ref)
 """
 struct SingleObservable{D} <: Subscribable{D}
     value :: D
@@ -22,28 +22,28 @@ end
 """
     of(x)
 
-Creation operator for the `SingleObservable` that emits a single value x and then completes.
+    Creation operator for the `SingleObservable` that emits a single value x and then completes.
 
-# Arguments
-- `x`: value to be emmited before completion
+    # Arguments
+    - `x`: value to be emmited before completion
 
-# Examples
+    # Examples
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = of(1)
-subscribe!(source, logger())
-;
+    source = of(1)
+    subscribe!(source, logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 1
-[LogActor] Completed
+    [LogActor] Data: 1
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`SingleObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+    See also: [`SingleObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 of(x::T) where T = SingleObservable{T}(x)
 

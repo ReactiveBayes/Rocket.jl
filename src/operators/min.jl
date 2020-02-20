@@ -6,31 +6,31 @@ import Base: show
 """
     min(; from = nothing)
 
-Creates a min operator, which emits a single item: the item with the smallest value.
+    Creates a min operator, which emits a single item: the item with the smallest value.
 
-# Arguments
-- `from`: optional initial minimal value, if `nothing` first item from the source will be used as initial instead
+    # Arguments
+    - `from`: optional initial minimal value, if `nothing` first item from the source will be used as initial instead
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ i for i in 1:42 ])
-subscribe!(source |> min(), logger())
-;
+    source = from([ i for i in 1:42 ])
+    subscribe!(source |> min(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 1
-[LogActor] Completed
+    [LogActor] Data: 1
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 min(; from = nothing) = MinOperator(from)
 

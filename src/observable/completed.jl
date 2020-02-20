@@ -6,9 +6,9 @@ import Base: show
 """
     CompletedObservable{D}()
 
-Observable that emits no items to the Actor and immediately sends a complete notification on subscription.
+    Observable that emits no items to the Actor and immediately sends a complete notification on subscription.
 
-See also: [`Subscribable`](@ref), [`completed`](@ref)
+    See also: [`Subscribable`](@ref), [`completed`](@ref)
 """
 struct CompletedObservable{D} <: Subscribable{D} end
 
@@ -20,27 +20,27 @@ end
 """
     completed(T = Any)
 
-Creation operator for the `CompletedObservable` that emits no items to the Actor and immediately sends a complete notification on subscription.
+    Creation operator for the `CompletedObservable` that emits no items to the Actor and immediately sends a complete notification on subscription.
 
-# Arguments
-- `T`: type of output data source, optional, `Any` is the default
+    # Arguments
+    - `T`: type of output data source, optional, `Any` is the default
 
-# Examples
+    # Examples
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = completed(Int)
-subscribe!(source, logger())
-;
+    source = completed(Int)
+    subscribe!(source, logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Completed
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`CompletedObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+    See also: [`CompletedObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 completed(T = Any) = CompletedObservable{T}()
 

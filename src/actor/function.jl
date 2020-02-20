@@ -4,28 +4,28 @@ export subscribe!
 """
     FunctionActor{D} <: Actor{D}
 
-FunctionActor provides a simple interface to use a single function as a `next!` callback.
-`error!` callback throws an `ErrorException` and `complete!` is empty.
-Should not be used explicitly because it will be created automatically when passing a `Function` object as an actor in
-`subscribe!` function.
+    FunctionActor provides a simple interface to use a single function as a `next!` callback.
+    `error!` callback throws an `ErrorException` and `complete!` is empty.
+    Should not be used explicitly because it will be created automatically when passing a `Function` object as an actor in
+    `subscribe!` function.
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from(1:5)
-subscribe!(source, (t) -> println(t))
-;
+    source = from(1:5)
+    subscribe!(source, (t) -> println(t))
+    ;
 
-# output
-1
-2
-3
-4
-5
-```
+    # output
+    1
+    2
+    3
+    4
+    5
+    ```
 
-See also: [`Actor`](@ref), [`subscribe!`](@ref)
+    See also: [`Actor`](@ref), [`subscribe!`](@ref)
 """
 struct FunctionActor{D, F} <: Actor{D}
     on_next :: F

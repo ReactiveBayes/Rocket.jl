@@ -11,27 +11,27 @@ import Base: show
 """
     combineLatest(sources...)
 
-Combines multiple Observables to create an Observable whose values are calculated from the latest values of each of its input Observables.
+    Combines multiple Observables to create an Observable whose values are calculated from the latest values of each of its input Observables.
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-latest = combineLatest(of(1), from(2:5))
+    latest = combineLatest(of(1), from(2:5))
 
-subscribe!(latest, logger())
-;
+    subscribe!(latest, logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: (1, 2)
-[LogActor] Data: (1, 3)
-[LogActor] Data: (1, 4)
-[LogActor] Data: (1, 5)
-[LogActor] Completed
-```
+    [LogActor] Data: (1, 2)
+    [LogActor] Data: (1, 3)
+    [LogActor] Data: (1, 4)
+    [LogActor] Data: (1, 5)
+    [LogActor] Completed
+    ```
 
-See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
+    See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
 combineLatest() = error("combineLatest requires at least on observable on input")
 

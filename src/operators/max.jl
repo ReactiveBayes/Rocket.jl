@@ -6,31 +6,31 @@ import Base: show
 """
     max(; from = nothing)
 
-Creates a max operator, which emits a single item: the item with the largest value.
+    Creates a max operator, which emits a single item: the item with the largest value.
 
-# Arguments
-- `from`: optional initial maximum value, if `nothing` first item from the source will be used as initial instead
+    # Arguments
+    - `from`: optional initial maximum value, if `nothing` first item from the source will be used as initial instead
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ i for i in 1:42 ])
-subscribe!(source |> max(), logger())
-;
+    source = from([ i for i in 1:42 ])
+    subscribe!(source |> max(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 42
-[LogActor] Completed
+    [LogActor] Data: 42
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 max(; from = nothing) = MaxOperator(from)
 

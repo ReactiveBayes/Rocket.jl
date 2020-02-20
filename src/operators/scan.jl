@@ -7,54 +7,54 @@ import Base: show
     scan(::Type{R}, scanFn::F, seed::R) where { R, F <: Function }
     scan(scanFn::F) where { F <: Function }
 
-Creates a scan operator, which applies a given accumulator `scanFn` function to each value emmited by the source
-Observable, and returns each intermediate result with an optional seed value. If a seed value is specified,
-then that value will be used as the initial value for the accumulator.
-If no seed value is specified, the first item of the source is used as the seed.
+    Creates a scan operator, which applies a given accumulator `scanFn` function to each value emmited by the source
+    Observable, and returns each intermediate result with an optional seed value. If a seed value is specified,
+    then that value will be used as the initial value for the accumulator.
+    If no seed value is specified, the first item of the source is used as the seed.
 
-# Arguments
-- `::Type{R}`: the type of data of transformed value, may be or may not be the same as type of input source
-- `scanFn::Function`: accumulator function with `(data::T, current::R) -> R` signature
-- `seed::R`: optional initial value for accumulator function
+    # Arguments
+    - `::Type{R}`: the type of data of transformed value, may be or may not be the same as type of input source
+    - `scanFn::Function`: accumulator function with `(data::T, current::R) -> R` signature
+    - `seed::R`: optional initial value for accumulator function
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{R}`
+    Stream of type `<: Subscribable{R}`
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> scan(+), logger())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> scan(+), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 1
-[LogActor] Data: 3
-[LogActor] Data: 6
-[LogActor] Completed
+    [LogActor] Data: 1
+    [LogActor] Data: 3
+    [LogActor] Data: 6
+    [LogActor] Completed
 
-```
+    ```
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: [1]
-[LogActor] Data: [1, 2]
-[LogActor] Data: [1, 2, 3]
-[LogActor] Completed
+    [LogActor] Data: [1]
+    [LogActor] Data: [1, 2]
+    [LogActor] Data: [1, 2, 3]
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
 scan(::Type{R}, scanFn::F, seed::R) where { R, F <: Function } = ScanOperator{R, F}(scanFn, seed)
 

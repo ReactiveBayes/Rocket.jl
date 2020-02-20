@@ -5,33 +5,33 @@ import Base: show
 """
     catch_error(selectorFn::Function)
 
-Creates a `CatchErrorOperator`, which catches errors on the observable to be handled by returning a new observable or throwing an error.
+    Creates a `CatchErrorOperator`, which catches errors on the observable to be handled by returning a new observable or throwing an error.
 
-# Arguments:
-- `selectorFn::Function`: a function that takes as arguments err, which is the error, and caught, which is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable is returned by the selector will be used to continue the observable chain.
+    # Arguments:
+    - `selectorFn::Function`: a function that takes as arguments err, which is the error, and caught, which is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable is returned by the selector will be used to continue the observable chain.
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> of(1))
+    source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> of(1))
 
-subscribe!(source, logger())
-;
+    subscribe!(source, logger())
+    ;
 
-# output
-[LogActor] Data: 1
-[LogActor] Data: 2
-[LogActor] Data: 3
-[LogActor] Data: 1
-[LogActor] Completed
-```
+    # output
+    [LogActor] Data: 1
+    [LogActor] Data: 2
+    [LogActor] Data: 3
+    [LogActor] Data: 1
+    [LogActor] Completed
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`rerun`](@ref), [`logger`](@ref), [`safe`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`rerun`](@ref), [`logger`](@ref), [`safe`](@ref)
 """
 catch_error(selectorFn::Function) = CatchErrorOperator(selectorFn)
 

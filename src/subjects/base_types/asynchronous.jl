@@ -21,9 +21,9 @@ const AsynchronousSubjectMessage{D} = Union{AsynchronousSubjectNextMessage{D}, A
 """
     AsynchronousSubject{D}()
 
-AsynchronousSubject is a base-type subject that asynchronously delivers all messages to the attached listeners using a different asynchronous task for each listener.
+    AsynchronousSubject is a base-type subject that asynchronously delivers all messages to the attached listeners using a different asynchronous task for each listener.
 
-See also: [`as_subject`](@ref), [`make_subject`](@ref)
+    See also: [`as_subject`](@ref), [`make_subject`](@ref)
 """
 mutable struct AsynchronousSubject{D} <: Actor{D}
     subscribers  :: Vector{Channel{AsynchronousSubjectMessage{D}}}

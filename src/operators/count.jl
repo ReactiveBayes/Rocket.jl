@@ -6,29 +6,29 @@ import Base: show
 """
     count()
 
-Creates a count operator, which counts the number of
-emissions on the source and emits that number when the source completes.
+    Creates a count operator, which counts the number of
+    emissions on the source and emits that number when the source completes.
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{Int}`
+    Stream of type `<: Subscribable{Int}`
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ i for i in 1:42 ])
-subscribe!(source |> count(), logger())
-;
+    source = from([ i for i in 1:42 ])
+    subscribe!(source |> count(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 42
-[LogActor] Completed
+    [LogActor] Data: 42
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 count() = CountOperator()
 

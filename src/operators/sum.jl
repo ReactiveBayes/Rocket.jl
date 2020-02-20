@@ -6,49 +6,49 @@ import Base: show
 """
     sum(; from = nothing)
 
-Creates a sum operator, which applies a sum accumulator function
-over the source Observable, and returns the accumulated result when the source completes,
-given an optional initial value.
+    Creates a sum operator, which applies a sum accumulator function
+    over the source Observable, and returns the accumulated result when the source completes,
+    given an optional initial value.
 
-The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref)).
+    The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref)).
 
-# Arguments
-- `from`: optional initial accumulation value, if nothing first value will be used instead
+    # Arguments
+    - `from`: optional initial accumulation value, if nothing first value will be used instead
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ i for i in 1:42 ])
-subscribe!(source |> sum(), logger())
-;
+    source = from([ i for i in 1:42 ])
+    subscribe!(source |> sum(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 903
-[LogActor] Completed
+    [LogActor] Data: 903
+    [LogActor] Completed
 
-```
+    ```
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = from([ i for i in 1:42 ])
-subscribe!(source |> sum(from = 97), logger())
-;
+    source = from([ i for i in 1:42 ])
+    subscribe!(source |> sum(from = 97), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 1000
-[LogActor] Completed
+    [LogActor] Data: 1000
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
 sum(; from = nothing) = SumOperator(from)
 

@@ -5,28 +5,28 @@ import Base: show
 """
     to_array()
 
-Creates a `to_array` operator, which reduces all values into a single array and returns this result when the source completes.
+    Creates a `to_array` operator, which reduces all values into a single array and returns this result when the source completes.
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{Vector{L}}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{Vector{L}}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> to_array(), LoggerActor{Vector{Int}}())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> to_array(), LoggerActor{Vector{Int}}())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: [1, 2, 3]
-[LogActor] Completed
+    [LogActor] Data: [1, 2, 3]
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 to_array() = ToArrayOperator()
 

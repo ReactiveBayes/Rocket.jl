@@ -6,9 +6,9 @@ import Base: show
 """
     ChainTeardown(teardown)
 
-ChainTeardown object wraps another teardown and calls its teardown logic on unsubscription.
+    ChainTeardown object wraps another teardown and calls its teardown logic on unsubscription.
 
-See also: [`Teardown`](@ref), [`UnsubscribableTeardownLogic`](@ref), [`chain`](@ref)
+    See also: [`Teardown`](@ref), [`UnsubscribableTeardownLogic`](@ref), [`chain`](@ref)
 """
 struct ChainTeardown <: Teardown
     teardown
@@ -21,9 +21,9 @@ on_unsubscribe!(chained::ChainTeardown) = unsubscribe!(chained.teardown)
 """
     chain(t::T) where { T <: Teardown }
 
-Creates a ChainTeardown object with a given teardown `t`
+    Creates a ChainTeardown object with a given teardown `t`
 
-See also: [`Teardown`](@ref), [`ChainTeardown`](@ref)
+    See also: [`Teardown`](@ref), [`ChainTeardown`](@ref)
 """
 chain(t::T) where { T <: Teardown } = ChainTeardown(t)
 

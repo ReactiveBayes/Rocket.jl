@@ -6,57 +6,57 @@ import Base: show
 """
     last(; default = nothing)
 
-Creates a last operator, which returns an Observable that emits only
-the last item emitted by the source Observable.
+    Creates a last operator, which returns an Observable that emits only
+    the last item emitted by the source Observable.
 
-# Arguments
-- `default`: an optional default value to provide if no values were emitted
+    # Arguments
+    - `default`: an optional default value to provide if no values were emitted
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> last(), logger())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> last(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 3
-[LogActor] Completed
+    [LogActor] Data: 3
+    [LogActor] Completed
 
-```
+    ```
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = from(Int[])
-subscribe!(source |> last(), logger())
-;
+    source = from(Int[])
+    subscribe!(source |> last(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Completed
-```
+    [LogActor] Completed
+    ```
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = from(Int[])
-subscribe!(source |> last(default = 1), logger())
-;
+    source = from(Int[])
+    subscribe!(source |> last(default = 1), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 1
-[LogActor] Completed
-```
+    [LogActor] Data: 1
+    [LogActor] Completed
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 last(; default = nothing) = LastOperator(default)
 

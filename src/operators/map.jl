@@ -4,36 +4,35 @@ import Base: show
 """
     map(::Type{R}, mappingFn::F) where { F <: Function }
 
-Creates a map operator, which applies a given `mappingFn` to each value emmited by the source
-Observable, and emits the resulting values as an Observable. You have to specify output R type after
-`mappingFn` projection.
+    Creates a map operator, which applies a given `mappingFn` to each value emmited by the source
+    Observable, and emits the resulting values as an Observable. You have to specify output R type after
+    `mappingFn` projection.
 
-# Arguments
-- `::Type{R}`: the type of data of transformed value, may be or may not be the same as source type
-- `mappingFn::Function`: transformation function with `(data::L) -> R` signature, where L is type of data in input source
+    # Arguments
+    - `::Type{R}`: the type of data of transformed value, may be or may not be the same as source type
+    - `mappingFn::Function`: transformation function with `(data::L) -> R` signature, where L is type of data in input source
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{R}`
+    Stream of type `<: Subscribable{R}`
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 1
-[LogActor] Data: 4
-[LogActor] Data: 9
-[LogActor] Completed
+    [LogActor] Data: 1
+    [LogActor] Data: 4
+    [LogActor] Data: 9
+    [LogActor] Completed
+    ```
 
-```
-
-See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 map(::Type{R}, mappingFn::F) where { R, F <: Function } = MapOperator{R, F}(mappingFn)
 

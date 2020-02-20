@@ -6,37 +6,37 @@ import Base: show
 """
     tap(tapFn::F) where { F <: Function }
 
-Creates a tap operator, which performs a side effect
-for every emission on the source Observable, but return an Observable that is identical to the source.
+    Creates a tap operator, which performs a side effect
+    for every emission on the source Observable, but return an Observable that is identical to the source.
 
-# Arguments
-- `tapFn::Function`: side-effect tap function with `(data) -> Nothing` signature
+    # Arguments
+    - `tapFn::Function`: side-effect tap function with `(data) -> Nothing` signature
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> tap((d) -> println("In tap: \$d")), logger())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> tap((d) -> println("In tap: \$d")), logger())
+    ;
 
-# output
+    # output
 
-In tap: 1
-[LogActor] Data: 1
-In tap: 2
-[LogActor] Data: 2
-In tap: 3
-[LogActor] Data: 3
-[LogActor] Completed
+    In tap: 1
+    [LogActor] Data: 1
+    In tap: 2
+    [LogActor] Data: 2
+    In tap: 3
+    [LogActor] Data: 3
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 tap(tapFn::F) where { F <: Function } = TapOperator{F}(tapFn)
 

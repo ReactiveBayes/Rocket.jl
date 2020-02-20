@@ -5,10 +5,10 @@ import Base: ==
 """
     VoidTeardown()
 
-VoidTeardown object does nothing on unsubscription.
-It is usefull for synchronous observables.
+    VoidTeardown object does nothing on unsubscription.
+    It is usefull for synchronous observables.
 
-See also: [`Teardown`](@ref), [`VoidTeardownLogic`](@ref)
+    See also: [`Teardown`](@ref), [`VoidTeardownLogic`](@ref)
 """
 struct VoidTeardown <: Teardown end
 

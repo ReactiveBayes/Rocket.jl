@@ -3,24 +3,24 @@ export VoidActor, void
 """
     VoidActor{D}() where D
 
-Void actor does nothing with input data, error and complete events, can be useful for debugging (e.g. to start side-effects with [`tap`](@ref) operator)
+    Void actor does nothing with input data, error and complete events, can be useful for debugging (e.g. to start side-effects with [`tap`](@ref) operator)
 
-# Examples
+    # Examples
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = from([ 0, 1, 2 ])
-actor  = VoidActor{Int}()
+    source = from([ 0, 1, 2 ])
+    actor  = VoidActor{Int}()
 
-subscribe!(source, actor)
-;
+    subscribe!(source, actor)
+    ;
 
-# output
+    # output
 
-```
+    ```
 
-See also: [`Actor`](@ref), [`void`](@ref), [`tap`](@ref)
+    See also: [`Actor`](@ref), [`void`](@ref), [`tap`](@ref)
 """
 struct VoidActor{T} <: Actor{T} end
 
@@ -38,22 +38,22 @@ create_actor(::Type{L}, factory::VoidActorFactory) where L = VoidActor{L}()
     void()
     void(::Type{T}) where T
 
-Creation operator for the `VoidActor` actor.
+    Creation operator for the `VoidActor` actor.
 
-# Examples
+    # Examples
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-actor = void(Int)
-actor isa VoidActor{Int}
+    actor = void(Int)
+    actor isa VoidActor{Int}
 
-# output
-true
+    # output
+    true
 
-```
+    ```
 
-See also: [`VoidActor`](@ref), [`AbstractActor`](@ref)
+    See also: [`VoidActor`](@ref), [`AbstractActor`](@ref)
 """
 void()                  = VoidActorFactory()
 void(::Type{T}) where T = VoidActor{T}()

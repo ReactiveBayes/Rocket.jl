@@ -6,28 +6,28 @@ import Base: show
 """
     uppercase()
 
-Creates an uppercase operator, which forces each value to be in upper case
+    Creates an uppercase operator, which forces each value to be in upper case
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where L referes to type of data of input Observable
+    Stream of type `<: Subscribable{L}` where L referes to type of data of input Observable
 
-# Examples
+    # Examples
 
-```jldoctest
-using Rocket
+    ```jldoctest
+    using Rocket
 
-source = of("Hello, world!")
-subscribe!(source |> uppercase(), logger())
-;
+    source = of("Hello, world!")
+    subscribe!(source |> uppercase(), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: HELLO, WORLD!
-[LogActor] Completed
-```
+    [LogActor] Data: HELLO, WORLD!
+    [LogActor] Completed
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 uppercase() = UppercaseOperator()
 

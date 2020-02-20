@@ -6,13 +6,13 @@ import Base: show
 """
     BehaviorSubject{D, S}(current, subject)
 
-A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
+    A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
 
-# Arguments
-- `current`: Default current value
-- `subject`: Subject base type
+    # Arguments
+    - `current`: Default current value
+    - `subject`: Subject base type
 
-See also: [`make_behavior_subject`](@ref), [`make_subject`](@ref)
+    See also: [`make_behavior_subject`](@ref), [`make_subject`](@ref)
 """
 mutable struct BehaviorSubject{D, S} <: Actor{D}
     current :: D
@@ -57,9 +57,9 @@ as_behavior_subject(::Type{T},  ::ValidSubject{T},  current::T,  subject::S) whe
 """
     make_behavior_subject(::Type{T}, current::T; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M
 
-Creation operator for the `BehaviorSubject`
+    Creation operator for the `BehaviorSubject`
 
-See also: [`BehaviorSubject`](@ref), [`make_subject`](@ref)
+    See also: [`BehaviorSubject`](@ref), [`make_subject`](@ref)
 """
 make_behavior_subject(::Type{T}, current::T; mode::Val{M} = DEFAULT_SUBJECT_MODE) where T where M = make_behavior_subject(T, current, make_subject_factory(mode = mode))
 

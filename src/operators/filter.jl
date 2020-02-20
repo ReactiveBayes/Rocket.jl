@@ -7,32 +7,32 @@ import Base: show
 """
     filter(filterFn::F) where { F <: Function }
 
-Creates a filter operator, which filters items by the source Observable by emitting only
-those that satisfy a specified `filterFn` predicate.
+    Creates a filter operator, which filters items by the source Observable by emitting only
+    those that satisfy a specified `filterFn` predicate.
 
-# Producing
+    # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+    Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-# Arguments
-- `filterFn::Function`: predicate function with `(data::T) -> Bool` signature
+    # Arguments
+    - `filterFn::Function`: predicate function with `(data::T) -> Bool` signature
 
-# Examples
-```jldoctest
-using Rocket
+    # Examples
+    ```jldoctest
+    using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> filter((d) -> d % 2 == 0), logger())
-;
+    source = from([ 1, 2, 3 ])
+    subscribe!(source |> filter((d) -> d % 2 == 0), logger())
+    ;
 
-# output
+    # output
 
-[LogActor] Data: 2
-[LogActor] Completed
+    [LogActor] Data: 2
+    [LogActor] Completed
 
-```
+    ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+    See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 filter(filterFn::F) where { F <: Function }  = FilterOperator{F}(filterFn)
 
