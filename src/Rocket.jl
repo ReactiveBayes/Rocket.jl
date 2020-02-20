@@ -43,6 +43,7 @@ include("observable/combined.jl")
 include("observable/collected.jl")
 include("observable/lazy.jl")
 include("observable/connectable.jl")
+include("observable/merged.jl")
 
 include("operators/map.jl")
 include("operators/reduce.jl")

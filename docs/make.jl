@@ -28,6 +28,7 @@ makedocs(
                 "File"              => "observables/types/file.md",
                 "Combined"          => "observables/types/combined.md",
                 "Connectable"       => "observables/types/connectable.md",
+                "Merged"            => "observables/types/merged.md",
             ],
             "Actors" => [
                 "Lambda"        => "actors/types/lambda.md",

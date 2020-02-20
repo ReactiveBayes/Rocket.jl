@@ -13,6 +13,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [timer](@ref observable_timer)
 - [interval](@ref observable_interval)
 - [combined](@ref observable_combined)
+- [merged](@ref observable_merged)
 
 ## Transformation operators
 
