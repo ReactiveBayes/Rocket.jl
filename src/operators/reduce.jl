@@ -1,5 +1,4 @@
 export reduce
-export @CreateReduceOperator
 
 import Base: reduce
 import Base: show

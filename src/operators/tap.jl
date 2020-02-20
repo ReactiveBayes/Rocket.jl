@@ -1,5 +1,4 @@
 export tap
-export @CreateTapOperator
 
 import Base: show
 

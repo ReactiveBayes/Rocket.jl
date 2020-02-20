@@ -29,6 +29,7 @@ doctest(Rocket)
     include("./observable/test_observable_interval.jl")
     include("./observable/test_observable_proxy.jl")
     include("./observable/test_observable_combine_latest.jl")
+    include("./observable/test_observable_merged.jl")
 
     include("./test_subject.jl")
     include("./subjects/base_types/test_subject_synchronous.jl")

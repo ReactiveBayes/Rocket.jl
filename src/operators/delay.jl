@@ -99,7 +99,7 @@ as_teardown(::Type{<:DelaySubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::DelaySubscription)
     if !subscription.actor.is_cancelled
-        close(actor.channel)
+        close(subscription.actor.channel)
     end
     subscription.actor.is_cancelled = true
     unsubscribe!(subscription.subscription)

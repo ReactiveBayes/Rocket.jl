@@ -1,5 +1,4 @@
 export filter
-export @CreateFilterOperator
 
 import Base: filter
 import Base: show

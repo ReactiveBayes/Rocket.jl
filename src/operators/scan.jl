@@ -1,5 +1,4 @@
 export scan
-export @CreateScanOperator
 
 import Base: show
 

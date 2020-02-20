@@ -1,3 +1,5 @@
+export map
+
 import Base: map
 import Base: show
 
