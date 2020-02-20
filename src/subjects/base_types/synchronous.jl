@@ -46,7 +46,7 @@ function on_next!(subject::SynchronousSubject{D}, data::D) where D
     end
     
     if failed_actors !== nothing
-        __sync_subject_unsubscribe_actors(subject, failed_actors)s
+        __sync_subject_unsubscribe_actors(subject, failed_actors)
     end
 end
 
