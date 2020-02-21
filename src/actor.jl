@@ -1,4 +1,4 @@
-export InvalidActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
+export ValidActorTrait, InvalidActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait, ActorTrait
 export AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
 export AbstractActorFactory, create_actor
 export next!, error!, complete!

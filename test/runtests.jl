@@ -62,6 +62,10 @@ doctest(Rocket)
     include("./operators/test_operator_noop.jl")
     include("./operators/test_operator_multicast.jl")
     include("./operators/test_operator_ref_count.jl")
+
+    @testset "Detect ambiguities" begin
+        @test length(Test.detect_ambiguities(Rocket)) == 0
+    end
 end
 
 end

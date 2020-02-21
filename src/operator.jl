@@ -327,6 +327,10 @@ as_operator(::Type{<:InferableOperator})                     = InferableOperator
 
 call_operator!(operator::T, source::S) where T where S = call_operator!(as_operator(T), as_subscribable(S), operator, source)
 
+function call_operator!(::InvalidOperatorTrait, ::InvalidSubscribable, operator, source)
+    throw(InvalidSubscribableTraitUsageError(source))
+end
+
 function call_operator!(as_operator, ::InvalidSubscribable, operator, source)
     throw(InvalidSubscribableTraitUsageError(source))
 end
