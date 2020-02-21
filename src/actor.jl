@@ -18,41 +18,48 @@ Abstract type for all possible actor traits
 
 See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
 """
-abstract type ActorTrait{T} end
+abstract type ActorTrait end
+
+"""
+Abstract type for all possible valid actor traits
+
+See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
+"""
+abstract type ValidActorTrait{T} end
 
 """
 Base actor trait specifies actor to listen for all `next!`, `error!` and `complete!` events.
 
 See also: [`ActorTrait`](@ref), [`Actor`](@ref)
 """
-struct BaseActorTrait{T}       <: ActorTrait{T}       end
+struct BaseActorTrait{T}       <: ValidActorTrait{T}       end
 
 """
 Next actor trait specifies actor to listen for `next!` events only.
 
 See also: [`ActorTrait`](@ref), [`NextActor`](@ref)
 """
-struct NextActorTrait{T}       <: ActorTrait{T}       end
+struct NextActorTrait{T}       <: ValidActorTrait{T}       end
 
 """
 Error actor trait specifies actor to listen for `error!` events only.
 
 See also: [`ActorTrait`](@ref), [`ErrorActor`](@ref)
 """
-struct ErrorActorTrait{T}      <: ActorTrait{T}       end
+struct ErrorActorTrait{T}      <: ValidActorTrait{T}       end
 
 """
 Completion actor trait specifies actor to listen for `complete!` events only.
 
 See also: [`ActorTrait`](@ref), [`CompletionActor`](@ref)
 """
-struct CompletionActorTrait{T} <: ActorTrait{T}       end
+struct CompletionActorTrait{T} <: ValidActorTrait{T}       end
 
 """
 Default actor trait behavior for any object. Actor with such a trait specificaion cannot be used as a valid actor in `subscribe!` function.
 Doing so will raise an error.
 """
-struct InvalidActorTrait       <: ActorTrait{Nothing} end
+struct InvalidActorTrait       <: ActorTrait end
 
 """
 Abstract type for any actor object
@@ -149,10 +156,7 @@ See also: [`AbstractActor`](@ref)
 is_exhausted(actor) = false
 
 actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
-actor_on_next!(::BaseActorTrait{T},       actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::NextActorTrait{T},       actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
-actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::ValidActorTrait{T},      actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
 actor_on_next!(::NextActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
 actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where { R <: T } where T = begin end

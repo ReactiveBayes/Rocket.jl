@@ -130,5 +130,5 @@ See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 sync(actor::A) where A = as_sync(as_actor(A), actor)
 sync(factory::F) where { F <: AbstractActorFactory } = SyncActorFactory{F}(factory)
 
-as_sync(::InvalidActorTrait, actor)                    = throw(InvalidActorTraitUsageError(actor))
-as_sync(::ActorTrait{D},     actor::A) where D where A = SyncActor{D, A}(actor)
+as_sync(::InvalidActorTrait,  actor)                    = throw(InvalidActorTraitUsageError(actor))
+as_sync(::ValidActorTrait{D}, actor::A) where D where A = SyncActor{D, A}(actor)

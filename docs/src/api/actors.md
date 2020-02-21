@@ -50,6 +50,7 @@ Rocket.on_complete!(actor::MyCustomCompletionActor) = # custom logic here
 
 ```@docs
 ActorTrait
+ValidActorTrait
 as_actor
 BaseActorTrait
 NextActorTrait

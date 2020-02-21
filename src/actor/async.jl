@@ -64,7 +64,7 @@ See also: [`AsyncActor`](@ref), [`AbstractActor`](@ref)
 """
 async(actor::A) where A = as_async(as_actor(A), actor)
 
-as_async(::InvalidActorTrait, actor)                    = throw(InvalidActorTraitUsageError(actor))
-as_async(::ActorTrait{D},     actor::A) where D where A = AsyncActor{D, A}(actor)
+as_async(::InvalidActorTrait,  actor)                    = throw(InvalidActorTraitUsageError(actor))
+as_async(::ValidActorTrait{D}, actor::A) where D where A = AsyncActor{D, A}(actor)
 
 close(actor::AsyncActor) = close(actor.channel)

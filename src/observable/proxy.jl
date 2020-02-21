@@ -57,9 +57,9 @@ call_actor_proxy!(::ValidSourceProxy,      ::InvalidActorTrait,   proxy, actor) 
 call_actor_proxy!(::ValidActorSourceProxy, ::InvalidActorTrait,   proxy, actor) = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
 
 # Invoke valid proxy and actor
-call_actor_proxy!(::ValidActorProxy,       as_actor, proxy, actor) = actor_proxy!(proxy, actor)
-call_actor_proxy!(::ValidSourceProxy,      as_actor, proxy, actor) = actor
-call_actor_proxy!(::ValidActorSourceProxy, as_actor, proxy, actor) = actor_proxy!(proxy, actor)
+call_actor_proxy!(::ValidActorProxy,       ::ValidActorTrait{D}, proxy, actor) where D = actor_proxy!(proxy, actor)
+call_actor_proxy!(::ValidSourceProxy,      ::ValidActorTrait{D}, proxy, actor) where D = actor
+call_actor_proxy!(::ValidActorSourceProxy, ::ValidActorTrait{D}, proxy, actor) where D = actor_proxy!(proxy, actor)
 
 # Check for invalid subscribable trait usages
 call_source_proxy!(::InvalidProxy,          ::InvalidSubscribable, proxy, source) = error("Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).")
