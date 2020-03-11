@@ -28,11 +28,22 @@ using Rocket
 
     @testset begin
         source = completed(Int) |> first()
-        actor  = keep(Int)
 
-        subscribe!(source, actor)
+        values      = Int[]
+        errors      = []
+        completions = Int[]
 
-        @test actor.values == [ ]
+        subscribe!(source, lambda(
+            on_next     = d -> push!(values, d),
+            on_error    = e -> push!(errors, e),
+            on_complete = () -> push!(completions, 1)
+        ))
+
+        @test isempty(values)      === true
+        @test isempty(errors)      === false
+        @test isempty(completions) === true
+
+        @test errors[1] isa FirstNotFoundException
     end
 
 end

@@ -1,7 +1,7 @@
 # [MapTo Operator](@id operator_map_to)
 
 ```@docs
-mapTo
+map_to
 ```
 
 ## Description

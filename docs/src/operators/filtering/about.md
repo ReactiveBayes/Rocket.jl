@@ -6,6 +6,8 @@ There are operators for different purposes, and they may be categorized as: crea
 - [take](@ref operator_take)
 - [first](@ref operator_first)
 - [last](@ref operator_last)
+- [find](@ref operator_find)
+- [find_index](@ref operator_find_index)
 
 # See also
 

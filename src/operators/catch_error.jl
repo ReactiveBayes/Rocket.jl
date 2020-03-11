@@ -3,12 +3,12 @@ export catch_error
 import Base: show
 
 """
-    catch_error(selectorFn::Function)
+    catch_error(selectorFn::F) where F
 
 Creates a `CatchErrorOperator`, which catches errors on the observable to be handled by returning a new observable or throwing an error.
 
 # Arguments:
-- `selectorFn::Function`: a function that takes as arguments err, which is the error, and caught, which is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable is returned by the selector will be used to continue the observable chain.
+- `selectorFn::F`: a callable object that takes as arguments err, which is the error, and caught, which is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable is returned by the selector will be used to continue the observable chain.
 
 # Producing
 
@@ -33,35 +33,34 @@ subscribe!(source, logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`rerun`](@ref), [`logger`](@ref), [`safe`](@ref)
 """
-catch_error(selectorFn::Function) = CatchErrorOperator(selectorFn)
+catch_error(selectorFn::F) where F = CatchErrorOperator{F}(selectorFn)
 
-struct CatchErrorOperator <: InferableOperator
-    selectorFn :: Function
+struct CatchErrorOperator{F} <: InferableOperator
+    selectorFn :: F
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::CatchErrorOperator, source) where L
-    return proxy(L, source, CatchErrorProxy{L}(operator.selectorFn))
+function on_call!(::Type{L}, ::Type{L}, operator::CatchErrorOperator{F}, source) where { L, F }
+    return proxy(L, source, CatchErrorProxy{L, F}(operator.selectorFn))
 end
 
 operator_right(operator::CatchErrorOperator, ::Type{L}) where L = L
 
-struct CatchErrorProxy{L} <: ActorSourceProxy
-    selectorFn :: Function
+struct CatchErrorProxy{L, F} <: ActorSourceProxy
+    selectorFn :: F
 end
 
-actor_proxy!(proxy::CatchErrorProxy{L},  actor::A)  where { L, A } = CatchErrorActor{L, A}(proxy.selectorFn, actor, false, nothing, nothing)
-source_proxy!(proxy::CatchErrorProxy{L}, source::S) where { L, S } = CatchErrorSource{L, S}(source)
+actor_proxy!(proxy::CatchErrorProxy{L, F},  actor::A)  where { L, A, F } = CatchErrorActor{L, A, F}(proxy.selectorFn, actor, false, nothing, nothing)
+source_proxy!(proxy::CatchErrorProxy{L, F}, source::S) where { L, S, F } = CatchErrorSource{L, S}(source)
 
-mutable struct CatchErrorActor{L, A} <: Actor{L}
-    selectorFn           :: Function
+mutable struct CatchErrorActor{L, A, F} <: Actor{L}
+    selectorFn           :: F
     actor                :: A
-
     is_completed         :: Bool
     current_source       :: Union{Nothing, Any}
     current_subscription :: Union{Nothing, Teardown}
 end
 
-is_exhausted(actor::CatchErrorActor) = is_exhausted(actor.actor)
+is_exhausted(actor::CatchErrorActor) = actor.is_completed || is_exhausted(actor.actor)
 
 function on_next!(actor::CatchErrorActor{L}, data::L) where L
     if !actor.is_completed

@@ -1,7 +1,7 @@
-export mapTo
+export map_to
 
 """
-    mapTo(value::T) where T
+    map_to(value::T) where T
 
 Creates a map operator, which emits the given constant value on the output Observable every time the source Observable emits a value.
 
@@ -17,7 +17,7 @@ Stream of type `<: Subscribable{T}`
 using Rocket
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> mapTo('a'), logger())
+subscribe!(source |> map_to('a'), logger())
 ;
 
 # output
@@ -30,4 +30,4 @@ subscribe!(source |> mapTo('a'), logger())
 
 See also: [`map`](@ref), [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-mapTo(value::T) where T = map(T, _ -> value)
+map_to(value::T) where T = map(T, _ -> value)

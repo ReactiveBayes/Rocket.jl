@@ -6,7 +6,7 @@ using Rocket
 @testset "operator: map_to()" begin
 
     @testset begin
-        source = from(1:5) |> mapTo('a')
+        source = from(1:5) |> map_to('a')
         actor  = keep(Char)
 
         subscribe!(source, actor)
@@ -15,7 +15,7 @@ using Rocket
     end
 
     @testset begin
-        source = timer(1, 1) |> take(5) |> mapTo(1)
+        source = timer(1, 1) |> take(5) |> map_to(1)
         actor  = keep(Int)
         synced = sync(actor)
 

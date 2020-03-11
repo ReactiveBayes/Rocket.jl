@@ -46,6 +46,8 @@ doctest(Rocket)
     include("./operators/test_operator_lowercase.jl")
     include("./operators/test_operator_to_array.jl")
     include("./operators/test_operator_filter.jl")
+    include("./operators/test_operator_find.jl")
+    include("./operators/test_operator_find_index.jl")
     include("./operators/test_operator_some.jl")
     include("./operators/test_operator_take.jl")
     include("./operators/test_operator_first.jl")
@@ -63,6 +65,8 @@ doctest(Rocket)
     include("./operators/test_operator_noop.jl")
     include("./operators/test_operator_multicast.jl")
     include("./operators/test_operator_ref_count.jl")
+    include("./operators/test_operator_default_if_empty.jl")
+    include("./operators/test_operator_error_if_empty.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0

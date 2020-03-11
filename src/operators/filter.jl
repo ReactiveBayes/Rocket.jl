@@ -14,21 +14,22 @@ those that satisfy a specified `filterFn` predicate.
 Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Arguments
-- `filterFn::Function`: predicate function with `(data::T) -> Bool` signature
+- `filterFn::F`: predicate function with `(data::T) -> Bool` signature
 
 # Examples
 ```jldoctest
 using Rocket
 
-source = from([ 1, 2, 3 ])
+source = from([ 1, 2, 3, 4, 5, 6 ])
 subscribe!(source |> filter((d) -> d % 2 == 0), logger())
 ;
 
 # output
 
 [LogActor] Data: 2
+[LogActor] Data: 4
+[LogActor] Data: 6
 [LogActor] Completed
-
 ```
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)

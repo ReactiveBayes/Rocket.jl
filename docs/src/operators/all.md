@@ -18,7 +18,7 @@ There are operators for different purposes, and they may be categorized as: crea
 ## Transformation operators
 
 - [map](@ref operator_map)
-- [mapTo](@ref operator_map_to)
+- [map_to](@ref operator_map_to)
 - [scan](@ref operator_scan)
 - [enumerate](@ref operator_enumerate)
 - [uppercase](@ref operator_uppercase)
@@ -32,6 +32,8 @@ There are operators for different purposes, and they may be categorized as: crea
 - [take](@ref operator_take)
 - [first](@ref operator_first)
 - [last](@ref operator_last)
+- [find](@ref operator_find)
+- [find_index](@ref operator_find_index)
 
 ## Mathematical and Aggregate operators
 
@@ -63,3 +65,5 @@ There are operators for different purposes, and they may be categorized as: crea
 - [noop](@ref operator_noop)
 - [ref_count](@ref operator_ref_count)
 - [async](@ref operator_ref_async)
+- [default_if_empty](@ref operator_ref_default_if_empty)
+- [error_if_empty](@ref operator_ref_default_if_empty)

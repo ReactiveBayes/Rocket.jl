@@ -48,7 +48,7 @@ makedocs(
                 "Transformation" => [
                     "About transformation operators" => "operators/transformation/about.md",
                     "map"                            => "operators/transformation/map.md",
-                    "mapTo"                          => "operators/transformation/map_to.md",
+                    "map_to"                         => "operators/transformation/map_to.md",
                     "scan"                           => "operators/transformation/scan.md",
                     "enumerate"                      => "operators/transformation/enumerate.md",
                     "uppercase"                      => "operators/transformation/uppercase.md",
@@ -62,6 +62,8 @@ makedocs(
                     "take"                      => "operators/filtering/take.md",
                     "first"                     => "operators/filtering/first.md",
                     "last"                      => "operators/filtering/last.md",
+                    "find"                      => "operators/filtering/find.md",
+                    "find_index"                 => "operators/filtering/find_index.md",
                 ],
                 "Mathematical and Aggregate" => [
                     "About mathematical operators" => "operators/mathematical/about.md",
@@ -93,6 +95,8 @@ makedocs(
                     "noop"                    => "operators/utility/noop.md",
                     "ref_count"               => "operators/utility/ref_count.md",
                     "async"                   => "operators/utility/async.md",
+                    "default_if_empty"        => "operators/utility/default_if_empty.md",
+                    "error_if_empty"          => "operators/utility/error_if_empty.md",
                 ]
             ],
             "Subjects" => [
