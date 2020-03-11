@@ -1,4 +1,4 @@
-# [Async Operator](@id operator_async)
+# [Async Operator](@id operator_ref_async)
 
 ```@docs
 async

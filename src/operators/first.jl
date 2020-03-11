@@ -32,13 +32,32 @@ subscription = subscribe!(source |> first(), logger())
 ```jldoctest
 using Rocket
 
-source       = completed(Int)
-subscription = subscribe!(source |> first(), logger())
+source       = completed(Int) |> first()
+
+values      = Int[]
+errors      = []
+completions = Int[]
+
+subscription = subscribe!(source, lambda(
+    on_next     = d -> push!(values, d),
+    on_error    = e -> push!(errors, e),
+    on_complete = () -> push!(completions, 1)
+))
+
+println(isempty(values))
+println(isempty(errors))
+println(isempty(completions))
+println(length(errors))
+println(errors[1] isa FirstNotFoundException)
 ;
 
 # output
 
-[LogActor] Error: Rocket.FirstNotFoundException()
+true
+false
+true
+1
+true
 ```
 
 See also: [`take`](@ref), [`logger`](@ref)

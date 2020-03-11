@@ -43,6 +43,8 @@ using Rocket
         @test isempty(errors)      === false
         @test isempty(completions) === true
 
+        @test length(errors) === 1
+
         @test errors[1] isa FirstNotFoundException
     end
 
