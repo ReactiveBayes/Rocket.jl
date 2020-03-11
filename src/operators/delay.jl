@@ -62,7 +62,7 @@ mutable struct DelayActor{L, A} <: Actor{L}
     actor        :: A
     channel      :: Channel{DelayQueueItem{L}}
 
-    DelayActor{L, A}(delay::Int, actor::A) where L where A = begin
+    DelayActor{L, A}(delay::Int, actor::A) where { L, A } = begin
         channel = Channel{DelayQueueItem{L}}(Inf)
         self    = new(false, delay, actor, channel)
 
@@ -92,7 +92,7 @@ mutable struct DelayActor{L, A} <: Actor{L}
 end
 
 __process_delayed_message(actor::DelayActor{L}, message::DelayDataMessage{L}) where L = next!(actor.actor, message.data)
-__process_delayed_message(actor::DelayActor,    message::DelayErrorMessage)           = error!(actor.actor, message.err)
+__process_delayed_message(actor::DelayActor,    message::DelayErrorMessage)           = begin error!(actor.actor, message.err); close(actor); end
 __process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)        = begin complete!(actor.actor); close(actor); end
 
 is_exhausted(actor::DelayActor) = actor.is_cancelled || is_exhausted(actor.actor)

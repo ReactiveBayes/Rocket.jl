@@ -80,6 +80,7 @@ include("operators/noop.jl")
 include("operators/async.jl")
 include("operators/default_if_empty.jl")
 include("operators/error_if_empty.jl")
+include("operators/debounce_time.jl")
 
 include("extensions/observable/single.jl")
 
