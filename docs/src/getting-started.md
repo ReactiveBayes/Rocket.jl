@@ -65,7 +65,7 @@ Rocket.on_complete!(actor::MyActor)        = println("Completed!")
 An actor can also have its own local state.
 
 ```Julia
-struct StoreActor{D} <: Rocket.Actor{}
+struct StoreActor{D} <: Rocket.Actor{D}
     values :: Vector{D}
 
     StoreActor{D}() where D = new(Vector{D}())
@@ -83,7 +83,7 @@ For debugging purposes you can use a general [`LambdaActor`](@ref) actor or just
 What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages that flow through your observables, using [__Operators__](@ref section_operators).
 
 ```Julia
-subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), LambdaActor{Int}(
+subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), lambda(
     on_next = (data) -> println(data)
 ))
 ```

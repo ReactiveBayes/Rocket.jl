@@ -19,7 +19,7 @@ For example, the operator called [`map()`](@ref operator_map) is analogous to th
 
 ```julia
 source = from([ 1, 2, 3 ])
-subscribe!(source |> map(Int, Int, (d) -> d ^ 2), LambdaActor{Int}(
+subscribe!(source |> map(Int, Int, (d) -> d ^ 2), lambda(
     on_next = (d) -> println(d)
 ))
 
@@ -33,7 +33,7 @@ Another useful operator is [`first()`](@ref):
 
 ```julia
 source = from([ 1, 2, 3 ])
-subscribe!(source |> first(Int), LambdaActor{Int}(
+subscribe!(source |> first(Int), lambda(
     on_next     = (d) -> println(d),
     on_complete = ()  -> "Completed"
 ))
@@ -54,7 +54,7 @@ Distinct from pipeable operators, creation operators are functions that can be u
 
 ```julia
 source = from([ 1, 2, 3 ])
-subscribe!(source, LambdaActor{Int}(
+subscribe!(source, lambda(
     on_next     = (d) -> println("Value: $d"),
     on_error    = (e) -> println("Oh no, error: $e")
     on_complete = ()  -> println("Completed")

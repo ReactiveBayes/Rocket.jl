@@ -48,27 +48,41 @@ struct DelayCompleteMessage end
 
 const DelayMessage{L} = Union{DelayDataMessage{L}, DelayErrorMessage, DelayCompleteMessage}
 
+struct DelayQueueItem{L}
+    message    :: DelayMessage{L}
+    emmited_at :: Float64
+end
+
 mutable struct DelayActor{L, A} <: Actor{L}
     is_cancelled :: Bool
     delay        :: Int
     actor        :: A
-    channel      :: Channel{DelayMessage{L}}
+    channel      :: Channel{DelayQueueItem{L}}
 
     DelayActor{L, A}(delay::Int, actor::A) where L where A = begin
-        channel = Channel{DelayMessage{L}}(Inf)
-        actor   = new(false, delay, actor, channel)
+        channel = Channel{DelayQueueItem{L}}(Inf)
+        self    = new(false, delay, actor, channel)
 
         task = @async begin
-            while !actor.is_cancelled
-                message = take!(channel)::DelayMessage{L}
-                sleep(actor.delay / MILLISECONDS_IN_SECOND)
-                __process_delayed_message(actor, message)
+            try
+                while !self.is_cancelled
+                    item = take!(channel)::DelayQueueItem{L}
+                    sleepfor = (item.emmited_at + convert(Float64, self.delay / MILLISECONDS_IN_SECOND)) - time()
+                    if sleepfor > 0.0
+                        sleep(sleepfor)
+                    end
+                    if !self.is_cancelled
+                        __process_delayed_message(self, item.message)
+                    end
+                end
+            catch err
+                __process_delayed_message(self, DelayErrorMessage(err))
             end
         end
 
         bind(channel, task)
 
-        return actor
+        return self
     end
 end
 
@@ -78,9 +92,9 @@ __process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)  
 
 is_exhausted(actor::DelayActor) = is_exhausted(actor.actor)
 
-on_next!(actor::DelayActor{L}, data::L) where L = push!(actor.channel, DelayDataMessage{L}(data))
-on_error!(actor::DelayActor, err)               = push!(actor.channel, DelayErrorMessage(err))
-on_complete!(actor::DelayActor)                 = push!(actor.channel, DelayCompleteMessage())
+on_next!(actor::DelayActor{L}, data::L) where L = push!(actor.channel, DelayQueueItem{L}(DelayDataMessage{L}(data), time()))
+on_error!(actor::DelayActor{L}, err)    where L = push!(actor.channel, DelayQueueItem{L}(DelayErrorMessage(err), time()))
+on_complete!(actor::DelayActor{L})      where L = push!(actor.channel, DelayQueueItem{L}(DelayCompleteMessage(), time()))
 
 struct DelayObservable{L} <: Subscribable{L}
     source

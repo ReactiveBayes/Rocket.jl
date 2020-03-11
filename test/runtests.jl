@@ -39,6 +39,7 @@ doctest(Rocket)
 
     include("./test_operator.jl")
     include("./operators/test_operator_map.jl")
+    include("./operators/test_operator_map_to.jl")
     include("./operators/test_operator_scan.jl")
     include("./operators/test_operator_enumerate.jl")
     include("./operators/test_operator_uppercase.jl")

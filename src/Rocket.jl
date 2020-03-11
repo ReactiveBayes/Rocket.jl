@@ -46,6 +46,7 @@ include("observable/lazy.jl")
 include("observable/connectable.jl")
 
 include("operators/map.jl")
+include("operators/map_to.jl")
 include("operators/reduce.jl")
 include("operators/scan.jl")
 include("operators/filter.jl")

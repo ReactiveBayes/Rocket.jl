@@ -76,7 +76,7 @@ Rocket.on_complete!(actor::MyActor)        = println("Completed!")
 Actor can also have its own local state
 
 ```Julia
-struct StoreActor{D} <: Rocket.Actor{}
+struct StoreActor{D} <: Rocket.Actor{D}
     values :: Vector{D}
 
     StoreActor{D}() where D = new(Vector{D}())

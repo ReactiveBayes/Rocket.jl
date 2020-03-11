@@ -18,6 +18,7 @@ There are operators for different purposes, and they may be categorized as: crea
 ## Transformation operators
 
 - [map](@ref operator_map)
+- [mapTo](@ref operator_map_to)
 - [scan](@ref operator_scan)
 - [enumerate](@ref operator_enumerate)
 - [uppercase](@ref operator_uppercase)

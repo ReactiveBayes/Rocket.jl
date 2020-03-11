@@ -49,6 +49,7 @@ makedocs(
                 "Transformation" => [
                     "About transformation operators" => "operators/transformation/about.md",
                     "map"                            => "operators/transformation/map.md",
+                    "mapTo"                          => "operators/transformation/map_to.md",
                     "scan"                           => "operators/transformation/scan.md",
                     "enumerate"                      => "operators/transformation/enumerate.md",
                     "uppercase"                      => "operators/transformation/uppercase.md",
