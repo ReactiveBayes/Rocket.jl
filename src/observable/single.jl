@@ -1,6 +1,7 @@
 export SingleObservable, of
 
 import Base: ==
+import Base: show
 
 """
     SingleObservable{D}(value::D)
@@ -49,3 +50,5 @@ of(x::T) where T = SingleObservable{T}(x)
 
 Base.:(==)(left::SingleObservable{D},  right::SingleObservable{D})  where D           = left.value == right.value
 Base.:(==)(left::SingleObservable{D1}, right::SingleObservable{D2}) where D1 where D2 = false
+
+Base.show(io::IO, observable::SingleObservable{D}) where D = print(io, "SingleObservable($D)")

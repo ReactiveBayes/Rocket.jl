@@ -33,7 +33,6 @@ makedocs(
             "Actors" => [
                 "Lambda"        => "actors/types/lambda.md",
                 "Logger"        => "actors/types/logger.md",
-                "Async"         => "actors/types/async.md",
                 "Sync"          => "actors/types/sync.md",
                 "Keep"          => "actors/types/keep.md",
                 "Void"          => "actors/types/void.md",
@@ -93,6 +92,7 @@ makedocs(
                     "safe"                    => "operators/utility/safe.md",
                     "noop"                    => "operators/utility/noop.md",
                     "ref_count"               => "operators/utility/ref_count.md",
+                    "async"                   => "operators/utility/async.md",
                 ]
             ],
             "Subjects" => [

@@ -69,3 +69,5 @@ connect(connectable::ConnectableObservable) = subscribe!(connectable.source, con
 
 Base.:(==)(c1::ConnectableObservable{D},  c2::ConnectableObservable{D})  where D           = c1.subject == c2.subject && c1.source == c2.source
 Base.:(==)(c1::ConnectableObservable{D1}, c2::ConnectableObservable{D2}) where D1 where D2 = false
+
+Base.show(io::IO, observable::ConnectableObservable{D}) where D = print(io, "ConnectableObservable($D)")

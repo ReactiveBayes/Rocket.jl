@@ -1,11 +1,12 @@
 export delay
 
+import Base: close
 import Base: show
 
 """
     delay(delay::Int)
 
-Creates a delay operators, which delays the emission of items from the source Observable
+Creates a delay operator, which delays the emission of items from the source Observable
 by a given timeout.
 
 # Arguments:
@@ -33,8 +34,8 @@ struct DelayProxy{L} <: ActorSourceProxy
     delay :: Int
 end
 
-actor_proxy!(proxy::DelayProxy{L}, actor::A) where { L, A } = DelayActor{L, A}(proxy.delay, actor)
-source_proxy!(proxy::DelayProxy{L}, source)  where L        = DelayObservable{L}(source)
+actor_proxy!(proxy::DelayProxy{L}, actor::A)   where { L, A } = DelayActor{L, A}(proxy.delay, actor)
+source_proxy!(proxy::DelayProxy{L}, source::S) where { L, S } = DelayObservable{L, S}(source)
 
 struct DelayDataMessage{L}
     data :: L
@@ -52,6 +53,8 @@ struct DelayQueueItem{L}
     message    :: DelayMessage{L}
     emmited_at :: Float64
 end
+
+struct DelayCompletionException <: Exception end
 
 mutable struct DelayActor{L, A} <: Actor{L}
     is_cancelled :: Bool
@@ -76,7 +79,9 @@ mutable struct DelayActor{L, A} <: Actor{L}
                     end
                 end
             catch err
-                __process_delayed_message(self, DelayErrorMessage(err))
+                if !(err isa DelayCompletionException)
+                    __process_delayed_message(self, DelayErrorMessage(err))
+                end
             end
         end
 
@@ -88,16 +93,18 @@ end
 
 __process_delayed_message(actor::DelayActor{L}, message::DelayDataMessage{L}) where L = next!(actor.actor, message.data)
 __process_delayed_message(actor::DelayActor,    message::DelayErrorMessage)           = error!(actor.actor, message.err)
-__process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)        = complete!(actor.actor)
+__process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)        = begin complete!(actor.actor); close(actor); end
 
-is_exhausted(actor::DelayActor) = is_exhausted(actor.actor)
+is_exhausted(actor::DelayActor) = actor.is_cancelled || is_exhausted(actor.actor)
 
-on_next!(actor::DelayActor{L}, data::L) where L = push!(actor.channel, DelayQueueItem{L}(DelayDataMessage{L}(data), time()))
-on_error!(actor::DelayActor{L}, err)    where L = push!(actor.channel, DelayQueueItem{L}(DelayErrorMessage(err), time()))
-on_complete!(actor::DelayActor{L})      where L = push!(actor.channel, DelayQueueItem{L}(DelayCompleteMessage(), time()))
+on_next!(actor::DelayActor{L}, data::L) where L = put!(actor.channel, DelayQueueItem{L}(DelayDataMessage{L}(data), time()))
+on_error!(actor::DelayActor{L}, err)    where L = put!(actor.channel, DelayQueueItem{L}(DelayErrorMessage(err), time()))
+on_complete!(actor::DelayActor{L})      where L = put!(actor.channel, DelayQueueItem{L}(DelayCompleteMessage(), time()))
 
-struct DelayObservable{L} <: Subscribable{L}
-    source
+Base.close(actor::DelayActor) = close(actor.channel, DelayCompletionException())
+
+struct DelayObservable{L, S} <: Subscribable{L}
+    source :: S
 end
 
 function on_subscribe!(observable::DelayObservable, actor::DelayActor)
@@ -113,7 +120,7 @@ as_teardown(::Type{<:DelaySubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::DelaySubscription)
     if !subscription.actor.is_cancelled
-        close(subscription.actor.channel)
+        close(subscription.actor)
     end
     subscription.actor.is_cancelled = true
     unsubscribe!(subscription.subscription)

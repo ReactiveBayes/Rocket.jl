@@ -11,7 +11,6 @@ include("actor/function.jl")
 include("actor/lambda.jl")
 include("actor/logger.jl")
 include("actor/void.jl")
-include("actor/async.jl")
 include("actor/sync.jl")
 include("actor/keep.jl")
 
@@ -75,6 +74,7 @@ include("operators/catch_error.jl")
 include("operators/rerun.jl")
 include("operators/safe.jl")
 include("operators/noop.jl")
+include("operators/async.jl")
 
 include("extensions/observable/single.jl")
 

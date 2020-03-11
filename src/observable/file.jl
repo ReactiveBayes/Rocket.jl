@@ -1,6 +1,7 @@
 export SyncFileObservable, file
 
 import Base: ==
+import Base: show
 
 """
     SyncFileObservable(path::String)
@@ -33,3 +34,5 @@ See also: [`SyncFileObservable`](@ref)
 file(path::String) = SyncFileObservable(path)
 
 Base.:(==)(f1::SyncFileObservable, f2::SyncFileObservable) = f1.path == f2.path
+
+Base.show(io::IO, observable::SyncFileObservable) = print(io, "SyncFileObservable()")

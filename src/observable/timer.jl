@@ -1,6 +1,7 @@
 export TimerObservable, timer
 
 import Base: ==
+import Base: show
 
 """
     TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing)
@@ -126,3 +127,6 @@ See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [
 timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
 
 Base.:(==)(t1::TimerObservable, t2::TimerObservable) = t1.due_time === t2.due_time && t1.period === t2.period
+
+Base.show(io::IO, observable::TimerObservable)     = print(io, "TimerObservable()")
+Base.show(io::IO, subscription::TimerSubscription) = print(io, "TimerSubscription()")

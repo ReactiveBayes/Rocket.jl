@@ -1,53 +1,55 @@
 export FunctionObservable, make
 
+import Base: show
+
 """
-    FunctionObservable{D}(f::Function)
+    FunctionObservable{D}(f::F)
 
     FunctionObservable wraps a callback `f`, which is called when the Observable is initially subscribed to.
     This function is given an Actor, to which new values can be nexted (with `next!(actor, data)`),
     or an `error!` method can be called to raise an error, or `complete!` can be called to notify of a successful completion.
 
     # Arguments
-    - `f`: function to be invoked on subscription
+    - `f::F`: function to be invoked on subscription
 
     See also: [`Subscribable`](@ref), [`make`](@ref)
 """
-struct FunctionObservable{D} <: Subscribable{D}
-    f :: Function
+struct FunctionObservable{D, F} <: Subscribable{D}
+    f :: F
 end
 
-function on_subscribe!(observable::FunctionObservable{D}, actor) where D
-    wrapper = FunctionObservableActorWrapper{D}(false, actor)
-    subscription = FunctionObservableSubscription{D}(wrapper)
+function on_subscribe!(observable::FunctionObservable{D}, actor::A) where { D, A }
+    wrapper = FunctionObservableActorWrapper{D, A}(false, actor)
+    subscription = FunctionObservableSubscription{D, A}(wrapper)
     observable.f(wrapper)
     return subscription
 end
 
-mutable struct FunctionObservableActorWrapper{D} <: Actor{D}
+mutable struct FunctionObservableActorWrapper{D, A} <: Actor{D}
     is_unsubscribed :: Bool
-    actor
+    actor           :: A
 end
 
-function on_next!(actor::FunctionObservableActorWrapper{D}, data::D) where D
-    if !actor.is_unsubscribed
-        next!(actor.actor, data)
+function on_next!(wrapper::FunctionObservableActorWrapper{D}, data::D) where D
+    if !wrapper.is_unsubscribed
+        next!(wrapper.actor, data)
     end
 end
 
-function on_error!(actor::FunctionObservableActorWrapper, err)
-    if !actor.is_unsubscribed
-        error!(actor.actor, err)
+function on_error!(wrapper::FunctionObservableActorWrapper, err)
+    if !wrapper.is_unsubscribed
+        error!(wrapper.actor, err)
     end
 end
 
-function on_complete!(actor::FunctionObservableActorWrapper)
-    if !actor.is_unsubscribed
-        complete!(actor.actor)
+function on_complete!(wrapper::FunctionObservableActorWrapper)
+    if !wrapper.is_unsubscribed
+        complete!(wrapper.actor)
     end
 end
 
-struct FunctionObservableSubscription{D} <: Teardown
-    wrapper :: FunctionObservableActorWrapper{D}
+struct FunctionObservableSubscription{D, A} <: Teardown
+    wrapper :: FunctionObservableActorWrapper{D, A}
 end
 
 as_teardown(::Type{<:FunctionObservableSubscription}) = UnsubscribableTeardownLogic()
@@ -108,4 +110,8 @@ unsubscribe!(subscription)
 
 See also: [`FunctionObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-make(f::Function, type::Type{D}) where D = FunctionObservable{D}(f)
+make(f::F, type::Type{D}) where { D, F } = FunctionObservable{D, F}(f)
+
+Base.show(io::IO, observable::FunctionObservable{D}) where D  = print(io, "FunctionObservable($D)")
+Base.show(io::IO, observable::FunctionObservableActorWrapper) = print(io, "FunctionObservableActorWrapper()")
+Base.show(io::IO, observable::FunctionObservableSubscription) = print(io, "FunctionObservableSubscription()")

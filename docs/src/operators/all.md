@@ -62,3 +62,4 @@ There are operators for different purposes, and they may be categorized as: crea
 - [safe](@ref operator_safe)
 - [noop](@ref operator_noop)
 - [ref_count](@ref operator_ref_count)
+- [async](@ref operator_ref_async)
