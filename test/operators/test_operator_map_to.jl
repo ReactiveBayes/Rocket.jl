@@ -1,4 +1,4 @@
-module RocketMapOperatorTest
+module RocketMapToOperatorTest
 
 using Test
 using Rocket

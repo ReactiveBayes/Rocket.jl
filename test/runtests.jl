@@ -58,7 +58,7 @@ doctest(Rocket)
     include("./operators/test_operator_catch_error.jl")
     include("./operators/test_operator_rerun.jl")
     include("./operators/test_operator_tap.jl")
-    # include("./operators/test_operator_delay.jl") # TODO
+    include("./operators/test_operator_delay.jl")
     include("./operators/test_operator_safe.jl")
     include("./operators/test_operator_noop.jl")
     include("./operators/test_operator_multicast.jl")

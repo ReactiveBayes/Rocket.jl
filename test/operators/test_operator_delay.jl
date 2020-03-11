@@ -6,27 +6,33 @@ using Rocket
 @testset "operator: delay()" begin
 
     @testset begin
-        source = of(2) |> delay(10)
+        source = of(2) |> delay(20)
         actor  = keep(Int)
         synced = sync(actor)
 
-        subscribe!(source, synced)
+        subscription = subscribe!(source, synced)
+
+        @test isempty(actor.values) === true
 
         elapsed = @elapsed wait(synced)
 
-        @test elapsed > 0.02
+        @test actor.values == [ 2 ]
+        @test elapsed      >   0.015
     end
 
     @testset begin
-        source = completed(Int) |> delay(10)
+        source = completed(Int) |> delay(20)
         actor  = keep(Int)
         synced = sync(actor)
 
-        subscribe!(source, synced)
+        subscription = subscribe!(source, synced)
+
+        @test isempty(actor.values) === true
 
         elapsed = @elapsed wait(synced)
 
-        @test elapsed < 0.02
+        @test isempty(actor.values) === true
+        @test elapsed      >   0.015
     end
 
 end
