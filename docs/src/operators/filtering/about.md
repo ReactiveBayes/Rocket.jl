@@ -4,6 +4,7 @@ There are operators for different purposes, and they may be categorized as: crea
 
 - [filter](@ref operator_filter)
 - [take](@ref operator_take)
+- [take_until](@ref operator_take_until)
 - [first](@ref operator_first)
 - [last](@ref operator_last)
 - [find](@ref operator_find)

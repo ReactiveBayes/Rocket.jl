@@ -60,6 +60,7 @@ makedocs(
                     "filter"                    => "operators/filtering/filter.md",
                     "some"                      => "operators/filtering/some.md",
                     "take"                      => "operators/filtering/take.md",
+                    "take_until"                => "operators/filtering/take_until.md",
                     "first"                     => "operators/filtering/first.md",
                     "last"                      => "operators/filtering/last.md",
                     "find"                      => "operators/filtering/find.md",

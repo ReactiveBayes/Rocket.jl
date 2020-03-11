@@ -20,14 +20,18 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 using Rocket
 
 source = from([ i for i in 1:100 ])
-actor  = keep(Int)
-subscription = subscribe!(source |> take(5), actor)
-println(actor.values)
+
+subscribe!(source |> take(5), logger())
 ;
 
 # output
 
-[1, 2, 3, 4, 5]
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Data: 4
+[LogActor] Data: 5
+[LogActor] Completed
 ```
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
@@ -48,7 +52,7 @@ struct TakeProxy{L} <: SourceProxy
     max_count :: Int
 end
 
-source_proxy!(proxy::TakeProxy{L}, source) where L = TakeSource{L}(proxy.max_count, source)
+source_proxy!(proxy::TakeProxy{L}, source::S) where { L, S } = TakeSource{L, S}(proxy.max_count, source)
 
 mutable struct TakeInnerActor{L, A} <: Actor{L}
     is_completed :: Bool
@@ -83,7 +87,7 @@ function on_next!(actor::TakeInnerActor{L}, data::L) where L
     end
 end
 
-function on_error!(actor::TakeInnerActor{L}, err) where L
+function on_error!(actor::TakeInnerActor, err)
     if !actor.is_completed
         error!(actor.actor, err)
         if isdefined(actor, :subscription)
@@ -92,7 +96,7 @@ function on_error!(actor::TakeInnerActor{L}, err) where L
     end
 end
 
-function on_complete!(actor::TakeInnerActor{L}) where L
+function on_complete!(actor::TakeInnerActor)
     if !actor.is_completed
         actor.is_completed = true
         complete!(actor.actor)
@@ -102,11 +106,9 @@ function on_complete!(actor::TakeInnerActor{L}) where L
     end
 end
 
-struct TakeSource{L} <: Subscribable{L}
+struct TakeSource{L, S} <: Subscribable{L}
     max_count :: Int
-    source
-
-    TakeSource{L}(max_count::Int, source) where L = new(max_count, source)
+    source    :: S
 end
 
 function on_subscribe!(observable::TakeSource{L}, actor::A) where { L, A }
