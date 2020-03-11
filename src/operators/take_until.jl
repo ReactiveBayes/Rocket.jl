@@ -9,12 +9,35 @@ Creates a take operator, which returns an Observable
 that emits the values emitted by the source Observable until a `notifier` Observable emits a value.
 
 # Arguments
-- `notifier::S`: The Observable whose first emitted value will cause the output Observable of `take_until`
-to stop emitting values from the source Observable.
+- `notifier::S`: The Observable whose first emitted value will cause the output Observable of `take_until` to stop emitting values from the source Observable.
 
 # Producing
 
 Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+
+# Examples
+
+```julia
+using Rocket
+
+source = interval(100) |> take_until(timer(1000))
+
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Data: 4
+[LogActor] Data: 5
+[LogActor] Data: 6
+[LogActor] Data: 7
+[LogActor] Data: 8
+[LogActor] Completed
+```
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
@@ -28,7 +51,7 @@ function on_call!(::Type{L}, ::Type{L}, operator::TakeUntilOperator{N}, source) 
     return proxy(L, source, TakeUntilProxy{L, N}(operator.notifier))
 end
 
-operator_right(operator::TakeUntilProxy, ::Type{L}) where L = L
+operator_right(operator::TakeUntilOperator, ::Type{L}) where L = L
 
 struct TakeUntilProxy{L, N} <: SourceProxy
     notifier :: N
