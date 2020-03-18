@@ -5,8 +5,6 @@
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
-![Alt Text](demo/pics/bouncing-ball.gif)
-
 In order to achieve best performance and convenient API Rocket.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
 Inspired by [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
@@ -25,17 +23,44 @@ The essential concepts in Rocket.jl are:
 
 For a quick start and basic introduction take a look at the [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo) and [Quick Start notebook](https://github.com/biaslab/Rocket.jl/blob/master/demo/00_quick_start.ipynb).
 
+```Julia
+using Rocket, Compose, IJulia ; set_default_graphic_size(35cm, 2cm)
+```
+
+```Julia
+function draw_ball(t)
+    IJulia.clear_output(true)
+    x = -exp(-0.01t) + 1                     # x coordinate
+    y = -abs(exp(-0.04t)*(cos(0.1t))) + 0.83 # y coordinate
+    display(compose(context(), circle(x, y, 0.01)))
+end
+```
+
+```Julia
+source = interval(20) |> take(200) # Take only first 250 emissions
+
+subscription = subscribe!(source, draw_ball)
+```
+
+![Alt Text](demo/pics/bouncing-ball.gif)
+
+```Julia
+unsubscribe!(subscription) # It is possible to unsubscribe before the stream ends    
+IJulia.clear_output(false);
+```
+
+
 ## Documentation
 
-A full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
+Full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
 
-It is also possible to build a documentation locally. Just use
+It is also possible to build a documentation locally. Just execute
 
 ```bash
 $ julia make.jl
 ```
 
-in the `docs/` directory to build local version of the documentation.
+in the `docs/` directory to build a local version of the documentation.
 
 ## First example
 
