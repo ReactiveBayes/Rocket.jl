@@ -5,6 +5,8 @@
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
+![Alt Text](demo/pics/bouncing-ball.gif)
+
 In order to achieve best performance and convenient API Rocket.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
 Inspired by [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
@@ -106,11 +108,11 @@ subscribe!(squared_int_values, lambda(
 
 Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl) and [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl).
 
-Code is available in [demos folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
+Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
 
-![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.png?raw=true "Rocket.jl vs Reactive.jl")
+![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true "Rocket.jl vs Reactive.jl")
 
-![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.png?raw=true "Rocket.jl vs Signals.jl")
+![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.svg?raw=true "Rocket.jl vs Signals.jl")
 
 ## TODO
 
