@@ -110,9 +110,9 @@ Rocket.jl has been designed with a focus on efficiency, scalability and maximum 
 
 Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
 
-![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true "Rocket.jl vs Reactive.jl")
+![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Reactive.jl")
 
-![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.svg?raw=true "Rocket.jl vs Signals.jl")
+![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Signals.jl")
 
 ## TODO
 
