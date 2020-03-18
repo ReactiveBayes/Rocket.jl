@@ -37,7 +37,7 @@ end
 ```
 
 ```Julia
-source = interval(20) |> take(200) # Take only first 250 emissions
+source = interval(20) |> take(200) # Take only first 200 emissions
 
 subscription = subscribe!(source, draw_ball)
 ```
