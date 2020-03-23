@@ -7,6 +7,7 @@ export InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableData
 export MissingOnSubscribeImplementationError
 
 import Base: show
+import Base: eltype
 
 """
 Abstract type for all possible subscribable traits
@@ -80,6 +81,8 @@ subscribable_extract_type(source::S) where S = subscribable_extract_type(as_subs
 
 subscribable_extract_type(::ValidSubscribable{T}, source) where T = T
 subscribable_extract_type(::InvalidSubscribable, source)          = throw(InvalidSubscribableTraitUsageError(source))
+
+Base.eltype(source::S) where { S <: Subscribable } = subscribable_extract_type(source)
 
 """
     subscribe!(subscribable::T, actor::S) where T where S
