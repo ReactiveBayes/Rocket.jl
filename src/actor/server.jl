@@ -1,4 +1,4 @@
-export server
+export server, ServerActor
 
 using Sockets
 

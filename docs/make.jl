@@ -93,16 +93,18 @@ makedocs(
                 "Utility" => [
                     "About utility operators" => "operators/utility/about.md",
                     "tap"                     => "operators/utility/tap.md",
-                    "tap_on_subscribe"        => "operators/utility/tap_on_subscribe.md",
-                    "tap_on_complete"         => "operators/utility/tap_on_complete.md",
+                    "`tap_on_subscribe`"      => "operators/utility/tap_on_subscribe.md",
+                    "`tap_on_complete`"       => "operators/utility/tap_on_complete.md",
                     "delay"                   => "operators/utility/delay.md",
                     "safe"                    => "operators/utility/safe.md",
                     "noop"                    => "operators/utility/noop.md",
                     "ref_count"               => "operators/utility/ref_count.md",
                     "async"                   => "operators/utility/async.md",
-                    "default_if_empty"        => "operators/utility/default_if_empty.md",
-                    "error_if_empty"          => "operators/utility/error_if_empty.md",
+                    "`default_if_empty`"      => "operators/utility/default_if_empty.md",
+                    "`error_if_empty`"        => "operators/utility/error_if_empty.md",
                     "skip_next"               => "operators/utility/skip_next.md",
+                    "skip_error"              => "operators/utility/skip_error.md",
+                    "skip_complete"           => "operators/utility/skip_complete.md",
                 ]
             ],
             "Subjects" => [

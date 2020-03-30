@@ -1,4 +1,4 @@
-export network
+export network, NetworkObservable
 
 using Sockets
 

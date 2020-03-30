@@ -1,4 +1,4 @@
-export timer
+export timer, TimerObservable
 
 import Base: ==
 import Base: show
