@@ -49,7 +49,7 @@ mutable struct AsyncActor{L, A} <: Actor{L}
     channel      :: Channel{AsyncMessage{L}}
 
     AsyncActor{L, A}(actor::A) where L where A = begin
-        channel = Channel{AsyncMessage{L}}(Inf)
+        channel = Channel{AsyncMessage{L}}(1)
         self    = new(false, actor, channel)
 
         task = @async begin
@@ -71,15 +71,15 @@ mutable struct AsyncActor{L, A} <: Actor{L}
     end
 end
 
-__process_async_message(actor::AsyncActor{L}, message::AsyncDataMessage{L}) where L = next!(actor.actor, message.data)
-__process_async_message(actor::AsyncActor,    message::AsyncErrorMessage)           = error!(actor.actor, message.err)
+__process_async_message(actor::AsyncActor{L}, message::AsyncDataMessage{L}) where L = begin next!(actor.actor, message.data); end
+__process_async_message(actor::AsyncActor,    message::AsyncErrorMessage)           = begin error!(actor.actor, message.err); close(actor); end
 __process_async_message(actor::AsyncActor,    message::AsyncCompleteMessage)        = begin complete!(actor.actor); close(actor); end
 
 is_exhausted(actor::AsyncActor) = actor.is_cancelled || is_exhausted(actor.actor)
 
-on_next!(actor::AsyncActor{L}, data::L) where L = put!(actor.channel, AsyncDataMessage{L}(data))
-on_error!(actor::AsyncActor{L}, err)    where L = put!(actor.channel, AsyncErrorMessage(err))
-on_complete!(actor::AsyncActor{L})      where L = put!(actor.channel, AsyncCompleteMessage())
+on_next!(actor::AsyncActor{L}, data::L) where L = begin !actor.is_cancelled && begin put!(actor.channel, AsyncDataMessage{L}(data)); yield(); end end
+on_error!(actor::AsyncActor{L}, err)    where L = begin !actor.is_cancelled && begin put!(actor.channel, AsyncErrorMessage(err)); yield() end end
+on_complete!(actor::AsyncActor{L})      where L = begin !actor.is_cancelled && begin put!(actor.channel, AsyncCompleteMessage()); yield() end end
 
 Base.close(actor::AsyncActor) = close(actor.channel, AsyncCompletionException())
 
@@ -88,22 +88,44 @@ struct AsyncObservable{L, S} <: Subscribable{L}
 end
 
 function on_subscribe!(observable::AsyncObservable, actor::AsyncActor)
-    return AsyncSubscription(actor, subscribe!(observable.source, actor))
+    event        = Base.Event()
+    subscription = Ref{Any}(nothing)
+
+    @async begin
+        if !actor.is_cancelled
+            try
+                subscription[] = subscribe!(observable.source, actor)
+            catch _
+                subscription[] = VoidTeardown()
+            end
+        end
+        notify(event)
+    end
+
+    return AsyncSubscription(event, actor, subscription)
 end
 
-struct AsyncSubscription <: Teardown
-    actor
-    subscription
+struct AsyncSubscription{A} <: Teardown
+    event        :: Base.Event
+    actor        :: A
+    subscription :: Base.RefValue{Any}
 end
 
 as_teardown(::Type{<:AsyncSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::AsyncSubscription)
-    if !subscription.actor.is_cancelled
-        close(subscription.actor)
+    try
+        if !subscription.actor.is_cancelled
+            close(subscription.actor)
+        end
+
+        subscription.actor.is_cancelled = true
+
+        wait(subscription.event)
+
+        unsubscribe!(subscription.subscription[])
+    catch _
     end
-    subscription.actor.is_cancelled = true
-    unsubscribe!(subscription.subscription)
     return nothing
 end
 

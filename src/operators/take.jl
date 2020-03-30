@@ -54,28 +54,29 @@ end
 
 source_proxy!(proxy::TakeProxy{L}, source::S) where { L, S } = TakeSource{L, S}(proxy.max_count, source)
 
-mutable struct TakeInnerActor{L, A} <: Actor{L}
+mutable struct TakeCountingActor{L, A} <: Actor{L}
     is_completed :: Bool
     max_count    :: Int
     current      :: Int
     actor        :: A
-    subscription
+    subscription :: Union{Any, Nothing}
 
-    TakeInnerActor{L, A}(max_count::Int, actor::A) where { L, A } = begin
+    TakeCountingActor{L, A}(max_count::Int, actor::A) where { L, A } = begin
         take_actor = new()
 
         take_actor.is_completed = false
         take_actor.max_count    = max_count
         take_actor.current      = 0
         take_actor.actor        = actor
+        take_actor.subscription = nothing
 
         return take_actor
     end
 end
 
-is_exhausted(actor::TakeInnerActor) = actor.is_completed || is_exhausted(actor.actor)
+is_exhausted(actor::TakeCountingActor) = actor.is_completed || is_exhausted(actor.actor)
 
-function on_next!(actor::TakeInnerActor{L}, data::L) where L
+function on_next!(actor::TakeCountingActor{L}, data::L) where L
     if !actor.is_completed
         if actor.current < actor.max_count
             actor.current += 1
@@ -87,20 +88,20 @@ function on_next!(actor::TakeInnerActor{L}, data::L) where L
     end
 end
 
-function on_error!(actor::TakeInnerActor, err)
+function on_error!(actor::TakeCountingActor, err)
     if !actor.is_completed
         error!(actor.actor, err)
-        if isdefined(actor, :subscription)
+        if actor.subscription !== nothing
             unsubscribe!(actor.subscription)
         end
     end
 end
 
-function on_complete!(actor::TakeInnerActor)
+function on_complete!(actor::TakeCountingActor)
     if !actor.is_completed
         actor.is_completed = true
         complete!(actor.actor)
-        if isdefined(actor, :subscription)
+        if actor.subscription !== nothing
             unsubscribe!(actor.subscription)
         end
     end
@@ -112,15 +113,15 @@ struct TakeSource{L, S} <: Subscribable{L}
 end
 
 function on_subscribe!(observable::TakeSource{L}, actor::A) where { L, A }
-    inner_actor  = TakeInnerActor{L, A}(observable.max_count, actor)
+    counting_actor = TakeCountingActor{L, A}(observable.max_count, actor)
+    subscription   = subscribe!(observable.source, counting_actor)
 
-    subscription = subscribe!(observable.source, inner_actor)
-    inner_actor.subscription = subscription
+    counting_actor.subscription = subscription
 
     return subscription
 end
 
-Base.show(io::IO, operator::TakeOperator)           = print(io, "TakeOperator()")
-Base.show(io::IO, proxy::TakeProxy{L})      where L = print(io, "TakeProxy($L)")
-Base.show(io::IO, actor::TakeInnerActor{L}) where L = print(io, "TakeInnerActor($L)")
-Base.show(io::IO, source::TakeSource{L})    where L = print(io, "TakeSource($L)")
+Base.show(io::IO, operator::TakeOperator)              = print(io, "TakeOperator()")
+Base.show(io::IO, proxy::TakeProxy{L})         where L = print(io, "TakeProxy($L)")
+Base.show(io::IO, actor::TakeCountingActor{L}) where L = print(io, "TakeCountingActor($L)")
+Base.show(io::IO, source::TakeSource{L})       where L = print(io, "TakeSource($L)")

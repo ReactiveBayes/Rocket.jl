@@ -35,12 +35,12 @@ In tap: 3
 
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+See also: [`tap_on_subscribe`](@ref), [`tap_on_complete`](@ref), [`logger`](@ref)
 """
 tap(tapFn::F) where { F <: Function } = TapOperator{F}(tapFn)
 
 struct TapOperator{F} <: InferableOperator
-    tapFn::F
+    tapFn :: F
 end
 
 operator_right(operator::TapOperator, ::Type{L}) where L = L
@@ -62,13 +62,9 @@ end
 
 is_exhausted(actor::TapActor) = is_exhausted(actor.actor)
 
-function on_next!(t::TapActor{L}, data::L) where L
-    Base.invokelatest(t.tapFn, data)
-    next!(t.actor, data)
-end
-
-on_error!(t::TapActor, err) = error!(t.actor, err)
-on_complete!(t::TapActor)   = complete!(t.actor)
+on_next!(t::TapActor{L}, data::L) where L = begin t.tapFn(data); next!(t.actor, data) end
+on_error!(t::TapActor, err)               = error!(t.actor, err)
+on_complete!(t::TapActor)                 = complete!(t.actor)
 
 Base.show(io::IO, operator::TapOperator)         = print(io, "TapOperator()")
 Base.show(io::IO, proxy::TapProxy{L})    where L = print(io, "TapProxy($L)")

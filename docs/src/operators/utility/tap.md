@@ -10,7 +10,7 @@ Returns an Observable that resembles the source Observable, but modifies it so t
 
 This operator is useful for debugging your Observables, verifying correct values, or performing other side effects.
 
-Note: this operator differs from a subscribe on the Observable. If the Observable returned by tap is not subscribed, the side effects specified by the Observer will never happen. tap therefore simply spies on existing execution, it does not trigger an execution to happen like subscribe does.
+Note: this operator differs from a subscribe on the Observable. If the Observable returned by `tap` is not subscribed, the side effects specified by the Observer will never happen. `tap` therefore simply spies on existing execution, it does not trigger an execution to happen like subscribe does.
 
 ## See also
 

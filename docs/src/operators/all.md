@@ -61,6 +61,8 @@ There are operators for different purposes, and they may be categorized as: crea
 ## Utility operators
 
 - [tap](@ref operator_tap)
+- [tap_on_subscribe](@ref operator_tap_on_subscribe)
+- [tap_on_complete](@ref operator_tap_on_complete)
 - [delay](@ref operator_delay)
 - [safe](@ref operator_safe)
 - [noop](@ref operator_noop)
