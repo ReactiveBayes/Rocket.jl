@@ -29,6 +29,7 @@ makedocs(
                 "Combined"          => "observables/types/combined.md",
                 "Connectable"       => "observables/types/connectable.md",
                 "Merged"            => "observables/types/merged.md",
+                "Network"           => "observables/types/network.md",
             ],
             "Actors" => [
                 "Lambda"        => "actors/types/lambda.md",
@@ -37,6 +38,7 @@ makedocs(
                 "Keep"          => "actors/types/keep.md",
                 "Void"          => "actors/types/void.md",
                 "Function"      => "actors/types/function.md",
+                "Server"        => "actors/types/server.md",
             ],
             "Subscriptions" => [
                 "Void"  => "teardown/types/void.md",
@@ -100,6 +102,7 @@ makedocs(
                     "async"                   => "operators/utility/async.md",
                     "default_if_empty"        => "operators/utility/default_if_empty.md",
                     "error_if_empty"          => "operators/utility/error_if_empty.md",
+                    "skip_next"               => "operators/utility/skip_next.md",
                 ]
             ],
             "Subjects" => [

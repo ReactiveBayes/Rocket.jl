@@ -12,6 +12,9 @@ There are operators for different purposes, and they may be categorized as: crea
 - [async](@ref operator_ref_async)
 - [default_if_empty](@ref operator_ref_default_if_empty)
 - [error_if_empty](@ref operator_ref_default_if_empty)
+- [skip_next](@ref operator_skip_next)
+- [skip_error](@ref operator_skip_error)
+- [skip_complete](@ref operator_skip_complete)
 
 # See also
 

@@ -84,6 +84,9 @@ include("operators/async.jl")
 include("operators/default_if_empty.jl")
 include("operators/error_if_empty.jl")
 include("operators/debounce_time.jl")
+include("operators/skip_next.jl")
+include("operators/skip_error.jl")
+include("operators/skip_complete.jl")
 
 include("extensions/observable/single.jl")
 

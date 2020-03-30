@@ -54,7 +54,7 @@ on_complete!(actor::MergeChildActor{D, I}) where { D, I } = begin
     complete!(actor.main)
 end
 
-struct MergeChildActorFactory{I, A} <: AbstractActorFactory 
+struct MergeChildActorFactory{I, A} <: AbstractActorFactory
     main :: A
 end
 
@@ -77,9 +77,9 @@ on_unsubscribe!(subscription::MergeSubscription) = foreach(s -> unsubscribe!(s),
 """
     merged(sources::T) where { T <: Tuple }
 
-Creation operator for the `MergeObservable` with a given `sources` collected in a tuple. 
-`merge` subscribes to each given input Observable (as arguments), and simply forwards (without doing any transformation) all the values from all the input 
-Observables to the output Observable. The output Observable only completes once all input Observables have completed. 
+Creation operator for the `MergeObservable` with a given `sources` collected in a tuple.
+`merge` subscribes to each given input Observable (as arguments), and simply forwards (without doing any transformation) all the values from all the input
+Observables to the output Observable. The output Observable only completes once all input Observables have completed.
 Any error delivered by an input Observable will be immediately emitted on the output Observable.
 
 # Examples
@@ -109,7 +109,7 @@ subscribe!(observable, logger())
 ```jldoctest
 using Rocket
 
-observable = merged((timer(100, 1), of(2.0), from("Hello"))) |> take(10)
+observable = merged((timer(100, 10), of(2.0), from("Hello"))) |> take(10)
 
 actor = sync(logger())
 

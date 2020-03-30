@@ -70,6 +70,9 @@ doctest(Rocket)
     include("./operators/test_operator_ref_count.jl")
     include("./operators/test_operator_default_if_empty.jl")
     include("./operators/test_operator_error_if_empty.jl")
+    include("./operators/test_operator_skip_next.jl")
+    include("./operators/test_operator_skip_error.jl")
+    include("./operators/test_operator_skip_complete.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0

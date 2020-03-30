@@ -7,28 +7,6 @@ import Base: wait
 
 Sync actor provides a synchronized interface to `wait` for an actor to be notified with a `complete` event.
 
-# Examples
-
-```jldoctest
-using Rocket
-
-source = timer(1, 1) |> take(3)
-actor  = LoggerActor{Int}()
-synced = SyncActor{Int, LoggerActor{Int}}(actor)
-
-subscrption = subscribe!(source, synced)
-
-wait(synced)
-;
-
-# output
-
-[LogActor] Data: 0
-[LogActor] Data: 1
-[LogActor] Data: 2
-[LogActor] Completed
-```
-
 See also: [`Actor`](@ref), [`sync`](@ref)
 """
 mutable struct SyncActor{T, A} <: Actor{T}

@@ -6,7 +6,7 @@ using Rocket
 @testset "TimerObservable" begin
 
     @testset begin
-        @test timer(100, 100) == TimerObservable(100, 100)
+        @test timer(100, 100) == Rocket.TimerObservable{100, 100}()
     end
 
     @testset begin
@@ -20,10 +20,12 @@ using Rocket
             on_complete = ()  -> push!(completions, 0)
         )
 
-        source = timer(1, 1) |> take(5)
+        source = timer(100, 10) |> take(5)
         synced = sync(actor)
 
         subscribe!(source, synced)
+
+        yield()
 
         wait(synced)
 
@@ -47,6 +49,8 @@ using Rocket
         synced = sync(actor)
 
         subscribe!(source, synced)
+
+        yield()
 
         wait(synced)
 

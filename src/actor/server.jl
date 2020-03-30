@@ -1,21 +1,20 @@
 export server
-export LocalServerDataMessage, LocalServerErrorMessage, LocalServerCompleteMessage, LocalServerMessage
 
 using Sockets
 
 """
-    LocalServerActor{D, Address, Port}() where D
+    ServerActor{D, Address, Port}() where D
 
-The `LocalServerActor` sends all `next!`/`error!`/`complete!` events to the local network listeners
+The `ServerActor` sends all `next!`/`error!`/`complete!` events to the local network listeners
 with specified `Address` and `Port` parameters via `TCPSocket`.
 
 See also: [`Actor`](@ref), [`server`](@ref)
 """
-struct LocalServerActor{D, A, P} <: Actor{D}
+struct ServerActor{D, A, P} <: Actor{D}
     server  :: Sockets.TCPServer
     sockets :: Vector{Sockets.TCPSocket}
 
-    LocalServerActor{D, A, P}() where { D, A, P } = begin
+    ServerActor{D, A, P}() where { D, A, P } = begin
         self = new(listen(A, P), Vector{Sockets.TCPSocket}())
 
         @async begin
@@ -30,18 +29,18 @@ struct LocalServerActor{D, A, P} <: Actor{D}
     end
 end
 
-is_exhausted(actor::LocalServerActor) = isopen(actor.server)
+is_exhausted(actor::ServerActor) = !isopen(actor.server)
 
-function on_next!(actor::LocalServerActor, data)
+function on_next!(actor::ServerActor, data)
     filter!(socket -> __send_next(socket, data), actor.sockets)
 end
 
-function on_error!(actor::LocalServerActor, err)
+function on_error!(actor::ServerActor, err)
     foreach(socket -> __send_error(socket, err), actor.sockets)
     close(actor.server)
 end
 
-function on_complete!(actor::LocalServerActor)
+function on_complete!(actor::ServerActor)
     foreach(socket -> __send_complete(socket), actor.sockets)
     close(actor.server)
 end
@@ -91,9 +90,9 @@ function __send_complete(socket)
     return false
 end
 
-struct LocalServerActorFactory{Address, Port} <: AbstractActorFactory end
+struct ServerActorFactory{Address, Port} <: AbstractActorFactory end
 
-create_actor(::Type{L}, factory::LocalServerActorFactory{Address, Port}) where { L, Address, Port } = server(L, Address, Port)
+create_actor(::Type{L}, factory::ServerActorFactory{Address, Port}) where { L, Address, Port } = server(L, Address, Port)
 
 """
     server(port::Int)
@@ -101,12 +100,12 @@ create_actor(::Type{L}, factory::LocalServerActorFactory{Address, Port}) where {
     server(::Type{D}, port::Int)
     server(::Type{D}, address::A, port::Int) where { A <: IPAddr }
 
-Creation operator for the `LocalServerActor` actor.
+Creation operator for the `ServerActor` actor.
 
 See also: [`AbstractActor`](@ref)
 """
 server(port::Int)                                   = server(Sockets.localhost, port)
-server(address::A, port::Int) where { A <: IPAddr } = LocalServerActorFactory{address, port}()
+server(address::A, port::Int) where { A <: IPAddr } = ServerActorFactory{address, port}()
 
 function server(::Type{D}, port::Int) where D
     return server(D, Sockets.localhost, port)
@@ -114,10 +113,10 @@ end
 
 function server(::Type{D}, address::A, port::Int) where { D, A <: IPAddr }
     @assert isbits(zero(D)) "Network server actor supports only primitive data types"
-    return LocalServerActor{D, address, port}()
+    return ServerActor{D, address, port}()
 end
 
 function server(::Type{Vector{D}}, address::A, port::Int) where { D, A <: IPAddr }
     @assert isbits(zero(D)) "Network server actor supports only primitive data types"
-    return LocalServerActor{Vector{D}, address, port}()
+    return ServerActor{Vector{D}, address, port}()
 end
