@@ -1,105 +1,22 @@
-export TimerObservable, timer
+export timer
 
 import Base: ==
 import Base: show
 
 """
-    TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing)
-
-An Observable that starts emitting after an `dueTime` and emits
-ever increasing numbers after each `period` of time thereafter.
-
-# Fields
-- `due_time`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
-- `period`: The period of time in milliseconds between emissions of the subsequent numbers.
-
-See also: [`timer`](@ref), [`Subscribable`](@ref)
-"""
-mutable struct TimerObservable <: Subscribable{Int}
-    due_time   :: Int
-    period     :: Union{Int, Nothing}
-
-    TimerObservable(due_time::Int, period::Union{Int, Nothing} = nothing) = begin
-        @assert due_time >= 0 "due_time argument value should be positive"
-        if period !== nothing
-            @assert period >= 0 "period argument value should be positive"
-        end
-        return new(due_time, period)
-    end
-end
-
-mutable struct TimerSubscription <: Teardown
-    is_running :: Bool
-    semaphore  :: Base.Semaphore
-end
-
-as_teardown(::Type{<:TimerSubscription}) = UnsubscribableTeardownLogic()
-
-function __is_running(subscription::TimerSubscription)
-    Base.acquire(subscription.semaphore)
-    is_running = subscription.is_running
-    Base.release(subscription.semaphore)
-    return is_running
-end
-
-function on_subscribe!(observable::TimerObservable, actor)
-    semaphore = Base.Semaphore(1)
-
-    due_time = observable.due_time
-    period   = observable.period
-
-    subscription = TimerSubscription(true, semaphore)
-
-    task = @async begin
-        try
-            current = 0
-            sleep(due_time / MILLISECONDS_IN_SECOND)
-
-            if __is_running(subscription)
-                next!(actor, current)
-                if period !== nothing
-                    sleep(period / MILLISECONDS_IN_SECOND)
-                    while __is_running(subscription)
-                        current += 1
-                        next!(actor, current)
-                        sleep(period / MILLISECONDS_IN_SECOND)
-                    end
-                else
-                    complete!(actor)
-                end
-            end
-        catch err
-            error!(actor, err)
-        end
-    end
-
-    return subscription
-end
-
-function on_unsubscribe!(subscription::TimerSubscription)
-    if __is_running(subscription)
-        Base.acquire(subscription.semaphore)
-        subscription.is_running = false
-        Base.release(subscription.semaphore)
-    end
-    return nothing
-end
-
-
-
-"""
-    timer(due_time::Int = 0, period = nothing)
+    timer(delay::Int)
+    timer(delay::Int, period::Int)
 
 Creation operator for the `TimerObservable`. Its like `interval`(@ref), but you can specify when should the emissions start.
 `timer` returns an Observable that emits an infinite sequence of ascending integers,
 with a constant interval of time, period of your choosing between those emissions.
-The first emission happens after the specified `due_time`.
+The first emission happens after the specified `delay`.
 If `period` is not specified, the output Observable emits only one value, 0.
 Otherwise, it emits an infinite sequence.
 
 # Arguments
-- `due_time`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
-- `period`: the period of time between emissions of the subsequent numbers.
+- `delay`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
+- `period`: the period of time between emissions of the subsequent numbers (in milliseconds).
 
 # Examples
 ```
@@ -124,9 +41,74 @@ close(source)
 
 See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-timer(due_time::Int = 0, period::Union{Int, Nothing} = nothing) = TimerObservable(due_time, period)
+function timer(delay::Int)
+    @assert delay >= 0 "'delay' argument should be positive"
+    return TimerObservable{delay, 0}()
+end
 
-Base.:(==)(t1::TimerObservable, t2::TimerObservable) = t1.due_time === t2.due_time && t1.period === t2.period
+function timer(delay::Int, period::Int)
+    @assert delay >= 0 "'delay' argument should be positive"
+    @assert period >= 0 "'period' argument should be positive"
+    return TimerObservable{delay, period}()
+end
 
-Base.show(io::IO, observable::TimerObservable)     = print(io, "TimerObservable()")
-Base.show(io::IO, subscription::TimerSubscription) = print(io, "TimerSubscription()")
+"""
+    TimerObservable{Delay, Period}()
+
+An Observable that starts emitting after an `Delay` and emits
+ever increasing numbers after each `Period` of time thereafter.
+
+# Parameters
+- `Delay`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
+- `Period`: The period of time in milliseconds between emissions of the subsequent numbers.
+
+See also: [`timer`](@ref), [`Subscribable`](@ref)
+"""
+struct TimerObservable{Delay, Period} <: Subscribable{Int} end
+
+struct TimerSubscription <: Teardown
+    timer  :: Timer
+end
+
+as_teardown(::Type{<:TimerSubscription}) = UnsubscribableTeardownLogic()
+
+function on_subscribe!(observable::TimerObservable{Delay, Period}, actor) where { Delay, Period }
+
+    timer = Timer(Delay / MILLISECONDS_IN_SECOND, interval = Period / MILLISECONDS_IN_SECOND)
+
+    @async begin
+        try
+            if isopen(timer)
+                if Period === 0
+                    wait(timer)
+                    next!(actor, 0)
+                    complete!(actor)
+                else
+                    current = 0
+                    while true
+                        wait(timer)
+                        next!(actor, current)
+                        current += 1
+                    end
+                end
+            end
+        catch err
+            if !(err isa EOFError)
+                error!(actor, err)
+            end
+        end
+    end
+
+    return TimerSubscription(timer)
+end
+
+function on_unsubscribe!(subscription::TimerSubscription)
+    close(subscription.timer)
+    return nothing
+end
+
+
+Base.:(==)(t1::TimerObservable{D1, P1}, t2::TimerObservable{D2, P2}) where { D1, P1, D2, P2 } = D1 === D2 && P1 === P2
+
+Base.show(io::IO, observable::TimerObservable{Delay, Period}) where { Delay, Period } = print(io, "TimerObservable($Delay, $Period)")
+Base.show(io::IO, subscription::TimerSubscription)                                    = print(io, "TimerSubscription()")
