@@ -16,7 +16,7 @@ Otherwise, it emits an infinite sequence.
 
 # Arguments
 - `delay`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
-- `period`: the period of time between emissions of the subsequent numbers (in milliseconds).
+- `period`: the minimum period of time between emissions of the subsequent numbers (in milliseconds).
 
 # Examples
 ```
@@ -60,7 +60,7 @@ ever increasing numbers after each `Period` of time thereafter.
 
 # Parameters
 - `Delay`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
-- `Period`: The period of time in milliseconds between emissions of the subsequent numbers.
+- `Period`: The minimum period of time in milliseconds between emissions of the subsequent numbers.
 
 See also: [`timer`](@ref), [`Subscribable`](@ref)
 """
