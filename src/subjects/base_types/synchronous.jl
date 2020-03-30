@@ -28,14 +28,14 @@ as_subscribable(::Type{<:SynchronousSubject{D}}) where D = ValidSubscribable{D}(
 is_exhausted(actor::SynchronousSubject) = actor.is_completed || actor.is_error
 
 function on_next!(subject::SynchronousSubject{D}, data::D) where D
-    failed_actors = nothing::Union{Nothing, Vector{Any}}
+    failed_actors = nothing
     actors        = copy(subject.actors)
 
     for actor in actors
         try
             next!(actor, data)
         catch exception
-            @warn "An exception occured during error! invocation in subject $(subject) for actor $(actor). Cannot deliver data $(data)"
+            @warn "An exception occured during next! invocation in subject $(subject) for actor $(actor). Cannot deliver data $(data)"
             @warn exception
             error!(actor, exception)
             if failed_actors === nothing
@@ -44,7 +44,7 @@ function on_next!(subject::SynchronousSubject{D}, data::D) where D
             push!(failed_actors, actor)
         end
     end
-    
+
     if failed_actors !== nothing
         __sync_subject_unsubscribe_actors(subject, failed_actors)
     end

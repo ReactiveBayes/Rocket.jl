@@ -3,7 +3,7 @@ export AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
 export AbstractActorFactory, create_actor
 export next!, error!, complete!
 export on_next!, on_error!, on_complete!
-export as_actor
+export as_actor, actor_extract_type
 export is_exhausted
 
 export InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
@@ -12,6 +12,7 @@ export MissingOnNextImplementationError, MissingOnErrorImplementationError, Miss
 export MissingCreateActorFactoryImplementationError
 
 import Base: show
+import Base: eltype
 
 """
 Abstract type for all possible actor traits
@@ -114,6 +115,13 @@ as_actor(::Type{<:Actor{T}})           where T = BaseActorTrait{T}()
 as_actor(::Type{<:NextActor{T}})       where T = NextActorTrait{T}()
 as_actor(::Type{<:ErrorActor{T}})      where T = ErrorActorTrait{T}()
 as_actor(::Type{<:CompletionActor{T}}) where T = CompletionActorTrait{T}()
+
+actor_extract_type(actor::A) where A = actor_extract_type(as_actor(A), actor)
+
+actor_extract_type(::ValidActorTrait{T}, actor) where T = T
+actor_extract_type(::InvalidActorTrait,  actor)         = throw(InvalidActorTraitUsageError(actor))
+
+Base.eltype(actor::A) where { A <: AbstractActor } = actor_extract_type(actor)
 
 next!(actor)            = throw(MissingDataArgumentInNextCall())
 error!(actor)           = throw(MissingErrorArgumentInErrorCall())

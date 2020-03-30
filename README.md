@@ -23,17 +23,44 @@ The essential concepts in Rocket.jl are:
 
 For a quick start and basic introduction take a look at the [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo) and [Quick Start notebook](https://github.com/biaslab/Rocket.jl/blob/master/demo/00_quick_start.ipynb).
 
+```Julia
+using Rocket, Compose, IJulia ; set_default_graphic_size(35cm, 2cm)
+```
+
+```Julia
+function draw_ball(t)
+    IJulia.clear_output(true)
+    x = -exp(-0.01t) + 1                     # x coordinate
+    y = -abs(exp(-0.04t)*(cos(0.1t))) + 0.83 # y coordinate
+    display(compose(context(), circle(x, y, 0.01)))
+end
+```
+
+```Julia
+source = interval(20) |> take(200) # Take only first 200 emissions
+
+subscription = subscribe!(source, draw_ball)
+```
+
+![Alt Text](demo/pics/bouncing-ball.gif)
+
+```Julia
+unsubscribe!(subscription) # It is possible to unsubscribe before the stream ends    
+IJulia.clear_output(false);
+```
+
+
 ## Documentation
 
-A full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
+Full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
 
-It is also possible to build a documentation locally. Just use
+It is also possible to build a documentation locally. Just execute
 
 ```bash
 $ julia make.jl
 ```
 
-in the `docs/` directory to build local version of the documentation.
+in the `docs/` directory to build a local version of the documentation.
 
 ## First example
 
@@ -106,11 +133,11 @@ subscribe!(squared_int_values, lambda(
 
 Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl) and [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl).
 
-Code is available in [demos folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
+Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
 
-![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.png?raw=true "Rocket.jl vs Reactive.jl")
+![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Reactive.jl")
 
-![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.png?raw=true "Rocket.jl vs Signals.jl")
+![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Signals.jl")
 
 ## TODO
 
