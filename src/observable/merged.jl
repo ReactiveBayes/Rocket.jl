@@ -109,11 +109,18 @@ subscribe!(observable, logger())
 ```jldoctest
 using Rocket
 
-observable = merged((timer(100, 10), of(2.0), from("Hello"))) |> take(10)
+subject = make_subject(Int)
+
+observable = merged((subject, of(2.0), from("Hello")))
 
 actor = sync(logger())
 
 subscribe!(observable, actor)
+
+setTimeout(200) do
+    next!(subject, 1)
+    complete!(subject)
+end
 
 wait(actor)
 ;
@@ -125,10 +132,7 @@ wait(actor)
 [LogActor] Data: l
 [LogActor] Data: l
 [LogActor] Data: o
-[LogActor] Data: 0
 [LogActor] Data: 1
-[LogActor] Data: 2
-[LogActor] Data: 3
 [LogActor] Completed
 ```
 
