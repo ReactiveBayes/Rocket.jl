@@ -52,6 +52,15 @@ using Rocket
 
         @test values == [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1, 2, 3, 4]
     end
+
+    @testset begin
+        source = never(Int)
+        actor  = sync(void(Int), timeout = 100)
+
+        subscribe!(source, actor)
+
+        @test_throws SyncActorTimedOutException wait(actor)
+    end
 end
 
 end

@@ -1,4 +1,4 @@
-export SyncActor, sync
+export SyncActor, sync, SyncActorTimedOutException
 
 import Base: wait
 
@@ -9,13 +9,13 @@ Sync actor provides a synchronized interface to `wait` for an actor to be notifi
 
 See also: [`Actor`](@ref), [`sync`](@ref)
 """
-mutable struct SyncActor{T, A} <: Actor{T}
+mutable struct SyncActor{T, A, W} <: Actor{T}
     completed_condition :: Condition
     is_completed        :: Bool
     is_failed           :: Bool
     actor               :: A
 
-    SyncActor{T, A}(actor::A) where T where A = new(Condition(), false, false, actor)
+    SyncActor{T, A, W}(actor::A) where { T, A, W } = new(Condition(), false, false, actor)
 end
 
 is_exhausted(actor::SyncActor) = actor.is_completed || actor.is_failed || is_exhausted(actor.actor)
@@ -36,26 +36,41 @@ function on_complete!(actor::SyncActor)
     notify(actor.completed_condition)
 end
 
-function Base.wait(actor::SyncActor)
+function Base.wait(actor::SyncActor{T, A, W}) where { T, A, W }
     if !actor.is_failed && !actor.is_completed
+        if W > 0
+            @async begin
+                try
+                    sleepfor = W / MILLISECONDS_IN_SECOND
+                    sleep(sleepfor)
+                    if !actor.is_completed && !actor.is_failed
+                        notify(actor.completed_condition, SyncActorTimedOutException(), error = true)
+                    end
+                catch e
+                    println(e)
+                end
+            end
+        end
         wait(actor.completed_condition)
     end
 end
+
+struct SyncActorTimedOutException end
 
 mutable struct SyncActorFactoryHandler
     is_completed :: Bool
     actor
 end
 
-struct SyncActorFactory{F} <: AbstractActorFactory
+struct SyncActorFactory{F, W} <: AbstractActorFactory
     factory :: F
     created :: Vector{SyncActorFactoryHandler}
 
-    SyncActorFactory{F}(factory::F) where { F <: AbstractActorFactory } = new(factory, Vector{SyncActorFactoryHandler}())
+    SyncActorFactory{F, W}(factory::F) where { F <: AbstractActorFactory, W } = new(factory, Vector{SyncActorFactoryHandler}())
 end
 
-function create_actor(::Type{L}, factory::SyncActorFactory) where L
-    actor = sync(create_actor(L, factory.factory))
+function create_actor(::Type{L}, factory::SyncActorFactory{F, W}) where { L, F, W }
+    actor = sync(create_actor(L, factory.factory), timeout = W)
     push!(factory.created, SyncActorFactoryHandler(false, actor))
     return actor
 end
@@ -65,10 +80,11 @@ function Base.wait(factory::SyncActorFactory)
 end
 
 """
-    sync(actor::A) where A
-    sync(factory::F) where { F <: AbstractActorFactory }
+    sync(actor::A; timeout::Int = -1) where A
+    sync(factory::F; timeout::Int = -1) where { F <: AbstractActorFactory }
 
 Creation operator for the `SyncActor` actor.
+Accepts optional named `timeout` argument which specifies maximum number of milliseconds to wait (throws SyncActorTimedOutException() on timeout).
 
 # Examples
 ```jldoctest
@@ -105,8 +121,8 @@ println(values)
 
 See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 """
-sync(actor::A) where A = as_sync(as_actor(A), actor)
-sync(factory::F) where { F <: AbstractActorFactory } = SyncActorFactory{F}(factory)
+sync(actor::A; timeout::Int = -1)   where A                             = as_sync(as_actor(A), actor, timeout)
+sync(factory::F; timeout::Int = -1) where { F <: AbstractActorFactory } = SyncActorFactory{F, timeout}(factory)
 
-as_sync(::InvalidActorTrait,  actor)                    = throw(InvalidActorTraitUsageError(actor))
-as_sync(::ValidActorTrait{D}, actor::A) where D where A = SyncActor{D, A}(actor)
+as_sync(::InvalidActorTrait,  actor::A, timeout::Int) where { A }    = throw(InvalidActorTraitUsageError(actor))
+as_sync(::ValidActorTrait{D}, actor::A, timeout::Int) where { D, A } = SyncActor{D, A, timeout}(actor)
