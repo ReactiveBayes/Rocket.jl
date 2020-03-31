@@ -1,7 +1,8 @@
 export MILLISECONDS_IN_SECOND
 export setTimeout
 
-const MILLISECONDS_IN_SECOND = 1000.0::Float64
+const MILLISECONDS_IN_SECOND = 1_000.0::Float64
+const NANOSECONDS_IN_SECOND  = 1_000_000_000.0::Float64
 
 """
     setTimeout(f::Function, timeout::Int)

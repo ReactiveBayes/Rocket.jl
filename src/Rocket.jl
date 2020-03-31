@@ -14,6 +14,7 @@ include("actor/void.jl")
 include("actor/sync.jl")
 include("actor/keep.jl")
 include("actor/server.jl")
+include("actor/test.jl")
 
 include("subscribable.jl")
 include("operator.jl")
