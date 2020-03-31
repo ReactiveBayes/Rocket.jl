@@ -3,6 +3,8 @@ module RocketDelayOperatorTest
 using Test
 using Rocket
 
+# TODO: operator testset
+
 @testset "operator: delay()" begin
 
     @testset begin

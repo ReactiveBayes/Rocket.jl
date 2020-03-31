@@ -7,7 +7,7 @@ using Rocket
 
     @testset begin
         actor  = KeepActor{Int}()
-        synced = SyncActor{Int, KeepActor{Int}}(actor)
+        synced = SyncActor{Int, KeepActor{Int}, -1}(actor)
 
         source = interval(1) |> take(5)
 
@@ -19,7 +19,7 @@ using Rocket
     end
 
     @testset begin
-        @test sync(void(Int)) isa SyncActor{Int, VoidActor{Int}}
+        @test sync(void(Int)) isa SyncActor{Int, VoidActor{Int}, -1}
     end
 
     @testset begin

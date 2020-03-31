@@ -3,25 +3,20 @@ module RocketCountOperatorTest
 using Test
 using Rocket
 
+include("./testset.jl")
+
 @testset "operator: count()" begin
 
-    @testset begin
-        source = from(1:42) |> count()
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 42 ]
-    end
-
-    @testset begin
-        source = completed(Int) |> count()
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 0 ]
-    end
+    run_testset([
+        (
+            source = from(1:42) |> count(),
+            values = [ 42 ]
+        ),
+        (
+            source = completed(Int) |> count(),
+            values = [ 0 ]
+        )
+    ])
 
 end
 
