@@ -209,7 +209,7 @@ function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait) wher
 
     is_completed = true
 
-    return actor
+    return true
 end
 
 struct TestActorLastTest end
@@ -236,11 +236,13 @@ function test_against(actor::TestActor, test::TestActorErrorTest)
         throw(TestActorStreamMissingExpectedErrorException(test.err))
     end
 
-    actual   = Base.first(errors(actor)).err
-    expected = test.err
+    if test.err !== nothing
+        actual   = Base.first(errors(actor)).err
+        expected = test.err
 
-    if actual != test.err
-        throw(TestActorStreamIncorrectExpectedErrorException(actual, expected))
+        if actual != test.err
+            throw(TestActorStreamIncorrectExpectedErrorException(actual, expected))
+        end
     end
 
     foreach((e) -> mark_as_checked(e), errors(actor))
@@ -315,6 +317,47 @@ end
 
 function Base.:~(left::Int, right::TestActorStreamValuesTest)
     return TestActorStreamValuesTest(right.starts_from, left, right.expected, right.next)
+end
+
+function Base.:~(left::TestActorStreamValuesTest, right::TestActorErrorTest)
+    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, right)
+end
+
+function Base.:~(left::TestActorStreamValuesTest, right::TestActorCompleteTest)
+    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, right)
+end
+
+macro ts(expr)
+
+    function lookup_tree(expr::Expr)
+        if expr.head === :call && expr.args[1] === :~
+            return Expr(:call, :~, lookup_tree(expr.args[2]), lookup_tree(expr.args[3]))
+        elseif expr.head === :call && expr.args[1] === :e
+            return Expr(:call, :TestActorErrorTest, length(expr.args) === 2 ? expr.args[2] : nothing)
+        elseif expr.head === :vect
+            return Expr(:call, :TestActorStreamValuesTest, 1, 0, [ expr.args... ], nothing)
+        end
+
+        error("Invalid usage of @ts macro")
+    end
+
+    function lookup_tree(expr::Int)
+        return expr
+    end
+
+    function lookup_tree(symbol::Symbol)
+        if symbol === :c
+            return Expr(:call, :TestActorCompleteTest)
+        end
+
+        if symbol === :e
+            return Expr(:call, :TestActorErrorTest, nothing)
+        end
+
+        error("Invalid usage of @ts macro")
+    end
+
+    return lookup_tree(expr)
 end
 
 struct TestActorStreamIncorrectStreamValuesException <: Exception
