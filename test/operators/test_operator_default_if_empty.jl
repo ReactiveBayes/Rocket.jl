@@ -3,7 +3,7 @@ module RocketDefaultIfEmptyOperatorTest
 using Test
 using Rocket
 
-include("./testset.jl")
+include("./test_helpers.jl")
 
 @testset "operator: default_if_empty()" begin
 
@@ -13,7 +13,7 @@ include("./testset.jl")
             values = [ 1, 2, 3, 4, 5 ]
         ),
         (
-            source = completed(Int) |> default_if_empty(0)
+            source = completed(Int) |> default_if_empty(0),
             values = [ 0 ]
         )
     ])

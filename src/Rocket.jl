@@ -7,6 +7,10 @@ include("teardown/void.jl")
 include("teardown/chain.jl")
 
 include("actor.jl")
+include("subscribable.jl")
+include("operator.jl")
+include("subject.jl")
+
 include("actor/function.jl")
 include("actor/lambda.jl")
 include("actor/logger.jl")
@@ -15,10 +19,6 @@ include("actor/sync.jl")
 include("actor/keep.jl")
 include("actor/server.jl")
 include("actor/test.jl")
-
-include("subscribable.jl")
-include("operator.jl")
-include("subject.jl")
 
 include("subjects/base_types/asynchronous.jl")
 include("subjects/base_types/synchronous.jl")

@@ -3,7 +3,7 @@ module RocketCountOperatorTest
 using Test
 using Rocket
 
-include("./testset.jl")
+include("./test_helpers.jl")
 
 @testset "operator: count()" begin
 

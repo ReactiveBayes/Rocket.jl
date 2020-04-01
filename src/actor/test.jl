@@ -2,13 +2,14 @@ export test_actor, check_isvalid, check_data_equals, check_error_equals
 export isreceived, isfailed, iscompleted
 
 import Base: show
+import Base: ~
 
 const HighResolutionTimestamp = UInt
 const EmptyTimestamp = HighResolutionTimestamp(0x0)
 
 make_timestamp()::HighResolutionTimestamp  = time_ns()
 
-struct DataTestEvent
+mutable struct DataTestEvent
     data
     timestamp :: HighResolutionTimestamp
 
@@ -37,19 +38,25 @@ struct TestActor <: Actor{Any}
     data         :: Vector{TestActorEvent}
     errors       :: Vector{TestActorEvent}
     completes    :: Vector{TestActorEvent}
+    created_at   :: HighResolutionTimestamp
+    condition    :: Condition
+
+    TestActor(type::Type{L}) where L = begin
+        return new(L, Vector{TestActorEvent}(), Vector{TestActorEvent}(), Vector{TestActorEvent}(), make_timestamp(), Condition())
+    end
 end
 
 is_exhausted(actor::TestActor) = false
 
-on_next!(actor::TestActor,  d) = push!(data(actor),      DataTestEvent(d))
-on_error!(actor::TestActor, e) = push!(errors(actor),    ErrorTestEvent(e))
-on_complete!(actor::TestActor) = push!(completes(actor), CompleteTestEvent())
+on_next!(actor::TestActor,  d) = begin push!(data(actor),      DataTestEvent(d));    notify(actor.condition, false) end
+on_error!(actor::TestActor, e) = begin push!(errors(actor),    ErrorTestEvent(e));   yield(); notify(actor.condition, true) end
+on_complete!(actor::TestActor) = begin push!(completes(actor), CompleteTestEvent()); yield(); notify(actor.condition, true) end
 
 Base.show(io::IO, actor::TestActor) = print(io, "TestActor()")
 
 # Creation operator
 
-test_actor(::Type{L}) where L = TestActor(L, Vector{TestActorEvent}(), Vector{TestActorEvent}(), Vector{TestActorEvent}())
+test_actor(::Type{L}) where L = TestActor(L)
 
 # Actor factory
 
@@ -63,6 +70,9 @@ create_actor(::Type{L}, factory::TestActorFactory) where L = test_actor(L)
 isreceived(actor::TestActor)  = length(data(actor))      !== 0
 isfailed(actor::TestActor)    = length(errors(actor))    !== 0
 iscompleted(actor::TestActor) = length(completes(actor)) !== 0
+
+created_at(actor::TestActor) = actor.created_at
+condition(actor::TestActor)  = actor.condition
 
 data(actor::TestActor)      = actor.data
 errors(actor::TestActor)    = actor.errors
@@ -138,3 +148,132 @@ struct NextAfterCompleteEventException            <: Exception end
 struct UnacceptableNextEventDataTypeException     <: Exception end
 struct DataEventsEqualityFailedException          <: Exception end
 struct ErrorEventEqualityFailedException          <: Exception end
+
+
+# Test stream values helpers
+
+test_on_source(source::S, test; maximum_wait::Float64 = 60000.0) where S = test_on_source(as_subscribable(S), source, test, maximum_wait)
+
+function test_on_source(::InvalidSubscribable, source, test, maximum_wait)
+    throw(InvalidSubscribableTraitUsageError(source))
+end
+
+function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait) where T
+    actor = test_actor(T)
+
+    task = @task begin
+        try
+            subscribe!(source, actor)
+        catch e
+            println(e)
+        end
+    end
+
+    is_completed = false
+
+    wakeup = @task begin
+        timedwait(() -> is_completed, maximum_wait; pollint = 1.0)
+        if !is_completed
+            notify(condition(actor), TestOnSourceTimedOutException(), error = true)
+        end
+    end
+
+    schedule(task)
+    schedule(wakeup)
+
+    current_test = test
+
+    while !wait(condition(actor))
+        test_against(actor, current_test)
+
+        current_test = current_test.next
+
+        if current_test === nothing
+            break
+        end
+    end
+
+    is_completed = true
+
+    return actor
+end
+
+struct TestActorLastTest
+    next :: Nothing
+end
+
+function test_against(actor::TestActor, test::TestActorLastTest)
+    check_isvalid(actor)
+end
+
+struct TestActorStreamValuesTest
+    starts_from :: Int
+    time_passed :: Int
+    expected    :: Vector{Any}
+    next        :: Any
+end
+
+struct TestActorErrorTest
+    next :: Nothing
+end
+
+struct TestActorCompleteTest
+    next :: Nothing
+end
+
+function test_against(actor::TestActor, test::TestActorStreamValuesTest)
+    actual   = map(e -> e.data, data(actor))[ test.starts_from:end ]
+    expected = test.expected
+
+    if actual != expected
+        throw(TestActorStreamIncorrectStreamValuesException(actual, expected))
+    end
+
+    if test.time_passed > 0
+        time_expected   = UInt(test.time_passed * NANOSECONDS_IN_MILLISECOND)
+        time_first      = timestamp(data(actor)[ test.starts_from ])
+        time_to_compare = test.starts_from === 1 ? created_at(actor) : timestamp(data(actor)[ test.starts_from - 1 ])
+
+        if (time_first - time_to_compare) < time_expected
+            throw(TestActorStreamIncorrectStreamTimePassedException((time_first - time_to_compare) / NANOSECONDS_IN_MILLISECOND, test.time_passed))
+        end
+    end
+
+    return true
+end
+
+function __add_starts_from(test::Union{TestActorStreamValuesTest, Nothing}, count::Int)
+    if test === nothing
+        return nothing
+    else
+        return TestActorStreamValuesTest(test.starts_from + count, test.time_passed, test.expected, __add_starts_from(test.next, count))
+    end
+end
+
+function Base.:~(left::TestActorStreamValuesTest, right::TestActorStreamValuesTest)
+    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, __add_starts_from(right, length(left.expected)))
+end
+
+function Base.:~(left::Int, right::TestActorStreamValuesTest)
+    return TestActorStreamValuesTest(right.starts_from, left, right.expected, right.next)
+end
+
+struct TestActorStreamIncorrectStreamValuesException <: Exception
+    actual
+    expected
+end
+
+function Base.show(io::IO, exception::TestActorStreamIncorrectStreamValuesException)
+    print(io, "Incorrect values in the stream: expected -> $(exception.expected), actual -> $(exception.actual)")
+end
+
+struct TestActorStreamIncorrectStreamTimePassedException <: Exception
+    actual
+    expected
+end
+
+function Base.show(io::IO, exception::TestActorStreamIncorrectStreamTimePassedException)
+    print(io, "Incorrect time passed in the stream: expected -> >$(exception.expected)ms, actual -> $(exception.actual)ms")
+end
+
+struct TestOnSourceTimedOutException <: Exception end

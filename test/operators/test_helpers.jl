@@ -8,22 +8,23 @@ const TESTSET_SYNC_MAXIMUM_TIMEOUT = 60000 # 60 sec
 
 make_test_actor(::Type{T}) where T = sync(test_actor(T), timeout = TESTSET_SYNC_MAXIMUM_TIMEOUT)
 
-function testset_parameters(tuple::NamedTuple{V, T}) where { V, T <: Tuple }
-    parameters = Dict([
-        (:source, nothing),
-        (:values, []),
-        (:is_completed, true),
-        (:wait_for, TESTSET_SYNC_MAXIMUM_TIMEOUT),
-        (:is_failed, false),
-        (:error, nothing)
-    ])
-
-    for key in V
-        parameters[key] = tuple[key]
-    end
-
-    return parameters
-end
+# [ WIP ]
+# function testset_parameters(tuple::NamedTuple{V, T}) where { V, T <: Tuple }
+#     parameters = Dict([
+#         (:source, nothing),
+#         (:values, []),
+#         (:is_completed, true),
+#         (:is_failed, false),
+#         (:error, nothing),
+#         (:wait_for, TESTSET_SYNC_MAXIMUM_TIMEOUT),
+#     ])
+#
+#     for key in V
+#         parameters[key] = tuple[key]
+#     end
+#
+#     return parameters
+# end
 
 function test(testset::NamedTuple{(:source, :values), Tuple{ S, V }}) where { L, T <: L, S <: Subscribable{T}, V <: Vector{L} }
     actor = make_test_actor(T)
