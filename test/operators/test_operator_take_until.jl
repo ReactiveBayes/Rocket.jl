@@ -3,49 +3,64 @@ module RocketTakeUntilOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: take_until()" begin
 
-    @testset begin
-        source = from(1:5) |> take_until(of(1))
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 1, 2, 3, 4, 5 ]
-    end
-
-    @testset begin
-        source = interval(1) |> take_until(of(1))
-        actor  = keep(Int)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        wait(synced)
-
-        @test actor.values == [ ]
-    end
-
-    @testset begin
-        source = interval(1) |> take_until(timer(10))
-        actor  = keep(Int)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        wait(synced)
-
-        @test maximum(actor.values) < 10
-    end
-
-    @testset begin
-        source = completed(Int) |> take_until(timer(100))
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ ]
-    end
+    run_testset([
+        (
+            source = from(1:5) |> take_until(of(1)),
+            values = @ts([ 1:5 ] ~ c)
+        ),
+        (
+            source = from(1:5) |> async() |> take_until(of(1)),
+            values = @ts(c)
+        ),
+        (
+            source = timer(10, 1000) |> take_until(timer(100)),
+            values = @ts([ 0 ] ~ c)
+        ),
+        (
+            source = completed() |> take_until(of(1)),
+            values = @ts(c)
+        ),
+        (
+            source = completed() |> async() |> take_until(of(1)),
+            values = @ts()
+        ),
+        (
+            source = completed() |> take_until(timer(100)),
+            values = @ts(c)
+        ),
+        (
+            source = completed() |> async() |> take_until(timer(100)),
+            values = @ts(c)
+        ),
+        (
+            source = throwError(1) |> take_until(of(1)),
+            values = @ts(e(1))
+        ),
+        (
+            source = throwError(1) |> async() |> take_until(of(1)),
+            values = @ts()
+        ),
+        (
+            source = throwError(1) |> take_until(timer(100)),
+            values = @ts(e(1))
+        ),
+        (
+            source = throwError(1) |> async() |> take_until(timer(100)),
+            values = @ts(e(1))
+        ),
+        (
+            source = never() |> take_until(of(1)),
+            values = @ts(c)
+        ),
+        (
+            source = never() |> take_until(timer(100)),
+            values = @ts(100 ~ c)
+        )
+    ])
 
 end
 

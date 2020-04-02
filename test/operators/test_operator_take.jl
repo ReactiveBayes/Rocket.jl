@@ -3,37 +3,36 @@ module RocketTakeOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: take()" begin
 
-    @testset begin
-        source = from(1:42) |> take(3)
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 1, 2, 3 ]
-    end
-
-    @testset begin
-        source = interval(1) |> take(5)
-        actor  = keep(Int)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        wait(synced)
-
-        @test actor.values == [ 0, 1, 2, 3, 4 ]
-    end
-
-    @testset begin
-        source = completed(Int) |> take(10)
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ ]
-    end
+    run_testset([
+        (
+            source = from(1:5) |> take(3),
+            values = @ts([ 1:3 ] ~ c)
+        ),
+        (
+            source = from(1:5) |> async() |> take(3),
+            values = @ts([ 1 ] ~ [ 2 ] ~ [ 3 ] ~ c)
+        ),
+        (
+            source = timer(10, 30) |> take(3),
+            values = @ts(10 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2 ] ~ c)
+        ),
+        (
+            source = completed() |> take(10),
+            values = @ts(c)
+        ),
+        (
+            source = throwError("e") |> take(10),
+            values = @ts(e("e"))
+        ),
+        (
+            source = never() |> take(10),
+            values = @ts()
+        )
+    ])
 
 end
 

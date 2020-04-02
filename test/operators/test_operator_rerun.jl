@@ -29,8 +29,8 @@ include("./test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source      = throwError("e") |> rerun(2),
-            values      = @ts(e("e")),
+            source = throwError("e") |> rerun(2),
+            values = @ts(e("e")),
         ),
         (
             source = never() |> rerun(2),

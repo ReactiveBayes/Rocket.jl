@@ -21,8 +21,8 @@ include("./test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source      = throwError("e") |> safe(),
-            values      = @ts(e("e"))
+            source = throwError("e") |> safe(),
+            values = @ts(e("e"))
         ),
         (
             source = never() |> safe(),

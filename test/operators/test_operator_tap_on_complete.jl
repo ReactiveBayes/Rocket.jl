@@ -3,54 +3,38 @@ module RocketTapOnCompleteOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: tap_on_complete()" begin
 
-    @testset begin
-        values = Int[]
-        source = from(1:5) |> tap_on_complete(() -> push!(values, -1))
-        actor  = keep(Int)
+    completed1 = false
+    completed2 = false
+    completed3 = false
+    completed4 = false
 
-        @test values == []
+    run_testset([
+        (
+            source = from(1:5) |> tap_on_complete(() -> completed1 = true),
+            values = @ts([ 1:5 ] ~ c)
+        ),
+        (
+            source = from(1:5) |> skip_complete() |> tap_on_complete(() -> completed2 = true),
+            values = @ts([ 1:5 ])
+        ),
+        (
+            source = throwError(1) |> tap_on_complete(() -> completed3 = true),
+            values = @ts(e(1))
+        ),
+        (
+            source = never() |> tap_on_complete(() -> completed4 = true),
+            values = @ts()
+        )
+    ])
 
-        subscribe!(source, actor)
-
-        @test actor.values == [ 1, 2, 3, 4, 5 ]
-        @test values       == [ -1 ]
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 1, 2, 3, 4, 5, 1, 2, 3, 4, 5 ]
-        @test values       == [ -1, -1 ]
-    end
-
-    @testset begin
-        values = Int[]
-        source = throwError(Int) |> tap_on_complete(() -> push!(values, -1))
-        actor  = keep(Int)
-
-        @test values == []
-
-        try
-            subscribe!(source, actor)
-        catch _
-        end
-
-        @test actor.values == [ ]
-        @test values       == [ ]
-    end
-
-    @testset begin
-        values = Int[]
-        source = completed(Int) |> tap_on_complete(() -> push!(values, -1))
-        actor  = keep(Int)
-
-        @test values == []
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ ]
-        @test values       == [ -1 ]
-    end
+    @test completed1 === true
+    @test completed2 === false
+    @test completed3 === false
+    @test completed4 === false
 
 end
 

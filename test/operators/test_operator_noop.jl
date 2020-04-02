@@ -19,13 +19,13 @@ include("./test_helpers.jl")
             values = @ts([ 1001, 1002, 1003, 1004, 1005 ] ~ c)
         ),
         (
-            source = complete() |> noop(),
+            source = completed() |> noop(),
             values = @ts(c)
         ),
         (
             source = throwError(1) |> noop(),
             values = @ts(e(1))
-        )
+        ),
         (
             source = never() |> noop(),
             values = @ts()
