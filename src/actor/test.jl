@@ -1,8 +1,4 @@
-export test_actor, check_isvalid, check_data_equals, check_error_equals
-export isreceived, isfailed, iscompleted
-
 import Base: show
-import Base: ~
 
 const HighResolutionTimestamp = UInt
 const EmptyTimestamp = HighResolutionTimestamp(0x0)
@@ -156,27 +152,27 @@ struct ErrorEventEqualityFailedException          <: Exception end
 
 # Test stream values helpers
 
-test_on_source(source::S, test; maximum_wait::Float64 = 60000.0) where S = test_on_source(as_subscribable(S), source, test, maximum_wait)
+test_on_source(source::S, test; maximum_wait::Float64 = 60000.0, actor = nothing) where S = test_on_source(as_subscribable(S), source, test, maximum_wait, actor)
 
-function test_on_source(::InvalidSubscribable, source, test, maximum_wait)
+function test_on_source(::InvalidSubscribable, source, test, maximum_wait, actor)
     throw(InvalidSubscribableTraitUsageError(source))
 end
 
-function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait) where T
-    actor = test_actor(T)
+function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, actor) where T
+    actor = actor === nothing ? test_actor(T) : actor
 
     task = @task begin
         try
-            subscribe!(source, actor)
-        catch e
-            println(e)
+            subscribe!(source |> safe() |> catch_error((err, obs) -> begin error!(actor, err); never(subscribable_extract_type(obs)) end), actor)
+        catch err
+            error!(actor, err)
         end
     end
 
     is_completed = false
 
     wakeup = @task begin
-        timedwait(() -> is_completed, maximum_wait; pollint = 1.0)
+        timedwait(() -> is_completed, maximum_wait / MILLISECONDS_IN_SECOND; pollint = 0.5)
         if !is_completed
             notify(condition(actor), TestOnSourceTimedOutException(), error = true)
         end
@@ -187,13 +183,15 @@ function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait) wher
 
     current_test = test
 
-    while !wait(condition(actor))
-        test_against(actor, current_test)
+    if current_test !== nothing
+        while !wait(condition(actor))
+            test_against(actor, current_test)
 
-        current_test = current_test.next
+            current_test = get_next(current_test)
 
-        if current_test === nothing
-            break
+            if current_test === nothing
+                break
+            end
         end
     end
 
@@ -214,20 +212,28 @@ end
 
 struct TestActorLastTest end
 
+get_next(::TestActorLastTest) = nothing
+
 function test_against(actor::TestActor, test::TestActorLastTest)
     check_isvalid(actor)
 
-    all(e -> e.is_checked, data(actor)) || throw(TestActorStreamUncheckedData())
-    all(e -> e.is_checked, errors(actor)) || throw(TestActorStreamUncheckedError())
-    all(e -> e.is_checked, completes(actor)) || throw(TestActorStreamUncheckedCompletion())
+    all(e -> e.is_checked, data(actor)) || throw(TestActorStreamUncheckedData(actor))
+    all(e -> e.is_checked, errors(actor)) || throw(TestActorStreamUncheckedError(actor))
+    all(e -> e.is_checked, completes(actor)) || throw(TestActorStreamUncheckedCompletion(actor))
 end
 
 struct TestActorErrorTest
     err
-    next  :: Nothing
+    time_passed :: Int
 
-    TestActorErrorTest(err) = new(err, nothing)
+    TestActorErrorTest(err, time_passed::Int = -1) = new(err, time_passed)
 end
+
+get_next(::TestActorErrorTest) = nothing
+
+time_passed(test::TestActorErrorTest)                        = test.time_passed
+time_event(actor::TestActor, test::TestActorErrorTest)       = timestamp(Base.first(errors(actor)))
+time_to_compare(actor::TestActor, test::TestActorErrorTest)  = length(data(actor)) === 0 ? created_at(actor) : timestamp(data(actor)[ end ])
 
 function test_against(actor::TestActor, test::TestActorErrorTest)
     check_isvalid(actor)
@@ -240,20 +246,28 @@ function test_against(actor::TestActor, test::TestActorErrorTest)
         actual   = Base.first(errors(actor)).err
         expected = test.err
 
-        if actual != test.err
+        if actual != expected
             throw(TestActorStreamIncorrectExpectedErrorException(actual, expected))
         end
     end
+
+    __check_time_passed(actor, test)
 
     foreach((e) -> mark_as_checked(e), errors(actor))
     return true
 end
 
 struct TestActorCompleteTest
-    next :: Nothing
+    time_passed :: Int
 
-    TestActorCompleteTest() = new(nothing)
+    TestActorCompleteTest(time_passed::Int = -1) = new(time_passed)
 end
+
+get_next(::TestActorCompleteTest) = nothing
+
+time_passed(test::TestActorCompleteTest)                        = test.time_passed
+time_event(actor::TestActor, test::TestActorCompleteTest)       = timestamp(Base.first(completes(actor)))
+time_to_compare(actor::TestActor, test::TestActorCompleteTest)  = length(data(actor)) === 0 ? created_at(actor) : timestamp(data(actor)[ end ])
 
 function test_against(actor::TestActor, test::TestActorCompleteTest)
     check_isvalid(actor)
@@ -261,6 +275,8 @@ function test_against(actor::TestActor, test::TestActorCompleteTest)
     if !iscompleted(actor)
         throw(TestActorStreamMissingExpectedCompletionException())
     end
+
+    __check_time_passed(actor, test)
 
     foreach((e) -> mark_as_checked(e), completes(actor))
     return true
@@ -273,6 +289,12 @@ struct TestActorStreamValuesTest
     next        :: Any
 end
 
+get_next(test::TestActorStreamValuesTest) = test.next
+
+time_passed(test::TestActorStreamValuesTest)                        = test.time_passed
+time_event(actor::TestActor, test::TestActorStreamValuesTest)       = timestamp(data(actor)[ test.starts_from ])
+time_to_compare(actor::TestActor, test::TestActorStreamValuesTest)  = test.starts_from === 1 ? created_at(actor) : timestamp(data(actor)[ test.starts_from - 1 ])
+
 function test_against(actor::TestActor, test::TestActorStreamValuesTest)
     check_isvalid(actor)
 
@@ -283,19 +305,31 @@ function test_against(actor::TestActor, test::TestActorStreamValuesTest)
         throw(TestActorStreamIncorrectStreamValuesException(actual, expected))
     end
 
-    if test.time_passed > 0
-        time_expected   = UInt(test.time_passed * NANOSECONDS_IN_MILLISECOND)
-        time_first      = timestamp(data(actor)[ test.starts_from ])
-        time_to_compare = test.starts_from === 1 ? created_at(actor) : timestamp(data(actor)[ test.starts_from - 1 ])
-
-        if (time_first - time_to_compare) * 1.1 < time_expected
-            throw(TestActorStreamIncorrectStreamTimePassedException((time_first - time_to_compare) / NANOSECONDS_IN_MILLISECOND, test.time_passed))
-        end
-    end
+    __check_time_passed(actor, test)
 
     foreach((e) -> mark_as_checked(e), data(actor)[ test.starts_from:end ])
 
     return true
+end
+
+function __check_time_passed(actor::TestActor, test)
+    if time_passed(test) > 0
+        t_expected   = UInt(time_passed(test) * NANOSECONDS_IN_MILLISECOND)
+        t_event      = time_event(actor, test)
+        t_to_compare = time_to_compare(actor, test)
+
+        if !(t_expected * 0.9 < (t_event - t_to_compare) < t_expected * 10.0)
+            throw(TestActorStreamIncorrectStreamTimePassedException((t_event - t_to_compare) / NANOSECONDS_IN_MILLISECOND, time_passed(test)))
+        end
+    elseif time_passed(test) < 0
+        t_expected   = 250 * NANOSECONDS_IN_MILLISECOND # Hardcoded 250ms here, TODO
+        t_event      = time_event(actor, test)
+        t_to_compare = time_to_compare(actor, test)
+
+        if (t_event - t_to_compare) > t_expected
+            throw(TestActorStreamSignificantDelayTimePassedException((t_event - t_to_compare) / NANOSECONDS_IN_MILLISECOND))
+        end
+    end
 end
 
 __add_starts_from(test::Nothing, count::Int) = nothing
@@ -304,38 +338,58 @@ __add_starts_from(test::TestActorErrorTest, count::Int) = test
 __add_starts_from(test::TestActorCompleteTest, count::Int) = test
 
 function __add_starts_from(test::TestActorStreamValuesTest, count::Int)
-    if test === nothing
-        return nothing
-    else
-        return TestActorStreamValuesTest(test.starts_from + count, test.time_passed, test.expected, __add_starts_from(test.next, count))
-    end
+    return TestActorStreamValuesTest(test.starts_from + count, test.time_passed, test.expected, __add_starts_from(test.next, count))
 end
 
-function Base.:~(left::TestActorStreamValuesTest, right::TestActorStreamValuesTest)
+function __test_connect(left::TestActorStreamValuesTest, right::TestActorStreamValuesTest)
     return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, __add_starts_from(right, length(left.expected)))
 end
 
-function Base.:~(left::Int, right::TestActorStreamValuesTest)
+function __test_connect(left::Int, right::TestActorStreamValuesTest)
     return TestActorStreamValuesTest(right.starts_from, left, right.expected, right.next)
 end
 
-function Base.:~(left::TestActorStreamValuesTest, right::TestActorErrorTest)
+function __test_connect(left::Int, right::TestActorErrorTest)
+    return TestActorErrorTest(right.err, left)
+end
+
+function __test_connect(left::Int, right::TestActorCompleteTest)
+    return TestActorCompleteTest(left)
+end
+
+function __test_connect(left::TestActorStreamValuesTest, right::TestActorErrorTest)
     return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, right)
 end
 
-function Base.:~(left::TestActorStreamValuesTest, right::TestActorCompleteTest)
+function __test_connect(left::TestActorStreamValuesTest, right::TestActorCompleteTest)
     return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, right)
 end
 
 macro ts(expr)
 
+    function to_value(e)
+        return [ e ]
+    end
+
+    function to_value(e::Expr)
+        if e.head === :call && e.args[1] === Symbol(":")
+            return collect(e.args[2]:e.args[3])
+        elseif e.head === :vect
+            return [ collect(e.args) ]
+        elseif e.head === :tuple
+            return [ (e.args..., ) ]
+        end
+
+        error("Invalid usage of @ts macro")
+    end
+
     function lookup_tree(expr::Expr)
         if expr.head === :call && expr.args[1] === :~
-            return Expr(:call, :~, lookup_tree(expr.args[2]), lookup_tree(expr.args[3]))
+            return Expr(:call, :__test_connect, lookup_tree(expr.args[2]), lookup_tree(expr.args[3]))
         elseif expr.head === :call && expr.args[1] === :e
             return Expr(:call, :TestActorErrorTest, length(expr.args) === 2 ? expr.args[2] : nothing)
         elseif expr.head === :vect
-            return Expr(:call, :TestActorStreamValuesTest, 1, 0, [ expr.args... ], nothing)
+            return Expr(:call, :TestActorStreamValuesTest, 1, -1, collect(Iterators.flatten(map(e -> to_value(e), expr.args))), nothing)
         end
 
         error("Invalid usage of @ts macro")
@@ -360,6 +414,10 @@ macro ts(expr)
     return lookup_tree(expr)
 end
 
+macro ts()
+    return :nothing
+end
+
 struct TestActorStreamIncorrectStreamValuesException <: Exception
     actual
     expected
@@ -378,6 +436,14 @@ function Base.show(io::IO, exception::TestActorStreamIncorrectStreamTimePassedEx
     print(io, "Incorrect time passed in the stream: expected -> >$(exception.expected)ms, actual -> $(exception.actual)ms")
 end
 
+struct TestActorStreamSignificantDelayTimePassedException
+    delay
+end
+
+function Base.show(io::IO, exception::TestActorStreamSignificantDelayTimePassedException)
+    print(io, "Significant delay time passed between some emissions in the stream: ~$(exception.delay)ms")
+end
+
 struct TestActorStreamMissingExpectedErrorException <: Exception
     err
 end
@@ -392,7 +458,7 @@ struct TestActorStreamIncorrectExpectedErrorException <: Exception
 end
 
 function Base.show(io::IO, exception::TestActorStreamIncorrectExpectedErrorException)
-    print(io, "Stream sent an incorrect error: expected -> >$(exception.expected), actual -> $(exception.actual)", exception.err)
+    print(io, "Stream sent an incorrect error: expected -> $(exception.expected), actual -> $(exception.actual)")
 end
 
 struct TestActorStreamMissingExpectedCompletionException <: Exception end
@@ -407,20 +473,26 @@ function Base.show(io::IO, ::TestOnSourceTimedOutException)
     print(io, "TestOnSourceTimedOutException()")
 end
 
-struct TestActorStreamUncheckedData <: Exception end
-
-function Base.show(io::IO, ::TestActorStreamUncheckedData)
-    print(io, "TestActorStreamUncheckedData()")
+struct TestActorStreamUncheckedData <: Exception
+    actor :: TestActor
 end
 
-struct TestActorStreamUncheckedError <: Exception end
-
-function Base.show(io::IO, ::TestActorStreamUncheckedError)
-    print(io, "TestActorStreamUncheckedError()")
+function Base.show(io::IO, exception::TestActorStreamUncheckedData)
+    print(io, "Some data hasn't been checked, ensure test values contains this values: ", map(e -> e.data, filter(e -> e.is_checked, data(exception.actor))))
 end
 
-struct TestActorStreamUncheckedCompletion <: Exception end
+struct TestActorStreamUncheckedError <: Exception
+    actor :: TestActor
+end
 
-function Base.show(io::IO, ::TestActorStreamUncheckedCompletion)
-    print(io, "TestActorStreamUncheckedCompletion()")
+function Base.show(io::IO, exception::TestActorStreamUncheckedError)
+    print(io, "Stream sends error event, but it hasn't been checked. Ensure test values contains error marker 'e' with err = ", Base.first(errors(exception.actor)).err)
+end
+
+struct TestActorStreamUncheckedCompletion <: Exception
+    actor :: TestActor
+end
+
+function Base.show(io::IO, exception::TestActorStreamUncheckedCompletion)
+    print(io, "Stream sends complete event, but it hasn't been checked. Ensure test values contains complete marker 'c'")
 end

@@ -1,83 +1,54 @@
 # Utility helpers for testing operators
-export run_testset
+export run_testset, @ts
 
 using Rocket
 using Test
 
-const TESTSET_SYNC_MAXIMUM_TIMEOUT = 60000 # 60 sec
+import Rocket: test_on_source
+import Rocket: @ts
 
-make_test_actor(::Type{T}) where T = sync(test_actor(T), timeout = TESTSET_SYNC_MAXIMUM_TIMEOUT)
+const TESTSET_MAXIMUM_TIMEOUT = 5000 # 5 sec
+const TESTSET_MAXIMUM_COMPILATION_TIMEOUT = 5000 # 5 sec
 
-# [ WIP ]
-# function testset_parameters(tuple::NamedTuple{V, T}) where { V, T <: Tuple }
-#     parameters = Dict([
-#         (:source, nothing),
-#         (:values, []),
-#         (:is_completed, true),
-#         (:is_failed, false),
-#         (:error, nothing),
-#         (:wait_for, TESTSET_SYNC_MAXIMUM_TIMEOUT),
-#     ])
-#
-#     for key in V
-#         parameters[key] = tuple[key]
-#     end
-#
-#     return parameters
-# end
+function testset_parameters(testset::NamedTuple{V, T}) where { V, T <: Tuple }
+    parameters = Dict([
+        (:source, nothing),
+        (:values, nothing),
+        (:wait_for, TESTSET_MAXIMUM_TIMEOUT),
+        (:throws, nothing),
+        (:source_type, Any)
+    ])
 
-function test(testset::NamedTuple{(:source, :values), Tuple{ S, V }}) where { L, T <: L, S <: Subscribable{T}, V <: Vector{L} }
-    actor = make_test_actor(T)
+    for key in V
+        parameters[key] = testset[key]
+    end
 
-    subscribe!(testset[:source], actor)
+    return parameters
+end
 
-    wait(actor)
+function test(testset)
+    parameters = testset_parameters(testset)
 
-    @test check_isvalid(actor.actor)
-    @test iscompleted(actor.actor)
-    @test !isfailed(actor.actor)
-    @test check_data_equals(actor.actor, testset[:values])
+    # Force JIT compilation of all statements before actual test execution
+    # Iffy approach, TODO
+    try
+        test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, TESTSET_MAXIMUM_COMPILATION_TIMEOUT))
+    catch _
+    end
+
+    if parameters[:source] === nothing
+        error("Missing :source field in the testset")
+    elseif parameters[:throws] !== nothing
+        @test_throws parameters[:throws] test_on_source(parameters[:source], parameters[:values]; maximum_wait = parameters[:wait_for])
+    else
+        @test test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, parameters[:wait_for]))
+    end
+
+    if parameters[:source_type] !== Any
+        @test subscribable_extract_type(parameters[:source]) === parameters[:source_type]
+    end
 
     return true
-end
-
-function test(testset::NamedTuple{(:source, :values, :is_completed, :wait_for), Tuple{ S, V, Bool, Int }}) where { L, T <: L, S <: Subscribable{T}, V <: Vector{L} }
-    if testset[:is_completed] === true
-        test((source = testset[:source], values = source = testset[:values]))
-    else
-        actor = make_test_actor(T)
-
-        subscribe!(testset[:source], actor)
-
-        sleep(testset[:wait_for] / MILLISECONDS_IN_SECOND)
-
-        @test check_isvalid(actor.actor)
-        @test !iscompleted(actor.actor)
-        @test !isfailed(actor.actor)
-        @test check_data_equals(actor.actor, testset[:values])
-
-        return true
-    end
-end
-
-function test(testset::NamedTuple{(:source, :values, :is_failed, :error), Tuple{ S, V, Bool, E }}) where { L, T <: L, S <: Subscribable{T}, V <: Vector{L}, E }
-    if testset[:is_failed] === false
-        test((source = testset[:source], values = testset[:values]))
-    else
-        actor = make_test_actor(T)
-
-        subscribe!(testset[:source], actor)
-
-        wait(actor)
-
-        @test check_isvalid(actor.actor)
-        @test !iscompleted(actor.actor)
-        @test isfailed(actor.actor)
-        @test check_data_equals(actor.actor, testset[:values])
-        @test check_error_equals(actor.actor, testset[:error])
-
-        return true
-    end
 end
 
 function run_testset(testsets)

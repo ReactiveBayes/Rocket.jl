@@ -3,6 +3,8 @@ module RocketTestActorTest
 using Test
 using Rocket
 
+import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, check_data_equals, check_error_equals
+
 @testset "TestActor" begin
 
     @testset begin
