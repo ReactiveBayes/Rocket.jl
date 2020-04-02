@@ -66,7 +66,7 @@ function on_next!(actor::MinActor{L}, data::L) where L
 end
 
 function on_error!(actor::MinActor, err)
-    error!(actor.actor, error)
+    error!(actor.actor, err)
 end
 
 function on_complete!(actor::MinActor)

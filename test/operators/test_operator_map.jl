@@ -3,28 +3,43 @@ module RocketMapOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: map()" begin
 
-    @testset begin
-        source = from(1:5) |> map(Int, d -> d ^ 2)
-        actor  = keep(Int)
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 1, 4, 9, 16, 25 ]
-    end
-
-    @testset begin
-        source = timer(1, 1) |> take(5) |> map(Int, d -> d ^ 2)
-        actor  = keep(Int)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        wait(synced)
-
-        @test actor.values == [ 0, 1, 4, 9, 16 ]
-    end
+    run_testset([
+        (
+            source      = from(1:5) |> map(Int, d -> d ^ 2),
+            values      = @ts([ 1, 4, 9, 16, 25 ] ~ c),
+            source_type = Int
+        ),
+        (
+            source      = from(1:5) |> map(Float64, d -> convert(Float64, d)),
+            values      = @ts([ 1.0, 2.0, 3.0, 4.0, 5.0 ] ~ c),
+            source_type = Float64
+        ),
+        (
+            source      = throwError("e", Int) |> map(String, d -> string(d)),
+            values      = @ts(e("e")),
+            source_type = String
+        ),
+        (
+            source      = never() |> map(Int, d -> 1),
+            values      = @ts(),
+            source_type = Int
+        ),
+        (
+            source      = from(1:5) |> map(Int, d -> 1.0), # Invalid output: Float64 instead of Int
+            values      = @ts(),
+            source_type = Int,
+            throws      = Exception
+        ),
+        (
+            source      = from(1:5) |> safe() |> map(Int, d -> 1.0), # Invalid output: Float64 instead of Int
+            values      = @ts(e),
+            source_type = Int
+        )
+    ])
 
 end
 

@@ -3,45 +3,41 @@ module RocketRerunOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: rerun()" begin
 
-    @testset begin
-        source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> rerun(3)
-        actor  = keep(Int)
+    run_testset([
+        (
+            source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? throw(4) : d) |> rerun(3),
+            values = @ts([ 1:3, 1:3, 1:3, 1:3 ] ~ e(4))
+        ),
+        (
+            source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? throw(4) : d) |> rerun(3) |> take(6),
+            values = @ts([ 1:3, 1:3 ] ~ c)
+        ),
+        (
+            source = timer(10, 10) |> safe() |> map(Int, (d) -> d > 2 ? throw("d") : d) |> rerun(2),
+            values = @ts(10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [2] ~ 10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [2] ~ 10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [2] ~ e("d"))
+        ),
+        (
+            source = timer(10, 10) |> safe() |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2),
+            values = @ts(10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [0] ~ 10 ~ [1] ~ e("2"))
+        ),
+        (
+            source = completed() |> rerun(2),
+            values = @ts(c)
+        ),
+        (
+            source      = throwError("e") |> rerun(2),
+            values      = @ts(e("e")),
+        ),
+        (
+            source = never() |> rerun(2),
+            values = @ts()
+        )
+    ])
 
-        @test_throws ErrorException subscribe!(source, actor)
-        @test actor.values == [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3]
-    end
-
-    @testset begin
-        values  = []
-        source = timer(0, 1) |> safe() |> map(Int, (d) -> d > 2 ? error("d") : d) |> rerun(2)
-        actor  = sync(lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(values, e),
-            on_complete = ()  -> push!(values, "completed")
-        ))
-
-        subscribe!(source, actor)
-        wait(actor)
-
-        @test values == [0, 1, 2, 0, 1, 2, 0, 1, 2, ErrorException("d")]
-    end
-
-    @testset begin
-        values = []
-        source = timer(0, 1) |> safe() |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2)
-        actor  = sync(lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(values, e),
-            on_complete = ()  -> push!(values, "completed")
-        ))
-
-        subscribe!(source, actor)
-        wait(actor)
-
-        @test values == [0, 1, 0, 1, 0, 1, "2"]
-    end
 end
 
 end

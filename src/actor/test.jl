@@ -161,6 +161,8 @@ end
 function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, actor) where T
     actor = actor === nothing ? test_actor(T) : actor
 
+    is_completed = false
+
     task = @task begin
         try
             subscribe!(source |> safe() |> catch_error((err, obs) -> begin error!(actor, err); never(subscribable_extract_type(obs)) end), actor)
@@ -168,8 +170,6 @@ function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, acto
             error!(actor, err)
         end
     end
-
-    is_completed = false
 
     wakeup = @task begin
         timedwait(() -> is_completed, maximum_wait / MILLISECONDS_IN_SECOND; pollint = 0.5)
@@ -371,6 +371,14 @@ macro ts(expr)
         return [ e ]
     end
 
+    function to_value(e::Symbol)
+        if e === :nothing
+            return [ nothing ]
+        end
+
+        error("Invalid usage of @ts macro: to_value(Symbol = $e)")
+    end
+
     function to_value(e::Expr)
         if e.head === :call && e.args[1] === Symbol(":")
             return collect(e.args[2]:e.args[3])
@@ -380,7 +388,7 @@ macro ts(expr)
             return [ (e.args..., ) ]
         end
 
-        error("Invalid usage of @ts macro")
+        error("Invalid usage of @ts macro: to_value(Expr = $e)")
     end
 
     function lookup_tree(expr::Expr)

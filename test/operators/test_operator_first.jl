@@ -3,50 +3,44 @@ module RocketFirstOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: first()" begin
 
-    @testset begin
-        source = from(1:42) |> first()
-        actor  = keep(Int)
+    run_testset([
 
-        subscribe!(source, actor)
-
-        @test actor.values == [ 1 ]
-    end
-
-    @testset begin
-        source = interval(1) |> first()
-        actor  = keep(Int)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        wait(synced)
-
-        @test actor.values == [ 0 ]
-    end
-
-    @testset begin
-        source = completed(Int) |> first()
-
-        values      = Int[]
-        errors      = []
-        completions = Int[]
-
-        subscribe!(source, lambda(
-            on_next     = d -> push!(values, d),
-            on_error    = e -> push!(errors, e),
-            on_complete = () -> push!(completions, 1)
-        ))
-
-        @test isempty(values)      === true
-        @test isempty(errors)      === false
-        @test isempty(completions) === true
-
-        @test length(errors) === 1
-
-        @test errors[1] isa FirstNotFoundException
-    end
+        (
+            source = from(1:42) |> first(),
+            values = @ts([ 1 ] ~ c)
+        ),
+        (
+            source = timer(50) |> first(),
+            values = @ts(50 ~ [ 0 ] ~ c)
+        ),
+        (
+            source = completed() |> first(),
+            values = @ts(e(FirstNotFoundException()))
+        ),
+        (
+            source      = completed(Int) |> first(default = "String"),
+            values      = @ts([ "String" ] ~ c),
+            source_type = Union{Int, String}
+        ),
+        (
+            source      = throwError("e", Int) |> first(),
+            values      = @ts(e("e")),
+            source_type = Union{Int}
+        ),
+        (
+            source      = throwError("e", Int) |> first(default = "String"),
+            values      = @ts(e("e")),
+            source_type = Union{Int, String}
+        ),
+        (
+            source = never() |> first(),
+            values = @ts()
+        )
+    ])
 
 end
 

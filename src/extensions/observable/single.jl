@@ -6,7 +6,7 @@ export combineLatest
 
 # Speficic method for map operator over SingleObservable
 function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R}, source::SingleObservable{L}) where L where R
-    return of(operator.mappingFn(source.value))
+    return of(convert(R, operator.mappingFn(source.value)))
 end
 
 # Speficic method for filter operator over SingleObservable

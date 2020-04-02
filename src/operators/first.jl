@@ -1,15 +1,18 @@
-export FirstNotFoundException, first
+export first, FirstNotFoundException
 
 import Base: first
 
 struct FirstNotFoundException <: Exception end
 
 """
-    first()
+    first(; default = nothing)
 
 Creates a first operator, which returns an Observable
 that emits only the first value emitted by the source Observable.
 Sends `FirstNotFoundException` error message if a given source completes without emitting a single value.
+
+# Arguments
+- `default`: an optional default value to provide if no values were emitted
 
 # Producing
 
@@ -29,37 +32,6 @@ subscription = subscribe!(source |> first(), logger())
 [LogActor] Completed
 ```
 
-```jldoctest
-using Rocket
-
-source       = completed(Int) |> first()
-
-values      = Int[]
-errors      = []
-completions = Int[]
-
-subscription = subscribe!(source, lambda(
-    on_next     = d -> push!(values, d),
-    on_error    = e -> push!(errors, e),
-    on_complete = () -> push!(completions, 1)
-))
-
-println(isempty(values))
-println(isempty(errors))
-println(isempty(completions))
-println(length(errors))
-println(errors[1] isa FirstNotFoundException)
-;
-
-# output
-
-true
-false
-true
-1
-true
-```
-
 See also: [`take`](@ref), [`logger`](@ref)
 """
-first() = take(1) + error_if_empty(FirstNotFoundException())
+first(; default = nothing) = default === nothing ? take(1) + error_if_empty(FirstNotFoundException()) : take(1) + default_if_empty(default)

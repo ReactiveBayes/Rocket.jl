@@ -3,34 +3,41 @@ module RocketMaxOperatorTest
 using Test
 using Rocket
 
+include("./test_helpers.jl")
+
 @testset "operator: max()" begin
 
-    @testset begin
-        source = from(1:42) |> max()
-        actor  = keep(Union{Int, Nothing})
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 42 ]
-    end
-
-    @testset begin
-        source = completed(Int) |> min()
-        actor  = keep(Union{Int, Nothing})
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ nothing ]
-    end
-
-    @testset begin
-        source = from(1:5) |> max(from = 100)
-        actor  = keep(Union{Int, Nothing})
-
-        subscribe!(source, actor)
-
-        @test actor.values == [ 100 ]
-    end
+    run_testset([
+        (
+            source      = from(1:42) |> max(),
+            values      = @ts([ 42 ] ~ c),
+            source_type = Union{Int, Nothing}
+        ),
+        (
+            source      = from(1:42) |> max(from = 100),
+            values      = @ts([ 100 ] ~ c),
+            source_type = Union{Int, Nothing}
+        ),
+        (
+            source      = from(1:42) |> max() |> some(),
+            values      = @ts([ 42 ] ~ c),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> max(),
+            values      = @ts([ nothing ] ~ c),
+            source_type = Union{Int, Nothing}
+        ),
+        (
+            source      = throwError("e", String) |> max(),
+            values      = @ts(e("e")),
+            source_type = Union{Nothing, String}
+        ),
+        (
+            source = never() |> max(),
+            values = @ts()
+        )
+    ])
 
 end
 
