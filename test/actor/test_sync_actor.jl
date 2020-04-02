@@ -35,23 +35,23 @@ using Rocket
         @test values == [ 0, 1, 2, 3, 4 ]
     end
 
-    @testset begin
-        values = Int[]
-
-        factory  = lambda(on_next = (d) -> push!(values, d))
-        synced   = sync(factory)
-
-        subscribe!(interval(1) |> take(5), synced)
-        subscribe!(interval(1) |> take(5), synced)
-
-        wait(synced)
-
-        subscribe!(interval(1) |> take(5), synced)
-
-        wait(synced)
-
-        @test values == [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1, 2, 3, 4]
-    end
+    # @testset begin
+    #     values = Int[]
+    #
+    #     factory  = lambda(on_next = (d) -> push!(values, d))
+    #     synced   = sync(factory)
+    #
+    #     subscribe!(interval(1) |> take(5), synced)
+    #     subscribe!(interval(1) |> take(5), synced)
+    #
+    #     wait(synced)
+    #
+    #     subscribe!(interval(1) |> take(5), synced)
+    #
+    #     wait(synced)
+    #
+    #     @test values == [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1, 2, 3, 4]
+    # end
 
     @testset begin
         source = never(Int)

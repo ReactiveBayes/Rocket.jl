@@ -38,12 +38,13 @@ subscribe!(source |> last(), logger())
 using Rocket
 
 source = from(Int[])
-subscribe!(source |> last(), logger())
+subscribe!(source |> last() |> catch_error((err, obs) -> of(1)), logger())
 ;
 
 # output
 
-[LogActor] Error: LastNotFoundException()
+[LogActor] Data: 1
+[LogActor] Completed
 ```
 
 ```jldoctest

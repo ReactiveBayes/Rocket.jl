@@ -27,7 +27,7 @@ include("./test_helpers.jl")
             source      = never(Int) |> error_if_empty("Empty"),
             values      = @ts(),
             source_type = Int
-        )
+        ),
         (
             source      = completed(Int) |> error_if_empty("Empty") |> catch_error((d, obs) -> of(1)),
             values      = @ts([ 1 ] ~ c),

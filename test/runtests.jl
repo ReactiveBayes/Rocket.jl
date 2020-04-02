@@ -39,6 +39,7 @@ doctest(Rocket)
     include("./subjects/types/test_subject_replay.jl")
 
     include("./test_operator.jl")
+    include("./operators/test_operator_async.jl")
     include("./operators/test_operator_map.jl")
     include("./operators/test_operator_map_to.jl")
     include("./operators/test_operator_scan.jl")

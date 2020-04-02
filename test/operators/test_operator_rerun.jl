@@ -17,12 +17,12 @@ include("./test_helpers.jl")
             values = @ts([ 1:3, 1:3 ] ~ c)
         ),
         (
-            source = timer(10, 10) |> safe() |> map(Int, (d) -> d > 2 ? throw("d") : d) |> rerun(2),
-            values = @ts(10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [2] ~ 10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [2] ~ 10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [2] ~ e("d"))
+            source = timer(100, 30) |> safe() |> map(Int, (d) -> d > 2 ? throw("d") : d) |> rerun(1),
+            values = @ts(100 ~ [0] ~ 30 ~ [1] ~ 30 ~ [2] ~ 30 ~ [0] ~ 30 ~ [1] ~ 30 ~ [2] ~ e("d"))
         ),
         (
-            source = timer(10, 10) |> safe() |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2),
-            values = @ts(10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [0] ~ 10 ~ [1] ~ 10 ~ [0] ~ 10 ~ [1] ~ e("2"))
+            source = timer(100, 30) |> safe() |> switchMap(Int, (d) -> d > 1 ? throwError("$d", Int) : of(d)) |> rerun(2),
+            values = @ts(100 ~ [0] ~ 30 ~ [1] ~ 30 ~ [0] ~ 30 ~ [1] ~ 30 ~ [0] ~ 30 ~ [1] ~ e("2"))
         ),
         (
             source = completed() |> rerun(2),
