@@ -3,6 +3,8 @@ module RocketCompleteObservableTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "CompletedObservable" begin
 
     @testset begin
@@ -10,25 +12,12 @@ using Rocket
         @test completed(Int) == CompletedObservable{Int}()
     end
 
-    @testset begin
-        values      = Vector{Int}()
-        errors      = Vector{Any}()
-        completions = Vector{Int}()
-
-        actor  = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
+    run_testset([
+        (
+            source = completed(),
+            values = @ts(c)
         )
-
-        source = completed(Int)
-
-        subscribe!(source, actor)
-
-        @test values      == [ ]
-        @test errors      == [ ]
-        @test completions == [ 0 ]
-    end
+    ])
 
 end
 

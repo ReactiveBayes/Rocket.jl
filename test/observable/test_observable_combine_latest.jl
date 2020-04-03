@@ -3,25 +3,36 @@ module RocketCombineLatestObservableTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "CombineLatestObservable" begin
 
     @testset begin
         @test_throws ErrorException combineLatest()
     end
 
-    @testset begin
-        latest = combineLatest(of(1), from(1:5))
-        actor  = keep(Tuple{Int, Int})
-        subscribe!(latest, actor)
-        @test actor.values == [ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5) ]
-    end
-
-    @testset begin
-        latest = combineLatest(from(1:5), of(2))
-        actor  = keep(Tuple{Int, Int})
-        subscribe!(latest, actor)
-        @test actor.values == [ (5, 2) ]
-    end
+    run_testset([
+        (
+            source = combineLatest(of(1), from(1:5)),
+            values = @ts([ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), c ]),
+            source_type = Tuple{Int, Int}
+        ),
+        (
+            source = combineLatest(of(1) |> async(), from(1:5)),
+            values = @ts([ (1, 5) ] ~ c),
+            source_type = Tuple{Int, Int}
+        ),
+        (
+            source = combineLatest(from(1:5), of(2.0)),
+            values = @ts([ (5, 2), c ]),
+            source_type = Tuple{Int, Float64}
+        ),
+        (
+            source = combineLatest(from(1:5) |> async(), of(2.0)),
+            values = @ts([ (1, 2.0) ] ~ [ (2, 2.0) ] ~ [ (3, 2.0) ] ~ [ (4, 2.0) ] ~ [ (5, 2.0) ] ~ c),
+            source_type = Tuple{Int, Float64}
+        )
+    ])
 
     @testset begin
         s1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)

@@ -3,7 +3,7 @@ module RocketDefaultIfEmptyOperatorTest
 using Test
 using Rocket
 
-include("./test_helpers.jl")
+include("../test_helpers.jl")
 
 @testset "operator: default_if_empty()" begin
 

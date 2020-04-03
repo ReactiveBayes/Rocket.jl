@@ -3,7 +3,7 @@ module RocketSafeOperatorTest
 using Test
 using Rocket
 
-include("./test_helpers.jl")
+include("../test_helpers.jl")
 
 @testset "operator: safe()" begin
 

@@ -3,61 +3,24 @@ module RocketTimerObservableTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "TimerObservable" begin
 
     @testset begin
         @test timer(100, 100) == Rocket.TimerObservable{100, 100}()
     end
 
-    @testset begin
-        values      = Vector{Int}()
-        errors      = Vector{Any}()
-        completions = Vector{Int}()
-
-        actor  = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
+    run_testset([
+        (
+            source = timer(100, 30) |> take(3),
+            values = @ts(100 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2, c ] )
+        ),
+        (
+            source = timer(100),
+            values = @ts(100 ~ [ 0, c ])
         )
-
-        source = timer(100, 10) |> take(5)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        yield()
-
-        wait(synced)
-
-        @test values      == [ 0, 1, 2, 3, 4 ]
-        @test errors      == [ ]
-        @test completions == [ 0 ]
-    end
-
-    @testset begin
-        values      = Vector{Int}()
-        errors      = Vector{Any}()
-        completions = Vector{Int}()
-
-        actor  = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
-        )
-
-        source = timer(10) |> take(5)
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        yield()
-
-        wait(synced)
-
-        @test values      == [ 0 ]
-        @test errors      == [ ]
-        @test completions == [ 0 ]
-    end
+    ])
 
 end
 

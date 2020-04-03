@@ -3,6 +3,8 @@ module RocketArrayObservableTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "ArrayObservable" begin
 
     @testset begin
@@ -16,26 +18,47 @@ using Rocket
 
         @test from("Hello!") == ArrayObservable{Char}([ 'H', 'e', 'l', 'l', 'o', '!' ])
         @test from('H')      == ArrayObservable{Char}([ 'H' ])
+
+        @test_throws Exception from()
     end
 
-    @testset begin
-        values      = Vector{Int}()
-        errors      = Vector{Any}()
-        completions = Vector{Int}()
-
-        actor  = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
+    run_testset([
+        (
+            source = from([ 1, 2, 3 ]),
+            values = @ts([ 1, 2, 3, c ]),
+            source_type = Int
+        ),
+        (
+            source = from(1),
+            values = @ts([ 1, c ]),
+            source_type = Int
+        ),
+        (
+            source = from("Hello!"),
+            values = @ts([ 'H', 'e', 'l', 'l', 'o', '!', c ]),
+            source_type = Char
+        ),
+        (
+            source = from('H'),
+            values = @ts([ 'H', c ]),
+            source_type = Char
+        ),
+        (
+            source = from("H"),
+            values = @ts([ 'H', c ]),
+            source_type = Char
+        ),
+        (
+            source = from("H"),
+            values = @ts([ 'H', c ]),
+            source_type = Char
+        ),
+        (
+            source = from((0, 1, 2)),
+            values = @ts([ 0, 1, 2, c ]),
+            source_type = Int
         )
-
-        source = from([ 1, 2, 3 ])
-
-        subscribe!(source, actor)
-        @test values      == [ 1, 2, 3 ]
-        @test errors      == [ ]
-        @test completions == [ 0 ]
-    end
+    ])
 
 end
 

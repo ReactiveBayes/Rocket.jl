@@ -24,7 +24,6 @@ using Rocket
     Rocket.on_complete!(actor::MyActor)                 = complete!(actor.actor)
 
     @testset begin
-
         source = proxy(Int, from(1:5), MyActorProxy{Int}())
         actor  = keep(Int)
 

@@ -3,47 +3,57 @@ module RocketFunctionObservableTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "FunctionObservable" begin
 
-    @testset begin
-        source  = make(Int) do actor
+    source1 = make(Int) do actor
+        complete!(actor)
+    end
+
+    source2 = make(Float64) do actor
+        setTimeout(100) do
             complete!(actor)
         end
-
-        @test source isa FunctionObservable{Int}
     end
 
-    @testset begin
-        values      = Vector{Int}()
-        errors      = Vector{Any}()
-        completions = Vector{Int}()
-
-        actor  = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
-        )
-
-        source = make(Int) do actor
-            next!(actor, 1)
-            next!(actor, 2)
-            next!(actor, 3)
-            setTimeout(1) do
-                next!(actor, 4)
-                complete!(actor)
-            end
+    source3 = make(Int) do actor
+        next!(actor, 1)
+        setTimeout(100) do
+            complete!(actor)
         end
-
-        synced = sync(actor)
-
-        subscribe!(source, synced)
-
-        wait(synced)
-
-        @test values      == [ 1, 2, 3, 4 ]
-        @test errors      == [ ]
-        @test completions == [ 0 ]
     end
+
+    source4 = make(Int) do actor
+        next!(actor, 1)
+        setTimeout(100) do
+            next!(actor, 2)
+            complete!(actor)
+        end
+    end
+
+    run_testset([
+        (
+            source = source1,
+            values = @ts(c),
+            source_type = Int
+        ),
+        (
+            source = source2,
+            values = @ts(100 ~ c),
+            source_type = Float64
+        ),
+        (
+            source = source3,
+            values = @ts([ 1 ] ~ 100 ~ c),
+            source_type = Int
+        ),
+        (
+            source = source4,
+            values = @ts([ 1 ] ~ 100 ~ [ 2, c ]),
+            source_type = Int
+        )
+    ])
 
 end
 

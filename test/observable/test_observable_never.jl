@@ -3,6 +3,8 @@ module RocketNeverObservableTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "NeverObservable" begin
 
     @testset begin
@@ -10,25 +12,12 @@ using Rocket
         @test never(Int) == NeverObservable{Int}()
     end
 
-    @testset begin
-        values      = Vector{Int}()
-        errors      = Vector{Any}()
-        completions = Vector{Int}()
-
-        actor  = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
+    run_testset([
+        (
+            source = never(),
+            values = @ts()
         )
-
-        source = never(Int)
-
-        subscribe!(source, actor)
-
-        @test values      == [ ]
-        @test errors      == [ ]
-        @test completions == [ ]
-    end
+    ])
 
 end
 
