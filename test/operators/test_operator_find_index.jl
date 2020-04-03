@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source      = from(0:5) |> find_index(d -> d !== 0 && d % 2 == 0),
-            values      = @ts([ 3 ] ~ c),
+            values      = @ts([ 3, c ]),
             source_type = Int
         ),
         (
@@ -20,7 +20,7 @@ include("./test_helpers.jl")
         ),
         (
             source      = of("Something") |> find_index(d -> true),
-            values      = @ts([ 1 ] ~ c),
+            values      = @ts([ 1, c ]),
             source_type = Int
         ),
         (

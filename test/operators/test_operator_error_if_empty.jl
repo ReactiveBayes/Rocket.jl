@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source      = from(1:5) |> error_if_empty("Empty"),
-            values      = @ts([ 1:5 ] ~ c),
+            values      = @ts([ 1:5, c ]),
             source_type = Int
         ),
         (
@@ -30,7 +30,7 @@ include("./test_helpers.jl")
         ),
         (
             source      = completed(Int) |> error_if_empty("Empty") |> catch_error((d, obs) -> of(1)),
-            values      = @ts([ 1 ] ~ c),
+            values      = @ts([ 1, c ]),
             source_type = Int
         )
     ])

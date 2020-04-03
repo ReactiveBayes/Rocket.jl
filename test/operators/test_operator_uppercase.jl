@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from("Hello, world") |> uppercase(),
-            values = @ts(['H', 'E', 'L', 'L', 'O', ',', ' ', 'W', 'O', 'R', 'L', 'D'] ~ c)
+            values = @ts(['H', 'E', 'L', 'L', 'O', ',', ' ', 'W', 'O', 'R', 'L', 'D', c])
         ),
         (
             source = completed() |> uppercase(),

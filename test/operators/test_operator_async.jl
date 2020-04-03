@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5),
-            values = @ts([1, 2, 3, 4, 5] ~ c)
+            values = @ts([1, 2, 3, 4, 5, c])
         ),
         (
             source = from(1:5) |> async(),
@@ -25,7 +25,7 @@ include("./test_helpers.jl")
             values = @ts(e("e")),
         ),
         (
-            source = never() |> uppercase(),
+            source = never() |> async(),
             values = @ts()
         )
     ])

@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source      = from([ 3, 2, 1 ]) |> enumerate(),
-            values      = @ts([ (3, 1), (2, 2), (1, 3) ] ~ c),
+            values      = @ts([ (3, 1), (2, 2), (1, 3), c ]),
             source_type = Tuple{Int, Int}
         ),
         (

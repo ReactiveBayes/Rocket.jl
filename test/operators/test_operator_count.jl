@@ -10,15 +10,15 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:42) |> count(),
-            values = @ts([ 42 ] ~ c)
+            values = @ts([ 42, c ])
         ),
         (
             source = from(1:42) |> async() |> count(),
-            values = @ts([ 42 ] ~ c)
+            values = @ts([ 42, c ])
         ),
         (
             source = completed(Int) |> count(),
-            values = @ts([ 0 ] ~ c)
+            values = @ts([ 0, c ])
         ),
         (
             source = never(Int) |> count(),

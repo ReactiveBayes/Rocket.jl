@@ -10,12 +10,12 @@ include("./test_helpers.jl")
     run_testset([
         (
             source      = from(1:5) |> map_to('a'),
-            values      = @ts([ 'a', 'a', 'a', 'a', 'a' ] ~ c),
+            values      = @ts([ 'a', 'a', 'a', 'a', 'a', c ]),
             source_type = Char
         ),
         (
             source = timer(0, 10) |> take(3) |> map_to(1),
-            values = @ts([ 1 ] ~ 10 ~ [ 1 ] ~ 10 ~ [ 1 ] ~ c)
+            values = @ts([ 1 ] ~ 10 ~ [ 1 ] ~ 10 ~ [ 1, c ])
         ),
         (
             source      = throwError("e", String) |> map_to(1),

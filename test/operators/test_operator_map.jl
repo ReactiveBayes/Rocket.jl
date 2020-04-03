@@ -10,12 +10,12 @@ include("./test_helpers.jl")
     run_testset([
         (
             source      = from(1:5) |> map(Int, d -> d ^ 2),
-            values      = @ts([ 1, 4, 9, 16, 25 ] ~ c),
+            values      = @ts([ 1, 4, 9, 16, 25, c ]),
             source_type = Int
         ),
         (
             source      = from(1:5) |> map(Float64, d -> convert(Float64, d)),
-            values      = @ts([ 1.0, 2.0, 3.0, 4.0, 5.0 ] ~ c),
+            values      = @ts([ 1.0, 2.0, 3.0, 4.0, 5.0, c ]),
             source_type = Float64
         ),
         (

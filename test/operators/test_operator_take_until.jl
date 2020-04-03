@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> take_until(of(1)),
-            values = @ts([ 1:5 ] ~ c)
+            values = @ts([ 1:5, c ])
         ),
         (
             source = from(1:5) |> async() |> take_until(of(1)),

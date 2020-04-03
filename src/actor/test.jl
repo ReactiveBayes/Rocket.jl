@@ -32,6 +32,7 @@ const TestActorEvent = Union{DataTestEvent, ErrorTestEvent, CompleteTestEvent}
 
 timestamp(event::TestActorEvent)       = event.timestamp
 mark_as_checked(event::TestActorEvent) = event.is_checked = true
+is_checked(event::TestActorEvent)      = event.is_checked
 
 struct TestActor <: Actor{Any}
     allowed_type :: Type
@@ -203,18 +204,24 @@ function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, acto
 
     yield()
 
-    test_against(actor, TestActorLastTest())
+    test_against(actor, TestActorEveryStepVerificationTest())
 
     is_completed = true
 
     return true
 end
 
-struct TestActorLastTest end
+struct TestActorEmptyTest end
 
-get_next(::TestActorLastTest) = nothing
+get_next(::TestActorEmptyTest) = nothing
 
-function test_against(actor::TestActor, test::TestActorLastTest)
+test_against(actor::TestActor, test::TestActorEmptyTest) = begin end
+
+struct TestActorEveryStepVerificationTest end
+
+get_next(::TestActorEveryStepVerificationTest) = nothing
+
+function test_against(actor::TestActor, test::TestActorEveryStepVerificationTest)
     check_isvalid(actor)
 
     all(e -> e.is_checked, data(actor)) || throw(TestActorStreamUncheckedData(actor))
@@ -251,9 +258,16 @@ function test_against(actor::TestActor, test::TestActorErrorTest)
         end
     end
 
+    if is_checked(Base.last(errors(actor)))
+        throw(TestActorStreamErrorDoubleCheckException())
+    end
+
     __check_time_passed(actor, test)
 
     foreach((e) -> mark_as_checked(e), errors(actor))
+
+    test_against(actor, TestActorEveryStepVerificationTest())
+
     return true
 end
 
@@ -276,9 +290,16 @@ function test_against(actor::TestActor, test::TestActorCompleteTest)
         throw(TestActorStreamMissingExpectedCompletionException())
     end
 
+    if is_checked(Base.last(completes(actor)))
+        throw(TestActorStreamCompletionDoubleCheckException())
+    end
+
     __check_time_passed(actor, test)
 
     foreach((e) -> mark_as_checked(e), completes(actor))
+
+    test_against(actor, TestActorEveryStepVerificationTest())
+
     return true
 end
 
@@ -286,6 +307,7 @@ struct TestActorStreamValuesTest
     starts_from :: Int
     time_passed :: Int
     expected    :: Vector{Any}
+    after_test  :: Any
     next        :: Any
 end
 
@@ -308,6 +330,9 @@ function test_against(actor::TestActor, test::TestActorStreamValuesTest)
     __check_time_passed(actor, test)
 
     foreach((e) -> mark_as_checked(e), data(actor)[ test.starts_from:end ])
+
+    test_against(actor, test.after_test)
+    test_against(actor, TestActorEveryStepVerificationTest())
 
     return true
 end
@@ -333,20 +358,20 @@ function __check_time_passed(actor::TestActor, test)
 end
 
 __add_starts_from(test::Nothing, count::Int) = nothing
-__add_starts_from(test::TestActorLastTest, count::Int) = test
+__add_starts_from(test::TestActorEveryStepVerificationTest, count::Int) = test
 __add_starts_from(test::TestActorErrorTest, count::Int) = test
 __add_starts_from(test::TestActorCompleteTest, count::Int) = test
 
-function __add_starts_from(test::TestActorStreamValuesTest, count::Int)
-    return TestActorStreamValuesTest(test.starts_from + count, test.time_passed, test.expected, __add_starts_from(test.next, count))
+function __add_starts_from(left::TestActorStreamValuesTest, count::Int)
+    return TestActorStreamValuesTest(left.starts_from + count, left.time_passed, left.expected, left.after_test, __add_starts_from(left.next, count))
 end
 
 function __test_connect(left::TestActorStreamValuesTest, right::TestActorStreamValuesTest)
-    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, __add_starts_from(right, length(left.expected)))
+    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, left.after_test, __add_starts_from(right, length(left.expected)))
 end
 
 function __test_connect(left::Int, right::TestActorStreamValuesTest)
-    return TestActorStreamValuesTest(right.starts_from, left, right.expected, right.next)
+    return TestActorStreamValuesTest(right.starts_from, left, right.expected, right.after_test, right.next)
 end
 
 function __test_connect(left::Int, right::TestActorErrorTest)
@@ -358,37 +383,47 @@ function __test_connect(left::Int, right::TestActorCompleteTest)
 end
 
 function __test_connect(left::TestActorStreamValuesTest, right::TestActorErrorTest)
-    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, right)
+    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, left.after_test, right)
 end
 
 function __test_connect(left::TestActorStreamValuesTest, right::TestActorCompleteTest)
-    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, right)
+    return TestActorStreamValuesTest(left.starts_from, left.time_passed, left.expected, left.after_test, right)
 end
 
 macro ts(expr)
 
-    function to_value(e)
-        return [ e ]
+    function process_arg_values!(values, tests, arg)
+        push!(values, arg)
     end
 
-    function to_value(e::Symbol)
-        if e === :nothing
-            return [ nothing ]
+    function process_arg_values!(values, tests, arg::Symbol)
+        if arg === :nothing
+            push!(values, nothing)
+        elseif arg === :e
+            push!(tests, TestActorErrorTest(nothing))
+        elseif arg === :c
+            push!(tests, TestActorCompleteTest())
+        else
+            error("Invalid usage of @ts macro in process_arg_values!(arg = $arg::$(typeof(arg)))")
         end
-
-        error("Invalid usage of @ts macro: to_value(Symbol = $e)")
     end
 
-    function to_value(e::Expr)
-        if e.head === :call && e.args[1] === Symbol(":")
-            return collect(e.args[2]:e.args[3])
-        elseif e.head === :vect
-            return [ collect(e.args) ]
-        elseif e.head === :tuple
-            return [ (e.args..., ) ]
+    function process_arg_values!(values, tests, arg::Expr)
+        if arg.head === :call && arg.args[1] === Symbol(":")
+            push!(values, arg.args[2]:arg.args[3]...)
+        elseif arg.head === :vect
+            push!(values, collect(arg.args))
+        elseif arg.head === :tuple
+            push!(values, (arg.args..., ))
+        elseif arg.head === :call
+            if arg.args[1] === :e
+                push!(tests, TestActorErrorTest(length(arg.args) === 2 ? arg.args[2] : nothing))
+            elseif arg.args[2] === :c
+                push!(tests, TestActorCompleteTest())
+            end
+        else
+            error("Invalid usage of @ts macro in process_arg_values!(arg = $arg::$(typeof(arg)))")
         end
-
-        error("Invalid usage of @ts macro: to_value(Expr = $e)")
     end
 
     function lookup_tree(expr::Expr)
@@ -397,7 +432,18 @@ macro ts(expr)
         elseif expr.head === :call && expr.args[1] === :e
             return Expr(:call, :TestActorErrorTest, length(expr.args) === 2 ? expr.args[2] : nothing)
         elseif expr.head === :vect
-            return Expr(:call, :TestActorStreamValuesTest, 1, -1, collect(Iterators.flatten(map(e -> to_value(e), expr.args))), nothing)
+            tests  = []
+            values = []
+
+            for arg in expr.args
+                process_arg_values!(values, tests, arg)
+            end
+
+            if length(tests) > 1
+                error("Invalid usage of @ts macro: extra e and/or c markers in values array")
+            end
+
+            return Expr(:call, :TestActorStreamValuesTest, 1, -1, values, length(tests) === 1 ? Base.first(tests) : TestActorEmptyTest(), nothing)
         end
 
         error("Invalid usage of @ts macro")
@@ -494,7 +540,7 @@ struct TestActorStreamUncheckedError <: Exception
 end
 
 function Base.show(io::IO, exception::TestActorStreamUncheckedError)
-    print(io, "Stream sends error event, but it hasn't been checked. Ensure test values contains error marker 'e' with err = ", Base.first(errors(exception.actor)).err)
+    print(io, "Stream sends error event, but it hasn't been checked. Ensure test values contains error marker 'e' with err = ", Base.first(errors(exception.actor)).err, " on a right time scale.")
 end
 
 struct TestActorStreamUncheckedCompletion <: Exception
@@ -502,5 +548,17 @@ struct TestActorStreamUncheckedCompletion <: Exception
 end
 
 function Base.show(io::IO, exception::TestActorStreamUncheckedCompletion)
-    print(io, "Stream sends complete event, but it hasn't been checked. Ensure test values contains complete marker 'c'")
+    print(io, "Stream sends complete event, but it hasn't been checked. Ensure test values contains complete marker 'c' on a right time scale.")
+end
+
+struct TestActorStreamErrorDoubleCheckException <: Exception end
+
+function Base.show(io::IO, exception::TestActorStreamErrorDoubleCheckException)
+    print(io, "Error event has been checked twice, ensure there is no mistake in the test stream values")
+end
+
+struct TestActorStreamCompletionDoubleCheckException <: Exception end
+
+function Base.show(io::IO, ::TestActorStreamCompletionDoubleCheckException)
+    print(io, "Complete event has been checked twice, ensure there is no mistake in the test stream values")
 end

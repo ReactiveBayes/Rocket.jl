@@ -73,6 +73,8 @@ mutable struct DelayActor{L, A} <: Actor{L}
                     sleepfor = (item.emmited_at + convert(Float64, self.delay / MILLISECONDS_IN_SECOND)) - time()
                     if sleepfor > 0.0
                         sleep(sleepfor)
+                    else
+                        yield()
                     end
                     if !self.is_cancelled
                         __process_delayed_message(self, item.message)

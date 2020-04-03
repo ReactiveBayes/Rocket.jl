@@ -15,7 +15,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> tap_on_complete(() -> completed1 = true),
-            values = @ts([ 1:5 ] ~ c)
+            values = @ts([ 1:5, c ])
         ),
         (
             source = from(1:5) |> skip_complete() |> tap_on_complete(() -> completed2 = true),

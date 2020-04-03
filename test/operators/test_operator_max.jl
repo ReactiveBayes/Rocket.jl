@@ -10,22 +10,22 @@ include("./test_helpers.jl")
     run_testset([
         (
             source      = from(1:42) |> max(),
-            values      = @ts([ 42 ] ~ c),
+            values      = @ts([ 42, c ]),
             source_type = Union{Int, Nothing}
         ),
         (
             source      = from(1:42) |> max(from = 100),
-            values      = @ts([ 100 ] ~ c),
+            values      = @ts([ 100, c ]),
             source_type = Union{Int, Nothing}
         ),
         (
             source      = from(1:42) |> max() |> some(),
-            values      = @ts([ 42 ] ~ c),
+            values      = @ts([ 42, c ]),
             source_type = Int
         ),
         (
             source      = completed(Int) |> max(),
-            values      = @ts([ nothing ] ~ c),
+            values      = @ts([ nothing, c ]),
             source_type = Union{Int, Nothing}
         ),
         (

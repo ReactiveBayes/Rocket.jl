@@ -10,11 +10,11 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? throw(4) : d) |> rerun(3),
-            values = @ts([ 1:3, 1:3, 1:3, 1:3 ] ~ e(4))
+            values = @ts([ 1:3, 1:3, 1:3, 1:3, e(4) ])
         ),
         (
             source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? throw(4) : d) |> rerun(3) |> take(6),
-            values = @ts([ 1:3, 1:3 ] ~ c)
+            values = @ts([ 1:3, 1:3, c ])
         ),
         (
             source = timer(100, 30) |> safe() |> map(Int, (d) -> d > 2 ? throw("d") : d) |> rerun(1),

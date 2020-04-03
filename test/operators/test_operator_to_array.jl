@@ -10,22 +10,22 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> to_array(),
-            values = @ts([ [ 1, 2, 3, 4, 5 ] ] ~ c),
+            values = @ts([ [ 1, 2, 3, 4, 5 ], c ]),
             source_type = Vector{Int}
         ),
         (
             source = from("Hello, world") |> to_array(),
-            values = @ts([ ['H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'] ] ~ c),
+            values = @ts([ ['H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'], c ]),
             source_type = Vector{Char},
         ),
         (
             source = of('a') |> to_array(),
-            values = @ts([ [ 'a' ] ] ~ c),
+            values = @ts([ [ 'a' ], c ]),
             source_type = Vector{Char}
         ),
         (
             source = completed() |> to_array(),
-            values = @ts([ [] ] ~ c)
+            values = @ts([ [], c ])
         ),
         (
             source = throwError(1) |> to_array(),

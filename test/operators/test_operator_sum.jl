@@ -10,17 +10,17 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:42) |> sum(),
-            values = @ts([ 903 ] ~ c),
+            values = @ts([ 903, c ]),
             source_type = Union{Nothing, Int}
         ),
         (
             source = from(1:42) |> sum(from = 97),
-            values = @ts([ 1000 ] ~ c),
+            values = @ts([ 1000, c ]),
             source_type = Union{Nothing, Int}
         ),
         (
             source = completed() |> sum(),
-            values = @ts([ nothing ] ~ c)
+            values = @ts([ nothing, c ])
         ),
         (
             source = throwError(1) |> sum(),

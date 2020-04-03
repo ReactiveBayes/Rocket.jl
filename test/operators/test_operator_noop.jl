@@ -16,7 +16,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = source,
-            values = @ts([ 1001, 1002, 1003, 1004, 1005 ] ~ c)
+            values = @ts([ 1001, 1002, 1003, 1004, 1005, c ])
         ),
         (
             source = completed() |> noop(),

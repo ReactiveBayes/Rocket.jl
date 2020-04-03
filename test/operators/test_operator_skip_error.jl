@@ -10,7 +10,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> skip_error(),
-            values = @ts([ 1:5 ] ~ c)
+            values = @ts([ 1:5, c ])
         ),
         (
             source = completed() |> skip_error(),

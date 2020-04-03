@@ -10,15 +10,15 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> take(3),
-            values = @ts([ 1:3 ] ~ c)
+            values = @ts([ 1:3, c ])
         ),
         (
             source = from(1:5) |> async() |> take(3),
-            values = @ts([ 1 ] ~ [ 2 ] ~ [ 3 ] ~ c)
+            values = @ts([ 1 ] ~ [ 2 ] ~ [ 3, c ])
         ),
         (
             source = timer(10, 30) |> take(3),
-            values = @ts(10 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2 ] ~ c)
+            values = @ts(10 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2, c ])
         ),
         (
             source = completed() |> take(10),

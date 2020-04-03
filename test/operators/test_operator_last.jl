@@ -11,11 +11,11 @@ include("./test_helpers.jl")
 
         (
             source = from(1:42) |> last(),
-            values = @ts([ 42 ] ~ c)
+            values = @ts([ 42, c ])
         ),
         (
             source = timer(50, 10) |> take(10) |> last(),
-            values = @ts(150 ~ [ 9 ] ~ c)
+            values = @ts(150 ~ [ 9, c ])
         ),
         (
             source = completed() |> last(),
@@ -23,7 +23,7 @@ include("./test_helpers.jl")
         ),
         (
             source      = completed(Int) |> last(default = "String"),
-            values      = @ts([ "String" ] ~ c),
+            values      = @ts([ "String", c ]),
             source_type = Union{Int, String}
         ),
         (

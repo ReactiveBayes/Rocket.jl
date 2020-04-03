@@ -15,7 +15,7 @@ include("./test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> tap_on_subscribe(() -> sideeffects1 = []) |> tap((d) -> push!(sideeffects1, d)),
-            values = @ts([ 1:5 ] ~ c)
+            values = @ts([ 1:5, c ])
         ),
         (
             source = from(1:5) |> tap_on_subscribe(() -> sideeffects2 = []) |> tap((d) -> push!(sideeffects2, d)) |> skip_next(),
