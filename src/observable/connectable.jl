@@ -11,9 +11,9 @@ It subscribes to the source when its `connect` method is called.
 
 See also: [`connect`](@ref), [`Subscribable`](@ref)
 """
-struct ConnectableObservable{D} <: Subscribable{D}
-    subject
-    source
+struct ConnectableObservable{D, J, S} <: Subscribable{D}
+    subject :: J
+    source  :: S
 end
 
 function on_subscribe!(observable::ConnectableObservable, actor)
@@ -48,14 +48,14 @@ connect(c);
 
 See also: [`ConnectableObservable`](@ref), [`connect`](@ref), [`subscribe!`](@ref)
 """
-connectable(subject::J, source::S) where J where S = as_connectable(as_subject(J), as_subscribable(S), subject, source)
+connectable(subject::J, source::S) where { J, S } = as_connectable(as_subject(J), as_subscribable(S), subject, source)
 
 as_connectable(::InvalidSubject,   ::InvalidSubscribable, subject, source)   = throw(InvalidSubjectTraitUsageError(subject))
 as_connectable(::InvalidSubject,   as_subscribable,       subject, source)   = throw(InvalidSubjectTraitUsageError(subject))
 as_connectable(as_subject,         ::InvalidSubscribable, subject, source)   = throw(InvalidSubscribableTraitUsageError(source))
 
-as_connectable(::ValidSubject{D1}, ::ValidSubscribable{D2}, subject, source) where D1 where D2 = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
-as_connectable(::ValidSubject{D},  ::ValidSubscribable{D},  subject, source) where D           = ConnectableObservable{D}(subject, source)
+as_connectable(::ValidSubject{D1}, ::ValidSubscribable{D2}, subject, source)       where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
+as_connectable(::ValidSubject{D},  ::ValidSubscribable{D},  subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
 
 """
     connect(connectable::ConnectableObservable)
@@ -67,7 +67,7 @@ See also: [`connectable`](@ref), [`ConnectableObservable`](@ref)
 """
 connect(connectable::ConnectableObservable) = subscribe!(connectable.source, connectable.subject)
 
-Base.:(==)(c1::ConnectableObservable{D},  c2::ConnectableObservable{D})  where D           = c1.subject == c2.subject && c1.source == c2.source
-Base.:(==)(c1::ConnectableObservable{D1}, c2::ConnectableObservable{D2}) where D1 where D2 = false
+Base.:(==)(c1::ConnectableObservable{D},  c2::ConnectableObservable{D})  where { D      } = c1.subject == c2.subject && c1.source == c2.source
+Base.:(==)(c1::ConnectableObservable{D1}, c2::ConnectableObservable{D2}) where { D1, D2 } = false
 
 Base.show(io::IO, observable::ConnectableObservable{D}) where D = print(io, "ConnectableObservable($D)")

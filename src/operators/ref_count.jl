@@ -103,7 +103,7 @@ function on_unsubscribe!(subscription::RefCountSourceSubscription)
     end
 end
 
-Base.show(io::IO, operator::RefCountOperator)         = print(io, "RefCountOperator()")
-Base.show(io::IO, proxy::RefCountProxy{L})    where L = print(io, "RefCountProxy($L)")
-Base.show(io::IO, source::RefCountSource{L})  where L = print(io, "RefCountSource($L)")
-Base.show(io::IO, subscription::RefCountSourceSubscription) = print("RefCountSourceSubscription()")
+Base.show(io::IO, operator::RefCountOperator)               = print(io, "RefCountOperator()")
+Base.show(io::IO, proxy::RefCountProxy{L})    where L       = print(io, "RefCountProxy($L)")
+Base.show(io::IO, source::RefCountSource{L})  where L       = print(io, "RefCountSource($L)")
+Base.show(io::IO, subscription::RefCountSourceSubscription) = print(io, "RefCountSourceSubscription()")

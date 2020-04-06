@@ -82,7 +82,7 @@ subscribable_extract_type(source::S) where S = subscribable_extract_type(as_subs
 subscribable_extract_type(::ValidSubscribable{T}, source) where T = T
 subscribable_extract_type(::InvalidSubscribable, source)          = throw(InvalidSubscribableTraitUsageError(source))
 
-Base.eltype(source::S) where { S <: Subscribable } = subscribable_extract_type(source)
+Base.eltype(source::S) where { T, S <: Subscribable{T} } = T
 
 """
     subscribe!(subscribable::T, actor::S) where T where S
