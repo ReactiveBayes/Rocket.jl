@@ -8,6 +8,9 @@ demo/*.jl
 **/*.log
 **/*.synctex.*
 **/*.cov
+**/*.mem
+
+Coverage.ipynb
 
 **/*.DS_Store
 

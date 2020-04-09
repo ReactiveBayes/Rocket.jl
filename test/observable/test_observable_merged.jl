@@ -15,7 +15,7 @@ include("../test_helpers.jl")
         ),
         (
             source = merged((timer(100, 30), of(2.0), from("Hello"))) |> take(10),
-            values = @ts([ 2.0, 'H', 'e', 'l', 'l', 'o' ] ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2 ] ~ 30 ~ [ 3, c ])
+            values = @ts([ 2.0, 'H', 'e', 'l', 'l', 'o' ] ~ [ 0 ] ~ [ 1 ] ~ 30 ~ [ 2 ] ~ 30 ~ [ 3, c ])
         )
     ])
 
