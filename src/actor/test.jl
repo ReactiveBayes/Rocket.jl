@@ -343,7 +343,7 @@ function __check_time_passed(actor::TestActor, test)
         t_event      = time_event(actor, test)
         t_to_compare = time_to_compare(actor, test)
 
-        if !(t_expected * 0.9 < (t_event - t_to_compare) < t_expected * 10.0)
+        if !(t_expected * 0.8 < (t_event - t_to_compare) < t_expected * 10.0)
             throw(TestActorStreamIncorrectStreamTimePassedException((t_event - t_to_compare) / NANOSECONDS_IN_MILLISECOND, time_passed(test)))
         end
     elseif time_passed(test) < 0
