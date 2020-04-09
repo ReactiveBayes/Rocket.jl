@@ -7,7 +7,7 @@ include("../test_helpers.jl")
 
 @testset "operator: take()" begin
 
-    run_proxyshowcheck("Take", take())
+    run_proxyshowcheck("Take", take(1))
 
     run_testset([
         (

@@ -3,6 +3,8 @@ module RocketRefCountOperatorTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "operator: ref_count()" begin
 
     run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(make_subject(Any), never(Any)), check_subscription = true, ))

@@ -3,6 +3,8 @@ module RocketTapOnSubscribeOperatorTest
 using Test
 using Rocket
 
+include("../test_helpers.jl")
+
 @testset "operator: tap_on_subscribe()" begin
 
     run_proxyshowcheck("TapOnSubscribe", tap_on_subscribe(() -> begin end))
