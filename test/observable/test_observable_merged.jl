@@ -14,8 +14,9 @@ include("../test_helpers.jl")
             source_type = Union{Int, Float64}
         ),
         (
-            source = merged(of(2.0), from("Hello"), timer(100, 30)) |> take(10),
-            values = @ts([ 2.0, 'H', 'e', 'l', 'l', 'o' ] ~ 100 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2 ] ~ 30 ~ [ 3, c ])
+            source = merged((of(2.0), from("Hello"), from("World") |> async())) |> take(10),
+            values = @ts([ 2.0, 'H', 'e', 'l', 'l', 'o' ] ~ [ 'W' ] ~ [ 'o' ] ~ [ 'r' ] ~ [ 'l', c ]),
+            source_type = Union{Float64, Char}
         )
     ])
 
