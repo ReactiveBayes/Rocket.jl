@@ -50,4 +50,4 @@ throwError(err, T = Any) = ErrorObservable{T}(err)
 Base.:(==)(e1::ErrorObservable{D},  e2::ErrorObservable{D})  where D           = e1.err == e2.err
 Base.:(==)(e1::ErrorObservable{D1}, e2::ErrorObservable{D2}) where D1 where D2 = false
 
-Base.show(io::IO, observable::ErrorObservable{D}) where D = print(io, "ErrorObservable($D)")
+Base.show(io::IO, ::ErrorObservable{D}) where D = print(io, "ErrorObservable($D)")

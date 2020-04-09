@@ -13,6 +13,20 @@ include("../test_helpers.jl")
         @test of(( 1, 2, 3 ))     == SingleObservable{Tuple{Int, Int, Int}}(( 1, 2, 3 ))
         @test of("Hello, world!") == SingleObservable{String}("Hello, world!")
         @test of('H')             == SingleObservable{Char}('H')
+        @test of('H')             == of('H')
+        @test of(0)               != of(0.0)
+    end
+
+    @testset begin
+        source = of(1)
+        io = IOBuffer()
+
+        show(io, source)
+
+        printed = String(take!(io))
+
+        @test occursin("SingleObservable", printed)
+        @test occursin(string(eltype(source)), printed)
     end
 
     run_testset([

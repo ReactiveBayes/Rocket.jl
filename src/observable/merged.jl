@@ -141,5 +141,5 @@ See also: [`Subscribable`](@ref)
 merged(sources::T) where { T <: Tuple }         = MergeObservable{ Union{ subscribable_extract_type.(sources)... }, T }(sources)
 merged(sources::T) where { T <: AbstractArray } = error("Rocket.merge takes a tuple of sources as an argument, not an array")
 
-Base.show(io::IO, observable::MergeObservable{D}) where D = print(io, "MergeObservable($D)")
-Base.show(io::IO, observable::MergeSubscription)          = print(io, "MergeSubscription()")
+Base.show(io::IO, ::MergeObservable{D}) where D = print(io, "MergeObservable($D)")
+Base.show(io::IO, ::MergeSubscription)          = print(io, "MergeSubscription()")

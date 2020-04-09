@@ -7,6 +7,32 @@ include("../test_helpers.jl")
 
 @testset "FunctionObservable" begin
 
+    @testset begin
+        source = make(Int) do actor
+            next!(actor, 0)
+            complete!(actor)
+        end
+
+        io = IOBuffer()
+
+        show(io, source)
+
+        printed = String(take!(io))
+
+        @test occursin("FunctionObservable", printed)
+        @test occursin(string(eltype(source)), printed)
+
+        subscription = subscribe!(source, void())
+
+        show(io, subscription)
+
+        printed = String(take!(io))
+
+        @test occursin("FunctionObservableSubscription", printed)
+
+        unsubscribe!(subscription)
+    end
+
     source1 = make(Int) do actor
         complete!(actor)
     end
@@ -32,6 +58,14 @@ include("../test_helpers.jl")
         end
     end
 
+    source5 = make(Int) do actor
+        next!(actor, 1)
+        setTimeout(100) do
+            next!(actor, 2)
+            error!(actor, "Error")
+        end
+    end
+
     run_testset([
         (
             source = source1,
@@ -51,6 +85,11 @@ include("../test_helpers.jl")
         (
             source = source4,
             values = @ts([ 1 ] ~ 100 ~ [ 2, c ]),
+            source_type = Int
+        ),
+        (
+            source = source5,
+            values = @ts([ 1 ] ~ 100 ~ [ 2, e("Error") ]),
             source_type = Int
         )
     ])

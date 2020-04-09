@@ -112,6 +112,5 @@ See also: [`FunctionObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 make(f::F, type::Type{D}) where { D, F } = FunctionObservable{D, F}(f)
 
-Base.show(io::IO, observable::FunctionObservable{D}) where D  = print(io, "FunctionObservable($D)")
-Base.show(io::IO, observable::FunctionObservableActorWrapper) = print(io, "FunctionObservableActorWrapper()")
-Base.show(io::IO, observable::FunctionObservableSubscription) = print(io, "FunctionObservableSubscription()")
+Base.show(io::IO, ::FunctionObservable{D}) where D  = print(io, "FunctionObservable($D)")
+Base.show(io::IO, ::FunctionObservableSubscription) = print(io, "FunctionObservableSubscription()")

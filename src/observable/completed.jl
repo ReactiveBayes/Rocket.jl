@@ -44,7 +44,7 @@ See also: [`CompletedObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 completed(T = Any) = CompletedObservable{T}()
 
-Base.:(==)(c1::CompletedObservable{T},  c2::CompletedObservable{T})  where T           = true
-Base.:(==)(c1::CompletedObservable{T1}, c2::CompletedObservable{T2}) where T1 where T2 = false
+Base.:(==)(::CompletedObservable{T},  ::CompletedObservable{T})  where T           = true
+Base.:(==)(::CompletedObservable{T1}, ::CompletedObservable{T2}) where T1 where T2 = false
 
-Base.show(io::IO, observable::CompletedObservable{T}) where T = print(io, "CompletedObservable($T)")
+Base.show(io::IO, ::CompletedObservable{T}) where T = print(io, "CompletedObservable($T)")

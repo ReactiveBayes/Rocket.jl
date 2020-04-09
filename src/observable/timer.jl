@@ -110,5 +110,5 @@ end
 
 Base.:(==)(t1::TimerObservable{D1, P1}, t2::TimerObservable{D2, P2}) where { D1, P1, D2, P2 } = D1 === D2 && P1 === P2
 
-Base.show(io::IO, observable::TimerObservable{Delay, Period}) where { Delay, Period } = print(io, "TimerObservable($Delay, $Period)")
-Base.show(io::IO, subscription::TimerSubscription)                                    = print(io, "TimerSubscription()")
+Base.show(io::IO, ::TimerObservable{Delay, Period}) where { Delay, Period } = print(io, "TimerObservable($Delay, $Period)")
+Base.show(io::IO, ::TimerSubscription)                                      = print(io, "TimerSubscription()")

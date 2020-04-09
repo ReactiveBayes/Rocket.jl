@@ -7,6 +7,33 @@ include("../test_helpers.jl")
 
 @testset "MergeObservable" begin
 
+    @testset begin
+        @test_throws Exception merged([ of(1), of(2.0) ])
+    end
+
+    @testset begin
+        source = merged((of(1), of(2.0)))
+
+        io = IOBuffer()
+
+        show(io, source)
+
+        printed = String(take!(io))
+
+        @test occursin("MergeObservable", printed)
+        @test occursin(string(eltype(source)), printed)
+
+        subscription = subscribe!(source, void())
+
+        show(io, subscription)
+
+        printed = String(take!(io))
+
+        @test occursin("MergeSubscription", printed)
+
+        unsubscribe!(subscription)
+    end
+
     run_testset([
         (
             source = merged((of(1), of(2.0))),

@@ -136,4 +136,4 @@ from(a::Vector{D}) where D = ArrayObservable{D}(a)
 Base.:(==)(left::ArrayObservable{D},  right::ArrayObservable{D})  where D           = left.values == right.values
 Base.:(==)(left::ArrayObservable{D1}, right::ArrayObservable{D2}) where D1 where D2 = false
 
-Base.show(io::IO, observable::ArrayObservable{D}) where D = print(io, "ArrayObservable($D)")
+Base.show(io::IO, ::ArrayObservable{D}) where D = print(io, "ArrayObservable($D)")

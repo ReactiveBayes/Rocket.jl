@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "ArrayObservable" begin
 
+    struct DummyObject end
+
     @testset begin
         @test from([ 1, 2, 3 ]) == ArrayObservable{Int}([ 1, 2, 3 ])
         @test from(( 1, 2, 3 )) == ArrayObservable{Int}([ 1, 2, 3 ])
@@ -19,7 +21,22 @@ include("../test_helpers.jl")
         @test from("Hello!") == ArrayObservable{Char}([ 'H', 'e', 'l', 'l', 'o', '!' ])
         @test from('H')      == ArrayObservable{Char}([ 'H' ])
 
+        @test from(0) != from(0.0)
+
         @test_throws Exception from()
+        @test_throws Exception from(DummyObject())
+    end
+
+    @testset begin
+        source = from(0)
+        io = IOBuffer()
+
+        show(io, source)
+
+        printed = String(take!(io))
+
+        @test occursin("ArrayObservable", printed)
+        @test occursin(string(eltype(source)), printed)
     end
 
     run_testset([
