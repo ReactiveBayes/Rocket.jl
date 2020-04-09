@@ -8,7 +8,6 @@ doctest(Rocket)
 
     include("./test_teardown.jl")
     include("./teardown/test_void_teardown.jl")
-    include("./teardown/test_chain_teardown.jl")
 
     include("./test_actor.jl")
     include("./actor/test_test_actor.jl")

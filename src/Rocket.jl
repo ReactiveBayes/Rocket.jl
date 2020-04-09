@@ -4,7 +4,6 @@ include("utils.jl")
 
 include("teardown.jl")
 include("teardown/void.jl")
-include("teardown/chain.jl")
 
 include("actor.jl")
 include("subscribable.jl")
