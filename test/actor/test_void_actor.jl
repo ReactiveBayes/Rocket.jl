@@ -17,6 +17,12 @@ using Rocket
     end
 
     @testset begin
+        factory = void()
+
+        @test Rocket.create_actor(Int, factory) isa VoidActor{Int}
+    end
+
+    @testset begin
         @test void(Int) isa VoidActor{Int}
         @test void()    isa Rocket.VoidActorFactory
     end

@@ -35,6 +35,32 @@ using Rocket
         @test values == [ 0, 1, 2, 3, 4 ]
     end
 
+    @testset begin
+        completions = []
+
+        factory  = lambda(on_complete = () -> push!(completions, 1))
+        synced   = sync(factory)
+
+        subscribe!(completed(), synced)
+
+        wait(synced)
+
+        @test completions == [ 1 ]
+    end
+
+    @testset begin
+        errors = []
+
+        factory  = lambda(on_error = (d) -> push!(errors, d))
+        synced   = sync(factory)
+
+        subscribe!(throwError("e"), synced)
+
+        wait(synced)
+
+        @test errors == [ "e" ]
+    end
+
     # @testset begin
     #     values = Int[]
     #
@@ -60,6 +86,12 @@ using Rocket
         subscribe!(source, actor)
 
         @test_throws SyncActorTimedOutException wait(actor)
+    end
+
+    struct DummyActor end
+
+    @testset begin
+        @test_throws InvalidActorTraitUsageError sync(DummyActor())
     end
 end
 

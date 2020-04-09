@@ -35,6 +35,45 @@ using Rocket
     end
 
     @testset begin
+        values = []
+        actor  = lambda(Any,
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        )
+
+        next!(actor, 1)
+
+        @test values == [ 1 ]
+    end
+
+    @testset begin
+        values = []
+        actor  = lambda(Any,
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        )
+
+        error!(actor, 'e')
+
+        @test values == [ 'e' ]
+    end
+
+    @testset begin
+        values = []
+        actor  = lambda(Any,
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(values, e),
+            on_complete = ()  -> push!(values, "completed")
+        )
+
+        complete!(actor)
+
+        @test values == [ "completed" ]
+    end
+
+    @testset begin
         n = (d) -> println(d)
         e = (e) -> println(e)
         c = ( ) -> println(0)
