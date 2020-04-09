@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: tap_on_complete()" begin
 
+    run_proxyshowcheck("TapOnComplete", tap_on_complete(() -> begin end))
+
     completed1 = false
     completed2 = false
     completed3 = false

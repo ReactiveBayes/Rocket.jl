@@ -5,6 +5,8 @@ using Rocket
 
 @testset "operator: ref_count()" begin
 
+    run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(make_subject(Any), never(Any)), check_subscription = true, ))
+
     @testset begin
         subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
         source  = from(1:5) |> multicast(subject) |> ref_count()

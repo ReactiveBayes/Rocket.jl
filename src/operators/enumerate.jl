@@ -64,6 +64,6 @@ end
 on_error!(c::EnumerateActor, err) = error!(c.actor, err)
 on_complete!(c::EnumerateActor)   = complete!(c.actor)
 
-Base.show(io::IO, operator::EnumerateOperator)         = print(io, "EnumerateOperator()")
-Base.show(io::IO, proxy::EnumerateProxy{L})    where L = print(io, "EnumerateProxy($L)")
-Base.show(io::IO, actor::EnumerateActor{L})    where L = print(io, "EnumerateActor($L)")
+Base.show(io::IO, ::EnumerateOperator)         = print(io, "EnumerateOperator()")
+Base.show(io::IO, ::EnumerateProxy{L}) where L = print(io, "EnumerateProxy($L)")
+Base.show(io::IO, ::EnumerateActor{L}) where L = print(io, "EnumerateActor($L)")

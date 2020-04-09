@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: enumerate()" begin
 
+    run_proxyshowcheck("Enumerate", enumerate())
+
     run_testset([
         (
             source      = from([ 3, 2, 1 ]) |> enumerate(),

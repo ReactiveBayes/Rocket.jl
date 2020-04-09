@@ -50,6 +50,6 @@ on_next!(actor::SkipErrorActor{L}, data::L) where L = next!(actor.actor, data)
 on_error!(actor::SkipErrorActor, err)               = begin end
 on_complete!(actor::SkipErrorActor)                 = complete!(actor.actor)
 
-Base.show(io::IO, operator::SkipErrorOperator)         = print(io, "SkipErrorOperator()")
-Base.show(io::IO, proxy::SkipErrorProxy{L})    where L = print(io, "SkipErrorProxy($L)")
-Base.show(io::IO, actor::SkipErrorActor{L})    where L = print(io, "SkipErrorActor($L)")
+Base.show(io::IO, ::SkipErrorOperator)         = print(io, "SkipErrorOperator()")
+Base.show(io::IO, ::SkipErrorProxy{L}) where L = print(io, "SkipErrorProxy($L)")
+Base.show(io::IO, ::SkipErrorActor{L}) where L = print(io, "SkipErrorActor($L)")

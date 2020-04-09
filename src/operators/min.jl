@@ -74,6 +74,6 @@ function on_complete!(actor::MinActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::MinOperator)         = print(io, "MinOperator()")
-Base.show(io::IO, proxy::MinProxy{L})    where L = print(io, "MinProxy($L)")
-Base.show(io::IO, actor::MinActor{L})    where L = print(io, "MinActor($L)")
+Base.show(io::IO, ::MinOperator)         = print(io, "MinOperator()")
+Base.show(io::IO, ::MinProxy{L}) where L = print(io, "MinProxy($L)")
+Base.show(io::IO, ::MinActor{L}) where L = print(io, "MinActor($L)")

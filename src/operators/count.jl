@@ -62,6 +62,6 @@ function on_complete!(c::CountActor)
     complete!(c.actor)
 end
 
-Base.show(io::IO, operator::CountOperator)      = print(io, "CountOperator()")
-Base.show(io::IO, proxy::CountProxy{L}) where L = print(io, "CountProxy($L)")
-Base.show(io::IO, actor::CountActor{L}) where L = print(io, "CountActor($L)")
+Base.show(io::IO, ::CountOperator)         = print(io, "CountOperator()")
+Base.show(io::IO, ::CountProxy{L}) where L = print(io, "CountProxy($L)")
+Base.show(io::IO, ::CountActor{L}) where L = print(io, "CountActor($L)")

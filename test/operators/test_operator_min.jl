@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: min()" begin
 
+    run_proxyshowcheck("Min", min())
+
     run_testset([
         (
             source      = from(1:42) |> min(),

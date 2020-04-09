@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: sum()" begin
 
+    run_proxyshowcheck("Sum", sum())
+
     run_testset([
         (
             source = from(1:42) |> sum(),

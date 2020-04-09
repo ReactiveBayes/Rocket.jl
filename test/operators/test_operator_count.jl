@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: count()" begin
 
+    run_proxyshowcheck("Count", count())
+
     run_testset([
         (
             source = from(1:42) |> count(),

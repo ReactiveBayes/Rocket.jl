@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: uppercase()" begin
 
+    run_proxyshowcheck("Uppercase", uppercase())
+
     run_testset([
         (
             source = from("Hello, world") |> uppercase(),

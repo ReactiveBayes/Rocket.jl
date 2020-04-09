@@ -129,8 +129,8 @@ function on_unsubscribe!(subscription::AsyncSubscription)
     return nothing
 end
 
-Base.show(io::IO, operator::AsyncOperator)                 = print(io, "AsyncOperator()")
-Base.show(io::IO, proxy::AsyncProxy{L})            where L = print(io, "AsyncProxy($L)")
-Base.show(io::IO, actor::AsyncActor{L})            where L = print(io, "AsyncActor($L)")
-Base.show(io::IO, observaable::AsyncObservable{L}) where L = print(io, "AsyncObservable($L)")
-Base.show(io::IO, subscription::AsyncSubscription)         = print(io, "AsyncSubscription()")
+Base.show(io::IO, ::AsyncOperator)              = print(io, "AsyncOperator()")
+Base.show(io::IO, ::AsyncProxy{L})      where L = print(io, "AsyncProxy($L)")
+Base.show(io::IO, ::AsyncActor{L})      where L = print(io, "AsyncActor($L)")
+Base.show(io::IO, ::AsyncObservable{L}) where L = print(io, "AsyncObservable($L)")
+Base.show(io::IO, ::AsyncSubscription)          = print(io, "AsyncSubscription()")

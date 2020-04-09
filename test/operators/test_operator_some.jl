@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: some()" begin
 
+    run_proxyshowcheck("Some", some())
+
     run_testset([
         (
             source = from(1:42) |> max() |> some(),

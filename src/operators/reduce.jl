@@ -95,9 +95,9 @@ function on_complete!(actor::ReduceActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::ReduceOperator{R}) where R = print(io, "ReduceOperator( -> $R)")
-Base.show(io::IO, proxy::ReduceProxy{L})       where L = print(io, "ReduceProxy($L)")
-Base.show(io::IO, actor::ReduceActor{L})       where L = print(io, "ReduceActor($L)")
+Base.show(io::IO, ::ReduceOperator{R}) where R = print(io, "ReduceOperator( -> $R)")
+Base.show(io::IO, ::ReduceProxy{L})    where L = print(io, "ReduceProxy($L)")
+Base.show(io::IO, ::ReduceActor{L})    where L = print(io, "ReduceActor($L)")
 
 # ------------------------------------------------------------------------------------------------ #
 # No seed version of reduce operator (output data stream type is inferred from input)
@@ -148,6 +148,6 @@ function on_complete!(actor::ReduceNoSeedActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::ReduceNoSeedOperator)         = print(io, "ReduceNoSeedOperator(L -> L)")
-Base.show(io::IO, proxy::ReduceNoSeedProxy{L})    where L = print(io, "ReduceNoSeedProxy($L)")
-Base.show(io::IO, actor::ReduceNoSeedActor{L})    where L = print(io, "ReduceNoSeedActor($L)")
+Base.show(io::IO, ::ReduceNoSeedOperator)         = print(io, "ReduceNoSeedOperator(L -> L)")
+Base.show(io::IO, ::ReduceNoSeedProxy{L}) where L = print(io, "ReduceNoSeedProxy($L)")
+Base.show(io::IO, ::ReduceNoSeedActor{L}) where L = print(io, "ReduceNoSeedActor($L)")

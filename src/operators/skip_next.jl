@@ -51,6 +51,6 @@ on_next!(actor::SkipNextActor{L}, data::L) where L = begin end
 on_error!(actor::SkipNextActor, err)               = error!(actor.actor, err)
 on_complete!(actor::SkipNextActor)                 = complete!(actor.actor)
 
-Base.show(io::IO, operator::SkipNextOperator)         = print(io, "SkipNextOperator()")
-Base.show(io::IO, proxy::SkipNextProxy{L})    where L = print(io, "SkipNextProxy($L)")
-Base.show(io::IO, actor::SkipNextActor{L})    where L = print(io, "SkipNextActor($L)")
+Base.show(io::IO, ::SkipNextOperator)         = print(io, "SkipNextOperator()")
+Base.show(io::IO, ::SkipNextProxy{L}) where L = print(io, "SkipNextProxy($L)")
+Base.show(io::IO, ::SkipNextActor{L}) where L = print(io, "SkipNextActor($L)")

@@ -93,7 +93,7 @@ function on_subscribe!(source::SafeSource, actor::SafeActor)
     end
 end
 
-Base.show(io::IO, operator::SafeOperator)         = print(io, "SafeOperator()")
-Base.show(io::IO, proxy::SafeProxy{L})    where L = print(io, "SafeProxy($L)")
-Base.show(io::IO, actor::SafeActor{L})    where L = print(io, "SafeActor($L)")
-Base.show(io::IO, actor::SafeSource{L})   where L = print(io, "SafeSource($L)")
+Base.show(io::IO, ::SafeOperator)          = print(io, "SafeOperator()")
+Base.show(io::IO, ::SafeProxy{L})  where L = print(io, "SafeProxy($L)")
+Base.show(io::IO, ::SafeActor{L})  where L = print(io, "SafeActor($L)")
+Base.show(io::IO, ::SafeSource{L}) where L = print(io, "SafeSource($L)")

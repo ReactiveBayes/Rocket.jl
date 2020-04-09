@@ -66,6 +66,6 @@ on_next!(t::TapActor{L}, data::L) where L = begin t.tapFn(data); next!(t.actor, 
 on_error!(t::TapActor, err)               = error!(t.actor, err)
 on_complete!(t::TapActor)                 = complete!(t.actor)
 
-Base.show(io::IO, operator::TapOperator)         = print(io, "TapOperator()")
-Base.show(io::IO, proxy::TapProxy{L})    where L = print(io, "TapProxy($L)")
-Base.show(io::IO, actor::TapActor{L})    where L = print(io, "TapActor($L)")
+Base.show(io::IO, ::TapOperator)         = print(io, "TapOperator()")
+Base.show(io::IO, ::TapProxy{L}) where L = print(io, "TapProxy($L)")
+Base.show(io::IO, ::TapActor{L}) where L = print(io, "TapActor($L)")

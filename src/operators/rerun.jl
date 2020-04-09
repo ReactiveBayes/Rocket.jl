@@ -111,8 +111,8 @@ function on_unsubscribe!(subscription::RerunSubscription)
     return unsubscribe!(current_subscription)
 end
 
-Base.show(io::IO, operator::RerunOperator)                 = print(io, "RerunOperator()")
-Base.show(io::IO, proxy::RerunProxy{L})            where L = print(io, "RerunProxy($L)")
-Base.show(io::IO, actor::RerunActor{L})            where L = print(io, "RerunActor($L)")
-Base.show(io::IO, source::RerunSource{L})          where L = print(io, "RerunSource($L)")
-Base.show(io::IO, subscription::RerunSubscription)         = print(io, "RerunSubscription()")
+Base.show(io::IO, ::RerunOperator)             = print(io, "RerunOperator()")
+Base.show(io::IO, ::RerunProxy{L})     where L = print(io, "RerunProxy($L)")
+Base.show(io::IO, ::RerunActor{L})     where L = print(io, "RerunActor($L)")
+Base.show(io::IO, ::RerunSource{L})    where L = print(io, "RerunSource($L)")
+Base.show(io::IO, ::RerunSubscription)         = print(io, "RerunSubscription()")

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: noop()" begin
 
+    run_proxyshowcheck("Noop", noop())
+
     source = from(1:5)
 
     for i in 1:1000

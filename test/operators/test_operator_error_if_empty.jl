@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: error_if_empty()" begin
 
+    run_proxyshowcheck("ErrorIfEmpty", error_if_empty(0))
+
     run_testset([
         (
             source      = from(1:5) |> error_if_empty("Empty"),

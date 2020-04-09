@@ -68,6 +68,6 @@ end
 on_error!(f::FilterActor, err) = error!(f.actor, err)
 on_complete!(f::FilterActor)   = complete!(f.actor)
 
-Base.show(io::IO, operator::FilterOperator)         = print(io, "FilterOperator()")
-Base.show(io::IO, proxy::FilterProxy{L})    where L = print(io, "FilterProxy($L)")
-Base.show(io::IO, actor::FilterActor{L})    where L = print(io, "FilterActor($L)")
+Base.show(io::IO, ::FilterOperator)         = print(io, "FilterOperator()")
+Base.show(io::IO, ::FilterProxy{L}) where L = print(io, "FilterProxy($L)")
+Base.show(io::IO, ::FilterActor{L}) where L = print(io, "FilterActor($L)")

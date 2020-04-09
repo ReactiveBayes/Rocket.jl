@@ -105,6 +105,6 @@ function on_complete!(actor::LastActor)
     end
 end
 
-Base.show(io::IO, operator::LastOperator)         = print(io, "LastOperator()")
-Base.show(io::IO, proxy::LastProxy{L})    where L = print(io, "LastProxy($L)")
-Base.show(io::IO, actor::LastActor{L})    where L = print(io, "LastActor($L)")
+Base.show(io::IO, ::LastOperator)         = print(io, "LastOperator()")
+Base.show(io::IO, ::LastProxy{L}) where L = print(io, "LastProxy($L)")
+Base.show(io::IO, ::LastActor{L}) where L = print(io, "LastActor($L)")

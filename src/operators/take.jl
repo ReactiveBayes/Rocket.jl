@@ -121,7 +121,7 @@ function on_subscribe!(observable::TakeSource{L}, actor::A) where { L, A }
     return subscription
 end
 
-Base.show(io::IO, operator::TakeOperator)              = print(io, "TakeOperator()")
-Base.show(io::IO, proxy::TakeProxy{L})         where L = print(io, "TakeProxy($L)")
-Base.show(io::IO, actor::TakeCountingActor{L}) where L = print(io, "TakeCountingActor($L)")
-Base.show(io::IO, source::TakeSource{L})       where L = print(io, "TakeSource($L)")
+Base.show(io::IO, ::TakeOperator)                 = print(io, "TakeOperator()")
+Base.show(io::IO, ::TakeProxy{L})         where L = print(io, "TakeProxy($L)")
+Base.show(io::IO, ::TakeCountingActor{L}) where L = print(io, "TakeCountingActor($L)")
+Base.show(io::IO, ::TakeSource{L})        where L = print(io, "TakeSource($L)")

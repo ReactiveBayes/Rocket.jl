@@ -52,6 +52,6 @@ function on_subscribe!(observable::ReplayObservable, actor)
     return subscribe!(observable.source, actor)
 end
 
-Base.show(io::IO, operator::ReplayOperator)                = print(io, "ReplayOperator()")
-Base.show(io::IO, proxy::ReplayProxy{L})           where L = print(io, "ReplayProxy($L)")
-Base.show(io::IO, observable::ReplayObservable{L}) where L = print(io, "ReplayObservable($L)")
+Base.show(io::IO, ::ReplayOperator)              = print(io, "ReplayOperator()")
+Base.show(io::IO, ::ReplayProxy{L})      where L = print(io, "ReplayProxy($L)")
+Base.show(io::IO, ::ReplayObservable{L}) where L = print(io, "ReplayObservable($L)")

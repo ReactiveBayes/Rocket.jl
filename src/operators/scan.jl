@@ -93,9 +93,9 @@ end
 on_error!(r::ScanActor, err) = error!(r.actor, err)
 on_complete!(r::ScanActor)   = complete!(r.actor)
 
-Base.show(io::IO, operator::ScanOperator{R}) where R = print(io, "ScanOperator( -> $R)")
-Base.show(io::IO, proxy::ScanProxy{L})       where L = print(io, "ScanProxy($L)")
-Base.show(io::IO, actor::ScanActor{L})       where L = print(io, "ScanActor($L)")
+Base.show(io::IO, ::ScanOperator{R}) where R = print(io, "ScanOperator( -> $R)")
+Base.show(io::IO, ::ScanProxy{L})    where L = print(io, "ScanProxy($L)")
+Base.show(io::IO, ::ScanActor{L})    where L = print(io, "ScanActor($L)")
 
 # ------------------------------------------------------------------------------------------------ #
 # No seed version of scan operator (output data stream type is inferred from input)
@@ -139,6 +139,6 @@ end
 on_error!(r::ScanNoSeedActor, err) = error!(r.actor, err)
 on_complete!(r::ScanNoSeedActor)   = complete!(r.actor)
 
-Base.show(io::IO, operator::ScanNoSeedOperator)         = print(io, "ScanNoSeedOperator(L -> L)")
-Base.show(io::IO, proxy::ScanNoSeedProxy{L})    where L = print(io, "ScanNoSeedProxy($L)")
-Base.show(io::IO, actor::ScanNoSeedActor{L})    where L = print(io, "ScanNoSeedActor($L)")
+Base.show(io::IO, ::ScanNoSeedOperator)         = print(io, "ScanNoSeedOperator(L -> L)")
+Base.show(io::IO, ::ScanNoSeedProxy{L}) where L = print(io, "ScanNoSeedProxy($L)")
+Base.show(io::IO, ::ScanNoSeedActor{L}) where L = print(io, "ScanNoSeedActor($L)")

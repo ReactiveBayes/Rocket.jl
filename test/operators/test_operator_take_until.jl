@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: take_until()" begin
 
+    run_proxyshowcheck("TakeUntil", take_until(never()), args = (check_subscription = true, ))
+
     run_testset([
         (
             source = from(1:5) |> take_until(of(1)),

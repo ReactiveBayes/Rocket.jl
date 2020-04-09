@@ -73,5 +73,5 @@ end
 
 operator_right(operator::MulticastWithFactoryOperator, ::Type{L}) where L = L
 
-Base.show(io::IO, operator::MulticastOperator)           = print(io, "MulticastOperator()")
-Base.show(io::IO, factory::MulticastWithFactoryOperator) = print(io, "MulticastWithFactoryOperator()")
+Base.show(io::IO, ::MulticastOperator)            = print(io, "MulticastOperator()")
+Base.show(io::IO, ::MulticastWithFactoryOperator) = print(io, "MulticastWithFactoryOperator()")

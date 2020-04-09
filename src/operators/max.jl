@@ -74,6 +74,6 @@ function on_complete!(actor::MaxActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::MaxOperator)         = print(io, "MaxOperator()")
-Base.show(io::IO, proxy::MaxProxy{L})    where L = print(io, "MaxProxy($L)")
-Base.show(io::IO, actor::MaxActor{L})    where L = print(io, "MaxActor($L)")
+Base.show(io::IO, ::MaxOperator)         = print(io, "MaxOperator()")
+Base.show(io::IO, ::MaxProxy{L}) where L = print(io, "MaxProxy($L)")
+Base.show(io::IO, ::MaxActor{L}) where L = print(io, "MaxActor($L)")

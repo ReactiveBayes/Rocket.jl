@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: rerun()" begin
 
+    run_proxyshowcheck("Rerun", rerun(1), args = (check_subscription = true, ))
+
     run_testset([
         (
             source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? throw(4) : d) |> rerun(3),

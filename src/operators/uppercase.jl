@@ -53,6 +53,6 @@ on_next!(actor::UppercaseActor{L}, data::L) where L = next!(actor.actor, upperca
 on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)
 on_complete!(actor::UppercaseActor)                 = complete!(actor.actor)
 
-Base.show(io::IO, operator::UppercaseOperator)         = print(io, "UppercaseOperator()")
-Base.show(io::IO, proxy::UppercaseProxy{L})    where L = print(io, "UppercaseProxy($L)")
-Base.show(io::IO, actor::UppercaseActor{L})    where L = print(io, "UppercaseActor($L)")
+Base.show(io::IO, ::UppercaseOperator)         = print(io, "UppercaseOperator()")
+Base.show(io::IO, ::UppercaseProxy{L}) where L = print(io, "UppercaseProxy($L)")
+Base.show(io::IO, ::UppercaseActor{L}) where L = print(io, "UppercaseActor($L)")

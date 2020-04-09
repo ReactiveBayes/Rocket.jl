@@ -129,8 +129,8 @@ function on_unsubscribe!(subscription::DelaySubscription)
     return nothing
 end
 
-Base.show(io::IO, operator::DelayOperator)                 = print(io, "DelayOperator()")
-Base.show(io::IO, proxy::DelayProxy{L})            where L = print(io, "DelayProxy($L)")
-Base.show(io::IO, actor::DelayActor{L})            where L = print(io, "DelayActor($L)")
-Base.show(io::IO, observaable::DelayObservable{L}) where L = print(io, "DelayObservable($L)")
-Base.show(io::IO, subscription::DelaySubscription)         = print(io, "DelaySubscription()")
+Base.show(io::IO, ::DelayOperator)              = print(io, "DelayOperator()")
+Base.show(io::IO, ::DelayProxy{L})      where L = print(io, "DelayProxy($L)")
+Base.show(io::IO, ::DelayActor{L})      where L = print(io, "DelayActor($L)")
+Base.show(io::IO, ::DelayObservable{L}) where L = print(io, "DelayObservable($L)")
+Base.show(io::IO, ::DelaySubscription)          = print(io, "DelaySubscription()")

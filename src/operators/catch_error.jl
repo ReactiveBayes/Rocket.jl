@@ -114,8 +114,8 @@ function on_unsubscribe!(subscription::CatchErrorSubscription)
     return unsubscribe!(current_subscription)
 end
 
-Base.show(io::IO, operator::CatchErrorOperator)                 = print(io, "CatchErrorOperator()")
-Base.show(io::IO, proxy::CatchErrorProxy{L})            where L = print(io, "CatchErrorProxy($L)")
-Base.show(io::IO, actor::CatchErrorActor{L})            where L = print(io, "CatchErrorActor($L)")
-Base.show(io::IO, source::CatchErrorSource{L})          where L = print(io, "CatchErrorSource($L)")
-Base.show(io::IO, subscription::CatchErrorSubscription)         = print(io, "CatchErrorSubscription()")
+Base.show(io::IO, ::CatchErrorOperator)             = print(io, "CatchErrorOperator()")
+Base.show(io::IO, ::CatchErrorProxy{L})     where L = print(io, "CatchErrorProxy($L)")
+Base.show(io::IO, ::CatchErrorActor{L})     where L = print(io, "CatchErrorActor($L)")
+Base.show(io::IO, ::CatchErrorSource{L})    where L = print(io, "CatchErrorSource($L)")
+Base.show(io::IO, ::CatchErrorSubscription)         = print(io, "CatchErrorSubscription()")

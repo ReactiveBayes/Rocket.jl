@@ -59,6 +59,6 @@ function on_complete!(actor::ToArrayActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::ToArrayOperator)         = print(io, "ToArrayOperator()")
-Base.show(io::IO, proxy::ToArrayProxy{L})    where L = print(io, "ToArrayProxy($L)")
-Base.show(io::IO, actor::ToArrayActor{L})    where L = print(io, "ToArrayActor($L)")
+Base.show(io::IO, ::ToArrayOperator)         = print(io, "ToArrayOperator()")
+Base.show(io::IO, ::ToArrayProxy{L}) where L = print(io, "ToArrayProxy($L)")
+Base.show(io::IO, ::ToArrayActor{L}) where L = print(io, "ToArrayActor($L)")

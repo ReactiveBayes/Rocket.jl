@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: delay()" begin
 
+    run_proxyshowcheck("Delay", delay(0), args = (check_subscription = true, ))
+
     run_testset([
         (
             source = of(2) |> delay(50),

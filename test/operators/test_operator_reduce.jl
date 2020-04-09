@@ -7,6 +7,9 @@ include("../test_helpers.jl")
 
 @testset "operator: reduce()" begin
 
+    run_proxyshowcheck("Reduce", reduce(Any, +, 0))
+    run_proxyshowcheck("ReduceNoSeed", reduce(+))
+
     run_testset([
         (
             source      = from(1:5) |> reduce(Int, +, 1),

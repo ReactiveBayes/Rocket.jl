@@ -62,6 +62,6 @@ function on_subscribe!(source::TapOnSubscribeSource, actor)
     return subscribe!(source.source, actor)
 end
 
-Base.show(io::IO, operator::TapOnSubscribeOperator)         = print(io, "TapOnSubscribeOperator()")
-Base.show(io::IO, proxy::TapOnSubscribeProxy{L})    where L = print(io, "TapOnSubscribeProxy($L)")
-Base.show(io::IO, source::TapOnSubscribeSource{L})  where L = print(io, "TapOnSubscribeSource($L)")
+Base.show(io::IO, ::TapOnSubscribeOperator)          = print(io, "TapOnSubscribeOperator()")
+Base.show(io::IO, ::TapOnSubscribeProxy{L})  where L = print(io, "TapOnSubscribeProxy($L)")
+Base.show(io::IO, ::TapOnSubscribeSource{L}) where L = print(io, "TapOnSubscribeSource($L)")

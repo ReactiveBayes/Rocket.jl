@@ -64,6 +64,6 @@ on_next!(t::TapOnCompleteActor{L}, data::L) where L = next!(t.actor, data)
 on_error!(t::TapOnCompleteActor, err)               = error!(t.actor, err)
 on_complete!(t::TapOnCompleteActor)                 = begin complete!(t.actor); t.tapFn(); end
 
-Base.show(io::IO, operator::TapOnCompleteOperator)         = print(io, "TapOnCompleteOperator()")
-Base.show(io::IO, proxy::TapOnCompleteProxy{L})    where L = print(io, "TapOnCompleteProxy($L)")
-Base.show(io::IO, actor::TapOnCompleteActor{L})    where L = print(io, "TapOnCompleteActor($L)")
+Base.show(io::IO, ::TapOnCompleteOperator)         = print(io, "TapOnCompleteOperator()")
+Base.show(io::IO, ::TapOnCompleteProxy{L}) where L = print(io, "TapOnCompleteProxy($L)")
+Base.show(io::IO, ::TapOnCompleteActor{L}) where L = print(io, "TapOnCompleteActor($L)")

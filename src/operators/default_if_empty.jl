@@ -65,6 +65,6 @@ function on_complete!(actor::DefaultIfEmptyActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::DefaultIfEmptyOperator{T}) where T = print(io, "DefaultIfEmptyOperator($T)")
-Base.show(io::IO, proxy::DefaultIfEmptyProxy{L})       where L = print(io, "DefaultIfEmptyProxy($L)")
-Base.show(io::IO, actor::DefaultIfEmptyActor{L})       where L = print(io, "DefaultIfEmptyActor($L)")
+Base.show(io::IO, ::DefaultIfEmptyOperator{T}) where T = print(io, "DefaultIfEmptyOperator($T)")
+Base.show(io::IO, ::DefaultIfEmptyProxy{L})    where L = print(io, "DefaultIfEmptyProxy($L)")
+Base.show(io::IO, ::DefaultIfEmptyActor{L})    where L = print(io, "DefaultIfEmptyActor($L)")

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: filter()" begin
 
+    run_proxyshowcheck("Filter", error_if_empty(0))
+
     run_testset([
         (
             source      = from(1:5) |> filter(d -> d % 2 == 0),

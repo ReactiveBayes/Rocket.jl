@@ -130,8 +130,8 @@ function on_unsubscribe!(subscription::TakeUntilSubscription)
 end
 
 
-Base.show(io::IO, operator::TakeUntilOperator)           = print(io, "TakeUntilOperator()")
-Base.show(io::IO, proxy::TakeUntilProxy{L})      where L = print(io, "TakeUntilProxy($L)")
-Base.show(io::IO, actor::TakeUntilInnerActor{L}) where L = print(io, "TakeUntilInnerActor($L)")
-Base.show(io::IO, source::TakeUntilSource{L})    where L = print(io, "TakeUntilSource($L)")
-Base.show(io::IO, source::TakeUntilSubscription)         = print(io, "TakeUntilSubscription()")
+Base.show(io::IO, ::TakeUntilOperator)              = print(io, "TakeUntilOperator()")
+Base.show(io::IO, ::TakeUntilProxy{L})      where L = print(io, "TakeUntilProxy($L)")
+Base.show(io::IO, ::TakeUntilInnerActor{L}) where L = print(io, "TakeUntilInnerActor($L)")
+Base.show(io::IO, ::TakeUntilSource{L})     where L = print(io, "TakeUntilSource($L)")
+Base.show(io::IO, ::TakeUntilSubscription)          = print(io, "TakeUntilSubscription()")

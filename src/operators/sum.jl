@@ -92,6 +92,6 @@ function on_complete!(actor::SumActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, operator::SumOperator)         = print(io, "SumOperator()")
-Base.show(io::IO, proxy::SumProxy{L})    where L = print(io, "SumProxy($L)")
-Base.show(io::IO, actor::SumActor{L})    where L = print(io, "SumActor($L)")
+Base.show(io::IO, ::SumOperator)         = print(io, "SumOperator()")
+Base.show(io::IO, ::SumProxy{L}) where L = print(io, "SumProxy($L)")
+Base.show(io::IO, ::SumActor{L}) where L = print(io, "SumActor($L)")

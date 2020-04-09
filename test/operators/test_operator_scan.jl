@@ -7,6 +7,9 @@ include("../test_helpers.jl")
 
 @testset "operator: scan()" begin
 
+    run_proxyshowcheck("Scan", scan(Any, +, 0))
+    run_proxyshowcheck("ScanNoSeed", scan(+))
+
     run_testset([
         (
             source      = from(1:5) |> scan(Int, +, 1),

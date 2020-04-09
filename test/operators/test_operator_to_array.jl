@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: to_array()" begin
 
+    run_proxyshowcheck("ToArray", to_array())
+
     run_testset([
         (
             source = from(1:5) |> to_array(),

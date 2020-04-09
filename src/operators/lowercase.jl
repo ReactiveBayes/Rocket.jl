@@ -53,6 +53,6 @@ on_next!(actor::LowercaseActor{L}, data::L) where L = next!(actor.actor, lowerca
 on_error!(actor::LowercaseActor, err)       where L = error!(actor.actor, err)
 on_complete!(actor::LowercaseActor)         where L = complete!(actor.actor)
 
-Base.show(io::IO, operator::LowercaseOperator)         = print(io, "LowercaseOperator()")
-Base.show(io::IO, proxy::LowercaseProxy{L})    where L = print(io, "LowercaseProxy($L)")
-Base.show(io::IO, actor::LowercaseActor{L})    where L = print(io, "LowercaseActor($L)")
+Base.show(io::IO, ::LowercaseOperator)         = print(io, "LowercaseOperator()")
+Base.show(io::IO, ::LowercaseProxy{L}) where L = print(io, "LowercaseProxy($L)")
+Base.show(io::IO, ::LowercaseActor{L}) where L = print(io, "LowercaseActor($L)")

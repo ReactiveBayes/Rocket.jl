@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: async()" begin
 
+    run_proxyshowcheck("Async", async(), args = (check_subscription = true, ))
+
     run_testset([
         (
             source = from(1:5),

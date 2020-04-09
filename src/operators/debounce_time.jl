@@ -113,8 +113,8 @@ function on_unsubscribe!(subscription::DebounceTimeSubscription)
     return nothing
 end
 
-Base.show(io::IO, operator::DebounceTimeOperator)                 = print(io, "DebounceTimeOperator()")
-Base.show(io::IO, proxy::DebounceTimeProxy{L})            where L = print(io, "DebounceTimeProxy($L)")
-Base.show(io::IO, actor::DebounceTimeActor{L})            where L = print(io, "DebounceTimeActor($L)")
-Base.show(io::IO, observaable::DebounceTimeObservable{L}) where L = print(io, "DebounceTimeObservable($L)")
-Base.show(io::IO, subscription::DebounceTimeSubscription)         = print(io, "DebounceTimeSubscription()")
+Base.show(io::IO, ::DebounceTimeOperator)              = print(io, "DebounceTimeOperator()")
+Base.show(io::IO, ::DebounceTimeProxy{L})      where L = print(io, "DebounceTimeProxy($L)")
+Base.show(io::IO, ::DebounceTimeActor{L})      where L = print(io, "DebounceTimeActor($L)")
+Base.show(io::IO, ::DebounceTimeObservable{L}) where L = print(io, "DebounceTimeObservable($L)")
+Base.show(io::IO, ::DebounceTimeSubscription)          = print(io, "DebounceTimeSubscription()")

@@ -60,6 +60,6 @@ end
 on_error!(f::SomeActor, err) = error!(f.actor, err)
 on_complete!(f::SomeActor)   = complete!(f.actor)
 
-Base.show(io::IO, operator::SomeOperator)         = print(io, "SomeOperator()")
-Base.show(io::IO, proxy::SomeProxy{L})    where L = print(io, "SomeProxy($L)")
-Base.show(io::IO, actor::SomeActor{L})    where L = print(io, "SomeActor($L)")
+Base.show(io::IO, ::SomeOperator)         = print(io, "SomeOperator()")
+Base.show(io::IO, ::SomeProxy{L}) where L = print(io, "SomeProxy($L)")
+Base.show(io::IO, ::SomeActor{L}) where L = print(io, "SomeActor($L)")

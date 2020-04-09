@@ -75,6 +75,7 @@ doctest(Rocket)
     include("./operators/test_operator_skip_next.jl")
     include("./operators/test_operator_skip_error.jl")
     include("./operators/test_operator_skip_complete.jl")
+    include("./operators/test_operator_tuple_with.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0

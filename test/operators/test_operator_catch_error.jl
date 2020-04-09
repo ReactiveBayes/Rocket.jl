@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: catch_error()" begin
 
+    run_proxyshowcheck("CatchError", catch_error((err, obs) -> never()), args = (check_subscription = true, ))
+
     run_testset([
         (
             source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> from(1:3)),

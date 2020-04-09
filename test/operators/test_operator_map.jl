@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: map()" begin
 
+    run_proxyshowcheck("Map", map(Any, d -> d))
+
     run_testset([
         (
             source      = from(1:5) |> map(Int, d -> d ^ 2),

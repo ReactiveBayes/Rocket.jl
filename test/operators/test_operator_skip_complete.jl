@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: skip_complete()" begin
 
+    run_proxyshowcheck("SkipComplete", skip_complete())
+
     run_testset([
         (
             source = from(1:5) |> skip_complete(),

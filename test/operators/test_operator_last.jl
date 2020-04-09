@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: last()" begin
 
+    run_proxyshowcheck("Last", last())
+
     run_testset([
 
         (

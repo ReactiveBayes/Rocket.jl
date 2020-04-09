@@ -5,6 +5,8 @@ using Rocket
 
 @testset "operator: tap_on_subscribe()" begin
 
+    run_proxyshowcheck("TapOnSubscribe", tap_on_subscribe(() -> begin end))
+
     @testset begin
         values = Int[]
         source = from(1:5) |> tap_on_subscribe(() -> push!(values, -1))

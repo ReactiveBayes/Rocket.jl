@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: skip_error()" begin
 
+    run_proxyshowcheck("SkipError", skip_error())
+
     run_testset([
         (
             source = from(1:5) |> skip_error(),

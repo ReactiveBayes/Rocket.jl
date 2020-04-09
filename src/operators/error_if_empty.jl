@@ -65,6 +65,6 @@ function on_complete!(actor::ErrorIfEmptyActor)
     end
 end
 
-Base.show(io::IO, operator::ErrorIfEmptyOperator)         = print(io, "ErrorIfEmptyOperator()")
-Base.show(io::IO, proxy::ErrorIfEmptyProxy{L})    where L = print(io, "ErrorIfEmptyProxy($L)")
-Base.show(io::IO, actor::ErrorIfEmptyActor{L})    where L = print(io, "ErrorIfEmptyActor($L)")
+Base.show(io::IO, ::ErrorIfEmptyOperator)         = print(io, "ErrorIfEmptyOperator()")
+Base.show(io::IO, ::ErrorIfEmptyProxy{L}) where L = print(io, "ErrorIfEmptyProxy($L)")
+Base.show(io::IO, ::ErrorIfEmptyActor{L}) where L = print(io, "ErrorIfEmptyActor($L)")
