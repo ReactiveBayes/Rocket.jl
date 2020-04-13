@@ -32,7 +32,7 @@ include("../test_helpers.jl")
             source = never() |> noop(),
             values = @ts()
         )
-    ])
+    ], check_timings = false)
 
 end
 

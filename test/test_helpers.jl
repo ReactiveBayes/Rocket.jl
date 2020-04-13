@@ -30,7 +30,7 @@ function testset_parameters(testset::NamedTuple{V, T}) where { V, T <: Tuple }
     return parameters
 end
 
-function test(testset)
+function test(testset, check_timings)
     parameters = testset_parameters(testset)
 
     # Force JIT compilation of all statements before actual test execution
@@ -43,9 +43,9 @@ function test(testset)
     if parameters[:source] === nothing
         error("Missing :source field in the testset")
     elseif parameters[:throws] !== nothing
-        @test_throws parameters[:throws] test_on_source(parameters[:source], parameters[:values]; maximum_wait = parameters[:wait_for])
+        @test_throws parameters[:throws] test_on_source(parameters[:source], parameters[:values]; maximum_wait = parameters[:wait_for], check_timings = check_timings)
     else
-        @test test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, parameters[:wait_for]))
+        @test test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, parameters[:wait_for]), check_timings = check_timings)
     end
 
     if parameters[:source_type] !== Any
@@ -55,10 +55,10 @@ function test(testset)
     return true
 end
 
-function run_testset(testsets)
+function run_testset(testsets; check_timings = true)
     for ts in testsets
         @testset begin
-            test(ts)
+            test(ts, check_timings)
         end
     end
 end
