@@ -13,4 +13,8 @@ notifications:
   email: false
 
 script:
+  - julia -e 'import Pkg; Pkg.test("Rocket", coverage=true, julia_args=["--inline=no"])'
   - julia -e 'import Pkg; Pkg.test("Rocket")'
+
+after_success:
+  - julia -e 'import Pkg; cd(Pkg.dir("Rocket")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
