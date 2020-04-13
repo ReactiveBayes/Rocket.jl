@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master)](https://travis-ci.org/biaslab/Rocket.jl)
 [![Documentation](https://img.shields.io/badge/doc-stable-blue.svg)](https://biaslab.github.io/rocket/docs)
+[![Coverage](https://codecov.io/gh/biaslab/Rocket.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/biaslab/Rocket.jl?branch=master)
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
