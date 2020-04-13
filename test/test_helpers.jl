@@ -36,7 +36,7 @@ function test(testset)
     # Force JIT compilation of all statements before actual test execution
     # Iffy approach, TODO
     try
-        test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, TESTSET_MAXIMUM_COMPILATION_TIMEOUT))
+        test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, TESTSET_MAXIMUM_COMPILATION_TIMEOUT), check_timings = false)
     catch _
     end
 

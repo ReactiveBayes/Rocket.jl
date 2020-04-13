@@ -153,13 +153,13 @@ struct ErrorEventEqualityFailedException          <: Exception end
 
 # Test stream values helpers
 
-test_on_source(source::S, test; maximum_wait::Float64 = 60000.0, actor = nothing) where S = test_on_source(as_subscribable(S), source, test, maximum_wait, actor)
+test_on_source(source::S, test; maximum_wait::Float64 = 60000.0, actor = nothing, check_timings = true) where S = test_on_source(as_subscribable(S), source, test, maximum_wait, actor, check_timings)
 
-function test_on_source(::InvalidSubscribable, source, test, maximum_wait, actor)
+function test_on_source(::InvalidSubscribable, source, test, maximum_wait, actor, check_timings)
     throw(InvalidSubscribableTraitUsageError(source))
 end
 
-function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, actor) where T
+function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, actor, check_timings) where T
     actor = actor === nothing ? test_actor(T) : actor
 
     is_completed = false
@@ -186,7 +186,7 @@ function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, acto
 
     if current_test !== nothing
         while !wait(condition(actor))
-            test_against(actor, current_test)
+            test_against(actor, current_test, check_timings)
 
             current_test = get_next(current_test)
 
@@ -199,12 +199,12 @@ function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, acto
     yield()
 
     if current_test !== nothing
-        test_against(actor, current_test)
+        test_against(actor, current_test, check_timings)
     end
 
     yield()
 
-    test_against(actor, TestActorEveryStepVerificationTest())
+    test_against(actor, TestActorEveryStepVerificationTest(), check_timings)
 
     is_completed = true
 
@@ -215,13 +215,13 @@ struct TestActorEmptyTest end
 
 get_next(::TestActorEmptyTest) = nothing
 
-test_against(actor::TestActor, test::TestActorEmptyTest) = begin end
+test_against(actor::TestActor, test::TestActorEmptyTest, check_timings::Bool) = begin end
 
 struct TestActorEveryStepVerificationTest end
 
 get_next(::TestActorEveryStepVerificationTest) = nothing
 
-function test_against(actor::TestActor, test::TestActorEveryStepVerificationTest)
+function test_against(actor::TestActor, test::TestActorEveryStepVerificationTest, check_timings::Bool)
     check_isvalid(actor)
 
     all(e -> e.is_checked, data(actor)) || throw(TestActorStreamUncheckedData(actor))
@@ -242,7 +242,7 @@ time_passed(test::TestActorErrorTest)                        = test.time_passed
 time_event(actor::TestActor, test::TestActorErrorTest)       = timestamp(Base.first(errors(actor)))
 time_to_compare(actor::TestActor, test::TestActorErrorTest)  = length(data(actor)) === 0 ? created_at(actor) : timestamp(data(actor)[ end ])
 
-function test_against(actor::TestActor, test::TestActorErrorTest)
+function test_against(actor::TestActor, test::TestActorErrorTest, check_timings::Bool)
     check_isvalid(actor)
 
     if !isfailed(actor)
@@ -262,11 +262,13 @@ function test_against(actor::TestActor, test::TestActorErrorTest)
         throw(TestActorStreamErrorDoubleCheckException())
     end
 
-    __check_time_passed(actor, test)
+    if check_timings
+        __check_time_passed(actor, test)
+    end
 
     foreach((e) -> mark_as_checked(e), errors(actor))
 
-    test_against(actor, TestActorEveryStepVerificationTest())
+    test_against(actor, TestActorEveryStepVerificationTest(), check_timings)
 
     return true
 end
@@ -283,7 +285,7 @@ time_passed(test::TestActorCompleteTest)                        = test.time_pass
 time_event(actor::TestActor, test::TestActorCompleteTest)       = timestamp(Base.first(completes(actor)))
 time_to_compare(actor::TestActor, test::TestActorCompleteTest)  = length(data(actor)) === 0 ? created_at(actor) : timestamp(data(actor)[ end ])
 
-function test_against(actor::TestActor, test::TestActorCompleteTest)
+function test_against(actor::TestActor, test::TestActorCompleteTest, check_timings::Bool)
     check_isvalid(actor)
 
     if !iscompleted(actor)
@@ -294,11 +296,13 @@ function test_against(actor::TestActor, test::TestActorCompleteTest)
         throw(TestActorStreamCompletionDoubleCheckException())
     end
 
-    __check_time_passed(actor, test)
+    if check_timings
+        __check_time_passed(actor, test)
+    end
 
     foreach((e) -> mark_as_checked(e), completes(actor))
 
-    test_against(actor, TestActorEveryStepVerificationTest())
+    test_against(actor, TestActorEveryStepVerificationTest(), check_timings)
 
     return true
 end
@@ -317,7 +321,7 @@ time_passed(test::TestActorStreamValuesTest)                        = test.time_
 time_event(actor::TestActor, test::TestActorStreamValuesTest)       = timestamp(data(actor)[ test.starts_from ])
 time_to_compare(actor::TestActor, test::TestActorStreamValuesTest)  = test.starts_from === 1 ? created_at(actor) : timestamp(data(actor)[ test.starts_from - 1 ])
 
-function test_against(actor::TestActor, test::TestActorStreamValuesTest)
+function test_against(actor::TestActor, test::TestActorStreamValuesTest, check_timings::Bool)
     check_isvalid(actor)
 
     actual   = map(e -> e.data, data(actor))[ test.starts_from:end ]
@@ -327,12 +331,14 @@ function test_against(actor::TestActor, test::TestActorStreamValuesTest)
         throw(TestActorStreamIncorrectStreamValuesException(actual, expected))
     end
 
-    __check_time_passed(actor, test)
+    if check_timings
+        __check_time_passed(actor, test)
+    end
 
     foreach((e) -> mark_as_checked(e), data(actor)[ test.starts_from:end ])
 
-    test_against(actor, test.after_test)
-    test_against(actor, TestActorEveryStepVerificationTest())
+    test_against(actor, test.after_test, check_timings)
+    test_against(actor, TestActorEveryStepVerificationTest(), check_timings)
 
     return true
 end
