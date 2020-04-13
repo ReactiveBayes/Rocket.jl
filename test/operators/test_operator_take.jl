@@ -19,8 +19,8 @@ include("../test_helpers.jl")
             values = @ts([ 1 ] ~ [ 2 ] ~ [ 3, c ])
         ),
         (
-            source = timer(10, 30) |> take(3),
-            values = @ts(10 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2, c ])
+            source = timer(100, 30) |> take(3),
+            values = @ts(100 ~ [ 0 ] ~ 30 ~ [ 1 ] ~ 30 ~ [ 2, c ])
         ),
         (
             source = completed() |> take(10),
