@@ -147,6 +147,6 @@ This package in under development and some features of reactive framework may be
 ### List of not implemented features
 
 - High-order observables and operators (`mergeMap`, `concatMap`, etc..)
-- Join operators: `combineLatest`, `concatAll`, etc..
+- Join operators: `concatAll`, etc..
 - More transformation, filtering, utility operators
 - Possible bugs (welcome to open a PR)

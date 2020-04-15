@@ -1,17 +1,17 @@
 export combineLatest
-export LatestCombinedActor1, LatestCombinedActor2, LatestCombinedActor3, LatestCombinedActor4, LatestCombinedActor5
-export LatestCombinedActor6, LatestCombinedActor7, LatestCombinedActor8, LatestCombinedActor9, LatestCombinedActor10
 
 import Base: show
 
-#####################################################################################################################
-# Combine latest macro
-#####################################################################################################################
-
 """
-    combineLatest(sources...)
+    combineLatest(sources...; transformType::Union{Nothing, Type} = nothing, transformFn::F = identity, isbatch::Bool = false)
 
 Combines multiple Observables to create an Observable whose values are calculated from the latest values of each of its input Observables.
+
+# Arguments
+- `sources`: input sources
+- `transformFn`: optional transformation function with `(data::Tuple) -> transformType` signature
+- `transformType`: optional transformation result type
+- `isbatch`: optional boolean flag indicating that combination should be batched, which means that combined observable will reset it's state every time it emits and will emit next time again if and only if every single one of provided sources emits again or completes immediatly if one of the sources has been completed.
 
 # Examples
 ```jldoctest
@@ -31,278 +31,149 @@ subscribe!(latest, logger())
 [LogActor] Completed
 ```
 
+```jldoctest
+using Rocket
+
+latest = combineLatest(of(1), from(2:5), isbatch = true)
+
+subscribe!(latest, logger())
+;
+
+# output
+
+[LogActor] Data: (1, 2)
+[LogActor] Completed
+```
+
+```jldoctest
+using Rocket
+
+latest = combineLatest(of(1), from(2:5), transformType = Int, transformFn = (t) -> t[1] + t[2])
+
+subscribe!(latest, logger())
+;
+
+# output
+
+[LogActor] Data: 3
+[LogActor] Data: 4
+[LogActor] Data: 5
+[LogActor] Data: 6
+[LogActor] Completed
+```
+
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
-combineLatest() = error("combineLatest requires at least on observable on input")
+combineLatest(; transformType::Union{Nothing, Type} = nothing, transformFn::F = identity, isbatch::Bool = false) where F = error("combineLatest requires at least on observable on input")
 
-macro GenerateCombineLatest(N, creation_name, type, batch, mappingFn)
-    observable_name = Symbol(creation_name, "Observable")
-    wrapper_name    = Symbol(creation_name, "ActorWrapper")
-    return esc(quote
-        Rocket.@GenerateCombineLatestCreationOperator($N, $creation_name, $observable_name)
-        Rocket.@GenerateCombineLatestObservable($N, $observable_name, $wrapper_name, $type)
-        Rocket.@GenerateCombineLatestObservableActorWrapper($N, $wrapper_name, $batch, $mappingFn)
-    end)
+function combineLatest(args...; transformType::Union{Nothing, Type} = nothing, transformFn::F = identity, isbatch::Bool = false) where F
+    stype   = Tuple{ map(source -> subscribable_extract_type(source), args)... }
+    type    = transformType !== nothing ? transformType : stype
+    sources = tuple(args...)
+    return CombineLatestObservable{type, typeof(sources), F, isbatch, stype}(sources, transformFn)
 end
 
-#####################################################################################################################
-# Combine latest creation operator macro
-#####################################################################################################################
+struct CombineLatestInnerActor{L, W, I} <: Actor{L}
+    wrapper :: W
+end
 
-macro GenerateCombineLatestCreationOperator(N, pname, pobservable)
-    name       = Symbol(pname)
-    observable = Symbol(pobservable)
+on_next!(actor::CombineLatestInnerActor{L, W, I}, data::L) where { L, W, I } = __next_received!(actor.wrapper, data, Val{I}())
+on_error!(actor::CombineLatestInnerActor, err)                               = __error_received!(actor.wrapper, err)
+on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = __complete_received!(actor.wrapper, Val{I}())
 
-    inner_combine_latest_name = gensym(name)
+struct CombineLatestActorWrapper{S, A, F, B}
+    storage     :: S
+    actor       :: A
+    transformFn :: F
 
-    combine_latest_f = Expr(:call, name, map(i -> Expr(:(::), Symbol(:source, i), Symbol(:S, i)), collect(1:N))...)
-    combine_latest_f = reduce((current, i) -> Expr(:where, current, Symbol(:S, i)), collect(1:N), init = combine_latest_f)
-    combine_latest_b = Expr(:call, Symbol(inner_combine_latest_name, N), map(i -> Expr(:call, :as_subscribable, Symbol(:S, i)), collect(1:N))..., map(i -> Symbol(:source, i), collect(1:N))...)
+    cstatus :: BitArray{1} # Completion status
+    vstatus :: BitArray{1} # Values status
 
-    combine_latest_nr_f = Expr(:call, Symbol(inner_combine_latest_name, N), map(i -> Expr(:(::), Expr(:curly, :ValidSubscribable, Symbol(:D, i))), collect(1:N))..., map(i -> Symbol(:source, i), collect(1:N))...)
-    combine_latest_nr_f = reduce((current, i) -> Expr(:where, current, Symbol(:D, i)), collect(1:N), init = combine_latest_nr_f)
-    combine_latest_nr_b = Expr(:call, Expr(:curly, Symbol(observable, N), map(i -> Symbol(:D, i), collect(1:N))...), map(i -> Symbol(:source, i), collect(1:N))...)
+    subscriptions :: Vector{Teardown}
 
-    combine_latest_nw_f = Expr(:call, Symbol(inner_combine_latest_name, N), map(i -> Symbol(:as_subscribable, i), collect(1:N))..., map(i -> Symbol(:source, i), collect(1:N))...)
-    combine_latest_nw_b = Expr(:call, :error, "Cannot create combineLatest observable with given arguments: ", Expr(:vect, map(i -> Symbol(:source, i), collect(1:N))...))
+    CombineLatestActorWrapper{S, A, F, B}(storage::S, actor::A, transformFn::F) where { S, A, F, B } = begin
+        cstatus = falses(length(storage))
+        vstatus = falses(length(storage))
+        subscriptions = fill!(Vector{Teardown}(undef, length(storage)), VoidTeardown())
+        return new(storage, actor, transformFn, cstatus, vstatus, subscriptions)
+    end
+end
 
-    combine_latest    = Expr(:function, combine_latest_f, combine_latest_b)
-    combine_latest_nr = Expr(:function, combine_latest_nr_f, combine_latest_nr_b)
-    combine_latest_nw = Expr(:function, combine_latest_nw_f, combine_latest_nw_b)
+__isbatch(::CombineLatestActorWrapper{S, A, F, B}) where { S, A, F, B } = B
 
-    generated = quote
-        $combine_latest
-        $combine_latest_nr
-        $combine_latest_nw
+__cstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.cstatus[index]
+__vstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.vstatus[index]
+
+__dispose(wrapper::CombineLatestActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
+
+function __next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
+    setstorage!(wrapper.storage, data, index)
+    wrapper.vstatus[I] = true
+    if all(wrapper.vstatus) && !all(wrapper.cstatus)
+        next!(wrapper.actor, wrapper.transformFn(snapshot(wrapper.storage)))
+        if __isbatch(wrapper)
+            fill!(wrapper.vstatus, false)
+            if any(wrapper.cstatus)
+                __dispose(wrapper)
+                complete!(wrapper.actor)
+            end
+        end
+    end
+end
+
+function __error_received!(wrapper::CombineLatestActorWrapper, err)
+    __dispose(wrapper)
+    error!(wrapper.actor, err)
+end
+
+function __complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
+    if !all(wrapper.cstatus)
+        wrapper.cstatus[I] = true
+        if all(wrapper.cstatus) || wrapper.vstatus[I] === false
+            __dispose(wrapper)
+            complete!(wrapper.actor)
+        end
+    end
+end
+
+struct CombineLatestObservable{T, S, F, B, ST} <: Subscribable{T}
+    sources     :: S
+    transformFn :: F
+end
+
+function on_subscribe!(observable::CombineLatestObservable{T, S, F, B, ST}, actor::A) where { T, S, F, B, A, ST }
+    storage = getmstorage(ST)
+    wrapper = CombineLatestActorWrapper{typeof(storage), A, F, B}(storage, actor, observable.transformFn)
+
+    try
+        for (index, source) in enumerate(observable.sources)
+            wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
+            if __cstatus(wrapper, index) === true && __vstatus(wrapper, index) === false
+                __dispose(wrapper)
+                break
+            end
+        end
+    catch err
+        __error_received!(wrapper, err)
     end
 
-    return esc(generated)
+    if all(wrapper.cstatus)
+        __dispose(wrapper)
+    end
+
+    return CombineLatestSubscription(wrapper)
 end
 
-#####################################################################################################################
-# Combine latest observable subscription
-#####################################################################################################################
-
-struct CombineLatestSubscription <: Teardown
-    wrapper
+struct CombineLatestSubscription{W} <: Teardown
+    wrapper :: W
 end
 
-as_teardown(::Type{<:CombineLatestSubscription}) = UnsubscribableTeardownLogic()
+as_teardown(::Type{ <: CombineLatestSubscription }) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::CombineLatestSubscription)
     __dispose(subscription.wrapper)
     return nothing
 end
 
-#####################################################################################################################
-# Combine latest observable meta operator
-#####################################################################################################################
-
-macro GenerateCombineLatestObservable(N, name, wrapper_name, type)
-    name         = Symbol(name, N)
-    types        = map(i -> Symbol(:D, i), collect(1:N))
-    tupled       = type === :nothing ? Expr(:curly, :Tuple, types...) : type
-    subscribable = Expr(:curly, :(Rocket.Subscribable), tupled)
-    wrapper      = Expr(:curly, Symbol(wrapper_name, N), types..., :A)
-    fields       = Expr(:block, map(i -> Symbol(:source, i), collect(1:N))...)
-    observable   = Expr(:curly, name, types...)
-    structure    = Expr(:struct, false, Expr(:<:, observable, subscribable), fields)
-
-    # on_subscribe! function generation
-    on_subscribe_f = Expr(:call, :(Rocket.on_subscribe!), Expr(:(::), :observable, observable), Expr(:(::), :actor, :A))
-    on_subscribe_f = Expr(:where, on_subscribe_f, :A)
-    on_subscribe_f = reduce((current, i) -> Expr(:where, current, Symbol(:D, i)), collect(1:N), init = on_subscribe_f)
-
-    on_subscribe_wrapper = Expr(:(=), :wrapper, Expr(:call, wrapper, map(i -> begin s = Symbol(:source, i); :(observable.$s) end, collect(1:N))..., :actor))
-    on_subscribe_b = quote
-        $on_subscribe_wrapper
-        return Rocket.CombineLatestSubscription(wrapper)
-    end
-    on_subscribe = Expr(:function, on_subscribe_f, on_subscribe_b)
-
-    # Base.show function generation
-    show_f = Expr(:call, :(Base.show), Expr(:(::), :io, :IO), Expr(:(::), :observable, observable))
-    show_f = reduce((current, i) -> Expr(:where, current, Symbol(:D, i)), collect(1:N), init = show_f)
-    show_b = Expr(:call, :(print), :io, string(name), "(", tupled, ")")
-    show   = Expr(:function, show_f, show_b)
-
-    generated = quote
-        $structure
-        $on_subscribe
-        $show
-    end
-
-    return esc(generated)
-end
-
-#####################################################################################################################
-# Combine latest actor meta operator
-#####################################################################################################################
-
-macro GenerateLatestCombinedActor(n)
-    actor        = Symbol(:LatestCombinedActor, n)
-    latest       = Symbol(:latest, n)
-    is_completed = Symbol(:is_completed, n)
-
-    esc(quote
-        struct ($actor){D, W} <: Actor{D}
-            wrapper :: W
-        end
-
-        function Rocket.on_next!(actor::($actor){D}, data::D) where D
-            actor.wrapper.$latest = data
-            Rocket.__next_check_and_emit(actor.wrapper)
-        end
-
-        function Rocket.on_error!(actor::($actor), err)
-            Rocket.__dispose_on_error(actor.wrapper)
-            Rocket.error!(actor.wrapper.actor, err)
-        end
-
-        function Rocket.on_complete!(actor::($actor))
-            actor.wrapper.complete_status[$n] = true
-            if actor.wrapper.$latest === nothing
-                actor.wrapper.is_completed = true
-            end
-            Rocket.__check_completed(actor.wrapper)
-        end
-
-        Base.show(io::IO, a::($actor){D}) where D = print(io, string($actor), "($D)")
-    end)
-end
-
-function __check_completed(wrapper)
-    if wrapper.is_completed || all(wrapper.complete_status)
-        __dispose_on_complete(wrapper)
-        complete!(wrapper.actor)
-    end
-end
-
-__dispose_on_complete(wrapper) = begin wrapper.is_completed = true; __dispose(wrapper) end
-__dispose_on_error(wrapper)    = begin wrapper.is_failed    = true; __dispose(wrapper) end
-
-function __dispose(wrapper)
-    for subscription in wrapper.subscriptions
-        unsubscribe!(subscription)
-    end
-end
-
-__next_check_and_emit(wrapper) = error("__next_check_and_emit is not implemented for wrapper::$(typeof(wrapper))")
-
-#####################################################################################################################
-# Combine latest actor wrapper generation macro
-#####################################################################################################################
-
-macro GenerateCombineLatestObservableActorWrapper(N, pname, batched, mappingFn)
-    name         = Symbol(pname, N)
-    types        = map(i -> Symbol(:D, i), collect(1:N))
-    wrapper      = Expr(:curly, name, types..., :A)
-
-    # Structure generation
-    actor_field     = Expr(:(::), :actor, :A)
-    latest          = map(i -> Expr(:(::), Symbol(:latest, i), Expr(:curly, :Union, Symbol(:D, i), :Nothing)), collect(1:N))
-    complete_status = Expr(:(::), :complete_status, Expr(:curly, :BitArray, :1))
-    is_completed    = Expr(:(::), :is_completed, :Bool)
-    is_failed       = Expr(:(::), :is_failed, :Bool)
-    subscriptions   = Expr(:(::), :subscriptions, Expr(:curly, :Vector, :Teardown))
-
-    # Constructor generation
-    constructor_f = Expr(:call, Expr(:curly, name, types..., :A), map(i -> Symbol(:source, i), collect(1:N))..., Expr(:(::), :actor, :A))
-    constructor_f = reduce((current, i) -> Expr(:where, current, Symbol(:D, i)), collect(1:N), init = constructor_f)
-    constructor_f = Expr(:where, constructor_f, :A)
-
-    constructor_b_latest     = Expr(:block, map(i -> begin s = Symbol(:latest, i); Expr(:(=), :(wrapper.$s), :nothing) end, collect(1:N))...)
-    constructor_b_actor_init = Expr(:block, map(i -> begin
-        actor        = Symbol(:actor, i)
-        subscription = Symbol(:subscription, i);
-        return quote
-            $actor        = $(Expr(:call, Expr(:curly, Symbol(:LatestCombinedActor, i), Symbol(:D, i), Expr(:curly, name, types..., :A)), :wrapper))
-            $subscription = $(Expr(:call, :subscribe!, Symbol(:source, i), Symbol(:actor, i)))
-            if wrapper.is_failed || wrapper.is_completed
-                return wrapper
-            end
-            push!(wrapper.subscriptions, $subscription)
-        end
-    end, collect(1:N))...)
-
-    constructor_b = quote
-        wrapper = new()
-
-        wrapper.actor           = actor
-        wrapper.complete_status = falses($N)
-        wrapper.is_completed    = false
-        wrapper.is_failed       = false
-        wrapper.subscriptions   = Vector{Teardown}()
-
-
-        $constructor_b_latest
-        $constructor_b_actor_init
-
-        return wrapper
-    end
-
-    constructor = Expr(:(=), constructor_f, constructor_b)
-
-    fields       = Expr(:block, actor_field, latest..., complete_status, is_completed, is_failed, subscriptions, constructor)
-    structure    = Expr(:struct, true, wrapper, fields)
-
-    # __next_check_and_emit! generation
-    check = quote
-        function Rocket.__next_check_and_emit(wrapper::($name))
-            if !wrapper.is_completed && !wrapper.is_failed && $(reduce((current, i) -> Expr(:(&&), current, begin l = Symbol(:latest, i); quote wrapper.$l !== nothing end end), collect(2:N), init = begin l = Symbol(:latest, 1); quote wrapper.$l !== nothing end end))
-                __inline_lambda = $mappingFn
-                Rocket.next!(wrapper.actor, $(Expr(:call, :__inline_lambda, Expr(:tuple, map(i -> begin l = Symbol(:latest, i); quote wrapper.$l end  end, collect(1:N))...))))
-                if $batched
-                    $(Expr(:block, map(i -> begin
-                        c = Expr(:ref, :(wrapper.complete_status), i)
-                        l = Symbol(:latest, i)
-                        return quote
-                            if !$c
-                                wrapper.$l = nothing
-                            end
-                        end
-                    end, collect(1:N))...))
-                end
-            end
-        end
-    end
-
-    # Base.show generation
-    show_f = Expr(:call, :(Base.show), Expr(:(::), :io, :IO), Expr(:(::), :wrapper, name))
-    show_b = Expr(:call, :print, string(name))
-    show   = Expr(:function, show_f, show_b)
-
-    generated = quote
-        $structure
-        $check
-        $show
-    end
-
-    return esc(generated)
-end
-
-#####################################################################################################################
-# Precompiled versions
-#####################################################################################################################
-
-@GenerateLatestCombinedActor(1)
-@GenerateLatestCombinedActor(2)
-@GenerateLatestCombinedActor(3)
-@GenerateLatestCombinedActor(4)
-@GenerateLatestCombinedActor(5)
-@GenerateLatestCombinedActor(6)
-@GenerateLatestCombinedActor(7)
-@GenerateLatestCombinedActor(8)
-@GenerateLatestCombinedActor(9)
-@GenerateLatestCombinedActor(10)
-
-@GenerateCombineLatest(1,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(2,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(3,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(4,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(5,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(6,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(7,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(8,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(9,  "combineLatest", nothing, false, d -> d)
-@GenerateCombineLatest(10, "combineLatest", nothing, false, d -> d)
+Base.show(io::IO, ::CombineLatestObservable{D}) where D  = print(io, "CombineLatestObservable($D)")
+Base.show(io::IO, ::CombineLatestSubscription)           = print(io, "CombineLatestSubscription()")
