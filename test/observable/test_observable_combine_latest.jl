@@ -64,7 +64,7 @@ include("../test_helpers.jl")
         ),
         (
             source = combineLatest(of(1), from(1:5), isbatch = true),
-            values = @ts([ (1, 1), c ]),
+            values = @ts([ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), c ]),
             source_type = Tuple{Int, Int}
         ),
         (
@@ -79,7 +79,7 @@ include("../test_helpers.jl")
         ),
         (
             source = combineLatest(from(1:5) |> async(), of(2.0), isbatch = true),
-            values = @ts([ (1, 2.0) ] ~ c),
+            values = @ts([ (1, 2.0) ] ~ [ (2, 2.0) ] ~ [ (3, 2.0) ] ~ [ (4, 2.0) ] ~ [ (5, 2.0) ] ~ c),
             source_type = Tuple{Int, Float64}
         ),
         (
@@ -161,6 +161,48 @@ include("../test_helpers.jl")
         next!(s2, 3.0)
 
         @test actor.values == [ (1, 2.0, "Hello", 5, 10), (2, 2.0, "Hello", 5, 10), (2, 2.0, "Hello, world!", 5, 10), (2, 3.0, "Hello, world!", 5, 10)  ]
+
+        unsubscribe!(subscription)
+    end
+
+    @testset begin
+        s1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s2 = make_subject(Float64, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s3 = make_subject(String, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s4 = of(5)
+        s5 = from(1:10)
+
+        latest = combineLatest(s1, s2, s3, s4, s5, isbatch = true)
+        actor  = keep(Tuple{Int, Float64, String, Int, Int})
+        subscription = subscribe!(latest, actor)
+
+        @test actor.values == [ ]
+
+        next!(s1, 1)
+
+        @test actor.values == [ ]
+
+        next!(s2, 2.0)
+
+        @test actor.values == [ ]
+
+        next!(s3, "Hello")
+
+        @test actor.values == [ (1, 2.0, "Hello", 5, 10) ]
+
+        next!(s1, 2)
+
+        @test actor.values == [ (1, 2.0, "Hello", 5, 10) ]
+
+        next!(s3, "Hello, world!")
+
+        @test actor.values == [ (1, 2.0, "Hello", 5, 10)  ]
+
+        complete!(s1);
+
+        next!(s2, 3.0)
+
+        @test actor.values == [ (1, 2.0, "Hello", 5, 10), (2, 3.0, "Hello, world!", 5, 10)  ]
 
         unsubscribe!(subscription)
     end

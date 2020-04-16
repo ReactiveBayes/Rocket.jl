@@ -11,7 +11,7 @@ Combines multiple Observables to create an Observable whose values are calculate
 - `sources`: input sources
 - `transformFn`: optional transformation function with `(data::Tuple) -> transformType` signature
 - `transformType`: optional transformation result type
-- `isbatch`: optional boolean flag indicating that combination should be batched, which means that combined observable will reset it's state every time it emits and will emit next time again if and only if every single one of provided sources emits again or completes immediatly if one of the sources has been completed.
+- `isbatch`: optional boolean flag indicating that combination should be batched, which means that combined observable will reset it's state every time it emits and will emit next time again if and only if every single non-completed one of provided sources emits at least one value again.
 
 # Examples
 ```jldoctest
@@ -28,20 +28,6 @@ subscribe!(latest, logger())
 [LogActor] Data: (1, 3)
 [LogActor] Data: (1, 4)
 [LogActor] Data: (1, 5)
-[LogActor] Completed
-```
-
-```jldoctest
-using Rocket
-
-latest = combineLatest(of(1), from(2:5), isbatch = true)
-
-subscribe!(latest, logger())
-;
-
-# output
-
-[LogActor] Data: (1, 2)
 [LogActor] Completed
 ```
 
@@ -112,11 +98,7 @@ function __next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
         next!(wrapper.actor, wrapper.transformFn(snapshot(wrapper.storage)))
         if __isbatch(wrapper)
-            fill!(wrapper.vstatus, false)
-            if any(wrapper.cstatus)
-                __dispose(wrapper)
-                complete!(wrapper.actor)
-            end
+            copy!(wrapper.vstatus, wrapper.cstatus)
         end
     end
 end
