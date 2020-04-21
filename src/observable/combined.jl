@@ -4,16 +4,16 @@ import Base: show
 
 """
     combineLatest(sources...)
-    combineLatest(sources::Tuple, isbatch::Bool = false)
-    combineLatest(sources::Tuple, transform::F = identity, isbatch::Bool = false) where { F <: Function }
-    combineLatest(sources::Tuple, transform::Tuple{DataType, F}, isbatch::Bool = false) where { F <: Function }
+    combineLatest(sources::Tuple, isbatch::Bool)
+    combineLatest(sources::Tuple, isbatch::Bool, transform::F) where { F <: Function }
+    combineLatest(sources::Tuple, isbatch::Bool, transform::Tuple{DataType, F}) where { F <: Function }
 
 Combines multiple Observables to create an Observable whose values are calculated from the latest values of each of its input Observables.
 
 # Arguments
 - `sources`: input sources
-- `transform`: optional transformation function with `(data::R) -> R` signature or a tuple containing type of the transformation result and transformation function with `(data::R) -> type` signature
 - `isbatch`: optional boolean flag indicating that combination should be batched, which means that combined observable will reset it's state every time it emits and will emit next time again if and only if every single non-completed one of provided sources emits at least one value again.
+- `transform`: optional transformation function with `(data::R) -> R` signature or a tuple containing type of the transformation result and transformation function with `(data::R) -> type` signature
 
 # Examples
 ```jldoctest
@@ -36,7 +36,7 @@ subscribe!(latest, logger())
 ```jldoctest
 using Rocket
 
-latest = combineLatest((of(1), from(2:5)), (Int, (t) -> t[1] + t[2]))
+latest = combineLatest((of(1), from(2:5)), false, (Int, (t) -> t[1] + t[2]))
 
 subscribe!(latest, logger())
 ;
@@ -54,16 +54,17 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
 combineLatest() = error("combineLatest requires at least on observable on input")
 
-combineLatest(args...) = combineLatest(tuple(args...))
+combineLatest(args...)                         = combineLatest(tuple(args...))
+combineLatest(sources::S) where { S <: Tuple } = combineLatest(sources, false)
 
-combineLatest(sources::S, isbatch::Bool = false) where { S <: Tuple } = combineLatest(sources, identity, isbatch)
+combineLatest(sources::S, isbatch::Bool) where { S <: Tuple } = combineLatest(sources, isbatch, identity)
 
-function combineLatest(sources::S, transform::F = identity, isbatch::Bool = false) where { S <: Tuple, F <: Function }
+function combineLatest(sources::S, isbatch::Bool, transform::F) where { S <: Tuple, F <: Function }
     stype = Tuple{ map(source -> subscribable_extract_type(source), sources)... }
     return CombineLatestObservable{stype, S, F, isbatch, stype}(sources, transform)
 end
 
-function combineLatest(sources::S, transform::Tuple{DataType, F}, isbatch::Bool = false) where { S <: Tuple, F <: Function }
+function combineLatest(sources::S, isbatch::Bool, transform::Tuple{DataType, F}) where { S <: Tuple, F <: Function }
     stype = Tuple{ map(source -> subscribable_extract_type(source), sources)... }
     return CombineLatestObservable{transform[1], S, F, isbatch, stype}(sources, transform[2])
 end

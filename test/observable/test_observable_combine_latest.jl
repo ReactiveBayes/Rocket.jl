@@ -58,7 +58,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Float64, Float64}
         ),
         (
-            source = combineLatest((of(1), of(2)), (Int, (t) -> t[1]^2 + t[2]^2)),
+            source = combineLatest((of(1), of(2)), false, (Int, (t) -> t[1]^2 + t[2]^2)),
             values = @ts([ 5, c ]),
             source_type = Int
         ),
