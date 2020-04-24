@@ -2,7 +2,6 @@ language: julia
 
 os:
   - linux
-  - osx
 
 env:
   - COVERAGE_JULIA_VERSION="1.4"
