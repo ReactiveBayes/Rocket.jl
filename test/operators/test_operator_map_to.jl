@@ -18,6 +18,11 @@ include("../test_helpers.jl")
             values = @ts([ 1 ] ~ 10 ~ [ 1 ] ~ 10 ~ [ 1, c ])
         ),
         (
+            source      = completed() |> map_to(1),
+            values      = @ts(c),
+            source_type = Int
+        ),
+        (
             source      = throwError("e", String) |> map_to(1),
             values      = @ts(e("e")),
             source_type = Int

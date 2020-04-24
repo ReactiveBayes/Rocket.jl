@@ -9,7 +9,7 @@ import Base: length
 """
     @MStorage(n::Int)
 
-Helper function to generate tuple-like structure MStorage\$n, but with mutable fields and empty constructor.
+Helper function to generate tuple-like structure MStorageN, but with mutable fields and empty constructor.
 It is possible then to take a `snapshot(::MStorage)` which returns a tuple with the same types and values from storage.
 Some operators and observables use pregenerated `MStorage` to instatiate uninitialized
 mutable storage in case when stream is allowed to not emit any values before completion.
@@ -91,7 +91,7 @@ end
 """
     setstorage!(s, v, ::Val{I}) where I
 
-This function can be used to set a new value for `MStorage` with a given value `v` and index `I`.
+This function can be used to set a new value `v` for storage `s` with a given value `v` and index `I`.
 Using parametrized `Val{I}` for indexing ensures for index to be resolved at compile-time and if-else branch optimization.
 
 See also: [`@MStorage`](@ref)
@@ -128,7 +128,7 @@ function setstorage!(s::S, v, ::Val{I}) where { S <: AbstractMStorage, I }
     elseif I === 15
         s.v15 = v
     elseif I === 16
-        s.v16 = 16
+        s.v16 = v
     end
 end
 
@@ -136,9 +136,9 @@ mstorage(::Type{T}, ::Val{N}) where { N, T <: NTuple{N, Any} } = Vector{Any}(und
 snapshot(s::S) where { S <: Vector } = tuple(s...)
 setstorage!(s::S, v::T, ::Val{I}) where { T, S <: Vector{T}, I } = s[I] = v
 
-macro GenerateMStorages(max)
+macro GenerateMStorages()
     output = quote end
-    for i in 1:eval(max) # <- unsafe, but `max` expression should be just constant
+    for i in 1:MAX_PREGENERATED_MSTORAGE_SIZE
         output = quote
             $output
             @MStorage($i)
@@ -147,7 +147,7 @@ macro GenerateMStorages(max)
     return esc(output)
 end
 
-@GenerateMStorages(MAX_PREGENERATED_MSTORAGE_SIZE)
+@GenerateMStorages()
 
 _staticlength(::Type{T}) where { N, T <: NTuple{N, Any} } = Val{N}()
 
