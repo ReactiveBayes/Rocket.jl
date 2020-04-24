@@ -59,14 +59,14 @@ end
 
 is_exhausted(actor::FilterActor) = is_exhausted(actor.actor)
 
-function on_next!(f::FilterActor{L}, data::L) where L
-    if f.filterFn(data)
-        next!(f.actor, data)
+function on_next!(actor::FilterActor{L}, data::L) where L
+    if actor.filterFn(data)
+        next!(actor.actor, data)
     end
 end
 
-on_error!(f::FilterActor, err) = error!(f.actor, err)
-on_complete!(f::FilterActor)   = complete!(f.actor)
+on_error!(actor::FilterActor, err) = error!(actor.actor, err)
+on_complete!(actor::FilterActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::FilterOperator)         = print(io, "FilterOperator()")
 Base.show(io::IO, ::FilterProxy{L}) where L = print(io, "FilterProxy($L)")

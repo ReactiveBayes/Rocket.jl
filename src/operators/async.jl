@@ -56,7 +56,9 @@ mutable struct AsyncActor{L, A} <: Actor{L}
             try
                 while !self.is_cancelled
                     message = take!(channel)::AsyncMessage{L}
-                    __process_async_message(self, message)
+                    if !self.is_cancelled
+                        __process_async_message(self, message)
+                    end
                 end
             catch err
                 if !(err isa AsyncCompletionException)

@@ -77,12 +77,17 @@ See also: [`subscribe!`](@ref)
 as_subscribable(::Type)                            = InvalidSubscribable()
 as_subscribable(::Type{<:Subscribable{T}}) where T = ValidSubscribable{T}()
 
-subscribable_extract_type(source::S) where S = subscribable_extract_type(as_subscribable(S), source)
+subscribable_extract_type(type::Type{S}) where S = subscribable_extract_type(as_subscribable(S), type)
+subscribable_extract_type(source::S)     where S = subscribable_extract_type(as_subscribable(S), source)
 
 subscribable_extract_type(::ValidSubscribable{T}, source) where T = T
-subscribable_extract_type(::InvalidSubscribable, source)          = throw(InvalidSubscribableTraitUsageError(source))
+subscribable_extract_type(::InvalidSubscribable,  source)         = throw(InvalidSubscribableTraitUsageError(source))
 
-Base.eltype(source::S) where { T, S <: Subscribable{T} } = T
+subscribable_extract_type(::ValidSubscribable{T}, type::Type{S}) where { T, S } = T
+subscribable_extract_type(::InvalidSubscribable,  type::Type{S}) where {    S } = throw(InvalidSubscribableTraitUsageError(S))
+
+Base.eltype(source::Type{ <: S}) where { T, S <: Subscribable{T} } = T
+Base.eltype(source::S)           where { T, S <: Subscribable{T} } = T
 
 """
     subscribe!(subscribable::T, actor::S) where T where S

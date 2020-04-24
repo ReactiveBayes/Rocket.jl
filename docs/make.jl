@@ -55,6 +55,8 @@ makedocs(
                     "uppercase"                      => "operators/transformation/uppercase.md",
                     "lowercase"                      => "operators/transformation/lowercase.md",
                     "to_array"                       => "operators/transformation/to_array.md",
+                    "switch_map"                     => "operators/transformation/switch_map.md",
+                    "switch_map_to"                  => "operators/transformation/switch_map_to.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",

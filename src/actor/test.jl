@@ -410,7 +410,8 @@ macro ts(expr)
         elseif arg === :c
             push!(tests, TestActorCompleteTest())
         else
-            error("Invalid usage of @ts macro in process_arg_values!(arg = $arg::$(typeof(arg)))")
+            push!(values, eval(arg))
+            # error("Invalid usage of @ts macro in process_arg_values!(arg = $arg::$(typeof(arg)))")
         end
     end
 
@@ -426,9 +427,13 @@ macro ts(expr)
                 push!(tests, TestActorErrorTest(length(arg.args) === 2 ? arg.args[2] : nothing))
             elseif arg.args[2] === :c
                 push!(tests, TestActorCompleteTest())
+            else
+                push!(values, eval(arg))
             end
         else
-            error("Invalid usage of @ts macro in process_arg_values!(arg = $arg::$(typeof(arg)))")
+            push!(values, eval(arg))
+            # return arg
+            # error("Invalid usage of @ts macro in process_arg_values!(arg = $arg::$(typeof(arg)))")
         end
     end
 

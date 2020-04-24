@@ -21,6 +21,11 @@ include("../test_helpers.jl")
             source_type = Float64
         ),
         (
+            source      = completed() |> map(Int, d -> d + 1),
+            values      = @ts(c),
+            source_type = Int
+        ),
+        (
             source      = throwError("e", Int) |> map(String, d -> string(d)),
             values      = @ts(e("e")),
             source_type = String

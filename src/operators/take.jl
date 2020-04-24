@@ -3,13 +3,13 @@ export take
 import Base: show
 
 """
-    take(max_count::Int)
+    take(maxcount::Int)
 
 Creates a take operator, which returns an Observable
-that emits only the first `max_count` values emitted by the source Observable.
+that emits only the first `maxcount` values emitted by the source Observable.
 
 # Arguments
-- `max_count::Int`: the maximum number of next values to emit.
+- `maxcount::Int`: the maximum number of next values to emit.
 
 # Producing
 
@@ -36,92 +36,86 @@ subscribe!(source |> take(5), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-take(max_count::Int) = TakeOperator(max_count)
+take(maxcount::Int) = TakeOperator(maxcount)
 
 struct TakeOperator <: InferableOperator
-    max_count :: Int
+    maxcount :: Int
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::TakeOperator, source) where L
-    return proxy(L, source, TakeProxy{L}(operator.max_count))
+    return proxy(L, source, TakeProxy{L}(operator.maxcount))
 end
 
 operator_right(operator::TakeOperator, ::Type{L}) where L = L
 
-struct TakeProxy{L} <: SourceProxy
-    max_count :: Int
+struct TakeProxy{L} <: ActorSourceProxy
+    maxcount :: Int
 end
 
-source_proxy!(proxy::TakeProxy{L}, source::S) where { L, S } = TakeSource{L, S}(proxy.max_count, source)
+actor_proxy!(proxy::TakeProxy{L},  actor::A)  where { L, A } = TakeActor{L, A}(proxy.maxcount, actor)
+source_proxy!(proxy::TakeProxy{L}, source::S) where { L, S } = TakeSource{L, S}(source)
 
-mutable struct TakeCountingActor{L, A} <: Actor{L}
-    is_completed :: Bool
-    max_count    :: Int
-    current      :: Int
-    actor        :: A
-    subscription :: Union{Any, Nothing}
+mutable struct TakeActorProps
+    isdisposed   :: Bool
+    count        :: Int
+    subscription :: Teardown
 
-    TakeCountingActor{L, A}(max_count::Int, actor::A) where { L, A } = begin
-        take_actor = new()
-
-        take_actor.is_completed = false
-        take_actor.max_count    = max_count
-        take_actor.current      = 0
-        take_actor.actor        = actor
-        take_actor.subscription = nothing
-
-        return take_actor
-    end
+    TakeActorProps() = new(false, 0, VoidTeardown())
 end
 
-is_exhausted(actor::TakeCountingActor) = actor.is_completed || is_exhausted(actor.actor)
+struct TakeActor{L, A} <: Actor{L}
+    maxcount :: Int
+    actor    :: A
+    props    :: TakeActorProps
 
-function on_next!(actor::TakeCountingActor{L}, data::L) where L
-    if !actor.is_completed
-        if actor.current < actor.max_count
-            actor.current += 1
+    TakeActor{L, A}(maxcount::Int, actor::A) where { L, A } = new(maxcount, actor, TakeActorProps())
+end
+
+is_exhausted(actor::TakeActor) = actor.props.isdisposed || is_exhausted(actor.actor)
+
+function on_next!(actor::TakeActor{L}, data::L) where L
+    props = actor.props
+    if !props.isdisposed
+        if props.count < actor.maxcount
             next!(actor.actor, data)
-            if actor.current == actor.max_count
+            props.count += 1
+            if props.count == actor.maxcount
                 complete!(actor)
             end
         end
     end
 end
 
-function on_error!(actor::TakeCountingActor, err)
-    if !actor.is_completed
+function on_error!(actor::TakeActor, err)
+    if !actor.props.isdisposed
         error!(actor.actor, err)
-        if actor.subscription !== nothing
-            unsubscribe!(actor.subscription)
-        end
+        __dispose(actor)
     end
 end
 
-function on_complete!(actor::TakeCountingActor)
-    if !actor.is_completed
-        actor.is_completed = true
+function on_complete!(actor::TakeActor)
+    if !actor.props.isdisposed
         complete!(actor.actor)
-        if actor.subscription !== nothing
-            unsubscribe!(actor.subscription)
-        end
+        __dispose(actor)
     end
+end
+
+function __dispose(actor::TakeActor)
+    actor.props.isdisposed = true
+    unsubscribe!(actor.props.subscription)
 end
 
 struct TakeSource{L, S} <: Subscribable{L}
-    max_count :: Int
-    source    :: S
+    source :: S
 end
 
-function on_subscribe!(observable::TakeSource{L}, actor::A) where { L, A }
-    counting_actor = TakeCountingActor{L, A}(observable.max_count, actor)
-    subscription   = subscribe!(observable.source, counting_actor)
-
-    counting_actor.subscription = subscription
-
+function on_subscribe!(observable::TakeSource, actor::TakeActor)
+    subscription = subscribe!(observable.source, actor)
+    actor.props.subscription = subscription
     return subscription
 end
 
-Base.show(io::IO, ::TakeOperator)                 = print(io, "TakeOperator()")
-Base.show(io::IO, ::TakeProxy{L})         where L = print(io, "TakeProxy($L)")
-Base.show(io::IO, ::TakeCountingActor{L}) where L = print(io, "TakeCountingActor($L)")
-Base.show(io::IO, ::TakeSource{L})        where L = print(io, "TakeSource($L)")
+Base.show(io::IO, ::TakeOperator)          = print(io, "TakeOperator()")
+Base.show(io::IO, ::TakeProxy{L})  where L = print(io, "TakeProxy($L)")
+Base.show(io::IO, ::TakeActor{L})  where L = print(io, "TakeActor($L)")
+Base.show(io::IO, ::TakeSource{L}) where L = print(io, "TakeSource($L)")

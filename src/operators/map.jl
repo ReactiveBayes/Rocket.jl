@@ -59,9 +59,9 @@ end
 
 is_exhausted(actor::MapActor) = is_exhausted(actor.actor)
 
-on_next!(m::MapActor{L},  data::L) where L = next!(m.actor, m.mappingFn(data))
-on_error!(m::MapActor, err)                = error!(m.actor, err)
-on_complete!(m::MapActor)                  = complete!(m.actor)
+on_next!(actor::MapActor{L},  data::L) where L = next!(actor.actor, actor.mappingFn(data))
+on_error!(actor::MapActor, err)                = error!(actor.actor, err)
+on_complete!(actor::MapActor)                  = complete!(actor.actor)
 
 Base.show(io::IO, ::MapOperator{R}) where R   = print(io, "MapOperator( -> $R)")
 Base.show(io::IO, ::MapProxy{L})    where L   = print(io, "MapProxy($L)")

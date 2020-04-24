@@ -60,9 +60,9 @@ end
 
 is_exhausted(actor::TapOnCompleteActor) = is_exhausted(actor.actor)
 
-on_next!(t::TapOnCompleteActor{L}, data::L) where L = next!(t.actor, data)
-on_error!(t::TapOnCompleteActor, err)               = error!(t.actor, err)
-on_complete!(t::TapOnCompleteActor)                 = begin complete!(t.actor); t.tapFn(); end
+on_next!(actor::TapOnCompleteActor{L}, data::L) where L = next!(actor.actor, data)
+on_error!(actor::TapOnCompleteActor, err)               = error!(actor.actor, err)
+on_complete!(actor::TapOnCompleteActor)                 = begin complete!(actor.actor); actor.tapFn(); end
 
 Base.show(io::IO, ::TapOnCompleteOperator)         = print(io, "TapOnCompleteOperator()")
 Base.show(io::IO, ::TapOnCompleteProxy{L}) where L = print(io, "TapOnCompleteProxy($L)")

@@ -53,9 +53,9 @@ end
 
 is_exhausted(actor::NoopActor) = is_exhausted(actor.actor)
 
-on_next!(t::NoopActor{L}, data::L) where L = next!(t.actor, data)
-on_error!(t::NoopActor, err)               = error!(t.actor, err)
-on_complete!(t::NoopActor)                 = complete!(t.actor)
+on_next!(actor::NoopActor{L}, data::L) where L = next!(actor.actor, data)
+on_error!(actor::NoopActor, err)               = error!(actor.actor, err)
+on_complete!(actor::NoopActor)                 = complete!(actor.actor)
 
 Base.show(io::IO, ::NoopOperator)         = print(io, "NoopOperator()")
 Base.show(io::IO, ::NoopProxy{L}) where L = print(io, "NoopProxy($L)")

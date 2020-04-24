@@ -1,6 +1,7 @@
 module Rocket
 
 include("utils.jl")
+include("helpers/mstorage.jl")
 
 include("teardown.jl")
 include("teardown/void.jl")
@@ -71,7 +72,8 @@ include("operators/lowercase.jl")
 include("operators/to_array.jl")
 include("operators/tuple_with.jl")
 include("operators/replay.jl")
-include("operators/switchMap.jl")
+include("operators/switch_map.jl")
+include("operators/switch_map_to.jl")
 include("operators/multicast.jl")
 include("operators/ref_count.jl")
 include("operators/publish.jl")

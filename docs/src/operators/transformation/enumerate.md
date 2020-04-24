@@ -16,7 +16,7 @@ Get a value from the source with its order number
 using Rocket
 
 source = from([ 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 ])
-subscribe!(source |> enumerate(), LoggerActor{Tuple{Float64, Int}}())
+subscribe!(source |> enumerate(), logger())
 
 # output
 

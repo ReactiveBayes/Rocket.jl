@@ -9,6 +9,8 @@ There are operators for different purposes, and they may be categorized as: crea
 - [uppercase](@ref operator_uppercase)
 - [lowercase](@ref operator_lowercase)
 - [to_array](@ref operator_to_array)
+- [switch_map](@ref operator_switch_map)
+- [switch_map_to](@ref operator_switch_map_to)
 
 # See also
 
