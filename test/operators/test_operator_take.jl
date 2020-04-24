@@ -15,6 +15,10 @@ include("../test_helpers.jl")
             values = @ts([ 1:3, c ])
         ),
         (
+            source = from(1:5) |> take(0),
+            values = @ts(c)
+        ),
+        (
             source = from(1:5) |> async() |> take(3),
             values = @ts([ 1 ] ~ [ 2 ] ~ [ 3, c ])
         ),

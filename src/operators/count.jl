@@ -40,27 +40,26 @@ end
 
 struct CountProxy{L} <: ActorProxy end
 
-actor_proxy!(proxy::CountProxy{L}, actor::A) where { L, A } = CountActor{L, A}(0, actor)
+actor_proxy!(proxy::CountProxy{L}, actor::A) where { L, A } = CountActor{L, A}(actor)
 
-mutable struct CountActor{L, A} <: Actor{L}
+mutable struct CountActorProps
     current :: Int
-    actor   :: A
+
+    CountActorProps() = new(0)
+end
+
+struct CountActor{L, A} <: Actor{L}
+    actor :: A
+    props :: CountActorProps
+
+    CountActor{L, A}(actor::A) where { L, A } = new(actor, CountActorProps())
 end
 
 is_exhausted(actor::CountActor) = is_exhausted(actor.actor)
 
-function on_next!(c::CountActor{L}, data::L) where L
-    c.current += 1
-end
-
-function on_error!(c::CountActor, err)
-    error!(c.actor, err)
-end
-
-function on_complete!(c::CountActor)
-    next!(c.actor, c.current)
-    complete!(c.actor)
-end
+on_next!(actor::CountActor, data) = begin actor.props.current += 1 end
+on_error!(actor::CountActor, err) = begin error!(actor.actor, err) end
+on_complete!(actor::CountActor)   = begin next!(actor.actor, actor.props.current); complete!(actor.actor) end
 
 Base.show(io::IO, ::CountOperator)         = print(io, "CountOperator()")
 Base.show(io::IO, ::CountProxy{L}) where L = print(io, "CountProxy($L)")
