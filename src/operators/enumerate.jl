@@ -55,14 +55,14 @@ end
 
 is_exhausted(actor::EnumerateActor) = is_exhausted(actor.actor)
 
-function on_next!(c::EnumerateActor{L}, data::L) where L
-    current = c.current
-    c.current += 1
-    next!(c.actor, (data, current))
+function on_next!(actor::EnumerateActor{L}, data::L) where L
+    current = actor.current
+    actor.current += 1
+    next!(actor.actor, (data, current))
 end
 
-on_error!(c::EnumerateActor, err) = error!(c.actor, err)
-on_complete!(c::EnumerateActor)   = complete!(c.actor)
+on_error!(actor::EnumerateActor, err) = error!(actor.actor, err)
+on_complete!(actor::EnumerateActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::EnumerateOperator)         = print(io, "EnumerateOperator()")
 Base.show(io::IO, ::EnumerateProxy{L}) where L = print(io, "EnumerateProxy($L)")

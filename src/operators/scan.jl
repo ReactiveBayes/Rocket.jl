@@ -85,13 +85,13 @@ end
 
 is_exhausted(actor::ScanActor) = is_exhausted(actor.actor)
 
-function on_next!(s::ScanActor{L, R}, data::L) where { L, R }
-    s.current = s.scanFn(data, s.current)
-    next!(s.actor, s.current)
+function on_next!(actor::ScanActor{L, R}, data::L) where { L, R }
+    actor.current = actor.scanFn(data, actor.current)
+    next!(actor.actor, actor.current)
 end
 
-on_error!(r::ScanActor, err) = error!(r.actor, err)
-on_complete!(r::ScanActor)   = complete!(r.actor)
+on_error!(actor::ScanActor, err) = error!(actor.actor, err)
+on_complete!(actor::ScanActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::ScanOperator{R}) where R = print(io, "ScanOperator( -> $R)")
 Base.show(io::IO, ::ScanProxy{L})    where L = print(io, "ScanProxy($L)")
@@ -127,17 +127,17 @@ end
 
 is_exhausted(actor::ScanNoSeedActor) = is_exhausted(actor.actor)
 
-function on_next!(s::ScanNoSeedActor{L}, data::L) where { L }
-    if s.current === nothing
-        s.current = data
+function on_next!(actor::ScanNoSeedActor{L}, data::L) where { L }
+    if actor.current === nothing
+        actor.current = data
     else
-        s.current = s.scanFn(data, s.current)
+        actor.current = actor.scanFn(data, actor.current)
     end
-    next!(s.actor, s.current)
+    next!(actor.actor, actor.current)
 end
 
-on_error!(r::ScanNoSeedActor, err) = error!(r.actor, err)
-on_complete!(r::ScanNoSeedActor)   = complete!(r.actor)
+on_error!(actor::ScanNoSeedActor, err) = error!(actor.actor, err)
+on_complete!(actor::ScanNoSeedActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::ScanNoSeedOperator)         = print(io, "ScanNoSeedOperator(L -> L)")
 Base.show(io::IO, ::ScanNoSeedProxy{L}) where L = print(io, "ScanNoSeedProxy($L)")
