@@ -16,7 +16,7 @@ Stream of type `<: Subscribable{Vector{L}}` where `L` refers to type of source s
 using Rocket
 
 source = from([ 1, 2, 3 ])
-subscribe!(source |> to_array(), LoggerActor{Vector{Int}}())
+subscribe!(source |> to_array(), logger())
 ;
 
 # output

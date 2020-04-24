@@ -16,7 +16,7 @@ Counts how many values source Observable have emitted before the complete event 
 using Rocket
 
 source = from([ i for i in 1:42 ])
-subscribe!(source |> count(), LoggerActor{Int}())
+subscribe!(source |> count(), logger())
 
 # output
 

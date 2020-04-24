@@ -90,9 +90,9 @@ Accepts optional named `timeout` argument which specifies maximum number of mill
 ```jldoctest
 using Rocket
 
-actor  = LoggerActor{Int}()
+actor  = VoidActor{Int}()
 synced = sync(actor)
-synced isa SyncActor{Int, LoggerActor{Int}}
+synced isa SyncActor{Int, VoidActor{Int}}
 
 # output
 true

@@ -1,7 +1,6 @@
 module RocketSubscribableTest
 
 using Test
-using Suppressor
 using Rocket
 
 @testset "Subscribable" begin

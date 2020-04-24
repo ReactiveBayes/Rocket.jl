@@ -57,8 +57,8 @@ function on_next!(actor::SomeActor{L}, data::Union{L, Nothing}) where L
     end
 end
 
-on_error!(actor::SomeActor, err) = error!(f.actor, err)
-on_complete!(actor::SomeActor)   = complete!(f.actor)
+on_error!(actor::SomeActor, err) = error!(actor.actor, err)
+on_complete!(actor::SomeActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::SomeOperator)         = print(io, "SomeOperator()")
 Base.show(io::IO, ::SomeProxy{L}) where L = print(io, "SomeProxy($L)")

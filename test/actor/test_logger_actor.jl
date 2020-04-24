@@ -1,34 +1,78 @@
 module RocketLoggerActorTest
 
 using Test
-using Suppressor
 using Rocket
 
 @testset "LoggerActor" begin
 
     @testset begin
-        actor = LoggerActor{Int}("Logger")
+        actor = logger(Int)
 
-        @test occursin("1", @capture_out next!(actor, 1))
-        @test occursin("42", @capture_out next!(actor, 42))
-        @test occursin("error", @capture_out error!(actor, "error"))
-        @test occursin("Completed", @capture_out complete!(actor))
+        @test !isempty(actor.name)
+        @test actor.io === nothing
+    end
+
+    @testset begin
+        buffer = IOBuffer()
+        actor  = logger(Int, buffer)
+
+        next!(actor, 1)
+
+        output = String(take!(buffer))
+        @test occursin("Data", output)
+        @test occursin("1", output)
+
+        next!(actor, 42)
+
+        output = String(take!(buffer))
+        @test occursin("Data", output)
+        @test occursin("42", output)
+
+        error!(actor, "err")
+
+        output = String(take!(buffer))
+        @test occursin("Error", output)
+        @test occursin("err", output)
+
+        complete!(actor)
+
+        output = String(take!(buffer))
+        @test occursin("Completed", output)
 
         @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
     end
 
     @testset begin
-        actor = logger()
+        buffer = IOBuffer()
+        actor  = logger(buffer, "CustomName")
 
-        @test occursin("1", @capture_out subscribe!(of(1), actor))
-        @test occursin("42", @capture_out subscribe!(of(42), actor))
-        @test occursin("error", @capture_out subscribe!(throwError("error"), actor))
-        @test occursin("Completed", @capture_out subscribe!(completed(), actor))
+        subscribe!(of(1), actor)
+        output = String(take!(buffer))
+        @test occursin("CustomName", output)
+        @test occursin("Data", output)
+        @test occursin("1", output)
+
+        subscribe!(of(42), actor)
+        output = String(take!(buffer))
+        @test occursin("CustomName", output)
+        @test occursin("Data", output)
+        @test occursin("42", output)
+
+        subscribe!(throwError("error"), actor)
+        output = String(take!(buffer))
+        @test occursin("CustomName", output)
+        @test occursin("Error", output)
+        @test occursin("error", output)
+
+        subscribe!(completed(), actor)
+        output = String(take!(buffer))
+        @test occursin("CustomName", output)
+        @test occursin("Completed", output)
     end
 
     @testset begin
-        @test logger(Int) isa LoggerActor{Int}
-        @test logger()    isa Rocket.LoggerActorFactory
+        @test logger(Int) isa LoggerActor{Int, Nothing}
+        @test logger()    isa Rocket.LoggerActorFactory{Nothing}
     end
 end
 

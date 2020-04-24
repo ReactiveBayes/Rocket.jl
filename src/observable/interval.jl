@@ -17,11 +17,11 @@ using Rocket
 
 source = interval(50)
 
-subscription = subscribe!(source, LoggerActor{Int}())
+subscription = subscribe!(source, logger())
 sleep(0.215)
 unsubscribe!(subscription)
 sleep(0.215)
-subscription = subscribe!(source, LoggerActor{Int}())
+subscription = subscribe!(source, logger())
 sleep(0.185)
 unsubscribe!(subscription)
 

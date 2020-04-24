@@ -1,7 +1,6 @@
 module RocketSubjectTest
 
 using Test
-using Suppressor
 using Rocket
 
 @testset "Subject" begin
