@@ -10,8 +10,7 @@ include("../test_helpers.jl")
     run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(make_subject(Any), never(Any)), check_subscription = true, ))
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        source  = from(1:5) |> multicast(subject) |> ref_count()
+        source  = from(1:5) |> multicast(make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)) |> ref_count()
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -24,6 +23,62 @@ include("../test_helpers.jl")
 
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
         @test actor2.values == [ ]
+    end
+
+    @testset begin
+        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        source  = subject |> multicast(make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)) |> ref_count()
+
+        actor1 = keep(Int)
+        actor2 = keep(Int)
+        actor3 = keep(Int)
+
+        subscription3 = subscribe!(subject, actor3)
+
+        next!(subject, 1)
+
+        @test actor1.values == [ ]
+        @test actor2.values == [ ]
+        @test actor3.values == [ 1 ]
+
+        subscription1 = subscribe!(source, actor1)
+        subscription2 = subscribe!(source, actor2)
+
+        @test actor1.values == [ ]
+        @test actor2.values == [ ]
+        @test actor3.values == [ 1 ]
+
+        next!(subject, 2)
+
+        @test actor1.values == [ 2 ]
+        @test actor2.values == [ 2 ]
+        @test actor3.values == [ 1, 2 ]
+
+        unsubscribe!(subscription1)
+
+        next!(subject, 3)
+
+        @test actor1.values == [ 2 ]
+        @test actor2.values == [ 2, 3 ]
+        @test actor3.values == [ 1, 2, 3 ]
+
+        unsubscribe!(subscription2)
+        subscription1 = subscribe!(source, actor1)
+
+        next!(subject, 4)
+
+        @test actor1.values == [ 2, 4 ]
+        @test actor2.values == [ 2, 3 ]
+        @test actor3.values == [ 1, 2, 3, 4 ]
+
+        unsubscribe!(subscription1)
+        unsubscribe!(subscription2)
+
+        next!(subject, 5)
+
+        @test actor1.values == [ 2, 4 ]
+        @test actor2.values == [ 2, 3 ]
+        @test actor3.values == [ 1, 2, 3, 4, 5]
     end
 
 end

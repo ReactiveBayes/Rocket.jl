@@ -53,53 +53,48 @@ operator_right(operator::RefCountOperator, ::Type{L}) where L = L
 
 struct RefCountProxy{L} <: SourceProxy end
 
-source_proxy!(proxy::RefCountProxy{L}, connectable_source) where L = RefCountSource{L}(connectable_source)
+source_proxy!(proxy::RefCountProxy{L}, source::S) where { L, S } = RefCountSource{L, S}(source)
 
-mutable struct RefCountSource{L} <: Subscribable{L}
-    ref_count
-    connectable_source
-    connectable_subscription :: Union{Nothing, Teardown}
+mutable struct RefCountSourceProps
+    refcount      :: Int
+    сsubscription :: Teardown
 
-    RefCountSource{L}(connectable_source) where L = new(0, connectable_source, nothing)
+    RefCountSourceProps() = new(0, VoidTeardown())
 end
 
-function connect_source!(ref_count_source::RefCountSource)
-    if ref_count_source.ref_count > 0 && ref_count_source.connectable_subscription === nothing
-        ref_count_source.connectable_subscription = connect(ref_count_source.connectable_source)
+struct RefCountSource{L, S} <: Subscribable{L}
+    csource :: S
+    props   :: RefCountSourceProps
+
+    RefCountSource{L, S}(csource::S) where { L, S } = new(csource, RefCountSourceProps())
+end
+
+function on_subscribe!(refcount_source::RefCountSource, actor)
+    subscription = subscribe!(refcount_source.csource, actor)
+    refcount_source.props.refcount += 1
+    if refcount_source.props.refcount === 1
+        refcount_source.props.сsubscription = connect(refcount_source.csource)
     end
+    return RefCountSourceSubscription(refcount_source, subscription)
 end
 
-function disconnect_source!(ref_count_source::RefCountSource)
-    unsubscribe!(ref_count_source.connectable_subscription)
-    ref_count_source.connectable_subscription = nothing
+mutable struct RefCountSourceSubscription{S, T} <: Teardown
+    refcount_source :: Union{Nothing, S}
+    subscription    :: T
 end
-
-function on_subscribe!(ref_count_source::RefCountSource, actor)
-    subscription = subscribe!(ref_count_source.connectable_source, actor)
-    ref_count_source.ref_count += 1
-    if ref_count_source.ref_count == 1
-        connect_source!(ref_count_source)
-    end
-    return _ref_count_subscription(ref_count_source, subscription)
-end
-
-mutable struct RefCountSourceSubscription{T} <: Teardown
-    ref_count_source :: Union{Nothing, RefCountSource}
-    subscription     :: T
-end
-
-_ref_count_subscription(ref_count_source::RefCountSource, subscription::T) where T = RefCountSourceSubscription{T}(ref_count_source, subscription)
 
 as_teardown(::Type{<:RefCountSourceSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::RefCountSourceSubscription)
     unsubscribe!(subscription.subscription)
-    if subscription.ref_count_source !== nothing
-        subscription.ref_count_source.ref_count -= 1
-        if subscription.ref_count_source.ref_count == 0 && subscription.ref_count_source.connectable_subscription !== nothing
-            disconnect_source!(subscription.ref_count_source)
+
+    refcount_source = subscription.refcount_source
+    if refcount_source !== nothing
+        refcount_source.props.refcount -= 1
+        if refcount_source.props.refcount === 0
+            unsubscribe!(refcount_source.props.сsubscription)
         end
-        subscription.ref_count_source = nothing
+        subscription.refcount_source = nothing
     end
 end
 

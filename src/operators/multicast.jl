@@ -48,13 +48,13 @@ unsubscribe!(subscription2)
 See also: [`ConnectableObservable`](@ref), [`make_subject`](@ref), [`share`](@ref), [`publish`](@ref)
 """
 multicast(subject::S) where S                               = as_multicast(as_subject(S), subject)
-multicast(factory::F) where { F <: AbstractSubjectFactory } = MulticastWithFactoryOperator(factory)
+multicast(factory::F) where { F <: AbstractSubjectFactory } = MulticastWithFactoryOperator{F}(factory)
 
-as_multicast(::ValidSubject{D}, subject) where D = MulticastOperator(subject)
-as_multicast(::InvalidSubject,  subject)         = throw(InvalidSubjectTraitUsageError(subject))
+as_multicast(::ValidSubject{D}, subject::S) where { D, S } = MulticastOperator{S}(subject)
+as_multicast(::InvalidSubject,  subject::S) where {    S } = throw(InvalidSubjectTraitUsageError(subject))
 
-struct MulticastOperator <: InferableOperator
-    subject
+struct MulticastOperator{S} <: InferableOperator
+    subject :: S
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::MulticastOperator, source) where L
@@ -63,8 +63,8 @@ end
 
 operator_right(operator::MulticastOperator, ::Type{L}) where L = L
 
-struct MulticastWithFactoryOperator <: InferableOperator
-    subject_factory
+struct MulticastWithFactoryOperator{F} <: InferableOperator
+    subject_factory :: F
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::MulticastWithFactoryOperator, source) where L
