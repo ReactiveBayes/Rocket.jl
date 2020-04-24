@@ -153,21 +153,23 @@ function subscribe!(subscribable::T, actor_factory::F) where T where { F <: Abst
     subscribable_on_subscribe_with_factory!(as_subscribable(T), subscribable, actor_factory)
 end
 
-subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                             = throw(InvalidSubscribableTraitUsageError(subscribable))
-subscribable_on_subscribe!(::ValidSubscribable{T},  ::InvalidActorTrait,   subscribable, actor) where T                     = throw(InvalidActorTraitUsageError(actor))
-subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable, actor) where T1 where T2           = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable, actor) where { T1 <: T2 } where T2 = begin
+subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
+subscribable_on_subscribe!(::ValidSubscribable{T},  ::InvalidActorTrait,   subscribable, actor) where T          = throw(InvalidActorTraitUsageError(actor))
+subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+
+function subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable::S, actor) where { T2, T1 <: T2, S }
     if !is_exhausted(actor)
-        return on_subscribe!(subscribable, actor)
+        return scheduled_subscription!(getscheduler(S), subscribable, actor)
     else
         complete!(actor)
         return VoidTeardown()
     end
 end
 
-subscribable_on_subscribe_with_factory!(::InvalidSubscribable,  subscribable, actor_factory)         = throw(InvalidSubscribableTraitUsageError(subscribable))
-subscribable_on_subscribe_with_factory!(::ValidSubscribable{L}, subscribable, actor_factory) where L = begin
-    subscribe!(subscribable, create_actor(L, actor_factory))
+subscribable_on_subscribe_with_factory!(::InvalidSubscribable,  subscribable, actor_factory) = throw(InvalidSubscribableTraitUsageError(subscribable))
+
+function subscribable_on_subscribe_with_factory!(::ValidSubscribable{L}, subscribable, actor_factory) where L
+    return subscribe!(subscribable, create_actor(L, actor_factory))
 end
 
 """
