@@ -10,7 +10,7 @@ using Rocket
     struct NotImplementedSubscribable <: Subscribable{Int} end
 
     struct ExplicitlyDefinedSubscribable end
-    Rocket.as_subscribable(::Type{<:ExplicitlyDefinedSubscribable}) = ValidSubscribable{String}()
+    Rocket.as_subscribable(::Type{<:ExplicitlyDefinedSubscribable}) = SimpleSubscribableTrait{String}()
 
     struct ImplementedSubscribable <: Subscribable{Int} end
     function Rocket.on_subscribe!(::ImplementedSubscribable, actor)
@@ -22,10 +22,10 @@ using Rocket
         @test as_subscribable(DummyType) === InvalidSubscribable()
 
         # Check if as_subscribable returns valid subscribable type for subtypes of Subscribable abstract type
-        @test as_subscribable(NotImplementedSubscribable) === ValidSubscribable{Int}()
+        @test as_subscribable(NotImplementedSubscribable) === SimpleSubscribableTrait{Int}()
 
         # Check if as_subscribable returns valid subscribable type for explicitly defined types
-        @test as_subscribable(ExplicitlyDefinedSubscribable) === ValidSubscribable{String}()
+        @test as_subscribable(ExplicitlyDefinedSubscribable) === SimpleSubscribableTrait{String}()
     end
 
     @testset "subscribe!" begin

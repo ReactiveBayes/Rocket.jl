@@ -9,7 +9,7 @@ mutable struct PendingSubject{D, S} <: Actor{D}
 end
 
 as_subject(::Type{<:PendingSubject{D}})      where D = ValidSubject{D}()
-as_subscribable(::Type{<:PendingSubject{D}}) where D = ValidSubscribable{D}()
+as_subscribable(::Type{<:PendingSubject{D}}) where D = SimpleSubscribableTrait{D}()
 
 is_exhausted(actor::PendingSubject) = is_exhausted(actor.subject)
 

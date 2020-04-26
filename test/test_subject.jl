@@ -12,7 +12,7 @@ using Rocket
 
     struct ActorMissingSubject{T} end
     Rocket.as_subject(::Type{<:ActorMissingSubject{T}})      where T = ValidSubject{T}()
-    Rocket.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = ValidSubscribable{T}()
+    Rocket.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = SimpleSubscribableTrait{T}()
 
     struct SubscribableMissingSubject{T} end
     Rocket.as_subject(::Type{<:SubscribableMissingSubject{T}})      where T = ValidSubject{T}()
@@ -26,7 +26,7 @@ using Rocket
 
     Rocket.as_subject(::Type{<:ImplementedSubject{T}})      where T = ValidSubject{T}()
     Rocket.as_actor(::Type{<:ImplementedSubject{T}})        where T = BaseActorTrait{T}()
-    Rocket.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = ValidSubscribable{T}()
+    Rocket.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = SimpleSubscribableTrait{T}()
 
     Rocket.on_next!(subject::ImplementedSubject{T}, data::T) where T = push!(subject.values, data)
     Rocket.on_error!(subject::ImplementedSubject, err)               = error(err)

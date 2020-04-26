@@ -1,5 +1,5 @@
-export SubscribableTrait, ValidSubscribable, InvalidSubscribable
-export Subscribable, as_subscribable
+export SubscribableTrait, ValidSubscribable, SimpleSubscribableTrait, ScheduledSubscribableTrait, InvalidSubscribable
+export Subscribable, ScheduledSubscribable, as_subscribable
 export subscribe!, on_subscribe!
 export subscribable_extract_type
 
@@ -17,11 +17,25 @@ See also: [`ValidSubscribable`](@ref), [`InvalidSubscribable`](@ref)
 abstract type SubscribableTrait end
 
 """
-Valid subscribable trait behavior. Valid subscribable can be used in subscribe! function.
+Abstract type for all possible valid subscribable traits
+
+See also: [`SubscribableTrait`](@ref), [`SimpleSubscribable`](@ref)
+"""
+abstract type ValidSubscribable{T} <: SubscribableTrait end
+
+"""
+Simple subscribable trait behavior. Simple subscribable can be used in subscribe! function and do not use any schedulers for execution logic
 
 See also: [`SubscribableTrait`](@ref), [`Subscribable`](@ref)
 """
-struct ValidSubscribable{T} <: SubscribableTrait end
+struct SimpleSubscribableTrait{T} <: ValidSubscribable{T} end
+
+"""
+Scheduled subscribable trait behavior. Scheduled subscribable can be used in subscribe! function and uses schedulers for execution logic
+
+See also: [`SubscribableTrait`](@ref), [`Subscribable`](@ref)
+"""
+struct ScheduledSubscribableTrait{T} <: ValidSubscribable{T} end
 
 """
 Default subscribable trait behavior for all types. Invalid subscribable cannot be used in subscribe! function, doing so will throw an error.
@@ -31,7 +45,7 @@ See also: [`SubscribableTrait`](@ref), [`subscribe!`](@ref)
 struct InvalidSubscribable  <: SubscribableTrait end
 
 """
-Super type for any subscribable object. Automatically specifies a `ValidSubscribable` trait behavior.
+Super type for any simple subscribable object. Automatically specifies a `SimpleSubscribableTrait` trait behavior.
 
 # Examples
 ```jldoctest
@@ -39,7 +53,7 @@ using Rocket
 
 struct MySubscribable <: Subscribable{Int} end
 
-println(Rocket.as_subscribable(MySubscribable) === ValidSubscribable{Int}())
+println(Rocket.as_subscribable(MySubscribable) === SimpleSubscribableTrait{Int}())
 ;
 
 # output
@@ -48,34 +62,42 @@ true
 
 ```
 
-See also: [`SubscribableTrait`](@ref), [`ValidSubscribable`](@ref)
+See also: [`SubscribableTrait`](@ref), [`SimpleSubscribableTrait`](@ref)
 """
 abstract type Subscribable{T} end
+
+"""
+Super type for any scheduled subscribable object. Automatically specifies a `ScheduledSubscribableTrait` trait behavior.
+
+# Examples
+```jldoctest
+using Rocket
+
+struct MySubscribable <: ScheduledSubscribable{Int} end
+
+println(Rocket.as_subscribable(MySubscribable) === ScheduledSubscribableTrait{Int}())
+;
+
+# output
+
+true
+
+```
+
+See also: [`SubscribableTrait`](@ref), [`ScheduledSubscribableTrait`](@ref)
+"""
+abstract type ScheduledSubscribable{T} end
 
 """
     as_subscribable(::Type)
 
 This function checks subscribable trait behavior specification. Can be used explicitly to specify subscribable trait behavior for any object.
 
-# Examples
-
-```jldoctest
-using Rocket
-
-struct MyArbitraryType end
-Rocket.as_subscribable(::Type{<:MyArbitraryType}) = ValidSubscribable{Int}()
-
-println(as_subscribable(MyArbitraryType) ===ValidSubscribable{Int}())
-;
-
-# output
-true
-```
-
 See also: [`subscribe!`](@ref)
 """
-as_subscribable(::Type)                            = InvalidSubscribable()
-as_subscribable(::Type{<:Subscribable{T}}) where T = ValidSubscribable{T}()
+as_subscribable(::Type)                                     = InvalidSubscribable()
+as_subscribable(::Type{<:Subscribable{T}})          where T = SimpleSubscribableTrait{T}()
+as_subscribable(::Type{<:ScheduledSubscribable{T}}) where T = ScheduledSubscribableTrait{T}()
 
 subscribable_extract_type(type::Type{S}) where S = subscribable_extract_type(as_subscribable(S), type)
 subscribable_extract_type(source::S)     where S = subscribable_extract_type(as_subscribable(S), source)
@@ -157,14 +179,17 @@ subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subsc
 subscribable_on_subscribe!(::ValidSubscribable{T},  ::InvalidActorTrait,   subscribable, actor) where T          = throw(InvalidActorTraitUsageError(actor))
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 
-function subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable::S, actor) where { T2, T1 <: T2, S }
+function subscribable_on_subscribe!(subscribable_trait::ValidSubscribable{T1}, actor_trait::ValidActorTrait{T2}, subscribable::S, actor) where { T2, T1 <: T2, S }
     if !is_exhausted(actor)
-        return scheduled_subscription!(getscheduler(S), subscribable, actor)
+        return subscribable_execute_subscription!(subscribable_trait, subscribable, actor)
     else
         complete!(actor)
         return VoidTeardown()
     end
 end
+
+subscribable_execute_subscription!(::SimpleSubscribableTrait,    subscribable, actor) = on_subscribe!(subscribable, actor)
+subscribable_execute_subscription!(::ScheduledSubscribableTrait, subscribable, actor) = scheduled_subscription!(subscribable, actor, getscheduler(subscribable))
 
 subscribable_on_subscribe_with_factory!(::InvalidSubscribable,  subscribable, actor_factory) = throw(InvalidSubscribableTraitUsageError(subscribable))
 

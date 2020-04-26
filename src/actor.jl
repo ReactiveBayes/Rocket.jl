@@ -26,7 +26,7 @@ Abstract type for all possible valid actor traits
 
 See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
 """
-abstract type ValidActorTrait{T} end
+abstract type ValidActorTrait{T} <: ActorTrait end
 
 """
 Base actor trait specifies actor to listen for all `next!`, `error!` and `complete!` events.
@@ -129,30 +129,36 @@ complete!(actor, extra) = throw(ExtraArgumentInCompleteCall())
 
 """
     next!(actor, data)
+    next!(actor, data, scheduler)
 
-This function is used to deliver a "next" event to an actor with some `data`
+This function is used to deliver a "next" event to an actor with some `data`. Takes optional `scheduler` object to schedule execution of data delivery.
 
 See also: [`AbstractActor`](@ref), [`on_next!`](@ref)
 """
-next!(actor::T,  data)  where T = actor_on_next!(as_actor(T), actor, data)
+next!(actor::T, data)            where T = actor_on_next!(as_actor(T), actor, data)
+next!(actor::T, data, scheduler) where T = actor_on_next!(as_actor(T), actor, data, scheduler)
 
 """
     error!(actor, err)
+    error!(actor, err, scheduler)
 
-This function is used to deliver a "error" event to an actor with some `err`
+This function is used to deliver a "error" event to an actor with some `err`. Takes optional `scheduler` object to schedule execution of error delivery.
 
 See also: [`AbstractActor`](@ref), [`on_error!`](@ref)
 """
-error!(actor::T, err)   where T = actor_on_error!(as_actor(T), actor, err)
+error!(actor::T, err)            where T = actor_on_error!(as_actor(T), actor, err)
+error!(actor::T, err, scheduler) where T = actor_on_error!(as_actor(T), actor, err, scheduler)
 
 """
     complete!(actor)
+    complete!(actor, scheduler)
 
-This function is used to deliver a "complete" event to an actor
+This function is used to deliver a "complete" event to an actor. Takes optional `scheduler` object to schedule execution of error delivery.
 
 See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
-complete!(actor::T)     where T = actor_on_complete!(as_actor(T), actor)
+complete!(actor::T)            where T = actor_on_complete!(as_actor(T), actor)
+complete!(actor::T, scheduler) where T = actor_on_complete!(as_actor(T), actor, scheduler)
 
 """
     is_exhausted(actor)
@@ -165,22 +171,40 @@ is_exhausted(actor) = false
 
 actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
 actor_on_next!(::ValidActorTrait{T},      actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
 actor_on_next!(::NextActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
 actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where { R <: T } where T = begin end
 actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where { R <: T } where T = begin end
 
+actor_on_next!(::BaseActorTrait{T},       actor, data::R, scheduler) where { R <: T } where T = begin scheduled_next!(actor, data, scheduler); return nothing end
+actor_on_next!(::NextActorTrait{T},       actor, data::R, scheduler) where { R <: T } where T = begin scheduled_next!(actor, data, scheduler); return nothing end
+actor_on_next!(::ErrorActorTrait{T},      actor, data::R, scheduler) where { R <: T } where T = begin end
+actor_on_next!(::CompletionActorTrait{T}, actor, data::R, scheduler) where { R <: T } where T = begin end
+
 actor_on_error!(::InvalidActorTrait,    actor, err) = throw(InvalidActorTraitUsageError(actor))
+
 actor_on_error!(::BaseActorTrait,       actor, err) = begin on_error!(actor, err); return nothing end
 actor_on_error!(::NextActorTrait,       actor, err) = begin end
 actor_on_error!(::ErrorActorTrait,      actor, err) = begin on_error!(actor, err); return nothing end
 actor_on_error!(::CompletionActorTrait, actor, err) = begin end
 
+actor_on_error!(::BaseActorTrait,       actor, err, scheduler) = begin scheduled_error!(actor, err, scheduler); return nothing end
+actor_on_error!(::NextActorTrait,       actor, err, scheduler) = begin end
+actor_on_error!(::ErrorActorTrait,      actor, err, scheduler) = begin scheduled_error!(actor, err, scheduler); return nothing end
+actor_on_error!(::CompletionActorTrait, actor, err, scheduler) = begin end
+
 actor_on_complete!(::InvalidActorTrait,    actor) = throw(InvalidActorTraitUsageError(actor))
+
 actor_on_complete!(::BaseActorTrait,       actor) = begin on_complete!(actor); return nothing end
 actor_on_complete!(::NextActorTrait,       actor) = begin end
 actor_on_complete!(::ErrorActorTrait,      actor) = begin end
 actor_on_complete!(::CompletionActorTrait, actor) = begin on_complete!(actor); return nothing end
+
+actor_on_complete!(::BaseActorTrait,       actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
+actor_on_complete!(::NextActorTrait,       actor, scheduler) = begin end
+actor_on_complete!(::ErrorActorTrait,      actor, scheduler) = begin end
+actor_on_complete!(::CompletionActorTrait, actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
 
 """
     on_next!(actor, data)

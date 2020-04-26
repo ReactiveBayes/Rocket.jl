@@ -31,7 +31,7 @@ mutable struct LocalNetworkSubject{D} <: Actor{D}
 end
 
 as_subject(::Type{<:LocalNetworkSubject{D}})      where D = ValidSubject{D}()
-as_subscribable(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubscribable{D}()
+as_subscribable(::Type{<:LocalNetworkSubject{D}}) where D = SimpleSubscribableTrait{D}()
 
 # TODO
 is_exhausted(actor::LocalNetworkSubject) = false

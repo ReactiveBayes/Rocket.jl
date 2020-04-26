@@ -7,7 +7,7 @@ include("teardown.jl")
 include("teardown/void.jl")
 
 include("scheduler.jl")
-include("schedulers/default.jl")
+include("schedulers/asap.jl")
 
 include("actor.jl")
 include("subscribable.jl")

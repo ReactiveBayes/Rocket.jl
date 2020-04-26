@@ -35,7 +35,7 @@ mutable struct AsynchronousSubject{D} <: Actor{D}
 end
 
 as_subject(::Type{<:AsynchronousSubject{D}})      where D = ValidSubject{D}()
-as_subscribable(::Type{<:AsynchronousSubject{D}}) where D = ValidSubscribable{D}()
+as_subscribable(::Type{<:AsynchronousSubject{D}}) where D = SimpleSubscribableTrait{D}()
 
 is_exhausted(actor::AsynchronousSubject) = actor.is_completed || actor.is_error
 

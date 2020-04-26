@@ -24,7 +24,7 @@ struct ReplaySubject{D, S} <: Actor{D}
 end
 
 as_subject(::Type{<:ReplaySubject{D}})      where D = ValidSubject{D}()
-as_subscribable(::Type{<:ReplaySubject{D}}) where D = ValidSubscribable{D}()
+as_subscribable(::Type{<:ReplaySubject{D}}) where D = SimpleSubscribableTrait{D}()
 
 is_exhausted(actor::ReplaySubject) = is_exhausted(actor.subject)
 

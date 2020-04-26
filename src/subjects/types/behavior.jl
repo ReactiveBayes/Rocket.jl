@@ -20,7 +20,7 @@ mutable struct BehaviorSubject{D, S} <: Actor{D}
 end
 
 as_subject(::Type{<:BehaviorSubject{D}})      where D = ValidSubject{D}()
-as_subscribable(::Type{<:BehaviorSubject{D}}) where D = ValidSubscribable{D}()
+as_subscribable(::Type{<:BehaviorSubject{D}}) where D = SimpleSubscribableTrait{D}()
 
 is_exhausted(actor::BehaviorSubject) = is_exhausted(actor.subject)
 

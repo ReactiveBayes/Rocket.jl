@@ -43,9 +43,10 @@ function on_call!(::Type{L}, ::Type{L}, operator::NoopOperator, source) where L
     return proxy(L, source, NoopProxy{L}())
 end
 
-struct NoopProxy{L} <: ActorProxy end
+struct NoopProxy{L} <: ActorSourceProxy end
 
-actor_proxy!(proxy::NoopProxy{L}, actor) where L = NoopActor{L}(actor)
+actor_proxy!(proxy::NoopProxy{L}, actor)   where L = NoopActor{L}(actor)
+source_proxy!(proxy::NoopProxy{L}, source) where L = NoopSource{L}(source)
 
 struct NoopActor{L} <: Actor{L}
     actor
@@ -57,6 +58,15 @@ on_next!(actor::NoopActor{L}, data::L) where L = next!(actor.actor, data)
 on_error!(actor::NoopActor, err)               = error!(actor.actor, err)
 on_complete!(actor::NoopActor)                 = complete!(actor.actor)
 
-Base.show(io::IO, ::NoopOperator)         = print(io, "NoopOperator()")
-Base.show(io::IO, ::NoopProxy{L}) where L = print(io, "NoopProxy($L)")
-Base.show(io::IO, ::NoopActor{L}) where L = print(io, "NoopActor($L)")
+struct NoopSource{L} <: Subscribable{L}
+    source
+end
+
+function on_subscribe!(source::NoopSource, actor)
+    return subscribe!(source.source, actor)
+end
+
+Base.show(io::IO, ::NoopOperator)          = print(io, "NoopOperator()")
+Base.show(io::IO, ::NoopProxy{L})  where L = print(io, "NoopProxy($L)")
+Base.show(io::IO, ::NoopActor{L})  where L = print(io, "NoopActor($L)")
+Base.show(io::IO, ::NoopSource{L}) where L = print(io, "NoopSource($L)")
