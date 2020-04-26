@@ -36,7 +36,7 @@ struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
     values :: Vector{D}
 end
 
-getscheduler(::ArrayObservable{D, H}) where { D, H } = makescheduler(H)
+getscheduler(::ArrayObservable{D, H}) where { D, H } = makescheduler(D, H)
 
 function on_subscribe!(observable::ArrayObservable, actor, scheduler)
     for value in observable.values

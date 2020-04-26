@@ -43,4 +43,4 @@ See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled
 """
 function scheduled_complete! end
 
-makescheduler(::Type{H}) where H = H()
+makescheduler(::Type{D}, ::Type{H}) where { D, H } = H()
