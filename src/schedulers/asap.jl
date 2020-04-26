@@ -9,8 +9,6 @@ See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled
 """
 struct AsapScheduler end
 
-getscheduler(subscribable) = AsapScheduler()
-
 scheduled_subscription!(source, actor, scheduler::AsapScheduler) = on_subscribe!(source, actor, scheduler)
 
 scheduled_next!(actor, value, ::AsapScheduler) = on_next!(actor, value)

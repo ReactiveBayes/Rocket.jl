@@ -32,15 +32,17 @@ ArrayObservable wraps a regular Julia array into a synchronous observable
 
 See also: [`Subscribable`](@ref), [`from`](@ref)
 """
-struct ArrayObservable{D} <: Subscribable{D}
+struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
     values :: Vector{D}
 end
 
-function on_subscribe!(observable::ArrayObservable, actor)
+getscheduler(::ArrayObservable{D, H}) where { D, H } = makescheduler(H)
+
+function on_subscribe!(observable::ArrayObservable, actor, scheduler)
     for value in observable.values
-        next!(actor, value)
+        next!(actor, value, scheduler)
     end
-    complete!(actor)
+    complete!(actor, scheduler)
     return VoidTeardown()
 end
 
@@ -130,10 +132,10 @@ subscribe!(source, logger())
 
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-from(x)                    = from(as_array(x))
-from(a::Vector{D}) where D = ArrayObservable{D}(a)
+from(x; scheduler = AsapScheduler())                              = from(as_array(x); scheduler = scheduler)
+from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H } = ArrayObservable{D, H}(a)
 
-Base.:(==)(left::ArrayObservable{D},  right::ArrayObservable{D})  where D           = left.values == right.values
-Base.:(==)(left::ArrayObservable{D1}, right::ArrayObservable{D2}) where D1 where D2 = false
+Base.:(==)(left::ArrayObservable{D, H},  right::ArrayObservable{D, H}) where { D, H } = left.values == right.values
+Base.:(==)(left::ArrayObservable,        right::ArrayObservable) = false
 
-Base.show(io::IO, ::ArrayObservable{D}) where D = print(io, "ArrayObservable($D)")
+Base.show(io::IO, ::ArrayObservable{D, H}) where { D, H } = print(io, "ArrayObservable($D, $H)")

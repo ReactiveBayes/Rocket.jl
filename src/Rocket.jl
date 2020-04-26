@@ -8,6 +8,7 @@ include("teardown/void.jl")
 
 include("scheduler.jl")
 include("schedulers/asap.jl")
+include("schedulers/async.jl")
 
 include("actor.jl")
 include("subscribable.jl")

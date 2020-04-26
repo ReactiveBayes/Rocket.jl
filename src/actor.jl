@@ -123,9 +123,9 @@ actor_extract_type(::InvalidActorTrait,  actor)         = throw(InvalidActorTrai
 
 Base.eltype(actor::A) where { A <: AbstractActor } = actor_extract_type(actor)
 
-next!(actor)            = throw(MissingDataArgumentInNextCall())
-error!(actor)           = throw(MissingErrorArgumentInErrorCall())
-complete!(actor, extra) = throw(ExtraArgumentInCompleteCall())
+# next!(actor)            = throw(MissingDataArgumentInNextCall())
+# error!(actor)           = throw(MissingErrorArgumentInErrorCall())
+# complete!(actor, extra) = throw(ExtraArgumentInCompleteCall())
 
 """
     next!(actor, data)

@@ -42,3 +42,5 @@ Documentation placeholder for scheduled_complete!
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
 """
 function scheduled_complete! end
+
+makescheduler(::Type{H}) where H = H()
