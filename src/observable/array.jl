@@ -23,7 +23,7 @@ as_array(::NonScalar, x)           = collect(x)
 as_array(::UndefinedScalarness, x) = error("Value of type $(typeof(x)) has undefined scalarness type. \nConsider implement scalarness(::Type{<:$(typeof(x))}).")
 
 """
-    ArrayObservable{D}(values::Vector{D})
+    ArrayObservable{D, H}(values::Vector{D})
 
 ArrayObservable wraps a regular Julia array into a synchronous observable
 
