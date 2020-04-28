@@ -45,8 +45,6 @@ struct SkipNextActor{L, A} <: Actor{L}
     actor :: A
 end
 
-is_exhausted(actor::SkipNextActor) = is_exhausted(actor.actor)
-
 on_next!(actor::SkipNextActor{L}, data::L) where L = begin end
 on_error!(actor::SkipNextActor, err)               = error!(actor.actor, err)
 on_complete!(actor::SkipNextActor)                 = complete!(actor.actor)

@@ -58,8 +58,6 @@ struct TapOnCompleteActor{L, A, F} <: Actor{L}
     actor :: A
 end
 
-is_exhausted(actor::TapOnCompleteActor) = is_exhausted(actor.actor)
-
 on_next!(actor::TapOnCompleteActor{L}, data::L) where L = next!(actor.actor, data)
 on_error!(actor::TapOnCompleteActor, err)               = error!(actor.actor, err)
 on_complete!(actor::TapOnCompleteActor)                 = begin complete!(actor.actor); actor.tapFn(); end

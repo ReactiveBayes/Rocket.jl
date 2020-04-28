@@ -97,8 +97,6 @@ __process_delayed_message(actor::DelayActor{L}, message::DelayDataMessage{L}) wh
 __process_delayed_message(actor::DelayActor,    message::DelayErrorMessage)           = begin error!(actor.actor, message.err); close(actor); end
 __process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)        = begin complete!(actor.actor); close(actor); end
 
-is_exhausted(actor::DelayActor) = actor.is_cancelled || is_exhausted(actor.actor)
-
 on_next!(actor::DelayActor{L}, data::L) where L = put!(actor.channel, DelayQueueItem{L}(DelayDataMessage{L}(data), time()))
 on_error!(actor::DelayActor{L}, err)    where L = put!(actor.channel, DelayQueueItem{L}(DelayErrorMessage(err), time()))
 on_complete!(actor::DelayActor{L})      where L = put!(actor.channel, DelayQueueItem{L}(DelayCompleteMessage(), time()))

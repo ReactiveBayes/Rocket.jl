@@ -86,8 +86,6 @@ mutable struct LastActor{L, A} <: Actor{L}
     actor  :: A
 end
 
-is_exhausted(actor::LastActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::LastActor{L}, data::L) where L
     actor.last = data
 end

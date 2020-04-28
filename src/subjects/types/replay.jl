@@ -26,8 +26,6 @@ end
 as_subject(::Type{<:ReplaySubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:ReplaySubject{D}}) where D = ValidSubscribable{D}()
 
-is_exhausted(actor::ReplaySubject) = is_exhausted(actor.subject)
-
 function on_next!(subject::ReplaySubject{D}, data::D) where D
     push!(subject.cb, data)
     next!(subject.subject, data)

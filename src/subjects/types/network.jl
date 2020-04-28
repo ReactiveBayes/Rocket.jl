@@ -1,5 +1,5 @@
 export LocalNetworkSubject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!, is_exhausted
+export on_next!, on_error!, on_complete!
 export close
 
 export LocalNetworkSubjectFactory, create_subject
@@ -32,9 +32,6 @@ end
 
 as_subject(::Type{<:LocalNetworkSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:LocalNetworkSubject{D}}) where D = ValidSubscribable{D}()
-
-# TODO
-is_exhausted(actor::LocalNetworkSubject) = false
 
 function on_next!(subject::LocalNetworkSubject{D}, data::D) where D
     if !subject.is_closed

@@ -83,8 +83,6 @@ mutable struct ScanActor{L, R, A, F} <: Actor{L}
     actor   :: A
 end
 
-is_exhausted(actor::ScanActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::ScanActor{L, R}, data::L) where { L, R }
     actor.current = actor.scanFn(data, actor.current)
     next!(actor.actor, actor.current)
@@ -124,8 +122,6 @@ mutable struct ScanNoSeedActor{L, A, F} <: Actor{L}
     current :: Union{L, Nothing}
     actor   :: A
 end
-
-is_exhausted(actor::ScanNoSeedActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::ScanNoSeedActor{L}, data::L) where { L }
     if actor.current === nothing

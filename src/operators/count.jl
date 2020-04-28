@@ -55,8 +55,6 @@ struct CountActor{L, A} <: Actor{L}
     CountActor{L, A}(actor::A) where { L, A } = new(actor, CountActorProps())
 end
 
-is_exhausted(actor::CountActor) = is_exhausted(actor.actor)
-
 on_next!(actor::CountActor, data) = begin actor.props.current += 1 end
 on_error!(actor::CountActor, err) = begin error!(actor.actor, err) end
 on_complete!(actor::CountActor)   = begin next!(actor.actor, actor.props.current); complete!(actor.actor) end

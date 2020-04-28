@@ -29,8 +29,6 @@ struct ServerActor{D, A, P} <: Actor{D}
     end
 end
 
-is_exhausted(actor::ServerActor) = !isopen(actor.server)
-
 function on_next!(actor::ServerActor, data)
     filter!(socket -> __send_next(socket, data), actor.sockets)
 end

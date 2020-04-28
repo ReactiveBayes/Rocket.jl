@@ -51,8 +51,6 @@ struct NoopActor{L} <: Actor{L}
     actor
 end
 
-is_exhausted(actor::NoopActor) = is_exhausted(actor.actor)
-
 on_next!(actor::NoopActor{L}, data::L) where L = next!(actor.actor, data)
 on_error!(actor::NoopActor, err)               = error!(actor.actor, err)
 on_complete!(actor::NoopActor)                 = complete!(actor.actor)

@@ -55,8 +55,6 @@ mutable struct MinActor{L, A} <: Actor{L}
     actor   :: A
 end
 
-is_exhausted(actor::MinActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::MinActor{L}, data::L) where L
     if actor.current === nothing
         actor.current = data

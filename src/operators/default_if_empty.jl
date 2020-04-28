@@ -46,8 +46,6 @@ mutable struct DefaultIfEmptyActor{L, A} <: Actor{L}
     default    :: L
 end
 
-is_exhausted(actor::DefaultIfEmptyActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::DefaultIfEmptyActor{L}, data::L) where L
     actor.is_emitted = true
     next!(actor.actor, data)
