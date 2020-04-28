@@ -15,8 +15,8 @@ include("../test_helpers.jl")
             values = @ts([ 1, 2, 3, 1, 2, 3, c ])
         ),
         (
-            source = from(1:5) |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> obs) |> take(10),
-            values = @ts([ 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, c ])
+            source = from(1:5) |> async() |> safe() |> map(Int, (d) -> d == 4 ? error(4) : d) |> catch_error((err, obs) -> obs) |> take(10),
+            values = @ts([ 1 ] ~ [ 2 ] ~ [ 3 ] ~ [ 1 ] ~ [ 2 ] ~ [ 3 ] ~ [ 1 ] ~ [ 2 ] ~ [ 3 ] ~ [ 1, c ])
         ),
         (
             source = from(1:5) |> switch_map(Int, (d) -> d == 4 ? throwError(4, Int) : of(d)) |> catch_error((err, obs) -> of(5)),
