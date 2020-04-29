@@ -1,5 +1,5 @@
 export SubscribableTrait, ValidSubscribableTrait, SimpleSubscribableTrait, ScheduledSubscribableTrait, InvalidSubscribable
-export Subscribable, ScheduledSubscribable, as_subscribable
+export AbstractSubscribable, Subscribable, ScheduledSubscribable, as_subscribable
 export subscribe!, on_subscribe!
 export subscribable_extract_type
 
@@ -20,7 +20,7 @@ abstract type SubscribableTrait end
 Abstract type for all possible valid subscribable traits.
 There are two subtypes for `ValidSubscribableTrait`: `SimpleSubscribableTrait` and `ScheduledSubscribableTrait`
 
-See also: [`SubscribableTrait`](@ref), [`SimpleSubscribable`](@ref), [`ScheduledSubscribableTrait`](@ref)
+See also: [`SubscribableTrait`](@ref), [`SimpleSubscribableTrait`](@ref), [`ScheduledSubscribableTrait`](@ref)
 """
 abstract type ValidSubscribableTrait{T} <: SubscribableTrait end
 
