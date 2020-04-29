@@ -45,8 +45,6 @@ mutable struct ErrorIfEmptyActor{L, A} <: Actor{L}
     err
 end
 
-is_exhausted(actor::ErrorIfEmptyActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::ErrorIfEmptyActor{L}, data::L) where L
     actor.is_emitted = true
     next!(actor.actor, data)

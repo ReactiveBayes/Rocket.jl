@@ -53,8 +53,6 @@ mutable struct EnumerateActor{L, A} <: Actor{L}
     actor   :: A
 end
 
-is_exhausted(actor::EnumerateActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::EnumerateActor{L}, data::L) where L
     current = actor.current
     actor.current += 1

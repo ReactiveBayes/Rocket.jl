@@ -68,8 +68,6 @@ mutable struct DebounceTimeActor{L, A} <: Actor{L}
     end
 end
 
-is_exhausted(actor::DebounceTimeActor) = actor.is_completed || actor.is_cancelled || is_exhausted(actor.actor)
-
 function on_next!(actor::DebounceTimeActor{L}, data::L) where L
     actor.last_received = data
     notify(actor.condition)

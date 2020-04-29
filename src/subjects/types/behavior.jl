@@ -22,8 +22,6 @@ end
 as_subject(::Type{<:BehaviorSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:BehaviorSubject{D}}) where D = ValidSubscribable{D}()
 
-is_exhausted(actor::BehaviorSubject) = is_exhausted(actor.subject)
-
 function on_next!(subject::BehaviorSubject{D}, data::D) where D
     subject.current = data
     next!(subject.subject, data)

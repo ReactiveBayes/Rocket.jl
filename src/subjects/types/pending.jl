@@ -11,8 +11,6 @@ end
 as_subject(::Type{<:PendingSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:PendingSubject{D}}) where D = ValidSubscribable{D}()
 
-is_exhausted(actor::PendingSubject) = is_exhausted(actor.subject)
-
 function on_next!(subject::PendingSubject{D}, data::D) where D
     subject.value = data
     if subject.subject !== nothing

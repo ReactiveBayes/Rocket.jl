@@ -18,8 +18,6 @@ mutable struct SyncActor{T, A, W} <: Actor{T}
     SyncActor{T, A, W}(actor::A) where { T, A, W } = new(Condition(), false, false, actor)
 end
 
-is_exhausted(actor::SyncActor) = actor.is_completed || actor.is_failed || is_exhausted(actor.actor)
-
 function on_next!(actor::SyncActor{T}, data::T) where T
     next!(actor.actor, data)
 end

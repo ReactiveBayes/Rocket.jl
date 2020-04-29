@@ -25,8 +25,6 @@ end
 as_subject(::Type{<:SynchronousSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:SynchronousSubject{D}}) where D = ValidSubscribable{D}()
 
-is_exhausted(actor::SynchronousSubject) = actor.is_completed || actor.is_error
-
 function on_next!(subject::SynchronousSubject{D}, data::D) where D
     failed_actors = nothing
     actors        = copy(subject.actors)

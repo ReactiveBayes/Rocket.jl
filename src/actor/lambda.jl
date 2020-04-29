@@ -19,8 +19,6 @@ struct LambdaActor{D, NextCallback, ErrorCallback, CompleteCallback} <: Actor{D}
     on_complete :: CompleteCallback
 end
 
-is_exhausted(actor::LambdaActor) = false
-
 function on_next!(actor::LambdaActor{D}, data::D) where D
     if actor.on_next !== nothing
         actor.on_next(data)

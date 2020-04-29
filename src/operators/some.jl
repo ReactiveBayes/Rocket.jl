@@ -49,8 +49,6 @@ struct SomeActor{L, A} <: Actor{Union{L, Nothing}}
     actor :: A
 end
 
-is_exhausted(actor::SomeActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::SomeActor{L}, data::Union{L, Nothing}) where L
     if data !== nothing
         next!(actor.actor, data)

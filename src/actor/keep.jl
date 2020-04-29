@@ -27,8 +27,6 @@ struct KeepActor{T} <: Actor{T}
     KeepActor{T}() where T = new(Vector{T}())
 end
 
-is_exhausted(actor::KeepActor) = false
-
 on_next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
 on_error!(actor::KeepActor, err)               = error(err)
 on_complete!(actor::KeepActor)                 = begin end

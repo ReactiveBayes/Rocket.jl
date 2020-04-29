@@ -80,8 +80,6 @@ mutable struct ReduceActor{L, R, A, F} <: Actor{L}
     actor    :: A
 end
 
-is_exhausted(actor::ReduceActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::ReduceActor{L, R}, data::L) where L where R
     actor.current = actor.reduceFn(data, actor.current)
 end
@@ -126,8 +124,6 @@ mutable struct ReduceNoSeedActor{L, A, F} <: Actor{L}
     current  :: Union{L, Nothing}
     actor    :: A
 end
-
-is_exhausted(actor::ReduceNoSeedActor) = is_exhausted(actor.actor)
 
 function on_next!(actor::ReduceNoSeedActor{L}, data::L) where L
     if actor.current === nothing

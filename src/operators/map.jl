@@ -57,8 +57,6 @@ struct MapActor{L, A, F} <: Actor{L}
     actor      :: A
 end
 
-is_exhausted(actor::MapActor) = is_exhausted(actor.actor)
-
 on_next!(actor::MapActor{L},  data::L) where L = next!(actor.actor, actor.mappingFn(data))
 on_error!(actor::MapActor, err)                = error!(actor.actor, err)
 on_complete!(actor::MapActor)                  = complete!(actor.actor)

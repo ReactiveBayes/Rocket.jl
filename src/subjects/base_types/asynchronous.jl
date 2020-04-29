@@ -37,8 +37,6 @@ end
 as_subject(::Type{<:AsynchronousSubject{D}})      where D = ValidSubject{D}()
 as_subscribable(::Type{<:AsynchronousSubject{D}}) where D = ValidSubscribable{D}()
 
-is_exhausted(actor::AsynchronousSubject) = actor.is_completed || actor.is_error
-
 function on_next!(subject::AsynchronousSubject{D}, data::D) where D
     channels = filter((s) -> isopen(s), subject.subscribers)
     __async_subject_multicast_message(channels, AsynchronousSubjectNextMessage{D}(data))

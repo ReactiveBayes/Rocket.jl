@@ -84,13 +84,9 @@ struct SwitchMapActor{L, R, F, A} <: Actor{L}
     SwitchMapActor{L, R, F, A}(mappingFn::F, actor::A) where { L, R, F, A } = new(mappingFn, actor, SwitchMapActorProps())
 end
 
-is_exhausted(actor::SwitchMapActor) = is_exhausted(actor.actor)
-
 struct SwitchMapInnerActor{R, S} <: Actor{R}
     switch :: S
 end
-
-is_exhausted(actor::SwitchMapInnerActor) = is_exhausted(actor.switch)
 
 on_next!(actor::SwitchMapInnerActor{R}, data::R) where R = next!(actor.switch.actor, data)
 on_error!(actor::SwitchMapInnerActor,   err)             = error!(actor.switch, err)
