@@ -339,27 +339,27 @@ function call_operator!(::InvalidOperatorTrait, as_subscribable, operator, sourc
     throw(InvalidOperatorTraitUsageError(operator))
 end
 
-function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{NotL}, operator, source) where L where R where NotL
+function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribableTrait{NotL}, operator, source) where L where R where NotL
     throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
 end
 
-function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{L}, operator, source) where L where R
+function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribableTrait{L}, operator, source) where L where R
     on_call!(L, R, operator, source)
 end
 
-function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{NotL}, operator, source) where L where NotL
+function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribableTrait{NotL}, operator, source) where L where NotL
     throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
 end
 
-function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{L}, operator, source) where L
+function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribableTrait{L}, operator, source) where L
     on_call!(L, operator_right(operator, L), operator, source)
 end
 
-function call_operator!(::RightTypedOperatorTrait{R}, ::ValidSubscribable{L}, operator, source) where L where R
+function call_operator!(::RightTypedOperatorTrait{R}, ::ValidSubscribableTrait{L}, operator, source) where L where R
     on_call!(L, R, operator, source)
 end
 
-function call_operator!(::InferableOperatorTrait, ::ValidSubscribable{L}, operator, source) where L
+function call_operator!(::InferableOperatorTrait, ::ValidSubscribableTrait{L}, operator, source) where L
     on_call!(L, operator_right(operator, L), operator, source)
 end
 

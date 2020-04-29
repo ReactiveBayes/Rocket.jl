@@ -67,9 +67,9 @@ call_source_proxy!(::InvalidProxy,          as_subscribable,       proxy, source
 call_source_proxy!(as_proxy,                ::InvalidSubscribable, proxy, source) = error("Type $(typeof(source)) is not a valid subscribable type. \nConsider extending your subscribable with Subscribable{T} abstract type or implement as_subscribable(::Type{<:$(typeof(source))}).")
 
 # Invoke valid proxy and source
-call_source_proxy!(::ValidActorProxy,       ::ValidSubscribable{D}, proxy, source) where D = source
-call_source_proxy!(::ValidSourceProxy,      ::ValidSubscribable{D}, proxy, source) where D = source_proxy!(proxy, source)
-call_source_proxy!(::ValidActorSourceProxy, ::ValidSubscribable{D}, proxy, source) where D = source_proxy!(proxy, source)
+call_source_proxy!(::ValidActorProxy,       ::ValidSubscribableTrait{D}, proxy, source) where D = source
+call_source_proxy!(::ValidSourceProxy,      ::ValidSubscribableTrait{D}, proxy, source) where D = source_proxy!(proxy, source)
+call_source_proxy!(::ValidActorSourceProxy, ::ValidSubscribableTrait{D}, proxy, source) where D = source_proxy!(proxy, source)
 
 """
     ProxyObservable{D}(proxied_source, proxy)
@@ -159,4 +159,4 @@ proxy(::Type{D}, source, proxy) where D = as_proxy_observable(D, call_source_pro
 as_proxy_observable(::Type{D}, proxied_source::S, proxy) where D where S = as_proxy_observable(D, as_subscribable(S), proxied_source, proxy)
 
 as_proxy_observable(::Type{D}, ::InvalidSubscribable,  proxied_source, proxy) where D = throw(InvalidSubscribableTraitUsageError(proxied_source))
-as_proxy_observable(::Type{D}, ::ValidSubscribable,    proxied_source::S, proxy::P) where { D, S, P } = ProxyObservable{D, S, P}(proxied_source, proxy)
+as_proxy_observable(::Type{D}, ::ValidSubscribableTrait,    proxied_source::S, proxy::P) where { D, S, P } = ProxyObservable{D, S, P}(proxied_source, proxy)

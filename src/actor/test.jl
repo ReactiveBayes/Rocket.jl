@@ -157,7 +157,7 @@ function test_on_source(::InvalidSubscribable, source, test, maximum_wait, actor
     throw(InvalidSubscribableTraitUsageError(source))
 end
 
-function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, actor, check_timings) where T
+function test_on_source(::ValidSubscribableTrait{T}, source, test, maximum_wait, actor, check_timings) where T
     actor = actor === nothing ? test_actor(T) : actor
 
     is_completed = false
