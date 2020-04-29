@@ -28,7 +28,7 @@ include("../test_helpers.jl")
         ),
         (
             source = completed() |> async() |> take_until(of(1)),
-            values = @ts()
+            values = @ts(c)
         ),
         (
             source = completed() |> take_until(timer(100)),
@@ -44,7 +44,7 @@ include("../test_helpers.jl")
         ),
         (
             source = throwError(1) |> async() |> take_until(of(1)),
-            values = @ts()
+            values = @ts(c)
         ),
         (
             source = throwError(1) |> take_until(timer(100)),

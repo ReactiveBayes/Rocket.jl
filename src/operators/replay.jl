@@ -21,8 +21,6 @@ struct ReplayActor{L} <: NextActor{L}
     replay_observable
 end
 
-is_exhausted(actor::ReplayActor) = false
-
 on_next!(actor::ReplayActor{L}, data::L) where L = push!(actor.replay_observable.cb, data)
 
 struct ReplayProxy{L} <: SourceProxy

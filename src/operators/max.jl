@@ -55,8 +55,6 @@ mutable struct MaxActor{L, A} <: Actor{L}
     actor   :: A
 end
 
-is_exhausted(actor::MaxActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::MaxActor{L}, data::L) where L
     if actor.current === nothing
         actor.current = data

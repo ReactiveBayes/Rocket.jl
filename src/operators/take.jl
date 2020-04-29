@@ -71,8 +71,6 @@ struct TakeActor{L, A} <: Actor{L}
     TakeActor{L, A}(maxcount::Int, actor::A) where { L, A } = new(maxcount, actor, TakeActorProps())
 end
 
-is_exhausted(actor::TakeActor) = actor.props.isdisposed || is_exhausted(actor.actor)
-
 function on_next!(actor::TakeActor{L}, data::L) where L
     props = actor.props
     if !props.isdisposed

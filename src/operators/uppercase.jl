@@ -47,8 +47,6 @@ struct UppercaseActor{L, A} <: Actor{L}
     actor :: A
 end
 
-is_exhausted(actor::UppercaseActor) = is_exhausted(actor.actor)
-
 on_next!(actor::UppercaseActor{L}, data::L) where L = next!(actor.actor, uppercase(data))
 on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)
 on_complete!(actor::UppercaseActor)                 = complete!(actor.actor)

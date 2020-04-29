@@ -49,8 +49,6 @@ struct ToArrayActor{L, A} <: Actor{L}
     ToArrayActor{L, A}(actor::A) where { L, A } = new(Vector{L}(), actor)
 end
 
-is_exhausted(actor::ToArrayActor) = is_exhausted(actor.actor)
-
 on_next!(actor::ToArrayActor, data::L) where L = push!(actor.values, data)
 on_error!(actor::ToArrayActor, err)            = error!(actor.actor, err)
 

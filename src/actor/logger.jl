@@ -18,8 +18,6 @@ struct LoggerActor{D, O} <: Actor{D}
     LoggerActor{D, O}(name::String, io::O) where { D, O } = new(name, io)
 end
 
-is_exhausted(actor::LoggerActor) = false
-
 # Remark: Here nothing for `io` is a workaround for https://github.com/JuliaDocs/Documenter.jl/issues/1245 where println(actor.io, ...) fails on doctest even if actor.io === stdout
 
 on_next!(actor::LoggerActor{D}, data::D) where D = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Data: $data")

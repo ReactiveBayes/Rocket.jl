@@ -35,8 +35,6 @@ mutable struct SafeActor{L, A} <: Actor{L}
     current_subscription :: Union{Nothing, Teardown}
 end
 
-is_exhausted(actor::SafeActor) = actor.is_failed || is_exhausted(actor.actor)
-
 function on_next!(actor::SafeActor{L}, data::L) where L
     if !actor.is_failed
         try

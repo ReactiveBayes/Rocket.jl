@@ -47,8 +47,6 @@ struct LowercaseActor{L, A} <: Actor{L}
     actor :: A
 end
 
-is_exhausted(actor::LowercaseActor) = is_exhausted(actor.actor)
-
 on_next!(actor::LowercaseActor{L}, data::L) where L = next!(actor.actor, lowercase(data))
 on_error!(actor::LowercaseActor, err)       where L = error!(actor.actor, err)
 on_complete!(actor::LowercaseActor)         where L = complete!(actor.actor)

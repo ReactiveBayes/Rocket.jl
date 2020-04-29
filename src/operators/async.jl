@@ -77,8 +77,6 @@ __process_async_message(actor::AsyncActor{L}, message::AsyncDataMessage{L}) wher
 __process_async_message(actor::AsyncActor,    message::AsyncErrorMessage)           = begin error!(actor.actor, message.err); close(actor); end
 __process_async_message(actor::AsyncActor,    message::AsyncCompleteMessage)        = begin complete!(actor.actor); close(actor); end
 
-is_exhausted(actor::AsyncActor) = actor.is_cancelled || is_exhausted(actor.actor)
-
 on_next!(actor::AsyncActor{L}, data::L) where L = begin !actor.is_cancelled && begin put!(actor.channel, AsyncDataMessage{L}(data)); yield(); end end
 on_error!(actor::AsyncActor{L}, err)    where L = begin !actor.is_cancelled && begin put!(actor.channel, AsyncErrorMessage(err)); yield() end end
 on_complete!(actor::AsyncActor{L})      where L = begin !actor.is_cancelled && begin put!(actor.channel, AsyncCompleteMessage()); yield() end end

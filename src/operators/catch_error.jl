@@ -60,8 +60,6 @@ mutable struct CatchErrorActor{L, A, F} <: Actor{L}
     current_subscription :: Union{Nothing, Teardown}
 end
 
-is_exhausted(actor::CatchErrorActor) = actor.is_completed || is_exhausted(actor.actor)
-
 function on_next!(actor::CatchErrorActor{L}, data::L) where L
     if !actor.is_completed
         next!(actor.actor, data)

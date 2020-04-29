@@ -4,7 +4,6 @@ export AbstractActorFactory, create_actor
 export next!, error!, complete!
 export on_next!, on_error!, on_complete!
 export as_actor, actor_extract_type
-export is_exhausted
 
 export InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
 export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
@@ -159,15 +158,6 @@ See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
 complete!(actor::T)            where T = actor_on_complete!(as_actor(T), actor)
 complete!(actor::T, scheduler) where T = actor_on_complete!(as_actor(T), actor, scheduler)
-
-"""
-    is_exhausted(actor)
-
-This function is used to check if actor can handle any further message events
-
-See also: [`AbstractActor`](@ref)
-"""
-is_exhausted(actor) = false
 
 actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
 actor_on_next!(::ValidActorTrait{T},      actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))

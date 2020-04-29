@@ -57,8 +57,6 @@ struct FilterActor{L, A, F} <: Actor{L}
     actor    :: A
 end
 
-is_exhausted(actor::FilterActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::FilterActor{L}, data::L) where L
     if actor.filterFn(data)
         next!(actor.actor, data)

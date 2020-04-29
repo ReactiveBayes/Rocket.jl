@@ -25,8 +25,6 @@ struct TupleWithLeftActor{T, L, A} <: Actor{L}
     actor :: A
 end
 
-is_exhausted(actor::TupleWithLeftActor) = is_exhausted(actor.actor)
-
 on_next!(actor::TupleWithLeftActor{T, L}, data::L) where { T, L } = next!(actor.actor, (actor.value, data))
 on_error!(actor::TupleWithLeftActor, err)                         = error!(actor.actor, err)
 on_complete!(actor::TupleWithLeftActor)                           = complete!(actor.actor)
@@ -57,8 +55,6 @@ struct TupleWithRightActor{T, L, A} <: Actor{L}
     value :: T
     actor :: A
 end
-
-is_exhausted(actor::TupleWithRightActor) = is_exhausted(actor.actor)
 
 on_next!(actor::TupleWithRightActor{T, L}, data::L) where { T, L } = next!(actor.actor, (data, actor.value))
 on_error!(actor::TupleWithRightActor, err)                         = error!(actor.actor, err)

@@ -3,7 +3,7 @@
 ## How to create a custom Actor
 
 At first custom actor should implement a custom method for the [`as_actor`](@ref) function.
-Rocket.jl also provides a number of helper actor abstract types with predefined [`as_actor`](@ref) method behavior (see [Traits API section](@ref actors_api_traits)). Optionally custom actor may implement a custom method for the [`is_exhausted`](@ref) function which is used to check if actor can handle any further message events.
+Rocket.jl also provides a number of helper actor abstract types with predefined [`as_actor`](@ref) method behavior (see [Traits API section](@ref actors_api_traits)).
 
 ```julia
 using Rocket
@@ -12,7 +12,6 @@ struct MyCustomActor end
 
 as_actor(::Type{<:MyCustomActor}) = Rocket.BaseActorTrait{Int}()
 
-is_exhausted(actor::MyCustomActor) = # some custom logic here, false by default for all actors.
 ```
 
 or
@@ -75,7 +74,6 @@ CompletionActor
 next!
 error!
 complete!
-is_exhausted
 ```
 
 ```@docs

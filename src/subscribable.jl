@@ -168,24 +168,19 @@ ERROR: Type Int64 is not a valid subscribable type.
 See also: [`on_subscribe!`](@ref), [`as_subscribable`](@ref)
 """
 function subscribe!(subscribable::T, actor::S) where T where S
-    subscribable_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
+    return subscribable_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
 end
 
 function subscribe!(subscribable::T, actor_factory::F) where T where { F <: AbstractActorFactory }
-    subscribable_on_subscribe_with_factory!(as_subscribable(T), subscribable, actor_factory)
+    return subscribable_on_subscribe_with_factory!(as_subscribable(T), subscribable, actor_factory)
 end
 
 subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
 subscribable_on_subscribe!(::ValidSubscribable{T},  ::InvalidActorTrait,   subscribable, actor) where T          = throw(InvalidActorTraitUsageError(actor))
 subscribable_on_subscribe!(::ValidSubscribable{T1}, ::ValidActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 
-function subscribable_on_subscribe!(subscribable_trait::ValidSubscribable{T1}, actor_trait::ValidActorTrait{T2}, subscribable::S, actor) where { T2, T1 <: T2, S }
-    if !is_exhausted(actor)
-        return subscribable_execute_subscription!(subscribable_trait, subscribable, actor)
-    else
-        complete!(actor)
-        return VoidTeardown()
-    end
+function subscribable_on_subscribe!(S::ValidSubscribable{T1}, actor_trait::ValidActorTrait{T2}, subscribable, actor) where { T2, T1 <: T2, S }
+    return subscribable_execute_subscription!(S, subscribable, actor)
 end
 
 subscribable_execute_subscription!(::SimpleSubscribableTrait,    subscribable, actor) = on_subscribe!(subscribable, actor)
