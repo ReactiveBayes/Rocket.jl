@@ -9,6 +9,7 @@ include("teardown/void.jl")
 include("scheduler.jl")
 include("schedulers/asap.jl")
 include("schedulers/async.jl")
+include("schedulers/threads.jl")
 
 include("actor.jl")
 include("subscribable.jl")
@@ -94,6 +95,7 @@ include("operators/skip_next.jl")
 include("operators/skip_error.jl")
 include("operators/skip_complete.jl")
 include("operators/schedule_on.jl")
+include("operators/parallel.jl")
 
 include("extensions/observable/single.jl")
 
