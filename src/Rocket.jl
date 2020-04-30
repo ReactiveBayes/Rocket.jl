@@ -93,6 +93,7 @@ include("operators/debounce_time.jl")
 include("operators/skip_next.jl")
 include("operators/skip_error.jl")
 include("operators/skip_complete.jl")
+include("operators/schedule_on.jl")
 
 include("extensions/observable/single.jl")
 
