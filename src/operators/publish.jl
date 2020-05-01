@@ -1,34 +1,30 @@
 export publish
 export publish_behavior
 export publish_replay
-export publish_pending
 
 """
-    publish(; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M
+    publish(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
 
-`publish()` is a shortcut for `multicast(make_subject_factory())`
+`publish()` is a shortcut for `multicast(SubjectFactory())`
 
-See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`make_subject`](@ref)
+See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`SubjectFactory`](@ref)
 """
-publish(; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = multicast(make_subject_factory(mode = mode))
-
-"""
-    publish_behavior(default; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M
-
-`publish_behavior(default)` is a shortcut for `multicast(make_behavior_subject_factory(default))`
-
-See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`make_behavior_subject`](@ref)
-"""
-publish_behavior(default; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = multicast(make_behavior_subject_factory(default, mode = mode))
+publish(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(SubjectFactory(scheduler))
 
 """
-    publish_replay(count; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M
+    publish_behavior(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
 
-`publish_replay(count)` is a shortcut for `multicast(make_replay _subject_factory(count))`
+`publish_behavior(default)` is a shortcut for `multicast(BehaviorSubjectFactory(default))`
 
-See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`make_replay_subject`](@ref)
+See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`BehaviorSubjectFactory`](@ref)
 """
-publish_replay(count; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = multicast(make_replay_subject_factory(count, mode = mode))
+publish_behavior(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(BehaviorSubjectFactory(default, scheduler = scheduler))
 
-# TODO: Untested and undocumented
-publish_pending(; mode::Val{M} = DEFAULT_SUBJECT_MODE) where M = multicast(make_pending_subject_factory(mode = mode))
+"""
+    publish_replay(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+
+`publish_replay(size)` is a shortcut for `multicast(ReplaySubjectFactory(size))`
+
+See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`ReplaySubjectFactory`](@ref)
+"""
+publish_replay(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(ReplaySubjectFactory(size, scheduler = scheduler))
