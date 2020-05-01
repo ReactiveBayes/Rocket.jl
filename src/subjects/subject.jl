@@ -1,4 +1,4 @@
-export Subject
+export Subject, SubjectFactory
 
 import Base: show
 
@@ -25,20 +25,17 @@ Base.show(io::IO, ::SubjectProps)            = print(io, "SubjectProps()")
 
 ##
 
-struct Subject{D, H, I} <: Actor{D}
+struct Subject{D, H, I} <: AbstractSubject{D}
     listeners :: Vector{SubjectListener{I}}
     props     :: SubjectProps
     scheduler :: H
 
-    Subject{D, H, I}(scheduler::H) where { D, H, I } = new(Vector{SubjectListener{I}}(), SubjectProps(), scheduler)
+    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(Vector{SubjectListener{I}}(), SubjectProps(), scheduler)
 end
 
-function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H }
+function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler }
     return Subject{D, H, instancetype(D, H)}(scheduler)
 end
-
-as_subject(::Type{ <: Subject{D} })      where D = ValidSubject{D}()
-as_subscribable(::Type{ <: Subject{D} }) where D = SimpleSubscribableTrait{D}()
 
 Base.show(io::IO, ::Type{ <: Subject{ D, H }}) where { D, H } = print(io, "Subject{$D, $H}")
 Base.show(io::IO, ::Subject{D, H})             where { D, H } = print(io, "Subject($D, $H)")
@@ -161,7 +158,7 @@ Base.show(io::IO, ::SubjectSubscription)            where { D, H } = print(io, "
 
 ##
 
-struct SubjectFactory{H} <: AbstractSubjectFactory
+struct SubjectFactory{ H <: AbstractScheduler } <: AbstractSubjectFactory
     scheduler :: H
 end
 

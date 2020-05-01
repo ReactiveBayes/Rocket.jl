@@ -26,7 +26,7 @@ A variant of Subject that requires an initial value and emits its current value 
 
 See also: [`make_behavior_subject`](@ref), [`make_subject`](@ref)
 """
-struct BehaviorSubjectInstance{D, S} <: Actor{D}
+struct BehaviorSubjectInstance{D, S} <: AbstractSubject{D}
     subject :: S
     props   :: BehaviourSubjectProps{D}
 end
@@ -34,11 +34,11 @@ end
 Base.show(io::IO, ::Type{ <: BehaviorSubjectInstance{D, S} }) where { D, S } = print(io, "BehaviorSubject{$D, $S}")
 Base.show(io::IO, ::BehaviorSubjectInstance{D, S})            where { D, S } = print(io, "BehaviorSubject($D, $S)")
 
-function BehaviorSubject(value::D) where { D, H }
+function BehaviorSubject(value::D) where D
     return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
 end
 
-function BehaviorSubject(::Type{D}, value) where { D }
+function BehaviorSubject(::Type{D}, value) where D
     return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
 end
 
@@ -53,9 +53,6 @@ end
 as_behavior_subject(::Type{D},  ::InvalidSubject,    current,     subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
 as_behavior_subject(::Type{D1}, ::ValidSubject{D2},  current,     subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
 as_behavior_subject(::Type{D},  ::ValidSubject{D},   current::D,  subject::S) where { D, S }   = BehaviorSubjectInstance{D, S}(subject, BehaviourSubjectProps{D}(current))
-
-as_subject(::Type{<:BehaviorSubjectInstance{D}})      where D = ValidSubject{D}()
-as_subscribable(::Type{<:BehaviorSubjectInstance{D}}) where D = SimpleSubscribableTrait{D}()
 
 ##
 
@@ -100,7 +97,7 @@ function BehaviorSubjectFactory(default, factory::F) where { F <: AbstractSubjec
     return BehaviorSubjectFactoryInstance(factory, default)
 end
 
-function BehaviorSubjectFactory(default; scheduler::H = AsapScheduler()) where H
+function BehaviorSubjectFactory(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
     return BehaviorSubjectFactoryInstance(SubjectFactory{H}(scheduler), default)
 end
 

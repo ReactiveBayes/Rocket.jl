@@ -133,8 +133,8 @@ subscribe!(source, logger())
 
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-from(x; scheduler = AsapScheduler())                              = from(as_array(x); scheduler = scheduler)
-from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H } = ArrayObservable{D, H}(copy(a), scheduler)
+from(x; scheduler = AsapScheduler())                                                   = from(as_array(x); scheduler = scheduler)
+from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler } = ArrayObservable{D, H}(copy(a), scheduler)
 
 Base.:(==)(left::ArrayObservable{D, H},  right::ArrayObservable{D, H}) where { D, H } = left.values == right.values
 Base.:(==)(left::ArrayObservable,        right::ArrayObservable) = false

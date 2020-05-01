@@ -1,3 +1,13 @@
+
+"""
+    AbstractScheduler
+
+Documentation placeholder for AbstractScheduler
+
+See also: [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
+"""
+abstract type AbstractScheduler end
+
 """
     getscheduler
 

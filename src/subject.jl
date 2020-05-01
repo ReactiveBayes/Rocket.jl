@@ -1,6 +1,6 @@
 export SubjectTrait
 export ValidSubject, InvalidSubject, as_subject
-export AbstractSubjectFactory, create_subject
+export AbstractSubject, AbstractSubjectFactory, create_subject
 
 export InvalidSubjectTraitUsageError, InconsistentSubjectDataTypesError
 export MissingCreateSubjectFactoryImplementationError
@@ -29,6 +29,13 @@ See also: [`SubjectTrait`](@ref)
 struct InvalidSubject  <: SubjectTrait end
 
 """
+Supertype for Subject types. Automatically specifies `ValidSubject`, `SimpleSubscribableTrait` and `BaseActorTrait` traits.
+
+See also: [`Subject`](@ref), [`ValidSubject`](@ref), [`SimpleSubscribableTrait`](@ref), [`BaseActorTrait`](@ref)
+"""
+abstract type AbstractSubject{D} end
+
+"""
     as_subject(::Type)
 
 This function checks subject trait behavior specification. Should be used explicitly to specify subject trait behavior for any object type.
@@ -36,6 +43,10 @@ This function checks subject trait behavior specification. Should be used explic
 See also: [`SubjectTrait`](@ref)
 """
 as_subject(::Type) = InvalidSubject()
+
+as_subject(::Type{ <: AbstractSubject{D} })      where D = ValidSubject{D}()
+as_actor(::Type{ <: AbstractSubject{D} })        where D = BaseActorTrait{D}()
+as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTrait{D}()
 
 
 # -------------------------------- #

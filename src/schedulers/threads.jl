@@ -10,7 +10,7 @@ import Base: show
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
-struct ThreadsScheduler end
+struct ThreadsScheduler <: AbstractScheduler end
 
 Base.show(io::IO, ::Type{<:ThreadsScheduler}) = print(io, "ThreadsScheduler")
 Base.show(io::IO, ::ThreadsScheduler)         = print(io, "ThreadsScheduler()")

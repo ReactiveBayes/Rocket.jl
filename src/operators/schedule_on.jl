@@ -4,7 +4,7 @@ import Base: show
 
 # TODO : Untested and undocumented
 
-schedule_on(scheduler::H) where H = ScheduleOnOperator{H}(scheduler)
+schedule_on(scheduler::H) where { H <: AbstractScheduler } = ScheduleOnOperator{H}(scheduler)
 
 struct ScheduleOnOperator{H} <: InferableOperator
     scheduler :: H

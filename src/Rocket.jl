@@ -36,6 +36,7 @@ include("actor/test.jl")
 
 include("subjects/subject.jl")
 include("subjects/behavior.jl")
+include("subjects/replay.jl")
 
 include("observable/single.jl")
 include("observable/array.jl")

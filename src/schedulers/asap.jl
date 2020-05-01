@@ -9,9 +9,9 @@ import Base: show
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
-struct AsapScheduler end
+struct AsapScheduler <: AbstractScheduler end
 
-Base.show(io::IO, ::Type{<:AsapScheduler}) = print(io, "AsapScheduler()")
+Base.show(io::IO, ::Type{<:AsapScheduler}) = print(io, "AsapScheduler")
 Base.show(io::IO, ::AsapScheduler)         = print(io, "AsapScheduler()")
 
 similar(::AsapScheduler) = AsapScheduler()

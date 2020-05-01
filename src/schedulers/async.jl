@@ -8,7 +8,7 @@ import Base: show
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
-struct AsyncScheduler{N} end
+struct AsyncScheduler{N} <: AbstractScheduler end
 
 Base.show(io::IO, ::Type{<:AsyncScheduler}) = print(io, "AsyncScheduler")
 Base.show(io::IO, ::AsyncScheduler)         = print(io, "AsyncScheduler()")
