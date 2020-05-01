@@ -9,7 +9,6 @@ include("teardown/void.jl")
 include("scheduler.jl")
 include("schedulers/asap.jl")
 include("schedulers/async.jl")
-include("schedulers/channeled_async.jl")
 include("schedulers/threads.jl")
 
 include("actor.jl")
@@ -26,15 +25,17 @@ include("actor/keep.jl")
 include("actor/server.jl")
 include("actor/test.jl")
 
-include("subjects/base_types/asynchronous.jl")
-include("subjects/base_types/synchronous.jl")
-include("subjects/default.jl")
-#
+# include("subjects/base_types/asynchronous.jl")
+# include("subjects/base_types/synchronous.jl")
+# include("subjects/default.jl")
+# #
 # include("subjects/types/behavior.jl")
 # include("subjects/types/replay.jl")
 # include("subjects/types/network.jl")
 # include("subjects/types/pending.jl")
+
 include("subjects/subject.jl")
+include("subjects/behavior.jl")
 
 include("observable/single.jl")
 include("observable/array.jl")
@@ -50,7 +51,7 @@ include("observable/network.jl")
 include("observable/combined.jl")
 include("observable/merged.jl")
 include("observable/collected.jl")
-include("observable/lazy.jl")
+# include("observable/lazy.jl")
 include("observable/connectable.jl")
 
 include("operators/map.jl")

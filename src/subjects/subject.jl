@@ -2,6 +2,16 @@ export Subject
 
 import Base: show
 
+##
+
+struct SubjectListener{I}
+    schedulerinstance :: I
+    actor
+end
+
+Base.show(io::IO, ::Type{ <: SubjectListener }) = print(io, "SubjectListener")
+Base.show(io::IO, ::SubjectListener)            = print(io, "SubjectListener()")
+
 mutable struct SubjectProps
     iscompleted :: Bool
     isfailed    :: Bool
@@ -10,10 +20,10 @@ mutable struct SubjectProps
     SubjectProps() = new(false, false, nothing)
 end
 
-struct SubjectListener{I}
-    schedulerinstance :: I
-    actor
-end
+Base.show(io::IO, ::Type{ <: SubjectProps }) = print(io, "SubjectProps")
+Base.show(io::IO, ::SubjectProps)            = print(io, "SubjectProps()")
+
+##
 
 struct Subject{D, H, I} <: Actor{D}
     listeners :: Vector{SubjectListener{I}}
@@ -30,6 +40,11 @@ end
 as_subject(::Type{ <: Subject{D} })      where D = ValidSubject{D}()
 as_subscribable(::Type{ <: Subject{D} }) where D = SimpleSubscribableTrait{D}()
 
+Base.show(io::IO, ::Type{ <: Subject{ D, H }}) where { D, H } = print(io, "Subject{$D, $H}")
+Base.show(io::IO, ::Subject{D, H})             where { D, H } = print(io, "Subject($D, $H)")
+
+##
+
 iscompleted(subject::Subject) = subject.props.iscompleted
 isfailed(subject::Subject)    = subject.props.isfailed
 lasterror(subject::Subject)   = subject.props.lasterror
@@ -37,6 +52,8 @@ lasterror(subject::Subject)   = subject.props.lasterror
 setcompleted!(subject::Subject)      = subject.props.iscompleted = true
 setfailed!(subject::Subject)         = subject.props.isfailed = true
 setlasterror!(subject::Subject, err) = subject.props.lasterror = err
+
+##
 
 function on_next!(subject::Subject{D}, data::D) where D
     failedlisteners = nothing
@@ -104,6 +121,8 @@ function unsubscribe_listeners!(subject::Subject, listeners)
     foreach((listener) -> unsubscribe!(SubjectSubscription(subject, listener)), copy(listeners))
 end
 
+##
+
 function on_subscribe!(subject::Subject{D, H, I}, actor) where { D, H, I }
     if isfailed(subject)
         error!(actor, lasterror(subject))
@@ -123,6 +142,8 @@ function on_subscribe!(subject::Subject{D, H, I}, actor, instance) where { D, H,
     return SubjectSubscription(subject, listener)
 end
 
+##
+
 struct SubjectSubscription{ S, L } <: Teardown
     subject  :: S
     listener :: L
@@ -135,5 +156,16 @@ function on_unsubscribe!(subscription::SubjectSubscription)
     return nothing
 end
 
-Base.show(io::IO, subject::Subject{D, H})       where { D, H } = print(io, "Subject($D, $H)")
-Base.show(io::IO, subject::SubjectSubscription) where { D, H } = print(io, "SubjectSubscription()")
+Base.show(io::IO, ::Type{ <: SubjectSubscription }) where { D, H } = print(io, "SubjectSubscription")
+Base.show(io::IO, ::SubjectSubscription)            where { D, H } = print(io, "SubjectSubscription()")
+
+##
+
+struct SubjectFactory{H} <: AbstractSubjectFactory
+    scheduler :: H
+end
+
+create_subject(::Type{L}, factory::SubjectFactory) where L = Subject(L, scheduler = similar(factory.scheduler))
+
+Base.show(io::IO, ::Type{ <: SubjectFactory{H} }) where { H } = print(io, "SubjectFactory{$H}")
+Base.show(io::IO, ::SubjectFactory{H})            where { H } = print(io, "SubjectFactory($H)")
