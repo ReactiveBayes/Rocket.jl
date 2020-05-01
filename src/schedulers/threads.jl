@@ -17,6 +17,8 @@ end
 
 makeinstance(::Type, ::ThreadsScheduler) = ThreadsSchedulerInstance(false, VoidTeardown())
 
+instancetype(::Type, ::Type{<:ThreadsScheduler}) = ThreadsSchedulerInstance
+
 isunsubscribed(instance::ThreadsSchedulerInstance) = instance.isunsubscribed
 
 function dispose(instance::ThreadsSchedulerInstance)

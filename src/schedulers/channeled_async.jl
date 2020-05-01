@@ -18,6 +18,8 @@ end
 
 makeinstance(::Type{D}, ::ChanneledAsyncScheduler{N}) where { D, N } = ChanneledAsyncSchedulerInstance{D}(N)
 
+instancetype(::Type{D}, ::Type{<:ChanneledAsyncScheduler}) where D = ChanneledAsyncSchedulerInstance{D}
+
 struct ChanneledAsyncSchedulerDataMessage{D}
     data :: D
 end

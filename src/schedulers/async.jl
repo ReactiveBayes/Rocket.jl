@@ -21,6 +21,8 @@ end
 
 makeinstance(::Type, scheduler::AsyncScheduler) = AsyncSchedulerInstance(scheduler.delay / MILLISECONDS_IN_SECOND, false, VoidTeardown())
 
+instancetype(::Type, ::Type{<:AsyncScheduler}) = AsyncSchedulerInstance
+
 isunsubscribed(instance::AsyncSchedulerInstance) = instance.isunsubscribed
 
 function delay(instance::AsyncSchedulerInstance)

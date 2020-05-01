@@ -51,3 +51,12 @@ Documentation placeholder for makeinstance
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
 """
 function makeinstance end
+
+"""
+    instancetype
+
+Documentation placeholder for makeinstance
+
+See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
+"""
+function instancetype end

@@ -29,11 +29,12 @@ include("actor/test.jl")
 include("subjects/base_types/asynchronous.jl")
 include("subjects/base_types/synchronous.jl")
 include("subjects/default.jl")
-
-include("subjects/types/behavior.jl")
-include("subjects/types/replay.jl")
-include("subjects/types/network.jl")
-include("subjects/types/pending.jl")
+#
+# include("subjects/types/behavior.jl")
+# include("subjects/types/replay.jl")
+# include("subjects/types/network.jl")
+# include("subjects/types/pending.jl")
+include("subjects/subject.jl")
 
 include("observable/single.jl")
 include("observable/array.jl")
