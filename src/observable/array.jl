@@ -33,10 +33,11 @@ ArrayObservable wraps a regular Julia array into a synchronous observable
 See also: [`Subscribable`](@ref), [`from`](@ref)
 """
 struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
-    values :: Vector{D}
+    values    :: Vector{D}
+    scheduler :: H
 end
 
-getscheduler(::ArrayObservable{D, H}) where { D, H } = makescheduler(D, H)
+getscheduler(observable::ArrayObservable) = observable.scheduler
 
 function on_subscribe!(observable::ArrayObservable, actor, scheduler)
     for value in observable.values
@@ -133,7 +134,7 @@ subscribe!(source, logger())
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 from(x; scheduler = AsapScheduler())                              = from(as_array(x); scheduler = scheduler)
-from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H } = ArrayObservable{D, H}(a)
+from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H } = ArrayObservable{D, H}(copy(a), scheduler)
 
 Base.:(==)(left::ArrayObservable{D, H},  right::ArrayObservable{D, H}) where { D, H } = left.values == right.values
 Base.:(==)(left::ArrayObservable,        right::ArrayObservable) = false

@@ -187,7 +187,7 @@ function subscribe!(subscribable::T, factory::F) where { T, F <: AbstractActorFa
     return subscribable_on_subscribe_with_factory!(as_subscribable(T), subscribable, factory)
 end
 
-subscribable_on_subscribe!(::InvalidSubscribable,   S,                     subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
+subscribable_on_subscribe!(::InvalidSubscribable,        S,                     subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
 subscribable_on_subscribe!(::ValidSubscribableTrait{T},  ::InvalidActorTrait,   subscribable, actor) where T          = throw(InvalidActorTraitUsageError(actor))
 subscribable_on_subscribe!(::ValidSubscribableTrait{T1}, ::ValidActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 
@@ -196,7 +196,8 @@ function subscribable_on_subscribe!(::SimpleSubscribableTrait{T1}, ::ValidActorT
 end
 
 function subscribable_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::ValidActorTrait{T2}, subscribable, actor) where { T2, T1 <: T2 }
-    return scheduled_subscription!(subscribable, actor, getscheduler(subscribable))
+    instance = makeinstance(T1, getscheduler(subscribable))
+    return scheduled_subscription!(subscribable, actor, instance)
 end
 
 subscribable_on_subscribe_with_factory!(::InvalidSubscribable, subscribable, factory) = throw(InvalidSubscribableTraitUsageError(subscribable))

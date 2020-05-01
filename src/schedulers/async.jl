@@ -1,4 +1,5 @@
 
+
 """
     AsyncScheduler
 
@@ -6,35 +7,41 @@
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
-struct AsyncScheduler{Delay} end
+struct AsyncScheduler
+    delay :: Int
 
-function AsyncScheduler(delay::Int = 0)
-    return AsyncScheduler{delay}()
+    AsyncScheduler(delay::Int = 0) = new(delay)
 end
 
-mutable struct AsyncSchedulerInstance{Delay}
+mutable struct AsyncSchedulerInstance
+    delay          :: Float64
     isunsubscribed :: Bool
     subscription   :: Teardown
 end
 
-makescheduler(::Type, ::Type{AsyncScheduler{Delay}}) where Delay = AsyncSchedulerInstance{Delay}(false, VoidTeardown())
+makeinstance(::Type, scheduler::AsyncScheduler) = AsyncSchedulerInstance(scheduler.delay / MILLISECONDS_IN_SECOND, false, VoidTeardown())
 
-isunsubscribed(scheduler::AsyncSchedulerInstance) = scheduler.isunsubscribed
-delay(::AsyncSchedulerInstance{Delay}) where Delay = if Delay > 0 sleep(Delay / MILLISECONDS_IN_SECOND) end
+isunsubscribed(instance::AsyncSchedulerInstance) = instance.isunsubscribed
 
-function dispose(scheduler::AsyncSchedulerInstance)
-    if !isunsubscribed(scheduler)
-        unsubscribe!(scheduler.subscription)
-        scheduler.isunsubscribed = true
+function delay(instance::AsyncSchedulerInstance)
+    if instance.delay >= 0.001
+        sleep(instance.delay)
+    end
+end
+
+function dispose(instance::AsyncSchedulerInstance)
+    if !isunsubscribed(instance)
+        unsubscribe!(instance.subscription)
+        instance.isunsubscribed = true
     end
 end
 
 macro schedule_async(expr)
     output = quote
-        if !isunsubscribed(scheduler)
+        if !isunsubscribed(instance)
             @async begin
-                delay(scheduler)
-                if !isunsubscribed(scheduler)
+                delay(instance)
+                if !isunsubscribed(instance)
                     $(expr)
                 end
             end
@@ -43,21 +50,23 @@ macro schedule_async(expr)
     return esc(output)
 end
 
-function scheduled_next!(actor, value, scheduler::AsyncSchedulerInstance)
-    @schedule_async on_next!(actor, value)
+function scheduled_next!(actor, value, instance::AsyncSchedulerInstance)
+    @schedule_async begin
+        on_next!(actor, value)
+    end
 end
 
-function scheduled_error!(actor, err, scheduler::AsyncSchedulerInstance)
+function scheduled_error!(actor, err, instance::AsyncSchedulerInstance)
     @schedule_async begin
-        dispose(scheduler)
+        dispose(instance)
         on_error!(actor, err)
     end
 end
 
-function scheduled_complete!(actor, scheduler::AsyncSchedulerInstance)
+function scheduled_complete!(actor, instance::AsyncSchedulerInstance)
     @schedule_async begin
-        dispose(scheduler)
-        on_error!(actor, err)
+        dispose(instance)
+        on_complete!(actor)
     end
 end
 
@@ -72,17 +81,19 @@ function on_unsubscribe!(subscription::AsyncSchedulerSubscription)
     return nothing
 end
 
-function scheduled_subscription!(source, actor, scheduler::AsyncSchedulerInstance)
-    subscription = AsyncSchedulerSubscription(scheduler)
+function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance)
+    subscription = AsyncSchedulerSubscription(instance)
+
     @async begin
-        if !isunsubscribed(scheduler)
-            tmp = on_subscribe!(source, actor, scheduler)
-            if !isunsubscribed(scheduler)
-                subscription.subscription = tmp
+        if !isunsubscribed(instance)
+            tmp = on_subscribe!(source, actor, instance)
+            if !isunsubscribed(instance)
+                subscription.instance.subscription = tmp
             else
                 unsubscribe!(tmp)
             end
         end
     end
+
     return subscription
 end

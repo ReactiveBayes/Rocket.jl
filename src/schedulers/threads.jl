@@ -15,45 +15,51 @@ mutable struct ThreadsSchedulerInstance
     subscription   :: Teardown
 end
 
-makescheduler(::Type, ::Type{ThreadsScheduler}) = ThreadsSchedulerInstance(false, VoidTeardown())
+makeinstance(::Type, ::ThreadsScheduler) = ThreadsSchedulerInstance(false, VoidTeardown())
 
-isunsubscribed(scheduler::ThreadsSchedulerInstance) = scheduler.isunsubscribed
+isunsubscribed(instance::ThreadsSchedulerInstance) = instance.isunsubscribed
 
-function dispose(scheduler::ThreadsSchedulerInstance)
-    if !isunsubscribed(scheduler)
-        unsubscribe!(scheduler.subscription)
-        scheduler.isunsubscribed = true
+function dispose(instance::ThreadsSchedulerInstance)
+    if !isunsubscribed(instance)
+        unsubscribe!(instance.subscription)
+        instance.isunsubscribed = true
     end
 end
 
 macro schedule_onthread(expr)
     output = quote
-        if !isunsubscribed(scheduler)
-            Threads.@spawn begin
-                if !isunsubscribed(scheduler)
-                    $(expr)
+        @static if VERSION >= v"1.3"
+            if !isunsubscribed(instance)
+                Threads.@spawn begin
+                    if !isunsubscribed(instance)
+                        $(expr)
+                    end
                 end
             end
+        else
+            $(expr)
         end
     end
     return esc(output)
 end
 
-function scheduled_next!(actor, value, scheduler::ThreadsSchedulerInstance)
-    @schedule_onthread on_next!(actor, value)
+function scheduled_next!(actor, value, instance::ThreadsSchedulerInstance)
+    @schedule_onthread begin
+        on_next!(actor, value)
+    end
 end
 
-function scheduled_error!(actor, err, scheduler::ThreadsSchedulerInstance)
+function scheduled_error!(actor, err, instance::ThreadsSchedulerInstance)
     @schedule_onthread begin
-        dispose(scheduler)
+        dispose(instance)
         on_error!(actor, err)
     end
 end
 
-function scheduled_complete!(actor, scheduler::ThreadsSchedulerInstance)
+function scheduled_complete!(actor, instance::ThreadsSchedulerInstance)
     @schedule_onthread begin
-        dispose(scheduler)
-        on_error!(actor, err)
+        dispose(instance)
+        on_complete!(actor)
     end
 end
 
@@ -68,17 +74,22 @@ function on_unsubscribe!(subscription::ThreadsSchedulerSubscription)
     return nothing
 end
 
-function scheduled_subscription!(source, actor, scheduler::ThreadsSchedulerInstance)
-    subscription = ThreadsSchedulerSubscription(scheduler)
-    Threads.@spawn begin
-        if !isunsubscribed(scheduler)
-            tmp = on_subscribe!(source, actor, scheduler)
-            if !isunsubscribed(scheduler)
-                subscription.subscription = tmp
-            else
-                unsubscribe!(tmp)
+function scheduled_subscription!(source, actor, instance::ThreadsSchedulerInstance)
+    @static if VERSION >= v"1.3"
+        subscription = ThreadsSchedulerSubscription(instance)
+        Threads.@spawn begin
+            if !isunsubscribed(instance)
+                tmp = on_subscribe!(source, actor, instance)
+                if !isunsubscribed(instance)
+                    subscription.instance.subscription = tmp
+                else
+                    unsubscribe!(tmp)
+                end
             end
         end
+        return subscription
+    else
+        @warn "ThreadsScheduler is not supported for Julia version < 1.3"
+        return on_subscribe!(source, actor, instance)
     end
-    return subscription
 end

@@ -4,14 +4,16 @@ import Base: show
 
 # TODO : Untested and undocumented
 
-schedule_on(scheduler::H) where H = ScheduleOnOperator{H}()
+schedule_on(scheduler::H) where H = ScheduleOnOperator{H}(scheduler)
 
-struct ScheduleOnOperator{H} <: InferableOperator end
+struct ScheduleOnOperator{H} <: InferableOperator
+    scheduler :: H
+end
 
 operator_right(operator::ScheduleOnOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::ScheduleOnOperator{H}, source::S) where { L, H, S }
-    return ScheduleOnSource{L, H, S}(source)
+    return ScheduleOnSource{L, H, S}(source, operator.scheduler)
 end
 
 struct ScheduleOnActor{L, H, A} <: Actor{L}
@@ -24,10 +26,11 @@ on_error!(actor::ScheduleOnActor, err)               = error!(actor.actor, err, 
 on_complete!(actor::ScheduleOnActor)                 = complete!(actor.actor, actor.scheduler)
 
 struct ScheduleOnSource{L, H, S} <: ScheduledSubscribable{L}
-    source :: S
+    source    :: S
+    scheduler :: H
 end
 
-getscheduler(::ScheduleOnSource{L, H, S}) where { L, H, S } = makescheduler(L, H)
+getscheduler(observable::ScheduleOnSource) = observable.scheduler
 
 function on_subscribe!(source::ScheduleOnSource{L}, actor::A, scheduler::H) where { L, A, H }
     return subscribe!(source.source, ScheduleOnActor{L, H, A}(scheduler, actor))

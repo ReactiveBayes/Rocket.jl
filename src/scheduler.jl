@@ -44,10 +44,10 @@ See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled
 function scheduled_complete! end
 
 """
-    makescheduler
+    makeinstance
 
-Documentation placeholder for makescheduler
+Documentation placeholder for makeinstance
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
 """
-function makescheduler end
+function makeinstance end
