@@ -1,4 +1,4 @@
-module RocketAsynchronousSubjectTest
+module RocketPendingSubjectTest
 
 using Test
 using Rocket
