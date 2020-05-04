@@ -5,8 +5,6 @@ import Base: show
     AsyncScheduler
 
 `AsyncScheduler` executes scheduled actions asynchronously and uses `Channel` object to order different actions on a single asynchronous task
-
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 struct AsyncScheduler{N} <: AbstractScheduler end
 

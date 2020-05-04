@@ -7,7 +7,7 @@ import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, che
 
 @testset "TestActor" begin
 
-    println("Testing: TestActor")
+    println("Testing: actor TestActor")
 
     @testset begin
         actor = test_actor(Int)

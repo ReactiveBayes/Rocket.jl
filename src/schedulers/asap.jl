@@ -6,8 +6,6 @@ import Base: show
 
 `AsapScheduler` executes scheduled actions as soon as possible and does not introduce any additional logic.
 `AsapScheduler` is a default scheduler for alsmost all observables.
-
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 struct AsapScheduler <: AbstractScheduler end
 

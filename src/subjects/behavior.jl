@@ -10,7 +10,7 @@ import Base: show
 
 A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
 
-See also: [`BehviorSubjectFactory`](@ref), [`Subject`](@ref), [`SubjectFactory`](@ref)
+See also: [`BehaviorSubjectFactory`](@ref), [`Subject`](@ref), [`SubjectFactory`](@ref)
 """
 function BehaviorSubject end
 

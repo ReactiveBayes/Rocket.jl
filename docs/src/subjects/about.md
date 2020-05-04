@@ -143,4 +143,5 @@ next!(subject, 3)
 
 ```@docs
 Subject
+SubjectFactory
 ```

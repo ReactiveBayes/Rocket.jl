@@ -4,10 +4,8 @@ export subscribe!
 """
     FunctionActor{D} <: Actor{D}
 
-FunctionActor provides a simple interface to use a single function as a `next!` callback.
-`error!` callback throws an `ErrorException` and `complete!` is empty.
-Should not be used explicitly because it will be created automatically when passing a `Function` object as an actor in
-`subscribe!` function.
+FunctionActor provides a simple interface to use a single function as a `next!` callback, `error!` callback throws an `ErrorException` and `complete!` callback does nothing.
+Should not be used explicitly because it will be created automatically when passing a `Function` object as an actor in `subscribe!` function.
 
 # Examples
 ```jldoctest

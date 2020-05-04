@@ -23,12 +23,13 @@ as_array(::NonScalar, x)           = collect(x)
 as_array(::UndefinedScalarness, x) = error("Value of type $(typeof(x)) has undefined scalarness type. \nConsider implement scalarness(::Type{<:$(typeof(x))}).")
 
 """
-    ArrayObservable{D, H}(values::Vector{D})
+    ArrayObservable{D, H}(values::Vector{D}, scheduler::H) where { D, H <: AbstractScheduler }
 
-ArrayObservable wraps a regular Julia array into a synchronous observable
+ArrayObservable wraps a regular Julia array into an observable. Uses scheduler object to schedule messages delivery.
 
 # Constructor arguments
 - `values`: array of values to be wrapped
+- `scheduler`: Scheduler-like object
 
 See also: [`Subscribable`](@ref), [`from`](@ref)
 """
@@ -48,14 +49,15 @@ function on_subscribe!(observable::ArrayObservable, actor, scheduler)
 end
 
 """
-    from(x)
+    from(x; scheduler = Rocket.AsapScheduler())
 
 Creation operator for the `ArrayObservable` that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
 Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
-for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior.
+for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior. Optionally accepts custom scheduler-like object to schedule messages delivery.
 
 # Arguments
 - `x`: an object to be wrapped into array of values
+- `scheduler`: Optional, scheduler-like object
 
 # Examples
 

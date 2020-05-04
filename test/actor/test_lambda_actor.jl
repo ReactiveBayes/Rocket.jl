@@ -5,7 +5,7 @@ using Rocket
 
 @testset "LambdaActor" begin
 
-    println("Testing: LambdaActor")
+    println("Testing: actor LambdaActor")
 
     @testset begin
         values = []

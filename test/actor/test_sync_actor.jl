@@ -5,11 +5,11 @@ using Rocket
 
 @testset "SyncActor" begin
 
-    println("Testing: SyncActor")
+    println("Testing: actor SyncActor")
 
     @testset begin
         actor  = KeepActor{Int}()
-        synced = SyncActor{Int, KeepActor{Int}, -1}(actor)
+        synced = SyncActor{Int, KeepActor{Int}}(actor)
 
         source = interval(1) |> take(5)
 
@@ -21,7 +21,7 @@ using Rocket
     end
 
     @testset begin
-        @test sync(void(Int)) isa SyncActor{Int, VoidActor{Int}, -1}
+        @test sync(void(Int)) isa SyncActor{Int, VoidActor{Int}}
     end
 
     @testset begin
@@ -62,24 +62,6 @@ using Rocket
 
         @test errors == [ "e" ]
     end
-
-    # @testset begin
-    #     values = Int[]
-    #
-    #     factory  = lambda(on_next = (d) -> push!(values, d))
-    #     synced   = sync(factory)
-    #
-    #     subscribe!(interval(1) |> take(5), synced)
-    #     subscribe!(interval(1) |> take(5), synced)
-    #
-    #     wait(synced)
-    #
-    #     subscribe!(interval(1) |> take(5), synced)
-    #
-    #     wait(synced)
-    #
-    #     @test values == [0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1, 2, 3, 4]
-    # end
 
     @testset begin
         source = never(Int)

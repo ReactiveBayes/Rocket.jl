@@ -5,7 +5,7 @@ using Rocket
 
 @testset "FunctionActor" begin
 
-    println("Testing: FunctionActor")
+    println("Testing: actor FunctionActor")
 
     @testset begin
         source = from([ 1, 2, 3 ])

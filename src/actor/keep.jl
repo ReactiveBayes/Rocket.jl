@@ -3,7 +3,8 @@ export KeepActor, keep
 """
     KeepActor{D}() where D
 
-Keep actor provides a storage actor. It saves all incoming successful `next` events in a `values` array.
+Keep actor provides a storage actor. It saves all incoming successful `next` events in a `values` array, throws an ErrorException on `error!` event
+and does nothing on completion event.
 
 # Examples
 ```jldoctest
