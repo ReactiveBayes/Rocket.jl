@@ -6,19 +6,17 @@ using Rocket
 @testset "AsynchronousSubject" begin
 
     @testset begin
-        subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
+        subject = Subject(Int)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
-
-        synced2 = sync(actor2)
 
         subscription1 = subscribe!(subject, actor1)
 
         next!(subject, 0)
         next!(subject, 1)
 
-        subscription2 = subscribe!(subject, synced2)
+        subscription2 = subscribe!(subject, actor2)
 
         next!(subject, 3)
         next!(subject, 4)
@@ -32,33 +30,25 @@ using Rocket
 
         unsubscribe!(subscription2)
 
-        wait(synced2)
-
         @test actor1.values == [ 0, 1, 3, 4 ]
         @test actor2.values == [ 3, 4, 5, 6 ]
     end
 
     @testset begin
-        subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
+        subject = Subject(Int)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
 
-        synced1 = sync(actor1)
-        synced2 = sync(actor2)
-
         values = Int[]
         source = from(1:5) |> tap(d -> push!(values, d))
 
-        subscription1 = subscribe!(subject, synced1)
-        subscription2 = subscribe!(subject, synced2)
+        subscription1 = subscribe!(subject, actor1)
+        subscription2 = subscribe!(subject, actor2)
 
         subscribe!(source, subject)
 
         complete!(subject)
-
-        wait(synced1)
-        wait(synced2)
 
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
@@ -69,27 +59,21 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = SubjectFactory(Rocket.AsyncScheduler())
+        subject_factory = SubjectFactory(Rocket.AsapScheduler())
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
 
-        synced1 = sync(actor1)
-        synced2 = sync(actor2)
-
         values = Int[]
         source = from(1:5) |> tap(d -> push!(values, d))
 
-        subscription1 = subscribe!(subject, synced1)
-        subscription2 = subscribe!(subject, synced2)
+        subscription1 = subscribe!(subject, actor1)
+        subscription2 = subscribe!(subject, actor2)
 
         subscribe!(source, subject)
 
         complete!(subject)
-
-        wait(synced1)
-        wait(synced2)
 
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 1, 2, 3, 4, 5 ]

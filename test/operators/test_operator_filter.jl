@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: filter()" begin
 
+    println("Testing: operator filter()")
+
     run_proxyshowcheck("Filter", filter(_ -> true))
 
     run_testset([

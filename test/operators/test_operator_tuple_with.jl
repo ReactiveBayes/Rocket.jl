@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: tuple_with_*()" begin
 
+    println("Testing: operator tuple_with_*()")
+
     run_proxyshowcheck("TupleWithLeft", tuple_with_left(0))
     run_proxyshowcheck("TupleWithRight", tuple_with_right(0))
 

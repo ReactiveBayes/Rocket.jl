@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: take()" begin
 
+    println("Testing: operator take()")
+
     run_proxyshowcheck("Take", take(1))
 
     run_testset([
@@ -19,7 +21,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = from(1:5) |> async() |> take(3),
+            source = from(1:5) |> async(0) |> take(3),
             values = @ts([ 1 ] ~ [ 2 ] ~ [ 3, c ])
         ),
         (

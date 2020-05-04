@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "NeverObservable" begin
 
+    println("Testing: never")
+
     @testset begin
         @test never()    == NeverObservable{Any}()
         @test never(Int) == NeverObservable{Int}()

@@ -5,6 +5,8 @@ using Rocket
 
 @testset "operator: multicast()" begin
 
+    println("Testing: operator multicast()")
+
     @testset begin
         subject = Subject(Int)
         source  = from(1:5) |> multicast(subject)

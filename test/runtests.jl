@@ -32,10 +32,9 @@ doctest(Rocket)
     include("./observable/test_observable_merged.jl")
 
     include("./test_subject.jl")
-    include("./subjects/base_types/test_subject_synchronous.jl")
-    include("./subjects/base_types/test_subject_asynchronous.jl")
-    include("./subjects/types/test_subject_behavior.jl")
-    include("./subjects/types/test_subject_replay.jl")
+    include("./subjects/test_subject.jl")
+    include("./subjects/test_subject_behavior.jl")
+    include("./subjects/test_subject_replay.jl")
 
     include("./test_operator.jl")
     include("./operators/test_operator_async.jl")

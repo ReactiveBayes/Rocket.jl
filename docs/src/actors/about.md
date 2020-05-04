@@ -101,7 +101,7 @@ subscribe!(source, lambda(
 
 ## Function actor
 
-Sometimes it is convenient to pass only `on_next` callback. Rocket.jl provides a `FunctionActor` which automatically converts any function object passed in the `subscribe!` function to a proper actor which is listening only for data events and ignoring any error and completion messages.
+Sometimes it is convenient to pass only `on_next` callback. Rocket.jl provides a `FunctionActor` which automatically converts any function object passed in the `subscribe!` function to a proper actor which listens only for data events, throws an exception on error event and ignores completion message.
 
 ```julia
 using Rocket

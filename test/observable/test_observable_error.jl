@@ -7,16 +7,18 @@ include("../test_helpers.jl")
 
 @testset "ErrorObservable" begin
 
+    println("Testing: throwError")
+
     @testset begin
         @test throwError(1)      == ErrorObservable{Any}(1)
-        @test throwError(1, Int) == ErrorObservable{Int}(1)
+        @test throwError(Int, 1) == ErrorObservable{Int}(1)
 
         @test throwError("Error")      == throwError("Error")
-        @test throwError("Error", Int) != throwError("Error", Float64)
+        @test throwError(Int, "Error") != throwError(Float64, "Error")
     end
 
     @testset begin
-        source = throwError("Error", Int)
+        source = throwError(Int, "Error")
         io = IOBuffer()
 
         show(io, source)

@@ -5,6 +5,8 @@ using Rocket
 
 @testset "FunctionActor" begin
 
+    println("Testing: FunctionActor")
+
     @testset begin
         source = from([ 1, 2, 3 ])
         values = Int[]
@@ -16,7 +18,7 @@ using Rocket
     end
 
     @testset begin
-        source = throwError("Error", Int)
+        source = throwError(Int, "Error")
         values = Int[]
         actor  = (t::Int) -> push!(values, t)
 

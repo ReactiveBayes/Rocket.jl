@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: count()" begin
 
+    println("Testing: operator count()")
+
     run_proxyshowcheck("Count", count())
 
     run_testset([
@@ -15,7 +17,7 @@ include("../test_helpers.jl")
             values = @ts([ 42, c ])
         ),
         (
-            source = from(1:42) |> async() |> count(),
+            source = from(1:42) |> async(0) |> count(),
             values = @ts([ 42, c ])
         ),
         (

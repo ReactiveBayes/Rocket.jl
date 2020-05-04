@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: skip_next()" begin
 
+    println("Testing: operator skip_next()")
+
     run_testset([
         (
             source = from(1:5) |> skip_next(),

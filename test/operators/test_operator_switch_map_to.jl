@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: switch_map_to()" begin
 
+    println("Testing: operator switch_map_to()")
+
     struct DummyType end
 
     @testset begin
@@ -30,7 +32,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError("e", String) |> switch_map_to(of(0)),
+            source      = throwError(String, "e") |> switch_map_to(of(0)),
             values      = @ts(e("e")),
             source_type = Int
         ),
@@ -40,7 +42,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from([ 0, 0 ]) |> async() |> switch_map_to(from([ 1, 2 ])),
+            source      = from([ 0, 0 ]) |> async(0) |> switch_map_to(from([ 1, 2 ])),
             values      = @ts([ 1, 2 ] ~ [ 1, 2 ] ~ c),
             source_type = Int
         ),
@@ -55,12 +57,12 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError("err", Int), of(2) ]) |> switch_map_to(of(0)),
+            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> switch_map_to(of(0)),
             values      = @ts([ 0, 0, 0, c ]),
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError("err", Int), of(2) ]) |> switch_map(Int) |> switch_map_to(of(0)),
+            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> switch_map(Int) |> switch_map_to(of(0)),
             values      = @ts([ 0, e("err") ]),
             source_type = Int
         )

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: find()" begin
 
+    println("Testing: operator find()")
+
     run_testset([
         (
             source      = from(0:5) |> find(d -> d !== 0 && d % 2 == 0),

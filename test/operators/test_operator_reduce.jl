@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: reduce()" begin
 
+    println("Testing: operator reduce()")
+
     run_proxyshowcheck("Reduce", reduce(Any, +, 0))
     run_proxyshowcheck("ReduceNoSeed", reduce(+))
 

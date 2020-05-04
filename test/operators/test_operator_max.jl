@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: max()" begin
 
+    println("Testing: operator max()")
+
     run_proxyshowcheck("Max", max())
 
     run_testset([
@@ -31,7 +33,7 @@ include("../test_helpers.jl")
             source_type = Union{Int, Nothing}
         ),
         (
-            source      = throwError("e", String) |> max(),
+            source      = throwError(String, "e") |> max(),
             values      = @ts(e("e")),
             source_type = Union{Nothing, String}
         ),

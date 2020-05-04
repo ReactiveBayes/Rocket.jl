@@ -5,6 +5,8 @@ using Rocket
 
 @testset "SyncActor" begin
 
+    println("Testing: SyncActor")
+
     @testset begin
         actor  = KeepActor{Int}()
         synced = SyncActor{Int, KeepActor{Int}, -1}(actor)

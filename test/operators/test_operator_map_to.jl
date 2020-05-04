@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: map_to()" begin
 
+    println("Testing: operator map_to()")
+
     run_testset([
         (
             source      = from(1:5) |> map_to('a'),
@@ -23,7 +25,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError("e", String) |> map_to(1),
+            source      = throwError(String, "e") |> map_to(1),
             values      = @ts(e("e")),
             source_type = Int
         ),

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "TimerObservable" begin
 
+    println("Testing: timer")
+
     @testset begin
         @test timer(100, 100) == Rocket.TimerObservable{100, 100}()
     end

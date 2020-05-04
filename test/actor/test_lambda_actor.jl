@@ -5,6 +5,8 @@ using Rocket
 
 @testset "LambdaActor" begin
 
+    println("Testing: LambdaActor")
+
     @testset begin
         values = []
         source = from(1:3)

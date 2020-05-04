@@ -95,10 +95,10 @@ struct BehaviorSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: Abstract
     default
 end
 
-Base.show(io::IO, ::Type{ <: BehaviorSubjectFactoryInstance{F} }) where F = print(io, "BehaviorSubjectFactory{$F}(default = $(subject.default))")
+Base.show(io::IO, ::Type{ <: BehaviorSubjectFactoryInstance{F} }) where F = print(io, "BehaviorSubjectFactory{$F}")
 Base.show(io::IO, subject::BehaviorSubjectFactoryInstance{F})     where F = print(io, "BehaviorSubjectFactory($F, default = $(subject.default))")
 
-create_subject(::Type{L}, factory::BehaviorSubjectFactoryInstance) where L = BehaviourSubject(L, convert(L, factory.default), factory.factory)
+create_subject(::Type{L}, factory::BehaviorSubjectFactoryInstance) where L = BehaviorSubject(L, convert(L, factory.default), factory.factory)
 
 function BehaviorSubjectFactory(default, factory::F) where { F <: AbstractSubjectFactory }
     return BehaviorSubjectFactoryInstance(factory, default)

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "CompletedObservable" begin
 
+    println("Testing: completed")
+
     @testset begin
         @test completed()    == CompletedObservable{Any}()
         @test completed(Int) == CompletedObservable{Int}()

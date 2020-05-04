@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: noop()" begin
 
+    println("Testing: operator noop()")
+
     run_proxyshowcheck("Noop", noop())
 
     source = from(1:5)

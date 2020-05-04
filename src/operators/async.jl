@@ -4,9 +4,12 @@ import Base: close
 import Base: show
 
 """
-    async()
+    async(size::Int = typemax(Int))
 
 Creates an async operator, which sends items from the source Observable asynchronously.
+
+# Arguments
+- `size`: Asynchronous messages buffer size, default is a `typemax(Int)`
 
 # Producing
 

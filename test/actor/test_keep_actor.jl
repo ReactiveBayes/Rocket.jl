@@ -15,7 +15,7 @@ using Rocket
     end
 
     @testset begin
-        source = throwError("Error", Int)
+        source = throwError(Int, "Error")
         actor  = KeepActor{Int}()
 
         @test_throws ErrorException subscribe!(source, actor)

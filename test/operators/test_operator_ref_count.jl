@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: ref_count()" begin
 
+    println("Testing: operator ref_count()")
+
     run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(Subject(Any), never(Any)), check_subscription = true, ))
 
     @testset begin

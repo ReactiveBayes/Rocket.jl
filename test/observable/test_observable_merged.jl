@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "MergeObservable" begin
 
+    println("Testing: merged")
+
     @testset begin
         @test_throws Exception merged([ of(1), of(2.0) ])
     end
@@ -41,7 +43,7 @@ include("../test_helpers.jl")
             source_type = Union{Int, Float64}
         ),
         (
-            source = merged((of(2.0), from("Hello"), from("World") |> async())) |> take(10),
+            source = merged((of(2.0), from("Hello"), from("World") |> async(0))) |> take(10),
             values = @ts([ 2.0, 'H', 'e', 'l', 'l', 'o' ] ~ [ 'W' ] ~ [ 'o' ] ~ [ 'r' ] ~ [ 'l', c ]),
             source_type = Union{Float64, Char}
         )

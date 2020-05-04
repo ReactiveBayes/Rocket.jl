@@ -5,6 +5,8 @@ using Rocket
 
 @testset "VoidActor" begin
 
+    println("Testing: VoidActor")
+
     @testset begin
         actor = VoidActor{Int}()
 
