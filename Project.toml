@@ -4,7 +4,6 @@ authors = ["Dmitri Bagaev <bvdmitri@gmail.com>"]
 version = "1.2.0"
 
 [deps]
-ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Sockets = "6462fe0b-24de-5631-8697-dd941f90decc"
