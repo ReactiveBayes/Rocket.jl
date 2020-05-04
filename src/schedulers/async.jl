@@ -1,3 +1,4 @@
+export AsyncScheduler
 
 import Base: show
 

@@ -69,12 +69,12 @@ Here, we essentially convert a unicast Observable execution to multicast, throug
 
 ## Schedulers
 
-Subject (and many other observables) uses scheduler objects to schedule message delivery to their listeners.
+Subject (and some other observables) uses scheduler objects to schedule message delivery to their listeners.
 
 ## Synchronous scheduler
 
-An `AsapScheduler` is similar to a [`Rocket.AsyncScheduler`](@ref). Both allows for Subject to scheduler their messages for multiple listeners,
-but a `AsapScheduler` delivers all messages synchronously. `AsapScheduler` is a default scheduler for all `Subject` objects.
+One of the variants of schedulers is the `AsapScheduler`, which delivers every message synchronously.
+`AsapScheduler` is a default scheduler for all `Subject` objects.
 
 ```@docs
 Rocket.AsapScheduler
@@ -107,7 +107,8 @@ next!(subject, 3)
 
 ## Asynchronous Scheduler
 
-One of the variants of schedulers is the `AsyncScheduler`, which delivers every message asynchronously (but still ordered) using a Julia's built-in `Task` object.
+An `AsyncScheduler` is similar to a [`Rocket.AsapScheduler`](@ref). Both allows for Subject to scheduler their messages for multiple listeners,
+but a `AsyncScheduler` delivers all messages asynchronously (but still ordered) using a Julia's built-in `Task` object.
 
 ```@docs
 Rocket.AsyncScheduler
