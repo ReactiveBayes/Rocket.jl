@@ -6,7 +6,7 @@ using Rocket
 @testset "ReplaySubject" begin
 
     @testset begin
-        subject = make_replay_subject(Int, 2, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = ReplaySubject(Int, 2)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -36,7 +36,7 @@ using Rocket
     end
 
     @testset begin
-        subject = make_replay_subject(Int, 2, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = ReplaySubject(Int, 2)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -65,7 +65,7 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = make_replay_subject_factory(2, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject_factory = ReplaySubjectFactory(2)
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)

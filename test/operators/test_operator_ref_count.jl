@@ -7,10 +7,10 @@ include("../test_helpers.jl")
 
 @testset "operator: ref_count()" begin
 
-    run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(make_subject(Any), never(Any)), check_subscription = true, ))
+    run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(Subject(Any), never(Any)), check_subscription = true, ))
 
     @testset begin
-        source  = from(1:5) |> multicast(make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)) |> ref_count()
+        source  = from(1:5) |> multicast(Subject(Int)) |> ref_count()
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -26,8 +26,8 @@ include("../test_helpers.jl")
     end
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        source  = subject |> multicast(make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)) |> ref_count()
+        subject = Subject(Int)
+        source  = subject |> multicast(Subject(Int)) |> ref_count()
 
         actor1 = keep(Int)
         actor2 = keep(Int)

@@ -25,15 +25,6 @@ include("actor/keep.jl")
 include("actor/server.jl")
 include("actor/test.jl")
 
-# include("subjects/base_types/asynchronous.jl")
-# include("subjects/base_types/synchronous.jl")
-# include("subjects/default.jl")
-# #
-# include("subjects/types/behavior.jl")
-# include("subjects/types/replay.jl")
-# include("subjects/types/network.jl")
-# include("subjects/types/pending.jl")
-
 include("subjects/subject.jl")
 include("subjects/behavior.jl")
 include("subjects/replay.jl")

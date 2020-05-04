@@ -124,9 +124,9 @@ include("../test_helpers.jl")
 
 
     @testset begin
-        s1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s2 = make_subject(Float64, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s3 = make_subject(String, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s1 = Subject(Int)
+        s2 = Subject(Float64)
+        s3 = Subject(String)
         s4 = of(5)
         s5 = from(1:10)
 
@@ -166,9 +166,9 @@ include("../test_helpers.jl")
     end
 
     @testset begin
-        s1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s2 = make_subject(Float64, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s3 = make_subject(String, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s1 = Subject(Int)
+        s2 = Subject(Float64)
+        s3 = Subject(String)
         s4 = of(5)
         s5 = from(1:10)
 

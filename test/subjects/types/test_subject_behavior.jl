@@ -6,7 +6,7 @@ using Rocket
 @testset "BehaviorSubject" begin
 
     @testset begin
-        subject = make_behavior_subject(Int, 0, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = BehaviorSubject(Int)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -33,7 +33,7 @@ using Rocket
     end
 
     @testset begin
-        subject = make_behavior_subject(Int, 0, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = BehaviorSubject(Int, 0)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -55,7 +55,7 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = make_behavior_subject_factory(0, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject_factory = BehaviorSubjectFactory(0)
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)

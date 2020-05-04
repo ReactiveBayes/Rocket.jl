@@ -16,7 +16,7 @@ Note that using the [`share`](@ref) operator is exactly the same as using the [`
 ```jldoctest
 using Rocket
 
-subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+subject = Subject(Int, scheduler = Rocket.AsapScheduler())
 source  = from(1:5) |> multicast(subject) |> ref_count()
 
 actor1 = logger("1")

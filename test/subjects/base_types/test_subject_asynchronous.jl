@@ -6,7 +6,7 @@ using Rocket
 @testset "AsynchronousSubject" begin
 
     @testset begin
-        subject = make_subject(Int, mode = ASYNCHRONOUS_SUBJECT_MODE)
+        subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -39,7 +39,7 @@ using Rocket
     end
 
     @testset begin
-        subject = make_subject(Int, mode = ASYNCHRONOUS_SUBJECT_MODE)
+        subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -69,7 +69,7 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = make_subject_factory(mode = ASYNCHRONOUS_SUBJECT_MODE)
+        subject_factory = SubjectFactory(Rocket.AsyncScheduler())
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)

@@ -6,7 +6,7 @@ using Rocket
 @testset "operator: multicast()" begin
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = Subject(Int)
         source  = from(1:5) |> multicast(subject)
 
         actor1 = keep(Int)

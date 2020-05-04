@@ -74,12 +74,12 @@ include("../test_helpers.jl")
     ])
 
     @testset begin
-        subject1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        subject2 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject1 = Subject(Int)
+        subject2 = Subject(Int)
 
         values = []
 
-        ssubject = make_subject(Any, mode = SYNCHRONOUS_SUBJECT_MODE)
+        ssubject = Subject(Any)
 
         source = ssubject |> switch_map(Int)
 

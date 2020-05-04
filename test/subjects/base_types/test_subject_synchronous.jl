@@ -6,7 +6,7 @@ using Rocket
 @testset "SynchronousSubject" begin
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = Subject(Int, scheduler = Rocket.AsapScheduler())
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -33,7 +33,7 @@ using Rocket
     end
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = Subject(Int, scheduler = Rocket.AsapScheduler())
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -55,7 +55,7 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = make_subject_factory(mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject_factory = SubjectFactory(Rocket.AsapScheduler())
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)
