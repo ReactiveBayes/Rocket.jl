@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: to_array()" begin
 
+    println("Testing: operator to_array()")
+
     run_proxyshowcheck("ToArray", to_array())
 
     run_testset([

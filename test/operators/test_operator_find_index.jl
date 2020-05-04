@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: find_index()" begin
 
+    println("Testing: operator find_index()")
+
     run_testset([
         (
             source      = from(0:5) |> find_index(d -> d !== 0 && d % 2 == 0),

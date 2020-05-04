@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: min()" begin
 
+    println("Testing: operator min()")
+
     run_proxyshowcheck("Min", min())
 
     run_testset([
@@ -31,7 +33,7 @@ include("../test_helpers.jl")
             source_type = Union{Int, Nothing}
         ),
         (
-            source      = throwError("e", String) |> min(),
+            source      = throwError(String, "e") |> min(),
             values      = @ts(e("e")),
             source_type = Union{Nothing, String}
         ),

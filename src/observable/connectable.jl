@@ -30,7 +30,7 @@ Creates a `ConnectableObservable` with a given subject object and a source obser
 ```jldoctest
 using Rocket
 
-c = connectable(make_subject(Int; mode = Val(:sync)), from(1:3))
+c = connectable(Subject(Int; scheduler = Rocket.AsapScheduler()), from(1:3))
 
 subscribe!(c, logger());
 
@@ -54,8 +54,8 @@ as_connectable(::InvalidSubject,   ::InvalidSubscribable, subject, source)   = t
 as_connectable(::InvalidSubject,   as_subscribable,       subject, source)   = throw(InvalidSubjectTraitUsageError(subject))
 as_connectable(as_subject,         ::InvalidSubscribable, subject, source)   = throw(InvalidSubscribableTraitUsageError(source))
 
-as_connectable(::ValidSubject{D1}, ::ValidSubscribable{D2}, subject, source)       where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
-as_connectable(::ValidSubject{D},  ::ValidSubscribable{D},  subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
+as_connectable(::ValidSubject{D1}, ::ValidSubscribableTrait{D2}, subject, source)       where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
+as_connectable(::ValidSubject{D},  ::ValidSubscribableTrait{D},  subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
 
 """
     connect(connectable::ConnectableObservable)

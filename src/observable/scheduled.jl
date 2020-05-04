@@ -1,0 +1,33 @@
+export scheduled
+
+# TODO: documentation
+
+import Base: show
+
+struct ScheduledActor{L, H, A} <: Actor{L}
+    scheduler :: H
+    actor     :: A
+end
+
+on_next!(actor::ScheduledActor{L}, data::L) where L = next!(actor.actor, data, actor.scheduler)
+on_error!(actor::ScheduledActor, err)               = error!(actor.actor, err, actor.scheduler)
+on_complete!(actor::ScheduledActor)                 = complete!(actor.actor, actor.scheduler)
+
+struct ScheduledSource{L, H <: AbstractScheduler, S} <: ScheduledSubscribable{L}
+    source    :: S
+    scheduler :: H
+end
+
+getscheduler(observable::ScheduledSource) = observable.scheduler
+
+function on_subscribe!(source::ScheduledSource{L}, actor::A, scheduler::H) where { L, A, H }
+    return subscribe!(source.source, ScheduledActor{L, H, A}(scheduler, actor))
+end
+
+Base.show(io::IO, ::ScheduledSource{L, H}) where { L, H } = print(io, "ScheduledSource($L, $H)")
+Base.show(io::IO, ::ScheduledActor{L, H})  where { L, H } = print(io, "ScheduledActor($L, $H)")
+
+scheduled(source::S, scheduler::H) where { S, H <: AbstractScheduler } = as_scheduled(as_subscribable(S), source, scheduler)
+
+as_scheduled(::InvalidSubscribable,       source, scheduler)                         = throw(InvalidSubscribableTraitUsageError(source))
+as_scheduled(::ValidSubscribableTrait{L}, source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)

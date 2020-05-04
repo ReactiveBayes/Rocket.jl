@@ -8,41 +8,72 @@ using Rocket
     struct DummyType end
     struct AbstractDummyActor <: AbstractActor{Any} end
 
-    struct SpecifiedAbstractActor <: AbstractActor{Any} end
-    Rocket.as_actor(::Type{<:SpecifiedAbstractActor}) = BaseActorTrait{Any}()
+    struct SpecifiedAbstractActor end
+    Rocket.as_actor(::Type{<:SpecifiedAbstractActor}) = BaseActorTrait{Int}()
 
-    struct NotImplementedActor           <: Actor{Any} end
-    struct NotImplementedNextActor       <: NextActor{Any} end
-    struct NotImplementedErrorActor      <: ErrorActor{Any} end
-    struct NotImplementedCompletionActor <: CompletionActor{Any} end
+    struct NotImplementedActor <: Actor{Any}
+        events :: Vector{Any}
 
-    struct ImplementedActor <: Actor{Any} end
-    Rocket.on_next!(::ImplementedActor, data)   = data
-    Rocket.on_error!(::ImplementedActor, error) = error
-    Rocket.on_complete!(::ImplementedActor)     = "ImplementedActor:complete"
+        NotImplementedActor() = new(Vector{Any}())
+    end
 
-    struct ImplementedNextActor <: NextActor{Any} end
-    Rocket.on_next!(::ImplementedNextActor, data) = data
+    struct NotImplementedNextActor <: NextActor{Int}
+        events :: Vector{Any}
 
-    struct ImplementedErrorActor <: ErrorActor{Any} end
-    Rocket.on_error!(::ImplementedErrorActor, error) = error
+        NotImplementedNextActor() = new(Vector{Any}())
+    end
 
-    struct ImplementedCompletionActor <: CompletionActor{Any} end
-    Rocket.on_complete!(::ImplementedCompletionActor) = "ImplementedCompletionActor:complete"
+    struct NotImplementedErrorActor <: ErrorActor{Float64}
+        events :: Vector{Any}
 
-    struct IntegerActor <: Actor{Int} end
-    Rocket.on_next!(::IntegerActor,  data::Int) = data
-    Rocket.on_error!(::IntegerActor, err)       = err
-    Rocket.on_complete!(::IntegerActor)         = "IntegerActor:complete"
+        NotImplementedErrorActor() = new(Vector{Any}())
+    end
 
-    struct IntegerNextActor <: NextActor{Int} end
-    Rocket.on_next!(::IntegerNextActor, data::Int) = data
+    struct NotImplementedCompletionActor <: CompletionActor{String}
+        events :: Vector{Any}
 
-    struct IntegerErrorActor <: ErrorActor{Int} end
-    Rocket.on_error!(::IntegerErrorActor, err) = err
+        NotImplementedCompletionActor() = new(Vector{Any}())
+    end
 
-    struct IntegerCompletionActor <: CompletionActor{Int} end
-    Rocket.on_complete!(::IntegerCompletionActor) = "IntegerCompletionActor:complete"
+    struct ImplementedActor <: Actor{Any}
+        events :: Vector{Any}
+
+        ImplementedActor() = new(Vector{Any}())
+    end
+
+    Rocket.on_next!(actor::ImplementedActor, data) = push!(actor.events, data)
+    Rocket.on_error!(actor::ImplementedActor, err) = push!(actor.events, "err: $err")
+    Rocket.on_complete!(actor::ImplementedActor)   = push!(actor.events, "completed")
+
+    struct ImplementedNextActor <: NextActor{Int}
+        events :: Vector{Any}
+
+        ImplementedNextActor() = new(Vector{Any}())
+    end
+
+    Rocket.on_next!(actor::ImplementedNextActor, data) = push!(actor.events, data)
+    Rocket.on_error!(actor::ImplementedNextActor, err) = push!(actor.events, "err: $err")
+    Rocket.on_complete!(actor::ImplementedNextActor)   = push!(actor.events, "completed")
+
+    struct ImplementedErrorActor <: ErrorActor{Float64}
+        events :: Vector{Any}
+
+        ImplementedErrorActor() = new(Vector{Any}())
+    end
+
+    Rocket.on_next!(actor::ImplementedErrorActor, data) = push!(actor.events, data)
+    Rocket.on_error!(actor::ImplementedErrorActor, err) = push!(actor.events, "err: $err")
+    Rocket.on_complete!(actor::ImplementedErrorActor)   = push!(actor.events, "completed")
+
+    struct ImplementedCompletionActor <: CompletionActor{String}
+        events :: Vector{Any}
+
+        ImplementedCompletionActor() = new(Vector{Any}())
+    end
+
+    Rocket.on_next!(actor::ImplementedCompletionActor, data) = push!(actor.events, data)
+    Rocket.on_error!(actor::ImplementedCompletionActor, err) = push!(actor.events, "err: $err")
+    Rocket.on_complete!(actor::ImplementedCompletionActor)   = push!(actor.events, "completed")
 
     @testset "as_actor" begin
             # Check if arbitrary dummy type has undefined actor type
@@ -53,26 +84,21 @@ using Rocket
             @test as_actor(AbstractDummyActor) === InvalidActorTrait()
 
             # Check if as_teardown return specified actor type
-            @test as_actor(SpecifiedAbstractActor) === BaseActorTrait{Any}()
-            @test as_actor(Actor{Int})             === BaseActorTrait{Int}()
-            @test as_actor(NextActor{Int})         === NextActorTrait{Int}()
-            @test as_actor(ErrorActor{Int})        === ErrorActorTrait{Int}()
-            @test as_actor(CompletionActor{Int})   === CompletionActorTrait{Int}()
+            @test as_actor(SpecifiedAbstractActor)  === BaseActorTrait{Int}()
+            @test as_actor(Actor{Any})              === BaseActorTrait{Any}()
+            @test as_actor(NextActor{Int})          === NextActorTrait{Int}()
+            @test as_actor(ErrorActor{Float64})     === ErrorActorTrait{Float64}()
+            @test as_actor(CompletionActor{String}) === CompletionActorTrait{String}()
 
             @test as_actor(NotImplementedActor)           === BaseActorTrait{Any}()
-            @test as_actor(NotImplementedNextActor)       === NextActorTrait{Any}()
-            @test as_actor(NotImplementedErrorActor)      === ErrorActorTrait{Any}()
-            @test as_actor(NotImplementedCompletionActor) === CompletionActorTrait{Any}()
+            @test as_actor(NotImplementedNextActor)       === NextActorTrait{Int}()
+            @test as_actor(NotImplementedErrorActor)      === ErrorActorTrait{Float64}()
+            @test as_actor(NotImplementedCompletionActor) === CompletionActorTrait{String}()
 
             @test as_actor(ImplementedActor)           === BaseActorTrait{Any}()
-            @test as_actor(ImplementedNextActor)       === NextActorTrait{Any}()
-            @test as_actor(ImplementedErrorActor)      === ErrorActorTrait{Any}()
-            @test as_actor(ImplementedCompletionActor) === CompletionActorTrait{Any}()
-
-            @test as_actor(IntegerActor)           === BaseActorTrait{Int}()
-            @test as_actor(IntegerNextActor)       === NextActorTrait{Int}()
-            @test as_actor(IntegerErrorActor)      === ErrorActorTrait{Int}()
-            @test as_actor(IntegerCompletionActor) === CompletionActorTrait{Int}()
+            @test as_actor(ImplementedNextActor)       === NextActorTrait{Int}()
+            @test as_actor(ImplementedErrorActor)      === ErrorActorTrait{Float64}()
+            @test as_actor(ImplementedCompletionActor) === CompletionActorTrait{String}()
     end
 
     @testset "next!" begin
@@ -87,27 +113,56 @@ using Rocket
             @test_throws MissingOnNextImplementationError next!(NotImplementedActor(), 1)
             @test_throws MissingOnNextImplementationError next!(NotImplementedNextActor(), 1)
 
-            # Check if next! function doing nothing for incomplete actors
-            @test next!(NotImplementedErrorActor(), 1)      === nothing
-            @test next!(ImplementedErrorActor(), 1)         === nothing
-            @test next!(NotImplementedCompletionActor(), 1) === nothing
-            @test next!(ImplementedCompletionActor(), 1)    === nothing
+            # Check if next! function does nothing for incomplete actors
+            actor = NotImplementedErrorActor()
+            @test next!(actor, 1.0) === nothing
+            @test actor.events == []
 
-            # Check next! returns nothing function for implemented actors
-            @test next!(ImplementedActor(),     1) === nothing
-            @test next!(ImplementedActor(),     2) === nothing
-            @test next!(ImplementedNextActor(), 1) === nothing
-            @test next!(ImplementedNextActor(), 2) === nothing
+            actor = ImplementedErrorActor()
+            @test next!(actor, 1.0) === nothing
+            @test actor.events == []
+
+            actor = NotImplementedCompletionActor()
+            @test next!(actor, "1.0") === nothing
+            @test actor.events == []
+
+            actor = ImplementedCompletionActor()
+            @test next!(actor, "1.0") === nothing
+            @test actor.events == []
+
+            # Check next! function returns nothing and saves incoming event in events array for implemented actors
+            actor = ImplementedActor()
+            @test next!(actor, 1) === nothing
+            @test actor.events == [ 1 ]
+            @test next!(actor, 2) === nothing
+            @test actor.events == [ 1, 2 ]
+
+            actor = ImplementedNextActor()
+            @test next!(actor, 1) === nothing
+            @test actor.events == [ 1 ]
+            @test next!(actor, 2) === nothing
+            @test actor.events == [ 1, 2 ]
+
+            # Check next! function accepts wider types of data
+            actor = ImplementedActor()
+            @test next!(actor, 1)   === nothing
+            @test next!(actor, 1.0) === nothing
+            @test next!(actor, "1") === nothing
+            @test actor.events == [ 1, 1.0, "1" ]
 
             # Check next! function throws an error for wrong type of message
-            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerActor(), "string")
-            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerActor(), 1.0)
-            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerNextActor(), "string")
-            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerNextActor(), 1.0)
-            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerErrorActor(), "string")
-            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerErrorActor(), 1.0)
-            @test_throws InconsistentSourceActorDataTypesError{Int64,String}  next!(IntegerCompletionActor(), "string")
-            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64} next!(IntegerCompletionActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Int64,String}    next!(ImplementedNextActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64}   next!(ImplementedNextActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Int64,String}    next!(NotImplementedNextActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Int64,Float64}   next!(NotImplementedNextActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{Float64,String}  next!(ImplementedErrorActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Float64,Int}     next!(ImplementedErrorActor(), 1)
+            @test_throws InconsistentSourceActorDataTypesError{Float64,String}  next!(NotImplementedErrorActor(), "string")
+            @test_throws InconsistentSourceActorDataTypesError{Float64,Int}     next!(NotImplementedErrorActor(), 1)
+            @test_throws InconsistentSourceActorDataTypesError{String,Float64}  next!(ImplementedCompletionActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{String,Int}      next!(ImplementedCompletionActor(), 1)
+            @test_throws InconsistentSourceActorDataTypesError{String,Float64}  next!(NotImplementedCompletionActor(), 1.0)
+            @test_throws InconsistentSourceActorDataTypesError{String,Int}      next!(NotImplementedCompletionActor(), 1)
     end
 
     @testset "error!" begin
@@ -123,16 +178,38 @@ using Rocket
             @test_throws MissingOnErrorImplementationError error!(NotImplementedErrorActor(), 1)
 
             # Check if error! function doing nothing for incomplete actors
-            @test error!(NotImplementedNextActor(), 1)       === nothing
-            @test error!(ImplementedNextActor(), 1)          === nothing
-            @test error!(NotImplementedCompletionActor(), 1) === nothing
-            @test error!(ImplementedCompletionActor(), 1)    === nothing
+            actor = ImplementedNextActor()
+            @test error!(actor, 1) === nothing
+            @test actor.events == [ ]
 
-            # Check error! function returns nothing for implemented actors
-            @test error!(ImplementedActor(),      1) === nothing
-            @test error!(ImplementedActor(),      2) === nothing
-            @test error!(ImplementedErrorActor(), 1) === nothing
-            @test error!(ImplementedErrorActor(), 2) === nothing
+            actor = NotImplementedNextActor()
+            @test error!(actor, 1) === nothing
+            @test actor.events == [ ]
+
+            actor = ImplementedCompletionActor()
+            @test error!(actor, 1) === nothing
+            @test actor.events == [ ]
+
+            actor = NotImplementedCompletionActor()
+            @test error!(actor, 1) === nothing
+            @test actor.events == [ ]
+
+            # Check error! function returns nothing and saves incoming event in events array for implemented actors
+            actor = ImplementedActor()
+            @test error!(actor, 1) === nothing
+            @test actor.events == [ "err: 1" ]
+            @test error!(actor, 1.0) === nothing
+            @test actor.events == [ "err: 1", "err: 1.0" ]
+            @test error!(actor, "err") === nothing
+            @test actor.events == [ "err: 1", "err: 1.0", "err: err" ]
+
+            actor = ImplementedErrorActor()
+            @test error!(actor, 1) === nothing
+            @test actor.events == [ "err: 1" ]
+            @test error!(actor, 1.0) === nothing
+            @test actor.events == [ "err: 1", "err: 1.0" ]
+            @test error!(actor, "err") === nothing
+            @test actor.events == [ "err: 1", "err: 1.0", "err: err" ]
     end
 
     @testset "complete!" begin
@@ -140,22 +217,35 @@ using Rocket
             @test_throws InvalidActorTraitUsageError complete!(DummyType())
             @test_throws InvalidActorTraitUsageError complete!(AbstractDummyActor())
 
-            # Check if complete! function throws an error with extra argument
-            @test_throws ExtraArgumentInCompleteCall complete!(ImplementedActor(), 1)
-
             # Check if complete! function throws an error for not implemented actors
             @test_throws MissingOnCompleteImplementationError complete!(NotImplementedActor())
             @test_throws MissingOnCompleteImplementationError complete!(NotImplementedCompletionActor())
 
             # Check if complete! function doing nothing for incomplete actors
-            @test complete!(NotImplementedNextActor())  === nothing
-            @test complete!(ImplementedNextActor())     === nothing
-            @test complete!(NotImplementedErrorActor()) === nothing
-            @test complete!(ImplementedErrorActor())    === nothing
+            actor = ImplementedNextActor()
+            @test complete!(actor)  === nothing
+            @test actor.events == []
 
-            # Check complete! function returns nothing for implemented actors
-            @test complete!(ImplementedActor())           === nothing
-            @test complete!(ImplementedCompletionActor()) === nothing
+            actor = NotImplementedNextActor()
+            @test complete!(actor)  === nothing
+            @test actor.events == []
+
+            actor = ImplementedErrorActor()
+            @test complete!(actor)  === nothing
+            @test actor.events == []
+
+            actor = NotImplementedErrorActor()
+            @test complete!(actor)  === nothing
+            @test actor.events == []
+
+            # Check complete! function returns nothing and saves incoming event in events array for implemented actors
+            actor = ImplementedActor()
+            @test complete!(actor) === nothing
+            @test actor.events == [ "completed" ]
+
+            actor = ImplementedCompletionActor()
+            @test complete!(actor) === nothing
+            @test actor.events == [ "completed" ]
     end
 
     struct CustomActor{L} <: Actor{L} end
@@ -174,6 +264,55 @@ using Rocket
 
             @test create_actor(Int, ImplementedCustomActorFactory())    === CustomActor{Int}()
             @test create_actor(String, ImplementedCustomActorFactory()) === CustomActor{String}()
+    end
+
+    @testset "Actor extract type and eltype" begin
+
+            @test Rocket.actor_extract_type(SpecifiedAbstractActor)        === Int
+            @test Rocket.actor_extract_type(NotImplementedActor)           === Any
+            @test Rocket.actor_extract_type(NotImplementedNextActor)       === Int
+            @test Rocket.actor_extract_type(NotImplementedErrorActor)      === Float64
+            @test Rocket.actor_extract_type(NotImplementedCompletionActor) === String
+            @test Rocket.actor_extract_type(ImplementedActor)              === Any
+            @test Rocket.actor_extract_type(ImplementedNextActor)          === Int
+            @test Rocket.actor_extract_type(ImplementedErrorActor)         === Float64
+            @test Rocket.actor_extract_type(ImplementedCompletionActor)    === String
+
+            @test eltype(SpecifiedAbstractActor)        === Any
+            @test eltype(NotImplementedActor)           === Any
+            @test eltype(NotImplementedNextActor)       === Int
+            @test eltype(NotImplementedErrorActor)      === Float64
+            @test eltype(NotImplementedCompletionActor) === String
+            @test eltype(ImplementedActor)              === Any
+            @test eltype(ImplementedNextActor)          === Int
+            @test eltype(ImplementedErrorActor)         === Float64
+            @test eltype(ImplementedCompletionActor)    === String
+
+            @test Rocket.actor_extract_type(SpecifiedAbstractActor())        === Int
+            @test Rocket.actor_extract_type(NotImplementedActor())           === Any
+            @test Rocket.actor_extract_type(NotImplementedNextActor())       === Int
+            @test Rocket.actor_extract_type(NotImplementedErrorActor())      === Float64
+            @test Rocket.actor_extract_type(NotImplementedCompletionActor()) === String
+            @test Rocket.actor_extract_type(ImplementedActor())              === Any
+            @test Rocket.actor_extract_type(ImplementedNextActor())          === Int
+            @test Rocket.actor_extract_type(ImplementedErrorActor())         === Float64
+            @test Rocket.actor_extract_type(ImplementedCompletionActor())    === String
+
+            @test eltype(SpecifiedAbstractActor())        === Any
+            @test eltype(NotImplementedActor())           === Any
+            @test eltype(NotImplementedNextActor())       === Int
+            @test eltype(NotImplementedErrorActor())      === Float64
+            @test eltype(NotImplementedCompletionActor()) === String
+            @test eltype(ImplementedActor())              === Any
+            @test eltype(ImplementedNextActor())          === Int
+            @test eltype(ImplementedErrorActor())         === Float64
+            @test eltype(ImplementedCompletionActor())    === String
+
+            @test_throws InvalidActorTraitUsageError Rocket.actor_extract_type(DummyType)
+            @test_throws InvalidActorTraitUsageError Rocket.actor_extract_type(AbstractDummyActor)
+
+            @test_throws InvalidActorTraitUsageError Rocket.actor_extract_type(DummyType())
+            @test_throws InvalidActorTraitUsageError Rocket.actor_extract_type(AbstractDummyActor())
     end
 
 end

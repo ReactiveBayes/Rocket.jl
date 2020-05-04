@@ -24,8 +24,6 @@ See also: [`Actor`](@ref), [`void`](@ref), [`tap`](@ref)
 """
 struct VoidActor{T} <: Actor{T} end
 
-is_exhausted(actor::VoidActor) = false
-
 on_next!(actor::VoidActor{T}, data::T) where T = begin end
 on_error!(actor::VoidActor, err)               = begin end
 on_complete!(actor::VoidActor)                 = begin end

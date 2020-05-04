@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "SingleObservable" begin
 
+    println("Testing: of")
+
     @testset begin
         @test of(1)               == SingleObservable{Int}(1)
         @test of([ 1, 2, 3 ])     == SingleObservable{Vector{Int}}([ 1, 2, 3 ])

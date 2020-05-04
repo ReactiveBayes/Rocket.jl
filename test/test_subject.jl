@@ -12,7 +12,7 @@ using Rocket
 
     struct ActorMissingSubject{T} end
     Rocket.as_subject(::Type{<:ActorMissingSubject{T}})      where T = ValidSubject{T}()
-    Rocket.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = ValidSubscribable{T}()
+    Rocket.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = SimpleSubscribableTrait{T}()
 
     struct SubscribableMissingSubject{T} end
     Rocket.as_subject(::Type{<:SubscribableMissingSubject{T}})      where T = ValidSubject{T}()
@@ -26,7 +26,7 @@ using Rocket
 
     Rocket.as_subject(::Type{<:ImplementedSubject{T}})      where T = ValidSubject{T}()
     Rocket.as_actor(::Type{<:ImplementedSubject{T}})        where T = BaseActorTrait{T}()
-    Rocket.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = ValidSubscribable{T}()
+    Rocket.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = SimpleSubscribableTrait{T}()
 
     Rocket.on_next!(subject::ImplementedSubject{T}, data::T) where T = push!(subject.values, data)
     Rocket.on_error!(subject::ImplementedSubject, err)               = error(err)
@@ -37,12 +37,34 @@ using Rocket
         return VoidTeardown()
     end
 
+    struct ImplementedAutoSubject{T} <: AbstractSubject{T}
+        values :: Vector{T}
+
+        ImplementedAutoSubject{T}() where T = new(Vector{T}())
+    end
+
+    Rocket.on_next!(subject::ImplementedAutoSubject{T}, data::T) where T = push!(subject.values, data)
+    Rocket.on_error!(subject::ImplementedAutoSubject, err)               = error(err)
+    Rocket.on_complete!(subject::ImplementedAutoSubject)                 = begin end
+
+    function Rocket.on_subscribe!(subject::ImplementedAutoSubject, actor)
+        complete!(actor)
+        return VoidTeardown()
+    end
+
     @testset "as_subject" begin
         # Check if arbitrary dummy type has invalid subject type
         @test as_subject(DummySubjectType) === InvalidSubject()
 
         # Check if as_subject returns valid subject type for an implemented subject object
-        @test as_subject(ImplementedSubject{Int}) === ValidSubject{Int}()
+        @test as_subject(ImplementedSubject{Int})     === ValidSubject{Int}()
+        @test as_subject(ImplementedAutoSubject{Int}) === ValidSubject{Int}()
+
+        @test as_actor(ImplementedSubject{Int})     === BaseActorTrait{Int}()
+        @test as_actor(ImplementedAutoSubject{Int}) === BaseActorTrait{Int}()
+
+        @test as_subscribable(ImplementedSubject{Int})     === SimpleSubscribableTrait{Int}()
+        @test as_subscribable(ImplementedAutoSubject{Int}) === SimpleSubscribableTrait{Int}()
     end
 
     @testset "subscribe! as a subscribable" begin
@@ -55,10 +77,12 @@ using Rocket
         @test_throws MissingOnSubscribeImplementationError subscribe!(ActorMissingSubject{Int}(), actor)
 
         # Check if subscribe! subscribes to a valid subscribable
-        @test subscribe!(ImplementedSubject{Int}(), actor) === VoidTeardown()
+        @test subscribe!(ImplementedSubject{Int}(), actor)     === VoidTeardown()
+        @test subscribe!(ImplementedAutoSubject{Int}(), actor) === VoidTeardown()
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match
         @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedSubject{Int}(), actor_s)
+        @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedAutoSubject{Int}(), actor_s)
     end
 
     @testset "subscribe! as an actor" begin
@@ -74,8 +98,30 @@ using Rocket
         @test subscribe!(source, subject) === VoidTeardown()
         @test subject.values == [ 1, 2, 3, 4, 5 ]
 
+        # Check if subscribe! subscribes to a valid subscribable
+        subject = ImplementedAutoSubject{Int}()
+        @test subscribe!(source, subject) === VoidTeardown()
+        @test subject.values == [ 1, 2, 3, 4, 5 ]
+
         # Check if subscribe! throws an error if subscribable and actor data types does not match
         @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(source, ImplementedSubject{String}())
+        @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(source, ImplementedAutoSubject{String}())
+    end
+
+    struct DummyFactory end
+
+    struct NotImplementedSubjectFactory <: AbstractSubjectFactory end
+
+    struct ImplementedSubjectFactory <: AbstractSubjectFactory end
+
+    create_subject(::Type{L}, factory::ImplementedSubjectFactory) where L = ImplementedSubject{L}()
+
+    @testset "test AbstractSubjectFactory" begin
+        @test_throws MethodError create_subject(Int, DummyFactory())
+        @test_throws MethodError create_subject(Int, NotImplementedSubjectFactory())
+
+        actor = create_subject(String, ImplementedSubjectFactory())
+        @test actor isa ImplementedSubject{String}
     end
 
 end

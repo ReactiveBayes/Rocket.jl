@@ -5,6 +5,8 @@ using Rocket
 
 @testset "KeepActor" begin
 
+    println("Testing: actor KeepActor")
+
     @testset begin
         source = from([ 1, 2, 3 ])
         actor  = KeepActor{Int}()
@@ -15,7 +17,7 @@ using Rocket
     end
 
     @testset begin
-        source = throwError("Error", Int)
+        source = throwError(Int, "Error")
         actor  = KeepActor{Int}()
 
         @test_throws ErrorException subscribe!(source, actor)

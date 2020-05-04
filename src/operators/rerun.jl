@@ -62,8 +62,6 @@ mutable struct RerunActor{L, A} <: Actor{L}
     current_subscription :: Union{Nothing, Teardown}
 end
 
-is_exhausted(actor::RerunActor) = is_exhausted(actor.actor)
-
 function on_next!(actor::RerunActor{L}, data::L) where L
     next!(actor.actor, data)
 end

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: lowercase()" begin
 
+    println("Testing: operator lowercase()")
+
     run_proxyshowcheck("Lowercase", lowercase())
 
     run_testset([
@@ -19,7 +21,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source      = throwError("e", String) |> lowercase(),
+            source      = throwError(String, "e") |> lowercase(),
             values      = @ts(e("e")),
             source_type = String
         ),

@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: error_if_empty()" begin
 
+    println("Testing: operator error_if_empty()")
+
     run_proxyshowcheck("ErrorIfEmpty", error_if_empty(0))
 
     run_testset([
@@ -21,7 +23,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError("e", Int) |> error_if_empty("Empty"),
+            source      = throwError(Int, "e") |> error_if_empty("Empty"),
             values      = @ts(e("e")),
             source_type = Int
         ),

@@ -1,11 +1,8 @@
 # [ReplaySubject](@id subject_replay)
 
 ```@docs
-make_replay_subject
-```
-
-```@docs
 ReplaySubject
+ReplaySubjectFactory
 ```
 
 ## Description
@@ -22,7 +19,7 @@ When creating a `ReplaySubject`, you can specify how many values to replay:
 ```julia
 using Rocket
 
-subject = make_replay_subject(Int, 3) # buffer 3 values for new subscribers
+subject = ReplaySubject(Int, 3) # buffer 3 values for new subscribers
 
 subscription1 = subscribe!(subject, logger("1"))
 

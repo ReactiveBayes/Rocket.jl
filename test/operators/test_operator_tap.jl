@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: tap()" begin
 
+    println("Testing: operator tap()")
+
     run_proxyshowcheck("Tap", tap((_) -> begin end))
 
     sideeffects1 = []

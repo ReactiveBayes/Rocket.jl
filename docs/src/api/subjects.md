@@ -14,7 +14,6 @@ InvalidSubject
 ```@docs
 AbstractSubjectFactory
 create_subject
-MissingCreateSubjectFactoryImplementationError
 ```
 
 ## Errors

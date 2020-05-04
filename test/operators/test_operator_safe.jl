@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: safe()" begin
 
+    println("Testing: operator safe()")
+
     run_proxyshowcheck("Safe", safe())
 
     run_testset([

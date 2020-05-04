@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "CombineLatestObservable" begin
 
+    println("Testing: combineLatest")
+
     @testset begin
         @test_throws ErrorException combineLatest()
     end
@@ -18,7 +20,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest(of(1) |> async(), from(1:5)),
+            source = combineLatest(of(1) |> async(0), from(1:5)),
             values = @ts([ (1, 5) ] ~ c),
             source_type = Tuple{Int, Int}
         ),
@@ -28,7 +30,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest(from(1:5) |> async(), of(2.0)),
+            source = combineLatest(from(1:5) |> async(0), of(2.0)),
             values = @ts([ (1, 2.0) ] ~ [ (2, 2.0) ] ~ [ (3, 2.0) ] ~ [ (4, 2.0) ] ~ [ (5, 2.0) ] ~ c),
             source_type = Tuple{Int, Float64}
         ),
@@ -43,17 +45,17 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest(throwError("err", Float64), completed(Int)),
+            source = combineLatest(throwError(Float64, "err"), completed(Int)),
             values = @ts(e("err")),
             source_type = Tuple{Float64, Int}
         ),
         (
-            source = combineLatest(completed(Int), throwError("err", Float64)),
+            source = combineLatest(completed(Int), throwError(Float64, "err")),
             values = @ts(c),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest(throwError("err1", Float64), throwError("err2", Float64)),
+            source = combineLatest(throwError(Float64, "err1"), throwError(Float64, "err2")),
             values = @ts(e("err1")),
             source_type = Tuple{Float64, Float64}
         ),
@@ -68,7 +70,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((of(1) |> async(), from(1:5)), true),
+            source = combineLatest((of(1) |> async(0), from(1:5)), true),
             values = @ts([ (1, 5) ] ~ c),
             source_type = Tuple{Int, Int}
         ),
@@ -78,7 +80,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest((from(1:5) |> async(), of(2.0)), true),
+            source = combineLatest((from(1:5) |> async(0), of(2.0)), true),
             values = @ts([ (1, 2.0) ] ~ [ (2, 2.0) ] ~ [ (3, 2.0) ] ~ [ (4, 2.0) ] ~ [ (5, 2.0) ] ~ c),
             source_type = Tuple{Int, Float64}
         ),
@@ -93,17 +95,17 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((throwError("err", Float64), completed(Int)), true),
+            source = combineLatest((throwError(Float64, "err"), completed(Int)), true),
             values = @ts(e("err")),
             source_type = Tuple{Float64, Int}
         ),
         (
-            source = combineLatest((completed(Int), throwError("err", Float64)), true),
+            source = combineLatest((completed(Int), throwError(Float64, "err")), true),
             values = @ts(c),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest((throwError("err1", Float64), throwError("err2", Float64)), true),
+            source = combineLatest((throwError(Float64, "err1"), throwError(Float64, "err2")), true),
             values = @ts(e("err1")),
             source_type = Tuple{Float64, Float64}
         ),
@@ -124,9 +126,9 @@ include("../test_helpers.jl")
 
 
     @testset begin
-        s1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s2 = make_subject(Float64, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s3 = make_subject(String, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s1 = Subject(Int)
+        s2 = Subject(Float64)
+        s3 = Subject(String)
         s4 = of(5)
         s5 = from(1:10)
 
@@ -166,9 +168,9 @@ include("../test_helpers.jl")
     end
 
     @testset begin
-        s1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s2 = make_subject(Float64, mode = SYNCHRONOUS_SUBJECT_MODE)
-        s3 = make_subject(String, mode = SYNCHRONOUS_SUBJECT_MODE)
+        s1 = Subject(Int)
+        s2 = Subject(Float64)
+        s3 = Subject(String)
         s4 = of(5)
         s5 = from(1:10)
 

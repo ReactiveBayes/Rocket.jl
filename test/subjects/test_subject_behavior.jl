@@ -5,8 +5,10 @@ using Rocket
 
 @testset "BehaviorSubject" begin
 
+    println("Testing: BehaviorSubject")
+
     @testset begin
-        subject = make_behavior_subject(Int, 0, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = BehaviorSubject(0)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -33,7 +35,7 @@ using Rocket
     end
 
     @testset begin
-        subject = make_behavior_subject(Int, 0, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = BehaviorSubject(Int, 0)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -55,7 +57,40 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = make_behavior_subject_factory(0, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = BehaviorSubject(Int, 0)
+
+        values      = []
+        errors      = []
+        completions = []
+
+        actor = lambda(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(errors, e),
+            on_complete = ()  -> push!(completions, 0)
+        )
+
+        subscribe!(subject, actor)
+
+        @test values      == [ 0 ]
+        @test errors      == [ ]
+        @test completions == [ ]
+
+        error!(subject, "err")
+
+        @test values      == [ 0 ]
+        @test errors      == [ "err" ]
+        @test completions == [ ]
+
+        subscribe!(subject, actor)
+
+        @test values      == [ 0, 0 ]
+        @test errors      == [ "err", "err" ]
+        @test completions == [ ]
+
+    end
+
+    @testset begin
+        subject_factory = BehaviorSubjectFactory(0)
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)

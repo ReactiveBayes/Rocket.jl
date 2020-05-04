@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "FunctionObservable" begin
 
+    println("Testing: make")
+
     @testset begin
         source = make(Int) do actor
             next!(actor, 0)

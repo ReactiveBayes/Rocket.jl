@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: default_if_empty()" begin
 
+    println("Testing: operator default_if_empty()")
+
     run_proxyshowcheck("DefaultIfEmpty", default_if_empty(0))
 
     run_testset([

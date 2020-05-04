@@ -59,37 +59,41 @@ end
 
 source_proxy!(proxy::TakeUntilProxy{L, N}, source::S) where { L, N, S } = TakeUntilSource{L, N, S}(proxy.notifier, source)
 
-mutable struct TakeUntilInnerActor{L, A} <: Actor{L}
-    is_completed  :: Bool
-    actor         :: A
-    subscription
+mutable struct TakeUntilInnerActorProps
+    isdisposed    :: Bool
+    ssubscription :: Teardown
+    nsubscription :: Teardown
 
-    TakeUntilInnerActor{L, A}(actor::A) where { L, A } = begin
-        self = new()
-        self.is_completed = false
-        self.actor        = actor
-        return self
-    end
+    TakeUntilInnerActorProps() = new(false, VoidTeardown(), VoidTeardown())
 end
 
-is_exhausted(actor::TakeUntilInnerActor) = actor.is_completed || is_exhausted(actor.actor)
+struct TakeUntilInnerActor{L, A} <: Actor{L}
+    actor :: A
+    props :: TakeUntilInnerActorProps
+
+    TakeUntilInnerActor{L, A}(actor::A) where { L, A } = new(actor, TakeUntilInnerActorProps())
+end
 
 on_next!(actor::TakeUntilInnerActor{L}, data::L) where L = next!(actor.actor, data)
 
 function on_error!(actor::TakeUntilInnerActor, err)
-    error!(actor.actor, err)
-    if isdefined(actor, :subscription)
-        unsubscribe!(actor.subscription)
+    if !actor.props.isdisposed
+        error!(actor.actor, err)
+        __dispose(actor)
     end
-    actor.is_completed = true
 end
 
 function on_complete!(actor::TakeUntilInnerActor)
-    complete!(actor.actor)
-    if isdefined(actor, :subscription)
-        unsubscribe!(actor.subscription)
+    if !actor.props.isdisposed
+        complete!(actor.actor)
+        __dispose(actor)
     end
-    actor.is_completed = true
+end
+
+function __dispose(actor::TakeUntilInnerActor)
+    actor.props.isdisposed = true
+    unsubscribe!(actor.props.ssubscription)
+    unsubscribe!(actor.props.nsubscription)
 end
 
 struct TakeUntilSource{L, N, S} <: Subscribable{L}
@@ -98,34 +102,28 @@ struct TakeUntilSource{L, N, S} <: Subscribable{L}
 end
 
 function on_subscribe!(observable::TakeUntilSource{L}, actor::A) where { L, A }
-    inner_actor  = TakeUntilInnerActor{L, A}(actor)
+    inner = TakeUntilInnerActor{L, A}(actor)
 
-    source_subscription   = subscribe!(observable.source, inner_actor)
-    notifier_subscription = VoidTeardown()
+    inner.props.ssubscription = subscribe!(observable.source, inner)
 
-    if !is_exhausted(inner_actor)
-        notifier_subscription    = subscribe!(observable.notifier |> take(1), _ -> begin
-            unsubscribe!(source_subscription)
-            if !is_exhausted(inner_actor)
-                complete!(inner_actor)
-            end
-        end)
-        inner_actor.subscription = notifier_subscription
+    if !inner.props.isdisposed
+        inner.props.nsubscription = subscribe!(observable.notifier |> take(1), lambda(
+            on_next  = (_)   -> complete!(inner),
+            on_error = (err) -> error!(inner, err)
+        ))
     end
 
-    return TakeUntilSubscription(source_subscription, notifier_subscription)
+    return TakeUntilSubscription(inner)
 end
 
-struct TakeUntilSubscription{S1, S2} <: Teardown
-    source_subscription   :: S1
-    notifier_subscription :: S2
+struct TakeUntilSubscription{A} <: Teardown
+    inner :: A
 end
 
 as_teardown(::Type{<:TakeUntilSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::TakeUntilSubscription)
-    unsubscribe!(subscription.source_subscription)
-    unsubscribe!(subscription.notifier_subscription)
+    __dispose(subscription.inner)
     return nothing
 end
 

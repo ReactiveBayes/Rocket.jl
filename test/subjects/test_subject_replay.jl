@@ -1,15 +1,20 @@
-module RocketSynchronousSubjectTest
+module RocketReplaySubjectTest
 
 using Test
 using Rocket
 
-@testset "SynchronousSubject" begin
+@testset "ReplaySubject" begin
+
+    println("Testing: ReplaySubject")
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = ReplaySubject(Int, 2)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
+
+        next!(subject, -2);
+        next!(subject, -1);
 
         subscription1 = subscribe!(subject, actor1)
 
@@ -28,12 +33,12 @@ using Rocket
 
         unsubscribe!(subscription2);
 
-        @test actor1.values == [ 0, 1, 3, 4 ]
-        @test actor2.values == [ 3, 4, 5, 6 ]
+        @test actor1.values == [ -2, -1, 0, 1, 3, 4 ]
+        @test actor2.values == [  0,  1, 3, 4, 5, 6 ]
     end
 
     @testset begin
-        subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = ReplaySubject(Int, 2)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -50,12 +55,52 @@ using Rocket
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
         @test actor2.values == [ 1, 2, 3, 4, 5 ]
 
+        actor3 = keep(Int)
+
+        subscription3 = subscribe!(subject, actor3)
+
+        @test actor3.values == [ 4, 5 ]
+
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
+        unsubscribe!(subscription3)
     end
 
     @testset begin
-        subject_factory = make_subject_factory(mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject = ReplaySubject(Int, 2)
+
+        values      = []
+        errors      = []
+        completions = []
+
+        actor = lambda(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(errors, e),
+            on_complete = ()  -> push!(completions, 0)
+        )
+
+        subscribe!(subject, actor)
+
+        @test values      == [ ]
+        @test errors      == [ ]
+        @test completions == [ ]
+
+        error!(subject, "err")
+
+        @test values      == [ ]
+        @test errors      == [ "err" ]
+        @test completions == [ ]
+
+        subscribe!(subject, actor)
+
+        @test values      == [ ]
+        @test errors      == [ "err", "err" ]
+        @test completions == [ ]
+
+    end
+
+    @testset begin
+        subject_factory = ReplaySubjectFactory(2)
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)
@@ -72,6 +117,12 @@ using Rocket
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
         @test actor2.values == [ 1, 2, 3, 4, 5 ]
+
+        actor3 = keep(Int)
+
+        subscription3 = subscribe!(subject, actor3)
+
+        @test actor3.values == [ 4, 5 ]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)

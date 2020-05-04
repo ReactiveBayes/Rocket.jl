@@ -40,4 +40,4 @@ See also: [`switch_map`](@ref), [`AbstractOperator`](@ref), [`RightTypedOperator
 switch_map_to(source::S) where S = as_switch_map_to(as_subscribable(S), source)
 
 as_switch_map_to(::InvalidSubscribable,  source)         = throw(InvalidSubscribableTraitUsageError(source))
-as_switch_map_to(::ValidSubscribable{R}, source) where R = switch_map(R, (_) -> source)
+as_switch_map_to(::ValidSubscribableTrait{R}, source) where R = switch_map(R, (_) -> source)

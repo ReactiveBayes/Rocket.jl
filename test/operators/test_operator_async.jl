@@ -7,7 +7,7 @@ include("../test_helpers.jl")
 
 @testset "operator: async()" begin
 
-    run_proxyshowcheck("Async", async(), args = (check_subscription = true, ))
+    println("Testing: operator async()")
 
     run_testset([
         (
@@ -16,18 +16,34 @@ include("../test_helpers.jl")
         ),
         (
             source = from(1:5) |> async(),
+            values = @ts(0 ~ [ 1, 2, 3, 4, 5, c ])
+        ),
+        (
+            source = from(1:5) |> async(0),
             values = @ts([1] ~ [2] ~ [3] ~ [4] ~ [5] ~ c)
         ),
         (
-            source = completed() |> async(),
+            source = from(1:5) |> async(1),
+            values = @ts([1] ~ [2] ~ [3] ~ [4] ~ [5] ~ c)
+        ),
+        (
+            source = from(1:5) |> async(2),
+            values = @ts([ 1, 2 ] ~ [ 3, 4 ] ~ [ 5, c ])
+        ),
+        (
+            source = from(1:5) |> async(3),
+            values = @ts([ 1, 2, 3 ] ~ [ 4, 5, c ])
+        ),
+        (
+            source = completed() |> async(0),
             values = @ts(c)
         ),
         (
-            source = throwError("e") |> async(),
+            source = throwError("e") |> async(0),
             values = @ts(e("e")),
         ),
         (
-            source = never() |> async(),
+            source = never() |> async(0),
             values = @ts()
         )
     ])

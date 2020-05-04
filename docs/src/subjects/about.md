@@ -17,7 +17,7 @@ In the example below, we have two Observers attached to a Subject, and we feed s
 ```julia
 using Rocket
 
-source = make_subject(Int)
+source = Subject(Int)
 
 subscription1 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 1: $d")
@@ -43,7 +43,7 @@ Since a Subject is an actor, this also means you may provide a Subject as the ar
 ```julia
 using Rocket
 
-source = make_subject(Int)
+source = Subject(Int)
 
 subscription1 = subscribe!(source, lambda(
     on_next = (d) -> println("Actor 1: $d")
@@ -67,33 +67,72 @@ subscribe!(other_source, source);
 
 Here, we essentially convert a unicast Observable execution to multicast, through the Subject. This demonstrates how Subjects offer a unique way to share Observable execution with multiple Observers.
 
-There are a two base-type specializations of the Subject type: [`AsynchronousSubject`](@ref), and [`SynchronousSubject`](@ref).
+## Schedulers
 
-## AsynchronousSubject
+Subject (and some other observables) uses scheduler objects to schedule message delivery to their listeners.
 
-One of the variants of Subjects is the `AsynchronousSubject`, which delivers each message to attached listeners asynchronously (but still ordered) using
-a Julia's built-in `Task` object.
+## Synchronous scheduler
+
+One of the variants of schedulers is the `AsapScheduler`, which delivers every message synchronously.
+`AsapScheduler` is a default scheduler for all `Subject` objects.
 
 ```@docs
-AsynchronousSubject
+Rocket.AsapScheduler
 ```
 
 ```julia
 using Rocket
 
-subject = make_subject(Int, mode = ASYNCHRONOUS_SUBJECT_MODE)
+subject = Subject(Int, scheduler = Rocket.AsapScheduler())
 
 subscription1 = subscribe!(subject, logger("Actor 1"))
 
+println("Before next")
 next!(subject, 1)
 next!(subject, 2)
-print
+println("After next")
 
 subscription2 = subscribe!(subject, logger("Actor 2"))
 
 next!(subject, 3)
 
 # Logs
+# Before next
+# [Actor 1] Data: 1
+# [Actor 1] Data: 2
+# After next
+# [Actor 1] Data: 3
+# [Actor 2] Data: 3
+```
+
+## Asynchronous Scheduler
+
+An `AsyncScheduler` is similar to a [`Rocket.AsapScheduler`](@ref). Both allows for Subject to scheduler their messages for multiple listeners,
+but a `AsyncScheduler` delivers all messages asynchronously (but still ordered) using a Julia's built-in `Task` object.
+
+```@docs
+Rocket.AsyncScheduler
+```
+
+```julia
+using Rocket
+
+subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
+
+subscription1 = subscribe!(subject, logger("Actor 1"))
+
+println("Before next")
+next!(subject, 1)
+next!(subject, 2)
+println("After next")
+
+subscription2 = subscribe!(subject, logger("Actor 2"))
+
+next!(subject, 3)
+
+# Logs
+# Before next
+# After next
 # [Actor 1] Data: 1
 # [Actor 1] Data: 2
 # [Actor 1] Data: 3
@@ -101,23 +140,9 @@ next!(subject, 3)
 
 ```
 
-## SynchronousSubject
-
-A `SynchronousSubject` is similar to a [`AsynchronousSubject`](@ref). Both multicast values to multiple listeners,
-but a `SynchronousSubject` delivers all messages synchronously.
-
-```@docs
-SynchronousSubject
-```
-
-```julia
-using Rocket
-
-subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-```
-
 ## Subject creation
 
 ```@docs
-make_subject
+Subject
+SubjectFactory
 ```

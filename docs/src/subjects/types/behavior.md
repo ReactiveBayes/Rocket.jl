@@ -1,11 +1,8 @@
 # [BehaviorSubject](@id subject_behavior)
 
 ```@docs
-make_behavior_subject
-```
-
-```@docs
 BehaviorSubject
+BehaviorSubjectFactory
 ```
 
 ## Description
@@ -22,7 +19,7 @@ In the following example, the `BehaviorSubject` is initialized with the value 0 
 ```julia
 using Rocket
 
-subject = make_behavior_subject(Int, 0)
+subject = BehaviorSubject(Int, 0)
 
 subscription1 = subscribe!(subject, logger("1"))
 

@@ -139,7 +139,7 @@ function Rocket.actor_proxy!(proxy::ConvertToFloatProxy{L}, actor::A) where L wh
     return ConvertToFloatProxyActor{L, A}(actor)
 end
 
-mutable struct ConvertToFloatProxyActor{L, A} <: Actor{L}
+struct ConvertToFloatProxyActor{L, A} <: Actor{L}
     actor :: A
 end
 
@@ -186,7 +186,7 @@ struct IdentityProxy{L} <: ActorProxy end
 
 Rocket.actor_proxy!(proxy::IdentityProxy{L}, actor::A) where L where A = IdentityProxyActor{L, A}(actor)
 
-mutable struct IdentityProxyActor{L, A} <: Actor{L}
+struct IdentityProxyActor{L, A} <: Actor{L}
     actor :: A
 end
 
@@ -339,27 +339,27 @@ function call_operator!(::InvalidOperatorTrait, as_subscribable, operator, sourc
     throw(InvalidOperatorTraitUsageError(operator))
 end
 
-function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{NotL}, operator, source) where L where R where NotL
+function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribableTrait{NotL}, operator, source) where L where R where NotL
     throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
 end
 
-function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribable{L}, operator, source) where L where R
+function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribableTrait{L}, operator, source) where L where R
     on_call!(L, R, operator, source)
 end
 
-function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{NotL}, operator, source) where L where NotL
+function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribableTrait{NotL}, operator, source) where L where NotL
     throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
 end
 
-function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribable{L}, operator, source) where L
+function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribableTrait{L}, operator, source) where L
     on_call!(L, operator_right(operator, L), operator, source)
 end
 
-function call_operator!(::RightTypedOperatorTrait{R}, ::ValidSubscribable{L}, operator, source) where L where R
+function call_operator!(::RightTypedOperatorTrait{R}, ::ValidSubscribableTrait{L}, operator, source) where L where R
     on_call!(L, R, operator, source)
 end
 
-function call_operator!(::InferableOperatorTrait, ::ValidSubscribable{L}, operator, source) where L
+function call_operator!(::InferableOperatorTrait, ::ValidSubscribableTrait{L}, operator, source) where L
     on_call!(L, operator_right(operator, L), operator, source)
 end
 
@@ -414,23 +414,17 @@ subscribe!(source, logger())
 [LogActor] Completed
 ```
 """
-struct OperatorsComposition
-    operators
+struct OperatorsComposition{O}
+    operators :: O
 end
 
-function call_operator_composition!(composition::OperatorsComposition, source)
-    transformed = source
-    for operator in composition.operators
-        transformed = transformed |> operator
-    end
-    return transformed
-end
+call_operator_composition!(composition::OperatorsComposition, source) = reduce(|>, composition.operators, init = source)
 
-Base.:|>(source, composition::C) where { C <: OperatorsComposition } = call_operator_composition!(composition, source)
+Base.:|>(source, composition::OperatorsComposition) = call_operator_composition!(composition, source)
 
-Base.:+(o1::O1, o2::O2)                            where { O1 <: AbstractOperator } where { O2 <: AbstractOperator } = OperatorsComposition((o1, o2))
-Base.:+(o1::O1, composition::OperatorsComposition) where { O1 <: AbstractOperator }                                  = OperatorsComposition((o1, composition.operators...))
-Base.:+(composition::OperatorsComposition, o2::O2) where { O2 <: AbstractOperator }                                  = OperatorsComposition((composition.operators..., o2))
+Base.:+(o1::AbstractOperator, o2::AbstractOperator)              = OperatorsComposition((o1, o2))
+Base.:+(o1::AbstractOperator, composition::OperatorsComposition) = OperatorsComposition((o1, composition.operators...))
+Base.:+(composition::OperatorsComposition, o2::AbstractOperator) = OperatorsComposition((composition.operators..., o2))
 
 # -------------------------------- #
 # Errors                           #

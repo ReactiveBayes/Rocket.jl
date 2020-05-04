@@ -26,6 +26,8 @@ end
 ```
 
 To invoke the Observable and inspect these values, we need to subscribe to it.
+It is important to note that observables are lazy collections which means they don't emit anything until someone subscribes to it.
+Every subscription spawns its own independent execution of observable. There are some exceptions to this rule, e.g. `Subjects` and some operators (`share()`, etc..) which may change this behaviour
 
 ```julia
 using Rocket

@@ -3,7 +3,8 @@ export KeepActor, keep
 """
     KeepActor{D}() where D
 
-Keep actor provides a storage actor. It saves all incoming successful `next` events in a `values` array.
+Keep actor provides a storage actor. It saves all incoming successful `next` events in a `values` array, throws an ErrorException on `error!` event
+and does nothing on completion event.
 
 # Examples
 ```jldoctest
@@ -26,8 +27,6 @@ struct KeepActor{T} <: Actor{T}
 
     KeepActor{T}() where T = new(Vector{T}())
 end
-
-is_exhausted(actor::KeepActor) = false
 
 on_next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
 on_error!(actor::KeepActor, err)               = error(err)

@@ -5,6 +5,8 @@ using Rocket
 
 @testset "LoggerActor" begin
 
+    println("Testing: actor LoggerActor")
+
     @testset begin
         actor = logger(Int)
 

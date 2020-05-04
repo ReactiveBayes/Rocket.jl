@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: enumerate()" begin
 
+    println("Testing: operator enumerate()")
+
     run_proxyshowcheck("Enumerate", enumerate())
 
     run_testset([
@@ -21,7 +23,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source      = throwError("e", Float64) |> enumerate(),
+            source      = throwError(Float64, "e") |> enumerate(),
             values      = @ts(e("e")),
             source_type = Tuple{Float64, Int}
         ),

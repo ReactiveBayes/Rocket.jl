@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: map()" begin
 
+    println("Testing: operator map()")
+
     run_proxyshowcheck("Map", map(Any, d -> d))
 
     run_testset([
@@ -26,7 +28,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError("e", Int) |> map(String, d -> string(d)),
+            source      = throwError(Int, "e") |> map(String, d -> string(d)),
             values      = @ts(e("e")),
             source_type = String
         ),

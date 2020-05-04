@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: last()" begin
 
+    println("Testing: operator last()")
+
     run_proxyshowcheck("Last", last())
 
     run_testset([
@@ -29,12 +31,12 @@ include("../test_helpers.jl")
             source_type = Union{Int, String}
         ),
         (
-            source      = throwError("e", Int) |> last(),
+            source      = throwError(Int, "e") |> last(),
             values      = @ts(e("e")),
             source_type = Union{Int}
         ),
         (
-            source      = throwError("e", Int) |> last(default = "String"),
+            source      = throwError(Int, "e") |> last(default = "String"),
             values      = @ts(e("e")),
             source_type = Union{Int, String}
         ),

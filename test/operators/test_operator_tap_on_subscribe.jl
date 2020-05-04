@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: tap_on_subscribe()" begin
 
+    println("Testing: operator tap_on_subscribe()")
+
     run_proxyshowcheck("TapOnSubscribe", tap_on_subscribe(() -> begin end))
 
     @testset begin

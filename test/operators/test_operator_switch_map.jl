@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: switch_map()" begin
 
+    println("Testing: operator switch_map()")
+
     run_proxyshowcheck("SwitchMap", switch_map(Any), args = (check_subscription = true, ))
 
     run_testset([
@@ -26,7 +28,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError("e", Int) |> switch_map(String, d -> string(d)),
+            source      = throwError(Int, "e") |> switch_map(String, d -> string(d)),
             values      = @ts(e("e")),
             source_type = String
         ),
@@ -47,7 +49,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from(1:5) |> async() |> switch_map(Int, d -> of(d ^ 2)),
+            source      = from(1:5) |> async(0) |> switch_map(Int, d -> of(d ^ 2)),
             values      = @ts([ 1 ] ~ [ 4 ] ~ [ 9 ] ~ [ 16 ] ~ [ 25 ] ~ c),
             source_type = Int
         ),
@@ -57,29 +59,29 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from([ of(1), completed(Int), of(2) ]) |> async() |> switch_map(Int),
+            source      = from([ of(1), completed(Int), of(2) ]) |> async(0) |> switch_map(Int),
             values      = @ts([ 1 ] ~ [ 2 ] ~ c ),
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError("err", Int), of(2) ]) |> switch_map(Int),
+            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> switch_map(Int),
             values      = @ts([ 1, e("err") ]),
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError("err", Int), of(2) ]) |> async() |> switch_map(Int),
+            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> async(0) |> switch_map(Int),
             values      = @ts([ 1 ] ~ e("err")),
             source_type = Int
         )
     ])
 
     @testset begin
-        subject1 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
-        subject2 = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+        subject1 = Subject(Int)
+        subject2 = Subject(Int)
 
         values = []
 
-        ssubject = make_subject(Any, mode = SYNCHRONOUS_SUBJECT_MODE)
+        ssubject = Subject(Any)
 
         source = ssubject |> switch_map(Int)
 

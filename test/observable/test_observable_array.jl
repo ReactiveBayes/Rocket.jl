@@ -7,19 +7,21 @@ include("../test_helpers.jl")
 
 @testset "ArrayObservable" begin
 
+    println("Testing: from")
+
     struct DummyObject end
 
     @testset begin
-        @test from([ 1, 2, 3 ]) == ArrayObservable{Int}([ 1, 2, 3 ])
-        @test from(( 1, 2, 3 )) == ArrayObservable{Int}([ 1, 2, 3 ])
-        @test from(0)           == ArrayObservable{Int}([ 0 ])
+        @test from([ 1, 2, 3 ]) == ArrayObservable{Int, Rocket.AsapScheduler}([ 1, 2, 3 ], Rocket.AsapScheduler())
+        @test from(( 1, 2, 3 )) == ArrayObservable{Int, Rocket.AsapScheduler}([ 1, 2, 3 ], Rocket.AsapScheduler())
+        @test from(0)           == ArrayObservable{Int, Rocket.AsapScheduler}([ 0 ], Rocket.AsapScheduler())
 
-        @test from([ 1.0, 2.0, 3.0 ]) == ArrayObservable{Float64}([ 1.0, 2.0, 3.0 ])
-        @test from(( 1.0, 2.0, 3.0 )) == ArrayObservable{Float64}([ 1.0, 2.0, 3.0 ])
-        @test from(0.0)               == ArrayObservable{Float64}([ 0.0 ])
+        @test from([ 1.0, 2.0, 3.0 ]) == ArrayObservable{Float64, Rocket.AsapScheduler}([ 1.0, 2.0, 3.0 ], Rocket.AsapScheduler())
+        @test from(( 1.0, 2.0, 3.0 )) == ArrayObservable{Float64, Rocket.AsapScheduler}([ 1.0, 2.0, 3.0 ], Rocket.AsapScheduler())
+        @test from(0.0)               == ArrayObservable{Float64, Rocket.AsapScheduler}([ 0.0 ], Rocket.AsapScheduler())
 
-        @test from("Hello!") == ArrayObservable{Char}([ 'H', 'e', 'l', 'l', 'o', '!' ])
-        @test from('H')      == ArrayObservable{Char}([ 'H' ])
+        @test from("Hello!") == ArrayObservable{Char, Rocket.AsapScheduler}([ 'H', 'e', 'l', 'l', 'o', '!' ], Rocket.AsapScheduler())
+        @test from('H')      == ArrayObservable{Char, Rocket.AsapScheduler}([ 'H' ], Rocket.AsapScheduler())
 
         @test from(0) != from(0.0)
 

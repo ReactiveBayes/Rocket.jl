@@ -4,7 +4,6 @@ export AbstractActorFactory, create_actor
 export next!, error!, complete!
 export on_next!, on_error!, on_complete!
 export as_actor, actor_extract_type
-export is_exhausted
 
 export InvalidActorTraitUsageError, InconsistentSourceActorDataTypesError
 export MissingDataArgumentInNextCall, MissingErrorArgumentInErrorCall, ExtraArgumentInCompleteCall
@@ -17,53 +16,60 @@ import Base: eltype
 """
 Abstract type for all possible actor traits
 
-See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
+See also: [`Actor`](@ref), [`ValidActorTrait`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
 """
 abstract type ActorTrait end
 
 """
-Abstract type for all possible valid actor traits
+Abstract type for all possible valid actor traits.
+There are several subtypes for `ValidActorTrait`: `BaseActorTrait`, `NextActorTrait`, `ErrorActorTrait` and `CompletionActorTrait`.
 
 See also: [`Actor`](@ref), [`BaseActorTrait`](@ref), [`NextActorTrait`](@ref), [`ErrorActorTrait`](@ref), [`CompletionActorTrait`](@ref), [`InvalidActorTrait`](@ref)
 """
-abstract type ValidActorTrait{T} end
+abstract type ValidActorTrait{T} <: ActorTrait end
 
 """
 Base actor trait specifies actor to listen for all `next!`, `error!` and `complete!` events.
+`BaseActorTrait` is a subtype of `ValidActorTrait`.
 
-See also: [`ActorTrait`](@ref), [`Actor`](@ref)
+See also: [`ActorTrait`](@ref), [`ValidActorTrait`](@ref), [`Actor`](@ref)
 """
-struct BaseActorTrait{T}       <: ValidActorTrait{T}       end
+struct BaseActorTrait{T} <: ValidActorTrait{T}       end
 
 """
 Next actor trait specifies actor to listen for `next!` events only.
+`NextActorTrait` is a subtype of `ValidActorTrait`.
 
-See also: [`ActorTrait`](@ref), [`NextActor`](@ref)
+See also: [`ActorTrait`](@ref), [`ValidActorTrait`](@ref), [`NextActor`](@ref)
 """
-struct NextActorTrait{T}       <: ValidActorTrait{T}       end
+struct NextActorTrait{T} <: ValidActorTrait{T}       end
 
 """
 Error actor trait specifies actor to listen for `error!` events only.
+`ErrorActorTrait` is a subtype of `ValidActorTrait`.
 
-See also: [`ActorTrait`](@ref), [`ErrorActor`](@ref)
+See also: [`ActorTrait`](@ref), [`ValidActorTrait`](@ref), [`ErrorActor`](@ref)
 """
-struct ErrorActorTrait{T}      <: ValidActorTrait{T}       end
+struct ErrorActorTrait{T} <: ValidActorTrait{T}       end
 
 """
 Completion actor trait specifies actor to listen for `complete!` events only.
+`CompletionActorTrait` is a subtype of `ValidActorTrait`.
 
-See also: [`ActorTrait`](@ref), [`CompletionActor`](@ref)
+See also: [`ActorTrait`](@ref), [`ValidActorTrait`](@ref), [`CompletionActor`](@ref)
 """
 struct CompletionActorTrait{T} <: ValidActorTrait{T}       end
 
 """
 Default actor trait behavior for any object. Actor with such a trait specificaion cannot be used as a valid actor in `subscribe!` function.
-Doing so will raise an error.
+Doing so will raise an error. `InvalidActorTrait` is a subtype of `ActorTrait`.
+
+See also: [`ActorTrait`](@ref)
 """
-struct InvalidActorTrait       <: ActorTrait end
+struct InvalidActorTrait <: ActorTrait end
 
 """
-Abstract type for any actor object
+Supertype type for `Actor`, `NextActor`, `ErrorActor` and `CompletionActor` types.
 
 See also: [`Actor`](@ref), [`NextActor`](@ref), [`ErrorActor`](@ref), [`CompletionActor`](@ref)
 """
@@ -71,31 +77,87 @@ abstract type AbstractActor{T} end
 
 """
 Can be used as a super type for common actor. Automatically specifies a `BaseActorTrait` trait behavior.
-Each `Actor` must implement its own methods for `on_next!(actor, data)`, `on_error!(actor, err)` and `on_complete!(actor)` functions.
+Every `Actor` must implement its own methods for `on_next!(actor, data)`, `on_error!(actor, err)` and `on_complete!(actor)` functions.
+`Actor` is a subtype of `AbstractActor` type.
+
+# Examples
+```jldoctest
+using Rocket
+
+struct MyActor <: Actor{String} end
+
+Rocket.as_actor(MyActor)
+
+# output
+
+BaseActorTrait{String}()
+```
 
 See also: [`AbstractActor`](@ref), [`BaseActorTrait`](@ref), [`ActorTrait`](@ref), [`on_next!`](@ref), [`on_error!`](@ref), [`on_complete!`](@ref)
 """
-abstract type Actor{T}           <: AbstractActor{T} end
+abstract type Actor{T} <: AbstractActor{T} end
 
 """
 Can be used as a super type for "next-only" actor. Automatically specifies a `NextActorTrait` trait behavior.
-Each `NextActor` must implement its own methods for `on_next!(actor, data)` function only.
+Every `NextActor` must implement its own methods for `on_next!(actor, data)` function only.
+`NextActor` is a subtype of `AbstractActor` type.
+
+# Examples
+```jldoctest
+using Rocket
+
+struct MyNextActor <: NextActor{String} end
+
+Rocket.as_actor(MyNextActor)
+
+# output
+
+NextActorTrait{String}()
+```
 
 See also: [`AbstractActor`](@ref), [`NextActorTrait`](@ref), [`ActorTrait`](@ref), [`on_next!`](@ref)
 """
-abstract type NextActor{T}       <: AbstractActor{T} end
+abstract type NextActor{T} <: AbstractActor{T} end
 
 """
 Can be used as a super type for "error-only" actor. Automatically specifies a `ErrorActorTrait` trait behavior.
-Each `ErrorActor` must implement its own methods for `on_error!(actor, err)` function only.
+Every `ErrorActor` must implement its own methods for `on_error!(actor, err)` function only.
+`ErrorActor` is a subtype of `AbstractActor` type.
+
+# Examples
+```jldoctest
+using Rocket
+
+struct MyErrorActor <: ErrorActor{String} end
+
+Rocket.as_actor(MyErrorActor)
+
+# output
+
+ErrorActorTrait{String}()
+```
 
 See also: [`AbstractActor`](@ref), [`ErrorActorTrait`](@ref), [`ActorTrait`](@ref), [`on_error!`](@ref)
 """
-abstract type ErrorActor{T}      <: AbstractActor{T} end
+abstract type ErrorActor{T} <: AbstractActor{T} end
 
 """
 Can be used as a super type for "completion-only" actor. Automatically specifies a `CompletionActorTrait` trait behavior.
-Each `CompletionActor` must implement its own methods for `on_complete!(actor)` function only.
+Every `CompletionActor` must implement its own methods for `on_complete!(actor)` function only.
+`CompletionActor` is a subtype of `AbstractActor` type.
+
+# Examples
+```jldoctest
+using Rocket
+
+struct MyCompletionActor <: CompletionActor{String} end
+
+Rocket.as_actor(MyCompletionActor)
+
+# output
+
+CompletionActorTrait{String}()
+```
 
 See also: [`AbstractActor`](@ref), [`CompletionActorTrait`](@ref), [`ActorTrait`](@ref), [`on_complete!`](@ref)
 """
@@ -106,81 +168,99 @@ abstract type CompletionActor{T} <: AbstractActor{T} end
 
 This function checks actor trait behavior specification. May be used explicitly to specify actor trait behavior for any object.
 
-See also: [`ActorTrait`](@ref)
+See also: [`ActorTrait`](@ref), [`ValidActorTrait`](@ref), [`InvalidActorTrait`](@ref)
 """
-as_actor(::Type)                  = InvalidActorTrait()
-as_actor(::Type{<:AbstractActor}) = InvalidActorTrait()
-
+as_actor(::Type)                               = InvalidActorTrait()
+as_actor(::Type{<:AbstractActor})              = InvalidActorTrait()
 as_actor(::Type{<:Actor{T}})           where T = BaseActorTrait{T}()
 as_actor(::Type{<:NextActor{T}})       where T = NextActorTrait{T}()
 as_actor(::Type{<:ErrorActor{T}})      where T = ErrorActorTrait{T}()
 as_actor(::Type{<:CompletionActor{T}}) where T = CompletionActorTrait{T}()
 
-actor_extract_type(actor::A) where A = actor_extract_type(as_actor(A), actor)
+actor_extract_type(type::Type{A}) where A = actor_extract_type(as_actor(A), type)
+actor_extract_type(actor::A)      where A = actor_extract_type(as_actor(A), actor)
 
 actor_extract_type(::ValidActorTrait{T}, actor) where T = T
 actor_extract_type(::InvalidActorTrait,  actor)         = throw(InvalidActorTraitUsageError(actor))
 
-Base.eltype(actor::A) where { A <: AbstractActor } = actor_extract_type(actor)
+actor_extract_type(::ValidActorTrait{T}, type::Type{A}) where { T, A } = T
+actor_extract_type(::InvalidActorTrait,  type::Type{A}) where {    A } = throw(InvalidActorTraitUsageError(type))
 
-next!(actor)            = throw(MissingDataArgumentInNextCall())
-error!(actor)           = throw(MissingErrorArgumentInErrorCall())
-complete!(actor, extra) = throw(ExtraArgumentInCompleteCall())
+Base.eltype(actor::Type{A}) where { T, A <: AbstractActor{T} } = T
+Base.eltype(actor::A)       where { T, A <: AbstractActor{T} } = T
+
+next!(actor)  = throw(MissingDataArgumentInNextCall())
+error!(actor) = throw(MissingErrorArgumentInErrorCall())
 
 """
     next!(actor, data)
+    next!(actor, data, scheduler)
 
-This function is used to deliver a "next" event to an actor with some `data`
+This function is used to deliver a "next" event to an actor with some `data`. Takes optional `scheduler` object to schedule execution of data delivery.
 
 See also: [`AbstractActor`](@ref), [`on_next!`](@ref)
 """
-next!(actor::T,  data)  where T = actor_on_next!(as_actor(T), actor, data)
+next!(actor::T, data)            where T = actor_on_next!(as_actor(T), actor, data)
+next!(actor::T, data, scheduler) where T = actor_on_next!(as_actor(T), actor, data, scheduler)
 
 """
     error!(actor, err)
+    error!(actor, err, scheduler)
 
-This function is used to deliver a "error" event to an actor with some `err`
+This function is used to deliver a "error" event to an actor with some `err`. Takes optional `scheduler` object to schedule execution of error delivery.
 
 See also: [`AbstractActor`](@ref), [`on_error!`](@ref)
 """
-error!(actor::T, err)   where T = actor_on_error!(as_actor(T), actor, err)
+error!(actor::T, err)            where T = actor_on_error!(as_actor(T), actor, err)
+error!(actor::T, err, scheduler) where T = actor_on_error!(as_actor(T), actor, err, scheduler)
 
 """
     complete!(actor)
+    complete!(actor, scheduler)
 
-This function is used to deliver a "complete" event to an actor
+This function is used to deliver a "complete" event to an actor. Takes optional `scheduler` object to schedule execution of complete event delivery.
 
 See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
-complete!(actor::T)     where T = actor_on_complete!(as_actor(T), actor)
-
-"""
-    is_exhausted(actor)
-
-This function is used to check if actor can handle any further message events
-
-See also: [`AbstractActor`](@ref)
-"""
-is_exhausted(actor) = false
+complete!(actor::T)            where T = actor_on_complete!(as_actor(T), actor)
+complete!(actor::T, scheduler) where T = actor_on_complete!(as_actor(T), actor, scheduler)
 
 actor_on_next!(::InvalidActorTrait,       actor, data)                     = throw(InvalidActorTraitUsageError(actor))
 actor_on_next!(::ValidActorTrait{T},      actor, data::R) where R where T  = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
 actor_on_next!(::NextActorTrait{T},       actor, data::R) where { R <: T } where T = begin on_next!(actor, data); return nothing end
 actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where { R <: T } where T = begin end
 actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where { R <: T } where T = begin end
 
+actor_on_next!(::BaseActorTrait{T},       actor, data::R, scheduler) where { R <: T } where T = begin scheduled_next!(actor, data, scheduler); return nothing end
+actor_on_next!(::NextActorTrait{T},       actor, data::R, scheduler) where { R <: T } where T = begin scheduled_next!(actor, data, scheduler); return nothing end
+actor_on_next!(::ErrorActorTrait{T},      actor, data::R, scheduler) where { R <: T } where T = begin end
+actor_on_next!(::CompletionActorTrait{T}, actor, data::R, scheduler) where { R <: T } where T = begin end
+
 actor_on_error!(::InvalidActorTrait,    actor, err) = throw(InvalidActorTraitUsageError(actor))
+
 actor_on_error!(::BaseActorTrait,       actor, err) = begin on_error!(actor, err); return nothing end
 actor_on_error!(::NextActorTrait,       actor, err) = begin end
 actor_on_error!(::ErrorActorTrait,      actor, err) = begin on_error!(actor, err); return nothing end
 actor_on_error!(::CompletionActorTrait, actor, err) = begin end
 
+actor_on_error!(::BaseActorTrait,       actor, err, scheduler) = begin scheduled_error!(actor, err, scheduler); return nothing end
+actor_on_error!(::NextActorTrait,       actor, err, scheduler) = begin end
+actor_on_error!(::ErrorActorTrait,      actor, err, scheduler) = begin scheduled_error!(actor, err, scheduler); return nothing end
+actor_on_error!(::CompletionActorTrait, actor, err, scheduler) = begin end
+
 actor_on_complete!(::InvalidActorTrait,    actor) = throw(InvalidActorTraitUsageError(actor))
+
 actor_on_complete!(::BaseActorTrait,       actor) = begin on_complete!(actor); return nothing end
 actor_on_complete!(::NextActorTrait,       actor) = begin end
 actor_on_complete!(::ErrorActorTrait,      actor) = begin end
 actor_on_complete!(::CompletionActorTrait, actor) = begin on_complete!(actor); return nothing end
+
+actor_on_complete!(::BaseActorTrait,       actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
+actor_on_complete!(::NextActorTrait,       actor, scheduler) = begin end
+actor_on_complete!(::ErrorActorTrait,      actor, scheduler) = begin end
+actor_on_complete!(::CompletionActorTrait, actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
 
 """
     on_next!(actor, data)

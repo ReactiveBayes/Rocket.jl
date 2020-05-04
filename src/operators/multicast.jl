@@ -14,7 +14,7 @@ which has a connect() method. It has one simple job - subscribes to the source w
 ```jldoctest
 using Rocket
 
-subject = make_subject(Int, mode = SYNCHRONOUS_SUBJECT_MODE)
+subject = Subject(Int)
 source  = from(1:5) |> multicast(subject)
 
 actor1 = logger("1")
@@ -45,7 +45,7 @@ unsubscribe!(subscription2)
 [2] Completed
 ```
 
-See also: [`ConnectableObservable`](@ref), [`make_subject`](@ref), [`share`](@ref), [`publish`](@ref)
+See also: [`ConnectableObservable`](@ref), [`Subject`](@ref), [`share`](@ref), [`publish`](@ref)
 """
 multicast(subject::S) where S                               = as_multicast(as_subject(S), subject)
 multicast(factory::F) where { F <: AbstractSubjectFactory } = MulticastWithFactoryOperator{F}(factory)

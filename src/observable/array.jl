@@ -23,36 +23,41 @@ as_array(::NonScalar, x)           = collect(x)
 as_array(::UndefinedScalarness, x) = error("Value of type $(typeof(x)) has undefined scalarness type. \nConsider implement scalarness(::Type{<:$(typeof(x))}).")
 
 """
-    ArrayObservable{D}(values::Vector{D})
+    ArrayObservable{D, H}(values::Vector{D}, scheduler::H) where { D, H <: AbstractScheduler }
 
-ArrayObservable wraps a regular Julia array into a synchronous observable
+ArrayObservable wraps a regular Julia array into an observable. Uses scheduler object to schedule messages delivery.
 
 # Constructor arguments
 - `values`: array of values to be wrapped
+- `scheduler`: Scheduler-like object
 
 See also: [`Subscribable`](@ref), [`from`](@ref)
 """
-struct ArrayObservable{D} <: Subscribable{D}
-    values :: Vector{D}
+struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
+    values    :: Vector{D}
+    scheduler :: H
 end
 
-function on_subscribe!(observable::ArrayObservable, actor)
+getscheduler(observable::ArrayObservable) = observable.scheduler
+
+function on_subscribe!(observable::ArrayObservable, actor, scheduler)
     for value in observable.values
-        next!(actor, value)
+        next!(actor, value, scheduler)
     end
-    complete!(actor)
+    complete!(actor, scheduler)
     return VoidTeardown()
 end
 
 """
-    from(x)
+    from(x; scheduler = Rocket.AsapScheduler())
 
 Creation operator for the `ArrayObservable` that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
 Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
-for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior.
+for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior. Optionally accepts custom scheduler-like object to schedule messages delivery.
 
 # Arguments
 - `x`: an object to be wrapped into array of values
+- `scheduler`: Optional, scheduler-like object
 
 # Examples
 
@@ -130,10 +135,10 @@ subscribe!(source, logger())
 
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-from(x)                    = from(as_array(x))
-from(a::Vector{D}) where D = ArrayObservable{D}(a)
+from(x; scheduler = AsapScheduler())                                                   = from(as_array(x); scheduler = scheduler)
+from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler } = ArrayObservable{D, H}(copy(a), scheduler)
 
-Base.:(==)(left::ArrayObservable{D},  right::ArrayObservable{D})  where D           = left.values == right.values
-Base.:(==)(left::ArrayObservable{D1}, right::ArrayObservable{D2}) where D1 where D2 = false
+Base.:(==)(left::ArrayObservable{D, H},  right::ArrayObservable{D, H}) where { D, H } = left.values == right.values
+Base.:(==)(left::ArrayObservable,        right::ArrayObservable) = false
 
-Base.show(io::IO, ::ArrayObservable{D}) where D = print(io, "ArrayObservable($D)")
+Base.show(io::IO, ::ArrayObservable{D, H}) where { D, H } = print(io, "ArrayObservable($D, $H)")

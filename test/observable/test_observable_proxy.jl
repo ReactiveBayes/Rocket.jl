@@ -5,6 +5,8 @@ using Rocket
 
 @testset "ProxyObservable" begin
 
+    println("Testing: proxy")
+
     struct DummyType end
 
     @testset begin

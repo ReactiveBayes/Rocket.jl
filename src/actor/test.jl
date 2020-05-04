@@ -47,8 +47,6 @@ struct TestActor <: Actor{Any}
     end
 end
 
-is_exhausted(actor::TestActor) = false
-
 on_next!(actor::TestActor,  d) = begin push!(data(actor),      DataTestEvent(d));    notify(actor.condition, false) end
 on_error!(actor::TestActor, e) = begin push!(errors(actor),    ErrorTestEvent(e));   yield(); notify(actor.condition, true) end
 on_complete!(actor::TestActor) = begin push!(completes(actor), CompleteTestEvent()); yield(); notify(actor.condition, true) end
@@ -159,7 +157,7 @@ function test_on_source(::InvalidSubscribable, source, test, maximum_wait, actor
     throw(InvalidSubscribableTraitUsageError(source))
 end
 
-function test_on_source(::ValidSubscribable{T}, source, test, maximum_wait, actor, check_timings) where T
+function test_on_source(::ValidSubscribableTrait{T}, source, test, maximum_wait, actor, check_timings) where T
     actor = actor === nothing ? test_actor(T) : actor
 
     is_completed = false

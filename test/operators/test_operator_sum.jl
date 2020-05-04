@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: sum()" begin
 
+    println("Testing: operator sum()")
+
     run_proxyshowcheck("Sum", sum())
 
     run_testset([

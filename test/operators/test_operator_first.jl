@@ -7,6 +7,8 @@ include("../test_helpers.jl")
 
 @testset "operator: first()" begin
 
+    println("Testing: operator first()")
+
     run_testset([
 
         (
@@ -27,12 +29,12 @@ include("../test_helpers.jl")
             source_type = Union{Int, String}
         ),
         (
-            source      = throwError("e", Int) |> first(),
+            source      = throwError(Int, "e") |> first(),
             values      = @ts(e("e")),
             source_type = Union{Int}
         ),
         (
-            source      = throwError("e", Int) |> first(default = "String"),
+            source      = throwError(Int, "e") |> first(default = "String"),
             values      = @ts(e("e")),
             source_type = Union{Int, String}
         ),
