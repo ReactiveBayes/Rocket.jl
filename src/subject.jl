@@ -3,7 +3,6 @@ export ValidSubject, InvalidSubject, as_subject
 export AbstractSubject, AbstractSubjectFactory, create_subject
 
 export InvalidSubjectTraitUsageError, InconsistentSubjectDataTypesError
-export MissingCreateSubjectFactoryImplementationError
 
 import Base: show
 
@@ -67,21 +66,7 @@ Actor creator function for a given factory `F`. Should be implemented explicitly
 
 See also: [`AbstractSubjectFactory`](@ref), [`MissingCreateActorFactoryImplementationError`](@ref)
 """
-create_subject(::Type{L}, factory::F) where L where { F <: AbstractSubjectFactory } = throw(MissingCreateSubjectFactoryImplementationError(factory))
-
-"""
-This error will be throw if Julia cannot find specific method of 'create_subject()' function for given subject factory
-
-See also: [`AbstractSubjectFactory`](@ref), [`create_subject`](@ref)
-"""
-struct MissingCreateSubjectFactoryImplementationError
-    factory
-end
-
-function Base.show(io::IO, err::MissingCreateSubjectFactoryImplementationError)
-    print(io, "You probably forgot to implement create_subject(::Type{L}, factory::$(typeof(err.factory))).")
-end
-
+function create_subject end
 
 # -------------------------------- #
 # Errors                           #
@@ -92,7 +77,7 @@ end
 
 See also: [`as_subject`](@ref)
 """
-struct InvalidSubjectTraitUsageError
+struct InvalidSubjectTraitUsageError <: Exception
     subject
 end
 
@@ -105,7 +90,7 @@ end
 
 See also: [`as_subject`](@ref)
 """
-struct InconsistentSubjectDataTypesError{T1, T2}
+struct InconsistentSubjectDataTypesError{T1, T2} <: Exception
     subject
 end
 

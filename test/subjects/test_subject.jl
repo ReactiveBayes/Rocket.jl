@@ -1,4 +1,4 @@
-module RocketSubjectTest
+module RocketSubjectInstanceTest
 
 using Test
 using Rocket
@@ -58,6 +58,39 @@ using Rocket
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
+    end
+
+    @testset begin
+        subject = Subject(Int)
+
+        values      = []
+        errors      = []
+        completions = []
+
+        actor = lambda(
+            on_next     = (d) -> push!(values, d),
+            on_error    = (e) -> push!(errors, e),
+            on_complete = ()  -> push!(completions, 0)
+        )
+
+        subscribe!(subject, actor)
+
+        @test values      == [ ]
+        @test errors      == [ ]
+        @test completions == [ ]
+
+        error!(subject, "err")
+
+        @test values      == [ ]
+        @test errors      == [ "err" ]
+        @test completions == [ ]
+
+        subscribe!(subject, actor)
+
+        @test values      == [ ]
+        @test errors      == [ "err", "err" ]
+        @test completions == [ ]
+
     end
 
     @testset begin
