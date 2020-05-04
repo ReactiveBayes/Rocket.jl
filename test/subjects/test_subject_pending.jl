@@ -3,15 +3,16 @@ module RocketAsynchronousSubjectTest
 using Test
 using Rocket
 
-@testset "Subject" begin
+@testset "PendingSubject" begin
 
-    println("Testing: Subject")
+    println("Testing: PendingSubject")
 
     @testset begin
-        subject = Subject(Int)
+        subject = PendingSubject(Int)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
+        actor3 = keep(Int)
 
         subscription1 = subscribe!(subject, actor1)
 
@@ -32,12 +33,20 @@ using Rocket
 
         unsubscribe!(subscription2)
 
-        @test actor1.values == [ 0, 1, 3, 4 ]
-        @test actor2.values == [ 3, 4, 5, 6 ]
+        @test actor1.values == [ ]
+        @test actor2.values == [ 6 ]
+        @test actor3.values == [ ]
+
+        subscription3 = subscribe!(subject, actor3)
+
+        @test actor1.values == [ ]
+        @test actor2.values == [ 6 ]
+        @test actor3.values == [ 6 ]
+
     end
 
     @testset begin
-        subject = Subject(Int)
+        subject = PendingSubject(Int)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -50,18 +59,16 @@ using Rocket
 
         subscribe!(source, subject)
 
-        complete!(subject)
-
         @test values        == [ 1, 2, 3, 4, 5 ]
-        @test actor1.values == [ 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 1, 2, 3, 4, 5 ]
+        @test actor1.values == [ 5 ]
+        @test actor2.values == [ 5 ]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
     end
 
     @testset begin
-        subject_factory = SubjectFactory(Rocket.AsapScheduler())
+        subject_factory = PendingSubjectFactory()
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)
@@ -75,11 +82,9 @@ using Rocket
 
         subscribe!(source, subject)
 
-        complete!(subject)
-
         @test values        == [ 1, 2, 3, 4, 5 ]
-        @test actor1.values == [ 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 1, 2, 3, 4, 5 ]
+        @test actor1.values == [ 5 ]
+        @test actor2.values == [ 5 ]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)

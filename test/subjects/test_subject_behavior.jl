@@ -5,6 +5,8 @@ using Rocket
 
 @testset "BehaviorSubject" begin
 
+    println("Testing: BehaviorSubject")
+
     @testset begin
         subject = BehaviorSubject(0)
 

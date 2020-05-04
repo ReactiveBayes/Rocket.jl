@@ -111,6 +111,7 @@ makedocs(
             "Subjects" => [
                 "Behavior" => "subjects/types/behavior.md",
                 "Replay"   => "subjects/types/replay.md",
+                "Pending"  => "subjects/types/pending.md",
             ]
         ],
         "API"          => [

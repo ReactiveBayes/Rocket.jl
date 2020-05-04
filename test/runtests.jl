@@ -35,6 +35,7 @@ doctest(Rocket)
     include("./subjects/test_subject.jl")
     include("./subjects/test_subject_behavior.jl")
     include("./subjects/test_subject_replay.jl")
+    include("./subjects/test_subject_pending.jl")
 
     include("./test_operator.jl")
     include("./operators/test_operator_async.jl")

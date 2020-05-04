@@ -5,6 +5,8 @@ using Rocket
 
 @testset "ReplaySubject" begin
 
+    println("Testing: ReplaySubject")
+
     @testset begin
         subject = ReplaySubject(Int, 2)
 
