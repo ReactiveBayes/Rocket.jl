@@ -2,9 +2,27 @@ export BehaviorSubject, BehaviorSubjectFactory
 
 import Base: show
 
-# TODO: docs
+"""
+    BehaviorSubject(value::D) where D
+    BehaviorSubject(::Type{D}, value) where D
+    BehaviorSubject(::Type{D}, value, factory::F) where { D, F <: AbstractSubjectFactory }
+    BehaviorSubject(::Type{D}, value, subject::S) where { D, S }
 
-##
+A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
+
+See also: [`BehviorSubjectFactory`](@ref), [`Subject`](@ref), [`SubjectFactory`](@ref)
+"""
+function BehaviorSubject end
+
+"""
+    BehaviorSubjectFactory(default, factory::F) where { F <: AbstractSubjectFactory }
+    BehaviorSubjectFactory(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+
+A variant of SubjectFactory that creates an instance of ReplaySubject.
+
+See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`BehaviorSubject`](@ref), [`Subject`](@ref)
+"""
+function BehaviorSubjectFactory end
 
 mutable struct BehaviourSubjectProps{D}
     current :: D
@@ -15,17 +33,6 @@ Base.show(io::IO, ::BehaviourSubjectProps)            = print(io, "BehaviourSubj
 
 ##
 
-"""
-    BehaviorSubjectInstance
-
-A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
-
-# Arguments
-- `current`: Default current value
-- `subject`: Subject base type
-
-See also: [`make_behavior_subject`](@ref), [`make_subject`](@ref)
-"""
 struct BehaviorSubjectInstance{D, S} <: AbstractSubject{D}
     subject :: S
     props   :: BehaviourSubjectProps{D}

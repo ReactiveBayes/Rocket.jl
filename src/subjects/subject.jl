@@ -2,6 +2,25 @@ export Subject, SubjectFactory
 
 import Base: show
 
+"""
+    Subject(::Type{D}; scheduler::H = AsapScheduler())
+
+A Subject is a special type of Observable that allows values to be multicasted to many Observers. Subjects are like EventEmitters.
+Every Subject is an Observable and an Actor. You can subscribe to a Subject, and you can call `next!` to feed values as well as `error!` and `complete!`.
+
+See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref)
+"""
+function Subject end
+
+"""
+    SubjectFactory(scheduler::H) where { H <: AbstractScheduler }
+
+A base subject factory that creates an instance of Subject with specified scheduler.
+
+See also: [`AbstractSubjectFactory`](@ref), [`Subject`](@ref)
+"""
+function SubjectFactory end
+
 ##
 
 struct SubjectListener{I}

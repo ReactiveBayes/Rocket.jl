@@ -3,23 +3,29 @@ export ReplaySubject, ReplaySubjectFactory
 import DataStructures: CircularBuffer
 import Base: show
 
-# TODO: docs
-
-##
-
 """
-    ReplaySubjectInstance
+    ReplaySubject(::Type{D}, size::Int) where D
+    ReplaySubject(::Type{D}, size::Int, factory::F) where { D, F <: AbstractSubjectFactory }
+    ReplaySubject(::Type{D}, size::Int, subject::S) where { D, S }
 
 A variant of Subject that "replays" or emits old values to new subscribers.
 It buffers a set number of values and will emit those values immediately to any new subscribers
 in addition to emitting new values to existing subscribers.
 
-# Arguments
-- `capacity`: how many values to replay
-- `subject`: Subject base type
-
-See also: [`make_replay_subject`](@ref), [`make_subject`](@ref)
+See also: [`ReplaySubjectFactory`](@ref), [`Subject`](@ref), [`SubjectFactory`](@ref)
 """
+function ReplaySubject end
+
+"""
+    ReplaySubjectFactory(size::Int, factory::F) where { F <: AbstractSubjectFactory }
+    ReplaySubjectFactory(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+
+A variant of SubjectFactory that creates an instance of ReplaySubject.
+
+See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`ReplaySubject`](@ref), [`Subject`](@ref)
+"""
+function ReplaySubjectFactory end
+
 struct ReplaySubjectInstance{D, S} <: AbstractSubject{D}
     subject :: S
     buffer  :: CircularBuffer{D}

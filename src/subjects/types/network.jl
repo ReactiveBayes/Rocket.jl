@@ -1,8 +1,4 @@
-export LocalNetworkSubject, as_subscribable, on_subscribe!
-export on_next!, on_error!, on_complete!
-export close
-
-export LocalNetworkSubjectFactory, create_subject
+export LocalNetworkSubject, LocalNetworkSubjectFactory
 
 using Sockets
 

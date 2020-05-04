@@ -16,10 +16,8 @@ Base.show(io::IO, ::AsapScheduler)         = print(io, "AsapScheduler()")
 
 similar(::AsapScheduler) = AsapScheduler()
 
-makeinstance(::Type, ::Nothing)       = AsapScheduler()
 makeinstance(::Type, ::AsapScheduler) = AsapScheduler()
 
-instancetype(::Type, ::Type{<:Nothing})       = AsapScheduler
 instancetype(::Type, ::Type{<:AsapScheduler}) = AsapScheduler
 
 scheduled_subscription!(source, actor, instance::AsapScheduler) = on_subscribe!(source, actor, instance)
