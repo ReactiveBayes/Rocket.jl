@@ -27,15 +27,18 @@ include("../test_helpers.jl")
         ),
         (
             source      = completed() |> find_index(d -> d !== 0 && d % 2 == 0),
-            values      = @ts(c)
+            values      = @ts(c),
+            source_type = Int
         ),
         (
             source      = completed() |> find_index(d -> true),
-            values      = @ts(c)
+            values      = @ts(c),
+            source_type = Int
         ),
         (
             source      = never() |> find_index(d -> true),
-            values      = @ts()
+            values      = @ts(),
+            source_type = Int
         )
     ])
 

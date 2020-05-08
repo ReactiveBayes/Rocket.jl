@@ -14,7 +14,7 @@ include("../test_helpers.jl")
     run_testset([
         (
             source      = from([ 3, 2, 1 ]) |> enumerate(),
-            values      = @ts([ (3, 1), (2, 2), (1, 3), c ]),
+            values      = @ts([ (1, 3), (2, 2), (3, 1), c ]),
             source_type = Tuple{Int, Int}
         ),
         (
@@ -25,12 +25,12 @@ include("../test_helpers.jl")
         (
             source      = throwError(Float64, "e") |> enumerate(),
             values      = @ts(e("e")),
-            source_type = Tuple{Float64, Int}
+            source_type = Tuple{Int, Float64}
         ),
         (
             source      = never(String) |> enumerate(),
             values      = @ts(),
-            source_type = Tuple{String, Int}
+            source_type = Tuple{Int, String}
         )
     ])
 
