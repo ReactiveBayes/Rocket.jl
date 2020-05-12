@@ -27,6 +27,21 @@ include("../test_helpers.jl")
             source_type = Float64
         ),
         (
+            source      = from(1:5) |> switch_map_to(throwError(Float64, "err")),
+            values      = @ts(e("err")),
+            source_type = Float64
+        ),
+        (
+            source      = from(1:5) |> switch_map_to(completed(Float64)),
+            values      = @ts(c),
+            source_type = Float64
+        ),
+        (
+            source      = from(1:5) |> switch_map_to(never(Float64)),
+            values      = @ts(),
+            source_type = Float64
+        ),
+        (
             source      = completed() |> switch_map_to(of(0)),
             values      = @ts(c),
             source_type = Int

@@ -59,26 +59,25 @@ end
 actor_proxy!(proxy::MergeMapProxy{L, R, F}, actor::A) where { L, R, F, A } = MergeMapActor{L, R, F, A}(proxy.mappingFn, proxy.concurrent, actor)
 
 # m - main
-mutable struct MergeMapActorProps{I, L}
+mutable struct MergeMapActorProps{L}
     msubscription :: Teardown
     ismcompleted  :: Bool
     isdisposed    :: Bool
 
-    active_listeners :: Vector{I}
+    active_listeners :: Vector{Any}
     pending_data     :: Deque{L}
 
-    MergeMapActorProps{I, L}() where { I, L } = new(VoidTeardown(), false, false, Vector{I}(), Deque{L}())
+    MergeMapActorProps{L}() where L = new(VoidTeardown(), false, false, Vector{Any}(), Deque{L}())
 end
 
 struct MergeMapActor{L, R, F, A} <: Actor{L}
     mappingFn  :: F
     concurrent :: Int
     actor      :: A
-    props      :: MergeMapActorProps
+    props      :: MergeMapActorProps{L}
 
     MergeMapActor{L, R, F, A}(mappingFn::F, concurrent::Int, actor::A) where { L, R, F, A } = begin
-        I = MergeMapInnerActor{R, MergeMapActor{L, R, F, A}}
-        return new(mappingFn, concurrent, actor, MergeMapActorProps{I, L}())
+        return new(mappingFn, concurrent, actor, MergeMapActorProps{L}())
     end
 end
 
