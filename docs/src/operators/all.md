@@ -26,6 +26,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [to_array](@ref operator_to_array)
 - [switch_map](@ref operator_switch_map)
 - [switch_map_to](@ref operator_switch_map_to)
+- [merge_map](@ref operator_merge_map)
 
 ## Filtering operators
 

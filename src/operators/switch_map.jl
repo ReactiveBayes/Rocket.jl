@@ -3,7 +3,7 @@ export switch_map
 import Base: show
 
 """
-    switch_map(::Type{R}, mappingFn::F) where { R, F <: Function }
+    switch_map(::Type{R}, mappingFn::F = identity) where { R, F <: Function }
 
 Creates a `switch_map` operator, which returns an Observable that emits items based on applying a function `mappingFn` that you supply to each item
 emitted by the source Observable, where that function returns an (so-called "inner") Observable. Each time it observes one of these inner Observables,
@@ -13,7 +13,7 @@ subsequent inner Observables.
 
 # Arguments
 - `::Type{R}`: the type of data of output Observables after projection with `mappingFn`
-- `mappingFn::F`: porjection function with `(data::Observable{L}) -> Observable{R}` signature, where L is type of data in "inner" observables
+- `mappingFn::F`: projection function with `(data) -> Observable{R}` signature
 
 # Producing
 
@@ -52,79 +52,87 @@ subscribe!(source |> switch_map(Float64, (d) -> of(convert(Float64, d ^ 2))), lo
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-switch_map(::Type{R}, mappingFn::F = identity; inner_complete::Bool = false) where { R, F <: Function } = SwitchMapOperator{R, F}(mappingFn, inner_complete)
+switch_map(::Type{R}, mappingFn::F = identity) where { R, F <: Function } = SwitchMapOperator{R, F}(mappingFn)
 
 struct SwitchMapOperator{R, F} <: RightTypedOperator{R}
-    mappingFn      :: F
-    inner_complete :: Bool
+    mappingFn :: F
 end
 
 function on_call!(::Type{L}, ::Type{R}, operator::SwitchMapOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, SwitchMapProxy{L, R, F}(operator.mappingFn, operator.inner_complete))
+    return proxy(R, source, SwitchMapProxy{L, R, F}(operator.mappingFn))
 end
 
 struct SwitchMapProxy{L, R, F} <: ActorSourceProxy
-    mappingFn      :: F
-    inner_complete :: Bool
+    mappingFn :: F
 end
 
-actor_proxy!(proxy::SwitchMapProxy{L, R, F}, actor::A) where { L, R, F, A } = SwitchMapActor{L, R, F, A}(proxy.mappingFn, proxy.inner_complete, actor)
+actor_proxy!(proxy::SwitchMapProxy{L, R, F}, actor::A) where { L, R, F, A } = SwitchMapActor{L, R, F, A}(proxy.mappingFn, actor)
 
+# m - main
+# i - inner
 mutable struct SwitchMapActorProps
     msubscription :: Teardown
     isubscription :: Teardown
+    ismcompleted  :: Bool
+    isicompleted  :: Bool
     isdisposed    :: Bool
 
-    SwitchMapActorProps() = new(VoidTeardown(), VoidTeardown(), false)
+    SwitchMapActorProps() = new(VoidTeardown(), VoidTeardown(), false, true, false)
 end
 
 struct SwitchMapActor{L, R, F, A} <: Actor{L}
-    mappingFn      :: F
-    inner_complete :: Bool
-    actor          :: A
-    props          :: SwitchMapActorProps
+    mappingFn :: F
+    actor     :: A
+    props     :: SwitchMapActorProps
 
-    SwitchMapActor{L, R, F, A}(mappingFn::F, inner_complete::Bool, actor::A) where { L, R, F, A } = new(mappingFn, inner_complete, actor, SwitchMapActorProps())
+    SwitchMapActor{L, R, F, A}(mappingFn::F, actor::A) where { L, R, F, A } = new(mappingFn, actor, SwitchMapActorProps())
 end
 
-isinner_complete(actor::SwitchMapActor) = actor.inner_complete
-isdisposed(actor::SwitchMapActor)       = actor.props.isdisposed
+ismcompleted(actor::SwitchMapActor) = actor.props.ismcompleted
+isicompleted(actor::SwitchMapActor) = actor.props.isicompleted
+
+setmcompleted!(actor::SwitchMapActor, value::Bool) = actor.props.ismcompleted = value
+seticompleted!(actor::SwitchMapActor, value::Bool) = actor.props.isicompleted = value
+
+isdisposed(actor::SwitchMapActor)   = actor.props.isdisposed
 
 struct SwitchMapInnerActor{R, S} <: Actor{R}
-    switch :: S
+    main :: S
 end
 
-on_next!(actor::SwitchMapInnerActor{R}, data::R) where R = next!(actor.switch.actor, data)
-on_error!(actor::SwitchMapInnerActor,   err)             = error!(actor.switch, err)
+on_next!(actor::SwitchMapInnerActor{R}, data::R) where R = next!(actor.main.actor, data)
+on_error!(actor::SwitchMapInnerActor,   err)             = error!(actor.main, err)
 on_complete!(actor::SwitchMapInnerActor)                 = begin
-    if isinner_complete(actor.switch)
-        dispose(actor.switch)
-        complete!(actor.switch.actor)
+    seticompleted!(actor.main, true)
+    if ismcompleted(actor.main)
+        complete!(actor.main)
     end
 end
 
 function on_next!(actor::S, data::L) where { L, R, S <: SwitchMapActor{L, R} }
     if !isdisposed(actor)
         unsubscribe!(actor.props.isubscription)
+        seticompleted!(actor, false)
         actor.props.isubscription = subscribe!(actor.mappingFn(data), SwitchMapInnerActor{R, S}(actor))
     end
 end
 
 function on_error!(actor::SwitchMapActor, err)
     if !isdisposed(actor)
-        dispose(actor)
+        dispose!(actor)
         error!(actor.actor, err)
     end
 end
 
 function on_complete!(actor::SwitchMapActor)
-    if !isdisposed(actor) && !isinner_complete(actor)
-        dispose(actor)
+    setmcompleted!(actor, true)
+    if !isdisposed(actor) && isicompleted(actor)
+        dispose!(actor)
         complete!(actor.actor)
     end
 end
 
-function dispose(actor::SwitchMapActor)
+function dispose!(actor::SwitchMapActor)
     actor.props.isdisposed = true
     unsubscribe!(actor.props.msubscription)
     unsubscribe!(actor.props.isubscription)
@@ -145,11 +153,11 @@ struct SwitchMapSubscription{A} <: Teardown
     actor :: A
 end
 
-as_teardown(::Type{<:SwitchMapSubscription}) = UnsubscribableTeardownLogic()
+as_teardown(::Type{ <: SwitchMapSubscription }) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::SwitchMapSubscription)
-    unsubscribe!(subscription.actor.props.msubscription)
-    unsubscribe!(subscription.actor.props.isubscription)
+    dispose!(subscription.actor)
+    return nothing
 end
 
 
