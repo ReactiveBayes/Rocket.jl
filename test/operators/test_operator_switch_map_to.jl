@@ -62,6 +62,11 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
+            source      = from([ 0, 0 ]) |> async(0) |> switch_map_to(from([ 1, 2 ]) |> async(0)),
+            values      = @ts([ 1 ] ~ [ 2 ] ~ c),
+            source_type = Int
+        ),
+        (
             source      = from([ of(1), completed(Int), of(2) ]) |> switch_map_to(of(0)),
             values      = @ts([ 0, 0, 0, c ]),
             source_type = Int

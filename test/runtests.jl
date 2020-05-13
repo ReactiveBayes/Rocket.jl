@@ -77,6 +77,10 @@ doctest(Rocket)
     include("./operators/test_operator_tuple_with.jl")
     include("./operators/test_operator_switch_map.jl")
     include("./operators/test_operator_switch_map_to.jl")
+    include("./operators/test_operator_merge_map.jl")
+    include("./operators/test_operator_concat_map.jl")
+    include("./operators/test_operator_concat_map_to.jl")
+    include("./operators/test_operator_exhaust_map.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0

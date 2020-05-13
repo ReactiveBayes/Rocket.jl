@@ -72,8 +72,8 @@ function on_call!(::Type{L}, ::Type{R}, operator::LastOperator, source) where { 
     return proxy(R, source, LastProxy{R}(operator.default))
 end
 
-operator_right(operator::LastOperator{Nothing}, ::Type{L}) where { L, D } = L
-operator_right(operator::LastOperator{D}, ::Type{L})       where { L, D } = Union{L, D}
+operator_right(operator::LastOperator{Nothing}, ::Type{L}) where L        = L
+operator_right(operator::LastOperator{D},       ::Type{L}) where { L, D } = Union{L, D}
 
 struct LastProxy{L} <: ActorProxy
     default :: Union{L, Nothing}

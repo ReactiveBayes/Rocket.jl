@@ -34,12 +34,12 @@ some() = SomeOperator()
 
 struct SomeOperator <: InferableOperator end
 
-function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, source) where L
+function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, ::SomeOperator, source) where L
     return proxy(L, source, SomeProxy{L}())
 end
 
-operator_right(operator::SomeOperator, ::Type{L})                 where L = error("some() operator can operate on streams with data type '<: Union{Nothing, L}', but '<: L' was found.")
-operator_right(operator::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
+operator_right(::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
+operator_right(::SomeOperator, ::Type{L})                 where L = error("some() operator can operate on streams with data type '<: Union{Nothing, $L}', but '<: $L' was found.")
 
 struct SomeProxy{L} <: ActorProxy end
 

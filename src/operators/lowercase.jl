@@ -48,8 +48,8 @@ struct LowercaseActor{L, A} <: Actor{L}
 end
 
 on_next!(actor::LowercaseActor{L}, data::L) where L = next!(actor.actor, lowercase(data))
-on_error!(actor::LowercaseActor, err)       where L = error!(actor.actor, err)
-on_complete!(actor::LowercaseActor)         where L = complete!(actor.actor)
+on_error!(actor::LowercaseActor, err)               = error!(actor.actor, err)
+on_complete!(actor::LowercaseActor)                 = complete!(actor.actor)
 
 Base.show(io::IO, ::LowercaseOperator)         = print(io, "LowercaseOperator()")
 Base.show(io::IO, ::LowercaseProxy{L}) where L = print(io, "LowercaseProxy($L)")
