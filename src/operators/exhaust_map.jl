@@ -2,6 +2,39 @@ export exhaust_map
 
 import Base: show
 
+"""
+    exhaust_map(::Type{R}, mappingFn::F = identity) where { R, F <: Function }
+
+Creates a `exhaust_map` operator, which returns an Observable containing projected Observables of each
+item of the source, ignoring projected Observables that start before their preceding Observable has completed.
+Essentially it projects each source value to an Observable which is merged in the output Observable only
+if the previous projected Observable has completed.
+
+# Arguments
+- `::Type{R}`: the type of data of output Observables after projection with `mappingFn`
+- `mappingFn::F`: projection function with `(data) -> Observable{R}` signature
+
+# Producing
+
+Stream of type `<: Subscribable{R}`
+
+# Examples
+```julia
+using Rocket
+
+source = from([ 0, 0 ]) |> async() |> exhaust_map(Int, d -> from([ 1, 2 ]) |> async())
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Completed
+```
+
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+"""
 exhaust_map(::Type{R}, mappingFn::F = identity) where { R, F <: Function } = ExhaustMapOperator{R, F}(mappingFn)
 
 struct ExhaustMapOperator{R, F} <: RightTypedOperator{R}

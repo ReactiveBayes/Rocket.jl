@@ -56,7 +56,11 @@ makedocs(
                     "lowercase"                      => "operators/transformation/lowercase.md",
                     "to_array"                       => "operators/transformation/to_array.md",
                     "switch_map"                     => "operators/transformation/switch_map.md",
-                    "switch_map_to"                  => "operators/transformation/switch_map_to.md",
+                    "`switch_map_to`"                => "operators/transformation/switch_map_to.md",
+                    "merge_map"                      => "operators/transformation/merge_map.md",
+                    "concat_map"                     => "operators/transformation/concat_map.md",
+                    "`concat_map_to`"                => "operators/transformation/concat_map_to.md",
+                    "exhaust_map"                    => "operators/transformation/exhaust_map.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",

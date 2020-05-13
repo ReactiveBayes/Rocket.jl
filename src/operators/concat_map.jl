@@ -3,6 +3,43 @@ export concat_map
 import Base: show
 import DataStructures: Deque
 
+"""
+    concat_map(::Type{R}, mappingFn::F = identity) where { R, F <: Function }
+
+Creates a `concat_map` operator, which returns an Observable that emits the result of applying the
+projection function to each item emitted by the source Observable and taking values from each
+projected inner Observable sequentially. Essentialy it projects each source value to an Observable which is
+merged in the output Observable, in a serialized fashion waiting for each one to complete before merging the next.
+
+# Arguments
+- `::Type{R}`: the type of data of output Observables after projection with `mappingFn`
+- `mappingFn::F`: projection function with `(data) -> Observable{R}` signature
+
+# Producing
+
+Stream of type `<: Subscribable{R}`
+
+# Examples
+```julia
+using Rocket
+
+source = from([ 0, 0 ]) |> concat_map(Int, d -> from([ 1, 2, 3 ], scheduler = Rocket.AsyncScheduler(0)))
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Completed
+```
+
+See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+"""
 concat_map(::Type{R}, mappingFn::F = identity) where { R, F <: Function } = ConcatMapOperator{R, F}(mappingFn)
 
 struct ConcatMapOperator{R, F} <: RightTypedOperator{R}
