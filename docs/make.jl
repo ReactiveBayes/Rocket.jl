@@ -110,6 +110,7 @@ makedocs(
                     "skip_next"               => "operators/utility/skip_next.md",
                     "skip_error"              => "operators/utility/skip_error.md",
                     "skip_complete"           => "operators/utility/skip_complete.md",
+                    "discontinue"             => "operators/utility/discontinue.md",
                 ]
             ],
             "Subjects" => [

@@ -422,9 +422,10 @@ call_operator_composition!(composition::OperatorsComposition, source) = reduce(|
 
 Base.:|>(source, composition::OperatorsComposition) = call_operator_composition!(composition, source)
 
-Base.:+(o1::AbstractOperator, o2::AbstractOperator)              = OperatorsComposition((o1, o2))
-Base.:+(o1::AbstractOperator, composition::OperatorsComposition) = OperatorsComposition((o1, composition.operators...))
-Base.:+(composition::OperatorsComposition, o2::AbstractOperator) = OperatorsComposition((composition.operators..., o2))
+Base.:+(o1::AbstractOperator, o2::AbstractOperator)         = OperatorsComposition((o1, o2))
+Base.:+(o1::AbstractOperator, c::OperatorsComposition)      = OperatorsComposition((o1, c.operators...))
+Base.:+(c::OperatorsComposition, o2::AbstractOperator)      = OperatorsComposition((c.operators..., o2))
+Base.:+(c1::OperatorsComposition, c2::OperatorsComposition) = OperatorsComposition((c1.operators..., c2.operators...))
 
 # -------------------------------- #
 # Errors                           #

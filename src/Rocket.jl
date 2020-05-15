@@ -96,6 +96,7 @@ include("operators/skip_complete.jl")
 include("operators/schedule_on.jl")
 include("operators/async.jl")
 include("operators/parallel.jl")
+include("operators/discontinue.jl")
 
 include("extensions/observable/single.jl")
 

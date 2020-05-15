@@ -107,8 +107,7 @@ See also: [`proxy`](@ref), [`SourceProxy`](@ref), [`ActorSourceProxy`](@ref)
 """
 source_proxy!(proxy, source) = error("You probably forgot to implement source_proxy!(proxy::$(typeof(proxy)), source::$(typeof(source)))")
 
-Base.show(io::IO, ::Type{ <: ProxyObservable{D, S, P} }) where { D, S, P } = print(io, "ProxyObservable{$D, $P}")
-Base.show(io::IO, observable::ProxyObservable{D})        where D           = print(io, "ProxyObservable($D, $(observable.proxy))")
+Base.show(io::IO, observable::ProxyObservable{D}) where D = print(io, "ProxyObservable($D, $(observable.proxy))")
 
 # -------------------------------- #
 # Helpers                          #
