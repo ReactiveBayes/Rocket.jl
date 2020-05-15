@@ -43,14 +43,14 @@ struct MapOperator{R, F} <: RightTypedOperator{R}
 end
 
 function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, MapProxy{F}(operator.mappingFn))
+    return proxy(R, source, MapProxy{L, F}(operator.mappingFn))
 end
 
-struct MapProxy{F} <: ActorProxy
+struct MapProxy{L, F} <: ActorProxy
     mappingFn::F
 end
 
-actor_proxy!(::Type{L}, proxy::MapProxy{F}, actor::A) where { L, A, F } = MapActor{L, A, F}(proxy.mappingFn, actor)
+actor_proxy!(::Type, proxy::MapProxy{L, F}, actor::A) where { L, A, F } = MapActor{L, A, F}(proxy.mappingFn, actor)
 
 struct MapActor{L, A, F} <: Actor{L}
     mappingFn  :: F
@@ -62,5 +62,5 @@ on_error!(actor::MapActor, err)                = error!(actor.actor, err)
 on_complete!(actor::MapActor)                  = complete!(actor.actor)
 
 Base.show(io::IO, ::MapOperator{R}) where R   = print(io, "MapOperator( -> $R)")
-Base.show(io::IO, ::MapProxy)                 = print(io, "MapProxy()")
+Base.show(io::IO, ::MapProxy{L})    where L   = print(io, "MapProxy($L)")
 Base.show(io::IO, ::MapActor{L})    where L   = print(io, "MapActor($L)")

@@ -33,7 +33,7 @@ to_array() = ToArrayOperator()
 struct ToArrayOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{Vector{L}}, operator::ToArrayOperator, source) where L
-    return proxy(Vector{L}, source, ToArrayProxy{L}())
+    return proxy(Vector{L}, source, ToArrayProxy())
 end
 
 operator_right(operator::ToArrayOperator, ::Type{L}) where L = Vector{L}

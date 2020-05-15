@@ -61,5 +61,5 @@ on_error!(actor::TupleWithRightActor, err)                         = error!(acto
 on_complete!(actor::TupleWithRightActor)                           = complete!(actor.actor)
 
 Base.show(io::IO, ::TupleWithRightOperator)                   = print(io, "TupleWithRightOperator()")
-Base.show(io::IO, ::TupleWithRightProxy{T})    where { T    } = print(io, "TupleWithRightProxy($L)")
+Base.show(io::IO, ::TupleWithRightProxy{T})    where { T    } = print(io, "TupleWithRightProxy()")
 Base.show(io::IO, ::TupleWithRightActor{T, L}) where { T, L } = print(io, "TupleWithRightActor($L -> Tuple{$L, $T})")
