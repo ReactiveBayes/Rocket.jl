@@ -35,7 +35,7 @@ end
 
 struct MyTypedOperatorProxy <: ActorProxy end
 
-Rocket.actor_proxy!(::MyTypedOperatorProxy, actor::A) where A = MyTypedOperatorProxiedActor{A}(actor)
+Rocket.actor_proxy!(::Type{Int}, ::MyTypedOperatorProxy, actor::A) where A = MyTypedOperatorProxiedActor{A}(actor)
 
 struct MyTypedOperatorProxiedActor{A} <: Actor{Int}
     actor :: A
@@ -86,7 +86,7 @@ Rocket.operator_right(::CountIntegersOperator, ::Type{Int}) = Tuple{Int, Int}
 
 struct CountIntegersOperatorProxy <: ActorProxy end
 
-Rocket.actor_proxy!(::CountIntegersOperatorProxy, actor::A) where A = CountIntegersProxiedActor{A}(0, actor)
+Rocket.actor_proxy!(::Type{Tuple{Int, Int}}, ::CountIntegersOperatorProxy, actor::A) where A = CountIntegersProxiedActor{A}(0, actor)
 
 mutable struct CountIntegersProxiedActor{A} <: Actor{Int}
     current :: Int
@@ -135,7 +135,7 @@ end
 
 struct ConvertToFloatProxy{L} <: ActorProxy end
 
-function Rocket.actor_proxy!(proxy::ConvertToFloatProxy{L}, actor::A) where L where A
+function Rocket.actor_proxy!(::Type{Float64}, proxy::ConvertToFloatProxy{L}, actor::A) where { L, A }
     return ConvertToFloatProxyActor{L, A}(actor)
 end
 
@@ -177,14 +177,14 @@ using Rocket
 struct IdentityOperator <: InferableOperator end
 
 function Rocket.on_call!(::Type{L}, ::Type{L}, op::IdentityOperator, source) where L
-    return proxy(L, source, IdentityProxy{L}())
+    return proxy(L, source, IdentityProxy())
 end
+
+struct IdentityProxy <: ActorProxy end
 
 Rocket.operator_right(::IdentityOperator, ::Type{L}) where L = L
 
-struct IdentityProxy{L} <: ActorProxy end
-
-Rocket.actor_proxy!(proxy::IdentityProxy{L}, actor::A) where L where A = IdentityProxyActor{L, A}(actor)
+Rocket.actor_proxy!(::Type{L}, proxy::IdentityProxy, actor::A) where L where A = IdentityProxyActor{L, A}(actor)
 
 struct IdentityProxyActor{L, A} <: Actor{L}
     actor :: A

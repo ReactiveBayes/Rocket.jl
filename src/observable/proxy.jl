@@ -8,7 +8,7 @@ import Base: show
     ActorProxy
 
 Can be used as a super type for common proxy object. Automatically specifies `ValidActorProxy` trait behavior. Each `ActorProxy` must implement
-its own method for `actor_proxy!(proxy, actor)` function which have to return a valid actor object.
+its own method for `actor_proxy!(::Type, proxy, actor)` function which have to return a valid actor object.
 
 See also: [`proxy`](@ref), [`actor_proxy!`](@ref)
 """
@@ -18,7 +18,7 @@ abstract type ActorProxy       end
     SourceProxy
 
 Can be used as a super type for common proxy object. Automatically specifies `ValidSourceProxy` trait behavior. Each `SourceProxy` must implement
-its own method for `source_proxy!(proxy, source)` function which have to return a valid subscribable object.
+its own method for `source_proxy!(::Type, proxy, source)` function which have to return a valid subscribable object.
 
 See also: [`proxy`](@ref), [`source_proxy!`](@ref)
 """
@@ -28,7 +28,7 @@ abstract type SourceProxy      end
     ActorSourceProxy
 
 Can be used as a super type for common proxy object. Automatically specifies `ValidActorSourceProxy` trait behavior. Each `ActorSourceProxy` must implement
-its own method for `source_proxy!(proxy, source)` function which have to return a valid subscribable object and also for `actor_proxy!(proxy, actor)` function which have to return a valid actor object..
+its own method for `source_proxy!(::Type, proxy, source)` function which have to return a valid subscribable object and also for `actor_proxy!(::Type, proxy, actor)` function which have to return a valid actor object..
 
 See also: [`proxy`](@ref), [`actor_proxy!`](@ref), [`source_proxy!`](@ref)
 """
@@ -91,7 +91,8 @@ end
     actor_proxy!(::Type, proxy, actor)
 
 This is function is used to wrap an actor with its proxied version given a particular proxy object. Must return another actor.
-Each valid `ActorProxy` and `ActorSourceProxy` must implement its own method for `actor_proxy!` function.
+Each valid `ActorProxy` and `ActorSourceProxy` must implement its own method for `actor_proxy!` function. The first argument is the same as
+the type of data of the connected proxy observable.
 
 See also: [`proxy`](@ref), [`ActorProxy`](@ref), [`ActorSourceProxy`](@ref)
 """
@@ -101,7 +102,8 @@ actor_proxy!(L, proxy, actor) = error("You probably forgot to implement actor_pr
     source_proxy!(::Type, proxy, source)
 
 This is function is used to wrap a source with its proxied version given a particular proxy object. Must return another Observable.
-Each valid `SourceProxy` and `ActorSourceProxy` must implement its own method for `source_proxy!` function.
+Each valid `SourceProxy` and `ActorSourceProxy` must implement its own method for `source_proxy!` function. The first argument is the same as
+the type of data of the connected proxy observable.
 
 See also: [`proxy`](@ref), [`SourceProxy`](@ref), [`ActorSourceProxy`](@ref)
 """
@@ -135,7 +137,7 @@ Rocket.on_next!(actor::MyCustomActor, data::Int) = next!(actor.actor, data ^ 2)
 Rocket.on_error!(actor::MyCustomActor, err)      = error!(actor.actor, err)
 Rocket.on_complete!(actor::MyCustomActor)        = complete!(actor.actor)
 
-Rocket.actor_proxy!(proxy::MyCustomProxy, actor::A) where A = MyCustomActor{A}(actor)
+Rocket.actor_proxy!(::Type{Int}, proxy::MyCustomProxy, actor::A) where A = MyCustomActor{A}(actor)
 
 proxied = proxy(Int, source, MyCustomProxy())
 
