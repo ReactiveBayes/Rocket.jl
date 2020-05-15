@@ -66,7 +66,7 @@ struct SwitchMapProxy{L, R, F} <: ActorSourceProxy
     mappingFn :: F
 end
 
-actor_proxy!(proxy::SwitchMapProxy{L, R, F}, actor::A) where { L, R, F, A } = SwitchMapActor{L, R, F, A}(proxy.mappingFn, actor)
+actor_proxy!(::Type{R}, proxy::SwitchMapProxy{L, R, F}, actor::A) where { L, R, F, A } = SwitchMapActor{L, R, F, A}(proxy.mappingFn, actor)
 
 # m - main
 # i - inner
@@ -142,7 +142,7 @@ struct SwitchMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 
-source_proxy!(proxy::SwitchMapProxy{L, R, F}, source::S) where { L, R, F, S } = SwitchMapSource{L, S}(source)
+source_proxy!(::Type{R}, proxy::SwitchMapProxy{L, R, F}, source::S) where { L, R, F, S } = SwitchMapSource{L, S}(source)
 
 function on_subscribe!(source::SwitchMapSource, actor::SwitchMapActor)
     actor.props.msubscription = subscribe!(source.source, actor)
@@ -162,7 +162,7 @@ end
 
 
 Base.show(io::IO, ::SwitchMapOperator{R})   where {    R } = print(io, "SwitchMapOperator($R)")
-Base.show(io::IO, ::SwitchMapProxy{L, R})   where { L, R } = print(io, "SwitchMapProxy($L -> $R)")
+Base.show(io::IO, ::SwitchMapProxy{L, R})   where { L, R } = print(io, "SwitchMapProxy($L, $R)")
 Base.show(io::IO, ::SwitchMapActor{L, R})   where { L, R } = print(io, "SwitchMapActor($L -> $R)")
 Base.show(io::IO, ::SwitchMapInnerActor{R}) where {    R } = print(io, "SwitchMapInnerActor($R)")
 Base.show(io::IO, ::SwitchMapSource{S})     where S        = print(io, "SwitchMapSource($S)")

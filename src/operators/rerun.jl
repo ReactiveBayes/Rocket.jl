@@ -42,17 +42,17 @@ struct RerunOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::RerunOperator, source) where L
-    return proxy(L, source, RerunProxy{L}(operator.count))
+    return proxy(L, source, RerunProxy(operator.count))
 end
 
 operator_right(operator::RerunOperator, ::Type{L}) where L = L
 
-struct RerunProxy{L} <: ActorSourceProxy
+struct RerunProxy <: ActorSourceProxy
     count :: Int
 end
 
-actor_proxy!(proxy::RerunProxy{L}, actor::A)   where { L, A } = RerunActor{L, A}(proxy.count, actor, nothing, nothing)
-source_proxy!(proxy::RerunProxy{L}, source::S) where { L, S } = RerunSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::RerunProxy, actor::A)   where { L, A } = RerunActor{L, A}(proxy.count, actor, nothing, nothing)
+source_proxy!(::Type{L}, proxy::RerunProxy, source::S) where { L, S } = RerunSource{L, S}(source)
 
 mutable struct RerunActor{L, A} <: Actor{L}
     count :: Int
@@ -110,7 +110,7 @@ function on_unsubscribe!(subscription::RerunSubscription)
 end
 
 Base.show(io::IO, ::RerunOperator)             = print(io, "RerunOperator()")
-Base.show(io::IO, ::RerunProxy{L})     where L = print(io, "RerunProxy($L)")
+Base.show(io::IO, ::RerunProxy)                = print(io, "RerunProxy()")
 Base.show(io::IO, ::RerunActor{L})     where L = print(io, "RerunActor($L)")
 Base.show(io::IO, ::RerunSource{L})    where L = print(io, "RerunSource($L)")
 Base.show(io::IO, ::RerunSubscription)         = print(io, "RerunSubscription()")

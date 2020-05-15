@@ -39,14 +39,14 @@ enumerate() = EnumerateOperator()
 struct EnumerateOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{Tuple{Int, L}}, operator::EnumerateOperator, source) where L
-    return proxy(Tuple{Int, L}, source, EnumerateProxy{L}())
+    return proxy(Tuple{Int, L}, source, EnumerateProxy())
 end
 
 operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{Int, L}
 
-struct EnumerateProxy{L} <: ActorProxy end
+struct EnumerateProxy <: ActorProxy end
 
-actor_proxy!(proxy::EnumerateProxy{L}, actor::A) where { L, A } = EnumerateActor{L, A}(actor, EnumerateActorProps(1))
+actor_proxy!(::Type{Tuple{Int, L}}, proxy::EnumerateProxy, actor::A) where { L, A } = EnumerateActor{L, A}(actor, EnumerateActorProps(1))
 
 mutable struct EnumerateActorProps
     current :: Int
@@ -70,5 +70,5 @@ on_error!(actor::EnumerateActor, err) = error!(actor.actor, err)
 on_complete!(actor::EnumerateActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::EnumerateOperator)         = print(io, "EnumerateOperator()")
-Base.show(io::IO, ::EnumerateProxy{L}) where L = print(io, "EnumerateProxy($L)")
+Base.show(io::IO, ::EnumerateProxy)            = print(io, "EnumerateProxy()")
 Base.show(io::IO, ::EnumerateActor{L}) where L = print(io, "EnumerateActor($L)")

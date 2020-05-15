@@ -43,17 +43,17 @@ struct TapOperator{F} <: InferableOperator
     tapFn :: F
 end
 
-operator_right(operator::TapOperator, ::Type{L}) where L = L
-
 function on_call!(::Type{L}, ::Type{L}, operator::TapOperator{F}, source) where { L, F }
-    return proxy(L, source, TapProxy{L, F}(operator.tapFn))
+    return proxy(L, source, TapProxy{F}(operator.tapFn))
 end
 
-struct TapProxy{L, F} <: ActorProxy
+operator_right(operator::TapOperator, ::Type{L}) where L = L
+
+struct TapProxy{F} <: ActorProxy
     tapFn :: F
 end
 
-actor_proxy!(proxy::TapProxy{L, F}, actor::A) where { L, A, F } = TapActor{L, A, F}(proxy.tapFn, actor)
+actor_proxy!(::Type{L}, proxy::TapProxy{F}, actor::A) where { L, A, F } = TapActor{L, A, F}(proxy.tapFn, actor)
 
 struct TapActor{L, A, F} <: Actor{L}
     tapFn :: F
@@ -65,5 +65,5 @@ on_error!(actor::TapActor, err)               = error!(actor.actor, err)
 on_complete!(actor::TapActor)                 = complete!(actor.actor)
 
 Base.show(io::IO, ::TapOperator)         = print(io, "TapOperator()")
-Base.show(io::IO, ::TapProxy{L}) where L = print(io, "TapProxy($L)")
+Base.show(io::IO, ::TapProxy)            = print(io, "TapProxy()")
 Base.show(io::IO, ::TapActor{L}) where L = print(io, "TapActor($L)")

@@ -39,9 +39,9 @@ end
 
 operator_right(::UppercaseOperator, ::Type{L}) where L = L
 
-struct UppercaseProxy{L} <: ActorProxy end
+struct UppercaseProxy <: ActorProxy end
 
-actor_proxy!(proxy::UppercaseProxy{L}, actor::A) where { L, A } = UppercaseActor{L, A}(actor)
+actor_proxy!(::Type{L}, proxy::UppercaseProxy, actor::A) where { L, A } = UppercaseActor{L, A}(actor)
 
 struct UppercaseActor{L, A} <: Actor{L}
     actor :: A
@@ -52,5 +52,5 @@ on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)
 on_complete!(actor::UppercaseActor)                 = complete!(actor.actor)
 
 Base.show(io::IO, ::UppercaseOperator)         = print(io, "UppercaseOperator()")
-Base.show(io::IO, ::UppercaseProxy{L}) where L = print(io, "UppercaseProxy($L)")
+Base.show(io::IO, ::UppercaseProxy)            = print(io, "UppercaseProxy()")
 Base.show(io::IO, ::UppercaseActor{L}) where L = print(io, "UppercaseActor($L)")

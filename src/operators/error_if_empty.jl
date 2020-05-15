@@ -30,14 +30,14 @@ end
 operator_right(operator::ErrorIfEmptyOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::ErrorIfEmptyOperator, source) where L
-    return proxy(L, source, ErrorIfEmptyProxy{L}(operator.err))
+    return proxy(L, source, ErrorIfEmptyProxy(operator.err))
 end
 
-struct ErrorIfEmptyProxy{L} <: ActorProxy
+struct ErrorIfEmptyProxy <: ActorProxy
     err
 end
 
-actor_proxy!(proxy::ErrorIfEmptyProxy{L}, actor::A) where { L, A } = ErrorIfEmptyActor{L, A}(actor, false, proxy.err)
+actor_proxy!(::Type{L}, proxy::ErrorIfEmptyProxy, actor::A) where { L, A } = ErrorIfEmptyActor{L, A}(actor, false, proxy.err)
 
 mutable struct ErrorIfEmptyActor{L, A} <: Actor{L}
     actor      :: A
@@ -64,5 +64,5 @@ function on_complete!(actor::ErrorIfEmptyActor)
 end
 
 Base.show(io::IO, ::ErrorIfEmptyOperator)         = print(io, "ErrorIfEmptyOperator()")
-Base.show(io::IO, ::ErrorIfEmptyProxy{L}) where L = print(io, "ErrorIfEmptyProxy($L)")
+Base.show(io::IO, ::ErrorIfEmptyProxy)            = print(io, "ErrorIfEmptyProxy()")
 Base.show(io::IO, ::ErrorIfEmptyActor{L}) where L = print(io, "ErrorIfEmptyActor($L)")

@@ -43,17 +43,17 @@ struct TakeOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::TakeOperator, source) where L
-    return proxy(L, source, TakeProxy{L}(operator.maxcount))
+    return proxy(L, source, TakeProxy(operator.maxcount))
 end
 
 operator_right(operator::TakeOperator, ::Type{L}) where L = L
 
-struct TakeProxy{L} <: ActorSourceProxy
+struct TakeProxy <: ActorSourceProxy
     maxcount :: Int
 end
 
-actor_proxy!(proxy::TakeProxy{L},  actor::A)  where { L, A } = TakeActor{L, A}(proxy.maxcount, actor)
-source_proxy!(proxy::TakeProxy{L}, source::S) where { L, S } = TakeSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::TakeProxy,  actor::A)  where { L, A } = TakeActor{L, A}(proxy.maxcount, actor)
+source_proxy!(::Type{L}, proxy::TakeProxy, source::S) where { L, S } = TakeSource{L, S}(source)
 
 mutable struct TakeActorProps
     isdisposed   :: Bool
@@ -114,6 +114,6 @@ function on_subscribe!(observable::TakeSource, actor::TakeActor)
 end
 
 Base.show(io::IO, ::TakeOperator)          = print(io, "TakeOperator()")
-Base.show(io::IO, ::TakeProxy{L})  where L = print(io, "TakeProxy($L)")
+Base.show(io::IO, ::TakeProxy)             = print(io, "TakeProxy()")
 Base.show(io::IO, ::TakeActor{L})  where L = print(io, "TakeActor($L)")
 Base.show(io::IO, ::TakeSource{L}) where L = print(io, "TakeSource($L)")

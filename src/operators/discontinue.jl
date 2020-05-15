@@ -34,15 +34,15 @@ discontinue() = DiscontinueOperator()
 
 struct DiscontinueOperator <: InferableOperator end
 
-operator_right(::DiscontinueOperator, ::Type{L}) where L = L
-
-function on_call!(::Type{L}, ::Type{L}, ::DiscontinueOperator, source) where L
-    return proxy(L, source, DiscontinueProxy{L}())
+function on_call!(::Type{L}, ::Type{L}, operator::DiscontinueOperator, source) where L
+    return proxy(L, source, DiscontinueProxy())
 end
 
-struct DiscontinueProxy{L} <: ActorProxy end
+operator_right(::DiscontinueOperator, ::Type{L}) where L = L
 
-actor_proxy!(::DiscontinueProxy{L}, actor::A) where { L, A } = DiscontinueActor{L, A}(actor)
+struct DiscontinueProxy <: ActorProxy end
+
+actor_proxy!(::Type{L}, proxy::DiscontinueProxy, actor::A) where { L, A } = DiscontinueActor{L, A}(actor)
 
 mutable struct DiscontinueActorProps
     isnextpropagated     :: Bool
@@ -92,5 +92,5 @@ function on_complete!(actor::DiscontinueActor)
 end
 
 Base.show(io::IO, ::DiscontinueOperator)         = print(io, "DiscontinueOperator()")
-Base.show(io::IO, ::DiscontinueProxy{L}) where L = print(io, "DiscontinueProxy($L)")
+Base.show(io::IO, ::DiscontinueProxy)            = print(io, "DiscontinueProxy()")
 Base.show(io::IO, ::DiscontinueActor{L}) where L = print(io, "DiscontinueActor($L)")

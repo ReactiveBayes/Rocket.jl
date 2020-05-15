@@ -13,17 +13,17 @@ struct DebounceTimeOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::DebounceTimeOperator, source) where L
-    return proxy(L, source, DebounceTimeProxy{L}(operator.due_time))
+    return proxy(L, source, DebounceTimeProxy(operator.due_time))
 end
 
 operator_right(operator::DebounceTimeOperator, ::Type{L}) where L = L
 
-struct DebounceTimeProxy{L} <: ActorSourceProxy
+struct DebounceTimeProxy <: ActorSourceProxy
     due_time :: Int
 end
 
-actor_proxy!(proxy::DebounceTimeProxy{L}, actor::A)   where { L, A } = DebounceTimeActor{L, A}(proxy.due_time, actor)
-source_proxy!(proxy::DebounceTimeProxy{L}, source::S) where { L, S } = DebounceTimeObservable{L, S}(source)
+actor_proxy!(::Type{L}, proxy::DebounceTimeProxy, actor::A)   where { L, A } = DebounceTimeActor{L, A}(proxy.due_time, actor)
+source_proxy!(::Type{L}, proxy::DebounceTimeProxy, source::S) where { L, S } = DebounceTimeObservable{L, S}(source)
 
 struct DebounceTimeCompletionException <: Exception end
 struct DebounceTimeCancellationException <: Exception end
@@ -112,7 +112,7 @@ function on_unsubscribe!(subscription::DebounceTimeSubscription)
 end
 
 Base.show(io::IO, ::DebounceTimeOperator)              = print(io, "DebounceTimeOperator()")
-Base.show(io::IO, ::DebounceTimeProxy{L})      where L = print(io, "DebounceTimeProxy($L)")
+Base.show(io::IO, ::DebounceTimeProxy)                 = print(io, "DebounceTimeProxy()")
 Base.show(io::IO, ::DebounceTimeActor{L})      where L = print(io, "DebounceTimeActor($L)")
 Base.show(io::IO, ::DebounceTimeObservable{L}) where L = print(io, "DebounceTimeObservable($L)")
 Base.show(io::IO, ::DebounceTimeSubscription)          = print(io, "DebounceTimeSubscription()")

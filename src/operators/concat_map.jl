@@ -54,7 +54,7 @@ struct ConcatMapProxy{L, R, F} <: ActorSourceProxy
     mappingFn :: F
 end
 
-actor_proxy!(proxy::ConcatMapProxy{L, R, F}, actor::A) where { L, R, F, A } = ConcatMapActor{L, R, F, A}(proxy.mappingFn, actor)
+actor_proxy!(::Type{R}, proxy::ConcatMapProxy{L, R, F}, actor::A) where { L, R, F, A } = ConcatMapActor{L, R, F, A}(proxy.mappingFn, actor)
 
 # m - main
 mutable struct ConcatMapActorProps{L}
@@ -165,7 +165,7 @@ struct ConcatMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 
-source_proxy!(proxy::ConcatMapProxy{L, R, F}, source::S) where { L, R, F, S } = ConcatMapSource{L, S}(source)
+source_proxy!(::Type{R}, proxy::ConcatMapProxy{L, R, F}, source::S) where { L, R, F, S } = ConcatMapSource{L, S}(source)
 
 function on_subscribe!(source::ConcatMapSource, actor::ConcatMapActor)
     actor.props.msubscription = subscribe!(source.source, actor)
@@ -184,7 +184,7 @@ function on_unsubscribe!(subscription::ConcatMapSubscription)
 end
 
 Base.show(io::IO, ::ConcatMapOperator{R})   where {    R } = print(io, "ConcatMapOperator($R)")
-Base.show(io::IO, ::ConcatMapProxy{L, R})   where { L, R } = print(io, "ConcatMapProxy($L -> $R)")
+Base.show(io::IO, ::ConcatMapProxy{L, R})   where { L, R } = print(io, "ConcatMapProxy($L, $R)")
 Base.show(io::IO, ::ConcatMapActor{L, R})   where { L, R } = print(io, "ConcatMapActor($L -> $R)")
 Base.show(io::IO, ::ConcatMapInnerActor{R}) where {    R } = print(io, "ConcatMapInnerActor($R)")
 Base.show(io::IO, ::ConcatMapSource{S})     where S        = print(io, "ConcatMapSource($S)")

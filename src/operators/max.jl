@@ -32,34 +32,40 @@ subscribe!(source |> max(), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-max(; from = nothing) = MaxOperator(from)
+max(; from::D = nothing) where D = MaxOperator{D}(from)
 
-struct MaxOperator <: InferableOperator
-    from
+struct MaxOperator{D} <: InferableOperator
+    from :: D
 end
 
 function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MaxOperator, source) where L
-    return proxy(Union{L, Nothing}, source, MaxProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
+    return proxy(Union{L, Nothing}, source, MaxProxy(operator.from !== nothing ? convert(L, operator.from) : nothing))
 end
 
 operator_right(operator::MaxOperator, ::Type{L}) where L = Union{L, Nothing}
 
-struct MaxProxy{L} <: ActorProxy
-    from :: Union{L, Nothing}
+struct MaxProxy{D} <: ActorProxy
+    from :: D
 end
 
-actor_proxy!(proxy::MaxProxy{L}, actor::A) where { L, A } = MaxActor{L, A}(proxy.from, actor)
+actor_proxy!(::Type{Union{L, Nothing}}, proxy::MaxProxy, actor::A) where { L, A } = MaxActor{L, A}(actor, MaxActorProps{L}(proxy.from))
 
-mutable struct MaxActor{L, A} <: Actor{L}
+mutable struct MaxActorProps{L}
     current :: Union{L, Nothing}
-    actor   :: A
 end
+
+struct MaxActor{L, A} <: Actor{L}
+    actor :: A
+    props :: MaxActorProps{L}
+end
+
+getcurrent(actor::MaxActor)         = actor.props.current
+setcurrent!(actor::MaxActor, value) = actor.props.current = value
 
 function on_next!(actor::MaxActor{L}, data::L) where L
-    if actor.current === nothing
-        actor.current = data
-    else
-        actor.current = data > actor.current ? data : actor.current
+    current = getcurrent(actor)
+    if current === nothing || data > current
+        setcurrent!(actor, data)
     end
 end
 
@@ -68,10 +74,10 @@ function on_error!(actor::MaxActor, err)
 end
 
 function on_complete!(actor::MaxActor)
-    next!(actor.actor, actor.current)
+    next!(actor.actor, getcurrent(actor))
     complete!(actor.actor)
 end
 
 Base.show(io::IO, ::MaxOperator)         = print(io, "MaxOperator()")
-Base.show(io::IO, ::MaxProxy{L}) where L = print(io, "MaxProxy($L)")
+Base.show(io::IO, ::MaxProxy)            = print(io, "MaxProxy()")
 Base.show(io::IO, ::MaxActor{L}) where L = print(io, "MaxActor($L)")

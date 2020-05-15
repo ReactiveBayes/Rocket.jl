@@ -49,7 +49,7 @@ struct ExhaustMapProxy{L, R, F} <: ActorSourceProxy
     mappingFn :: F
 end
 
-actor_proxy!(proxy::ExhaustMapProxy{L, R, F}, actor::A) where { L, R, F, A } = ExhaustMapActor{L, R, F, A}(proxy.mappingFn, actor)
+actor_proxy!(::Type{R}, proxy::ExhaustMapProxy{L, R, F}, actor::A) where { L, R, F, A } = ExhaustMapActor{L, R, F, A}(proxy.mappingFn, actor)
 
 # m - main
 # i - inner
@@ -128,7 +128,7 @@ struct ExhaustMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 
-source_proxy!(proxy::ExhaustMapProxy{L, R, F}, source::S) where { L, R, F, S } = ExhaustMapSource{L, S}(source)
+source_proxy!(::Type{R}, proxy::ExhaustMapProxy{L, R, F}, source::S) where { L, R, F, S } = ExhaustMapSource{L, S}(source)
 
 function on_subscribe!(source::ExhaustMapSource, actor::ExhaustMapActor)
     actor.props.msubscription = subscribe!(source.source, actor)
@@ -148,7 +148,7 @@ end
 
 
 Base.show(io::IO, ::ExhaustMapOperator{R})   where {    R } = print(io, "ExhaustMapOperator($R)")
-Base.show(io::IO, ::ExhaustMapProxy{L, R})   where { L, R } = print(io, "ExhaustMapProxy($L -> $R)")
+Base.show(io::IO, ::ExhaustMapProxy{L, R})   where { L, R } = print(io, "ExhaustMapProxy($L, $R)")
 Base.show(io::IO, ::ExhaustMapActor{L, R})   where { L, R } = print(io, "ExhaustMapActor($L -> $R)")
 Base.show(io::IO, ::ExhaustMapInnerActor{R}) where {    R } = print(io, "ExhaustMapInnerActor($R)")
 Base.show(io::IO, ::ExhaustMapSource{S})     where S        = print(io, "ExhaustMapSource($S)")

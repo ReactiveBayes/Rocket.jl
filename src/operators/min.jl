@@ -32,34 +32,40 @@ subscribe!(source |> min(), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-min(; from = nothing) = MinOperator(from)
+min(; from::D = nothing) where D = MinOperator{D}(from)
 
-struct MinOperator <: InferableOperator
-    from
+struct MinOperator{D} <: InferableOperator
+    from :: D
 end
 
 function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::MinOperator, source) where L
-    return proxy(Union{L, Nothing}, source, MinProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
+    return proxy(Union{L, Nothing}, source, MinProxy(operator.from !== nothing ? convert(L, operator.from) : nothing))
 end
 
 operator_right(operator::MinOperator, ::Type{L}) where L = Union{L, Nothing}
 
-struct MinProxy{L} <: ActorProxy
-    from :: Union{L, Nothing}
+struct MinProxy{D} <: ActorProxy
+    from :: D
 end
 
-actor_proxy!(proxy::MinProxy{L}, actor::A) where { L, A } = MinActor{L, A}(proxy.from, actor)
+actor_proxy!(::Type{Union{L, Nothing}}, proxy::MinProxy, actor::A) where { L, A } = MinActor{L, A}(actor, MinActorProps{L}(proxy.from))
 
-mutable struct MinActor{L, A} <: Actor{L}
+mutable struct MinActorProps{L}
     current :: Union{L, Nothing}
-    actor   :: A
 end
+
+struct MinActor{L, A} <: Actor{L}
+    actor   :: A
+    props   :: MinActorProps{L}
+end
+
+getcurrent(actor::MinActor)         = actor.props.current
+setcurrent!(actor::MinActor, value) = actor.props.current = value
 
 function on_next!(actor::MinActor{L}, data::L) where L
-    if actor.current === nothing
-        actor.current = data
-    else
-        actor.current = data < actor.current ? data : actor.current
+    current = getcurrent(actor)
+    if current === nothing || data < current
+        setcurrent!(actor, data)
     end
 end
 
@@ -68,10 +74,10 @@ function on_error!(actor::MinActor, err)
 end
 
 function on_complete!(actor::MinActor)
-    next!(actor.actor, actor.current)
+    next!(actor.actor, getcurrent(current))
     complete!(actor.actor)
 end
 
 Base.show(io::IO, ::MinOperator)         = print(io, "MinOperator()")
-Base.show(io::IO, ::MinProxy{L}) where L = print(io, "MinProxy($L)")
+Base.show(io::IO, ::MinProxy)            = print(io, "MinProxy()")
 Base.show(io::IO, ::MinActor{L}) where L = print(io, "MinActor($L)")

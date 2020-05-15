@@ -51,12 +51,12 @@ function on_call!(::Type{L}, ::Type{R}, operator::MergeMapOperator{R, F}, source
     return proxy(R, source, MergeMapProxy{L, R, F}(operator.mappingFn, operator.concurrent))
 end
 
-struct MergeMapProxy{L, R, F} <: ActorSourceProxy
+struct MergeMapProxy{R, F} <: ActorSourceProxy
     mappingFn  :: F
     concurrent :: Int
 end
 
-actor_proxy!(proxy::MergeMapProxy{L, R, F}, actor::A) where { L, R, F, A } = MergeMapActor{L, R, F, A}(proxy.mappingFn, proxy.concurrent, actor)
+actor_proxy!(::Type{R}, proxy::MergeMapProxy{L, R, F}, actor::A) where { L, R, F, A } = MergeMapActor{L, R, F, A}(proxy.mappingFn, proxy.concurrent, actor)
 
 # m - main
 mutable struct MergeMapActorProps{L}
@@ -167,7 +167,7 @@ struct MergeMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 
-source_proxy!(proxy::MergeMapProxy{L, R, F}, source::S) where { L, R, F, S } = MergeMapSource{L, S}(source)
+source_proxy!(::Type{R}, proxy::MergeMapProxy{L, R, F}, source::S) where { L, R, F, S } = MergeMapSource{L, S}(source)
 
 function on_subscribe!(source::MergeMapSource, actor::MergeMapActor)
     actor.props.msubscription = subscribe!(source.source, actor)
@@ -186,7 +186,7 @@ function on_unsubscribe!(subscription::MergeMapSubscription)
 end
 
 Base.show(io::IO, ::MergeMapOperator{R})   where {    R } = print(io, "MergeMapOperator($R)")
-Base.show(io::IO, ::MergeMapProxy{L, R})   where { L, R } = print(io, "MergeMapProxy($L -> $R)")
+Base.show(io::IO, ::MergeMapProxy{L, R})   where { L, R } = print(io, "MergeMapProxy($L, $R)")
 Base.show(io::IO, ::MergeMapActor{L, R})   where { L, R } = print(io, "MergeMapActor($L -> $R)")
 Base.show(io::IO, ::MergeMapInnerActor{R}) where {    R } = print(io, "MergeMapInnerActor($R)")
 Base.show(io::IO, ::MergeMapSource{S})     where S        = print(io, "MergeMapSource($S)")

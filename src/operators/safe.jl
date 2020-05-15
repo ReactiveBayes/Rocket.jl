@@ -18,15 +18,15 @@ safe() = SafeOperator()
 struct SafeOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::SafeOperator, source) where L
-    return proxy(L, source, SafeProxy{L}())
+    return proxy(L, source, SafeProxy())
 end
 
 operator_right(operator::SafeOperator, ::Type{L}) where L = L
 
-struct SafeProxy{L} <: ActorSourceProxy end
+struct SafeProxy <: ActorSourceProxy end
 
-actor_proxy!(proxy::SafeProxy{L}, actor::A)   where { L, A } = SafeActor{L, A}(actor, false, nothing)
-source_proxy!(proxy::SafeProxy{L}, source::S) where { L, S } = SafeSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::SafeProxy, actor::A)   where { L, A } = SafeActor{L, A}(actor, false, nothing)
+source_proxy!(::Type{L}, proxy::SafeProxy, source::S) where { L, S } = SafeSource{L, S}(source)
 
 mutable struct SafeActor{L, A} <: Actor{L}
     actor :: A
@@ -92,6 +92,6 @@ function on_subscribe!(source::SafeSource, actor::SafeActor)
 end
 
 Base.show(io::IO, ::SafeOperator)          = print(io, "SafeOperator()")
-Base.show(io::IO, ::SafeProxy{L})  where L = print(io, "SafeProxy($L)")
+Base.show(io::IO, ::SafeProxy)             = print(io, "SafeProxy()")
 Base.show(io::IO, ::SafeActor{L})  where L = print(io, "SafeActor($L)")
 Base.show(io::IO, ::SafeSource{L}) where L = print(io, "SafeSource($L)")

@@ -38,9 +38,9 @@ end
 
 operator_right(operator::ToArrayOperator, ::Type{L}) where L = Vector{L}
 
-struct ToArrayProxy{L} <: ActorProxy end
+struct ToArrayProxy <: ActorProxy end
 
-actor_proxy!(proxy::ToArrayProxy{L}, actor::A) where { L, A } = ToArrayActor{L, A}(actor)
+actor_proxy!(::Type{Vector{L}}, proxy::ToArrayProxy, actor::A) where { L, A } = ToArrayActor{L, A}(actor)
 
 struct ToArrayActor{L, A} <: Actor{L}
     values :: Vector{L}
@@ -58,5 +58,5 @@ function on_complete!(actor::ToArrayActor)
 end
 
 Base.show(io::IO, ::ToArrayOperator)         = print(io, "ToArrayOperator()")
-Base.show(io::IO, ::ToArrayProxy{L}) where L = print(io, "ToArrayProxy($L)")
+Base.show(io::IO, ::ToArrayProxy)            = print(io, "ToArrayProxy()")
 Base.show(io::IO, ::ToArrayActor{L}) where L = print(io, "ToArrayActor($L)")
