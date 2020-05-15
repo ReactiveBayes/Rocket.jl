@@ -87,8 +87,8 @@ struct ScanActor{L, R, A, F} <: Actor{L}
     props   :: ScanActorProps{R}
 end
 
-getcurrent(actor::ScanActorProps)         = actor.props.current
-setcurrent!(actor::ScanActorProps, value) = actor.props.current = value
+getcurrent(actor::ScanActor)         = actor.props.current
+setcurrent!(actor::ScanActor, value) = actor.props.current = value
 
 function on_next!(actor::ScanActor{L, R}, data::L) where { L, R }
     update = actor.scanFn(data, getcurrent(actor))

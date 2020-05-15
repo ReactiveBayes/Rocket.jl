@@ -51,7 +51,7 @@ function on_call!(::Type{L}, ::Type{R}, operator::MergeMapOperator{R, F}, source
     return proxy(R, source, MergeMapProxy{L, R, F}(operator.mappingFn, operator.concurrent))
 end
 
-struct MergeMapProxy{R, F} <: ActorSourceProxy
+struct MergeMapProxy{L, R, F} <: ActorSourceProxy
     mappingFn  :: F
     concurrent :: Int
 end

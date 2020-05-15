@@ -74,7 +74,7 @@ function on_error!(actor::MinActor, err)
 end
 
 function on_complete!(actor::MinActor)
-    next!(actor.actor, getcurrent(current))
+    next!(actor.actor, getcurrent(actor))
     complete!(actor.actor)
 end
 

@@ -57,7 +57,7 @@ struct SumOperator{D} <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::SumOperator, source) where L
-    return proxy(Union{L, Nothing}, source, SumProxy{L}(operator.from !== nothing ? convert(L, operator.from) : nothing))
+    return proxy(Union{L, Nothing}, source, SumProxy(operator.from !== nothing ? convert(L, operator.from) : nothing))
 end
 
 operator_right(operator::SumOperator, ::Type{L}) where L = Union{L, Nothing}
