@@ -60,7 +60,7 @@ mutable struct TakeActorProps
     count        :: Int
     subscription :: Teardown
 
-    TakeActorProps() = new(false, 0, VoidTeardown())
+    TakeActorProps() = new(false, 0, voidTeardown)
 end
 
 struct TakeActor{L, A} <: Actor{L}

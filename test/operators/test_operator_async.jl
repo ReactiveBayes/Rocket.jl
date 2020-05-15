@@ -39,7 +39,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = throwError("e") |> async(0),
+            source = faulted("e") |> async(0),
             values = @ts(e("e")),
         ),
         (

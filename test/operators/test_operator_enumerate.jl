@@ -23,7 +23,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source      = throwError(Float64, "e") |> enumerate(),
+            source      = faulted(Float64, "e") |> enumerate(),
             values      = @ts(e("e")),
             source_type = Tuple{Int, Float64}
         ),

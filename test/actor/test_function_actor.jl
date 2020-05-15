@@ -18,7 +18,7 @@ using Rocket
     end
 
     @testset begin
-        source = throwError(Int, "Error")
+        source = faulted(Int, "Error")
         values = Int[]
         actor  = (t::Int) -> push!(values, t)
 

@@ -23,7 +23,7 @@ as_array(::NonScalar, x)           = collect(x)
 as_array(::UndefinedScalarness, x) = error("Value of type $(typeof(x)) has undefined scalarness type. \nConsider implement scalarness(::Type{<:$(typeof(x))}).")
 
 """
-    ArrayObservable{D, H}(values::Vector{D}, scheduler::H) where { D, H <: AbstractScheduler }
+    ArrayObservable{D, H}(values::Vector{D}, scheduler::H) where { D, H }
 
 ArrayObservable wraps a regular Julia array into an observable. Uses scheduler object to schedule messages delivery.
 
@@ -45,11 +45,12 @@ function on_subscribe!(observable::ArrayObservable, actor, scheduler)
         next!(actor, value, scheduler)
     end
     complete!(actor, scheduler)
-    return VoidTeardown()
+    return voidTeardown
 end
 
 """
-    from(x; scheduler = Rocket.AsapScheduler())
+    from(x; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+    from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler }
 
 Creation operator for the `ArrayObservable` that emits either a single value if x has a `Scalar` trait specification or a collection of values if x has a `NonScalar` trait specification.
 Throws an ErrorException if x has `UndefinedScalarness` trait type. To specify scalarness for arbitrary type T some can implement an additional method
@@ -57,7 +58,10 @@ for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior. 
 
 # Arguments
 - `x`: an object to be wrapped into array of values
-- `scheduler`: Optional, scheduler-like object
+- `scheduler`: optional, scheduler-like object
+
+# Note
+`from` operators creates a copy of `x`
 
 # Examples
 
@@ -135,10 +139,10 @@ subscribe!(source, logger())
 
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-from(x; scheduler = AsapScheduler())                                                   = from(as_array(x); scheduler = scheduler)
+from(x; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }               = from(as_array(x); scheduler = scheduler)
 from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler } = ArrayObservable{D, H}(copy(a), scheduler)
 
 Base.:(==)(left::ArrayObservable{D, H},  right::ArrayObservable{D, H}) where { D, H } = left.values == right.values
-Base.:(==)(left::ArrayObservable,        right::ArrayObservable) = false
+Base.:(==)(left::ArrayObservable,        right::ArrayObservable)                      = false
 
 Base.show(io::IO, ::ArrayObservable{D, H}) where { D, H } = print(io, "ArrayObservable($D, $H)")

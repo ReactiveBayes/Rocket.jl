@@ -25,7 +25,7 @@ include("../test_helpers.jl")
             values = @ts(100 ~ [0] ~ 30 ~ [1] ~ 30 ~ [2] ~ 100 ~ [0] ~ 30 ~ [1] ~ 30 ~ [2] ~ e("d"))
         ),
         (
-            source = timer(100, 30) |> safe() |> switch_map(Int, (d) -> d > 1 ? throwError(Int, "$d") : of(d)) |> rerun(2),
+            source = timer(100, 30) |> safe() |> switch_map(Int, (d) -> d > 1 ? faulted(Int, "$d") : of(d)) |> rerun(2),
             values = @ts(100 ~ [0] ~ 30 ~ [1] ~ 100 ~ [0] ~ 30 ~ [1] ~ 100 ~ [0] ~ 30 ~ [1] ~ e("2"))
         ),
         (
@@ -33,7 +33,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = throwError("e") |> rerun(2),
+            source = faulted("e") |> rerun(2),
             values = @ts(e("e")),
         ),
         (

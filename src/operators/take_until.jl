@@ -64,7 +64,7 @@ mutable struct TakeUntilInnerActorProps
     ssubscription :: Teardown
     nsubscription :: Teardown
 
-    TakeUntilInnerActorProps() = new(false, VoidTeardown(), VoidTeardown())
+    TakeUntilInnerActorProps() = new(false, voidTeardown, voidTeardown)
 end
 
 struct TakeUntilInnerActor{L, A} <: Actor{L}

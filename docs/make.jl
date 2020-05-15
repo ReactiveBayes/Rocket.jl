@@ -19,7 +19,7 @@ makedocs(
                 "Function"          => "observables/types/function.md",
                 "Single"            => "observables/types/single.md",
                 "Array"             => "observables/types/array.md",
-                "Error"             => "observables/types/error.md",
+                "Faulted"           => "observables/types/faulted.md",
                 "Never"             => "observables/types/never.md",
                 "Completed"         => "observables/types/completed.md",
                 "Timer"             => "observables/types/timer.md",

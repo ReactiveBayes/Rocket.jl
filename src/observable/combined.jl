@@ -92,7 +92,7 @@ struct CombineLatestActorWrapper{S, A, F, B}
     CombineLatestActorWrapper{S, A, F, B}(storage::S, actor::A, transformFn::F) where { S, A, F, B } = begin
         cstatus = falses(length(storage))
         vstatus = falses(length(storage))
-        subscriptions = fill!(Vector{Teardown}(undef, length(storage)), VoidTeardown())
+        subscriptions = fill!(Vector{Teardown}(undef, length(storage)), voidTeardown)
         return new(storage, actor, transformFn, cstatus, vstatus, subscriptions)
     end
 end

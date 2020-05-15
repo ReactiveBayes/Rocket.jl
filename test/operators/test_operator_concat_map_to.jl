@@ -27,7 +27,7 @@ include("../test_helpers.jl")
             source_type = Float64
         ),
         (
-            source      = from(1:5) |> concat_map_to(throwError(Float64, "err")),
+            source      = from(1:5) |> concat_map_to(faulted(Float64, "err")),
             values      = @ts(e("err")),
             source_type = Float64
         ),
@@ -47,7 +47,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError(String, "e") |> concat_map_to(of(0)),
+            source      = faulted(String, "e") |> concat_map_to(of(0)),
             values      = @ts(e("e")),
             source_type = Int
         ),
@@ -77,12 +77,12 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> concat_map_to(of(0)),
+            source      = from([ of(1), faulted(Int, "err"), of(2) ]) |> concat_map_to(of(0)),
             values      = @ts([ 0, 0, 0, c ]),
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> concat_map(Int) |> concat_map_to(of(0)),
+            source      = from([ of(1), faulted(Int, "err"), of(2) ]) |> concat_map(Int) |> concat_map_to(of(0)),
             values      = @ts([ 0, e("err") ]),
             source_type = Int
         )

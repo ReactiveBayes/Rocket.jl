@@ -60,7 +60,7 @@ mutable struct ExhaustMapActorProps
     isicompleted  :: Bool
     isdisposed    :: Bool
 
-    ExhaustMapActorProps() = new(VoidTeardown(), VoidTeardown(), false, true, false)
+    ExhaustMapActorProps() = new(voidTeardown, voidTeardown, false, true, false)
 end
 
 struct ExhaustMapActor{L, R, F, A} <: Actor{L}
@@ -86,7 +86,7 @@ end
 on_next!(actor::ExhaustMapInnerActor{R}, data::R) where R = next!(actor.main.actor, data)
 on_error!(actor::ExhaustMapInnerActor,   err)             = error!(actor.main, err)
 on_complete!(actor::ExhaustMapInnerActor)                 = begin
-    actor.main.props.isubscription = VoidTeardown()
+    actor.main.props.isubscription = voidTeardown
     seticompleted!(actor.main, true)
     if ismcompleted(actor.main)
         complete!(actor.main)

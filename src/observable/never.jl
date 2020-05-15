@@ -15,7 +15,7 @@ See also: [`Subscribable`](@ref), [`never`](@ref)
 struct NeverObservable{D} <: Subscribable{D} end
 
 function on_subscribe!(observable::NeverObservable, actor)
-    return VoidTeardown()
+    return voidTeardown
 end
 
 """

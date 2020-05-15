@@ -87,7 +87,7 @@ function on_subscribe!(source::SafeSource, actor::SafeActor)
         return subscription
     catch exception
         error!(actor, exception)
-        return VoidTeardown()
+        return voidTeardown
     end
 end
 

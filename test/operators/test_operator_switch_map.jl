@@ -23,7 +23,7 @@ include("../test_helpers.jl")
             source_type = Float64
         ),
         (
-            source      = from(1:5) |> switch_map(Float64, _ -> throwError(Float64, "err")),
+            source      = from(1:5) |> switch_map(Float64, _ -> faulted(Float64, "err")),
             values      = @ts(e("err")),
             source_type = Float64
         ),
@@ -43,7 +43,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError(Int, "e") |> switch_map(String, d -> string(d)),
+            source      = faulted(Int, "e") |> switch_map(String, d -> string(d)),
             values      = @ts(e("e")),
             source_type = String
         ),
@@ -79,12 +79,12 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> switch_map(Int),
+            source      = from([ of(1), faulted(Int, "err"), of(2) ]) |> switch_map(Int),
             values      = @ts([ 1, e("err") ]),
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> async(0) |> switch_map(Int),
+            source      = from([ of(1), faulted(Int, "err"), of(2) ]) |> async(0) |> switch_map(Int),
             values      = @ts([ 1 ] ~ e("err")),
             source_type = Int
         ),

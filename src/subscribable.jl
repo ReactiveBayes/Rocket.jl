@@ -231,7 +231,7 @@ struct MySubscribable <: Subscribable{Int} end
 function Rocket.on_subscribe!(subscribable::MySubscribable, actor)
     next!(actor, 0)
     complete!(actor)
-    return VoidTeardown()
+    return voidTeardown
 end
 
 subscribe!(MySubscribable(), logger())
@@ -248,12 +248,12 @@ using Rocket
 
 struct MyScheduledSubscribable <: ScheduledSubscribable{Int} end
 
-Rocket.getscheduler(::MyScheduledSubscribable) = Rocket.AsapScheduler()
+Rocket.getscheduler(::MyScheduledSubscribable) = AsapScheduler()
 
 function Rocket.on_subscribe!(subscribable::MyScheduledSubscribable, actor, scheduler)
     next!(actor, 0, scheduler)
     complete!(actor, scheduler)
-    return VoidTeardown()
+    return voidTeardown
 end
 
 subscribe!(MyScheduledSubscribable(), logger())

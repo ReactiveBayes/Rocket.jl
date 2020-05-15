@@ -29,12 +29,12 @@ include("../test_helpers.jl")
             source_type = Union{Int, String}
         ),
         (
-            source      = throwError(Int, "e") |> first(),
+            source      = faulted(Int, "e") |> first(),
             values      = @ts(e("e")),
             source_type = Union{Int}
         ),
         (
-            source      = throwError(Int, "e") |> first(default = "String"),
+            source      = faulted(Int, "e") |> first(default = "String"),
             values      = @ts(e("e")),
             source_type = Union{Int, String}
         ),

@@ -26,7 +26,7 @@ include("../test_helpers.jl")
             values = @ts([ 1:5 ])
         ),
         (
-            source = throwError(1) |> tap_on_complete(() -> completed3 = true),
+            source = faulted(1) |> tap_on_complete(() -> completed3 = true),
             values = @ts(e(1))
         ),
         (

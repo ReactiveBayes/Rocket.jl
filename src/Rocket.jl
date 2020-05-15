@@ -32,7 +32,7 @@ include("subjects/pending.jl")
 
 include("observable/single.jl")
 include("observable/array.jl")
-include("observable/error.jl")
+include("observable/faulted.jl")
 include("observable/never.jl")
 include("observable/completed.jl")
 include("observable/proxy.jl")

@@ -44,7 +44,7 @@ struct AsyncSchedulerInstance{D}
     props   :: AsyncSchedulerInstanceProps
 
     AsyncSchedulerInstance{D}(size::Int = typemax(Int)) where D = begin
-        return new(Channel{AsyncSchedulerMessage{D}}(size), AsyncSchedulerInstanceProps(false, VoidTeardown()))
+        return new(Channel{AsyncSchedulerMessage{D}}(size), AsyncSchedulerInstanceProps(false, voidTeardown))
     end
 end
 

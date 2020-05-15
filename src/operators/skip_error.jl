@@ -16,7 +16,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 ```jldoctest
 using Rocket
 
-source = throwError("error")
+source = faulted("error")
 subscribe!(source |> skip_error(), logger())
 ;
 

@@ -21,7 +21,7 @@ function on_subscribe!(observable::SyncFileObservable, actor)
     end
     complete!(actor)
     close(f)
-    return VoidTeardown()
+    return voidTeardown
 end
 
 """

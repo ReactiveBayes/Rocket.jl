@@ -23,7 +23,7 @@ Stream of type `<: Subscribable{R}`
 ```julia
 using Rocket
 
-source = from([ 0, 0 ]) |> merge_map(Int, d -> from([ 1, 2, 3 ], scheduler = Rocket.AsyncScheduler(0)))
+source = from([ 0, 0 ]) |> merge_map(Int, d -> from([ 1, 2, 3 ], scheduler = AsyncScheduler(0)))
 subscribe!(source, logger())
 ;
 
@@ -67,7 +67,7 @@ mutable struct MergeMapActorProps{L}
     active_listeners :: Vector{Any}
     pending_data     :: Deque{L}
 
-    MergeMapActorProps{L}() where L = new(VoidTeardown(), false, false, Vector{Any}(), Deque{L}())
+    MergeMapActorProps{L}() where L = new(voidTeardown, false, false, Vector{Any}(), Deque{L}())
 end
 
 struct MergeMapActor{L, R, F, A} <: Actor{L}
@@ -115,7 +115,7 @@ end
 mutable struct MergeMapInnerActorProps
     subscription :: Teardown
 
-    MergeMapInnerActorProps() = new(VoidTeardown())
+    MergeMapInnerActorProps() = new(voidTeardown)
 end
 
 struct MergeMapInnerActor{R, M} <: Actor{R}

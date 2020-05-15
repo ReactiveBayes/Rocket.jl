@@ -5,7 +5,7 @@ concat_map_to
 ```
 
 !!! note
-    `concat_map_to` is equivalent to `concat_map` with mappingFn set to `(_) -> map_to_source`.
+    `concat_map_to` is equivalent to `concat_map` with mappingFn set to `(_) -> inner_observable`.
 
 ## See also
 

@@ -28,7 +28,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError(Int, "e") |> map(String, d -> string(d)),
+            source      = faulted(Int, "e") |> map(String, d -> string(d)),
             values      = @ts(e("e")),
             source_type = String
         ),

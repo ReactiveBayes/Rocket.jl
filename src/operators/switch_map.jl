@@ -77,7 +77,7 @@ mutable struct SwitchMapActorProps
     isicompleted  :: Bool
     isdisposed    :: Bool
 
-    SwitchMapActorProps() = new(VoidTeardown(), VoidTeardown(), false, true, false)
+    SwitchMapActorProps() = new(voidTeardown, voidTeardown, false, true, false)
 end
 
 struct SwitchMapActor{L, R, F, A} <: Actor{L}

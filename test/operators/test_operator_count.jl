@@ -29,7 +29,7 @@ include("../test_helpers.jl")
             values = @ts()
         ),
         (
-            source = throwError("e") |> count(),
+            source = faulted("e") |> count(),
             values = @ts(e("e"))
         )
     ])

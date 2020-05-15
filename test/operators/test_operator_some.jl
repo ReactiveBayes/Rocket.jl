@@ -32,7 +32,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source = throwError(1) |> skip_next(),
+            source = faulted(1) |> skip_next(),
             values = @ts(e(1))
         ),
         (

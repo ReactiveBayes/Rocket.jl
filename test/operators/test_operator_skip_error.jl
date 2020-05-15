@@ -21,7 +21,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = throwError(1) |> skip_error(),
+            source = faulted(1) |> skip_error(),
             values = @ts()
         ),
         (

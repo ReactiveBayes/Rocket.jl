@@ -16,7 +16,7 @@ Note that using the [`share`](@ref) operator is exactly the same as using the [`
 ```jldoctest
 using Rocket
 
-subject = Subject(Int, scheduler = Rocket.AsapScheduler())
+subject = Subject(Int, scheduler = AsapScheduler())
 source  = from(1:5) |> multicast(subject) |> ref_count()
 
 actor1 = logger("1")
@@ -59,7 +59,7 @@ mutable struct RefCountSourceProps
     refcount      :: Int
     сsubscription :: Teardown
 
-    RefCountSourceProps() = new(0, VoidTeardown())
+    RefCountSourceProps() = new(0, voidTeardown)
 end
 
 struct RefCountSource{L, S} <: Subscribable{L}

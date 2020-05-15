@@ -23,7 +23,7 @@ Stream of type `<: Subscribable{R}`
 ```julia
 using Rocket
 
-source = from([ 0, 0 ]) |> concat_map(Int, d -> from([ 1, 2, 3 ], scheduler = Rocket.AsyncScheduler(0)))
+source = from([ 0, 0 ]) |> concat_map(Int, d -> from([ 1, 2, 3 ], scheduler = AsyncScheduler(0)))
 subscribe!(source, logger())
 ;
 
@@ -65,7 +65,7 @@ mutable struct ConcatMapActorProps{L}
     active_listener :: Union{Nothing, Any}
     pending_data    :: Deque{L}
 
-    ConcatMapActorProps{L}() where L = new(VoidTeardown(), false, false, nothing, Deque{L}())
+    ConcatMapActorProps{L}() where L = new(voidTeardown, false, false, nothing, Deque{L}())
 end
 
 struct ConcatMapActor{L, R, F, A} <: Actor{L}
@@ -112,7 +112,7 @@ end
 mutable struct ConcatMapInnerActorProps
     subscription :: Teardown
 
-    ConcatMapInnerActorProps() = new(VoidTeardown())
+    ConcatMapInnerActorProps() = new(voidTeardown)
 end
 
 struct ConcatMapInnerActor{R, M} <: Actor{R}

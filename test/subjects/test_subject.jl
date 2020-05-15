@@ -94,7 +94,7 @@ using Rocket
     end
 
     @testset begin
-        subject_factory = SubjectFactory(Rocket.AsapScheduler())
+        subject_factory = SubjectFactory(AsapScheduler())
         subject = create_subject(Int, subject_factory)
 
         actor1 = keep(Int)

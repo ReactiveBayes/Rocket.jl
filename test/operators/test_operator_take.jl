@@ -33,7 +33,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = throwError("e") |> take(10),
+            source = faulted("e") |> take(10),
             values = @ts(e("e"))
         ),
         (

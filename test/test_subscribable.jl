@@ -9,28 +9,28 @@ using Rocket
 
     struct NotImplementedSubscribable <: Subscribable{Int} end
     struct NotImplementedScheduledSubscribable <: ScheduledSubscribable{Int} end
-    Rocket.getscheduler(::NotImplementedScheduledSubscribable) = Rocket.AsapScheduler()
+    Rocket.getscheduler(::NotImplementedScheduledSubscribable) = AsapScheduler()
 
     struct ExplicitlyDefinedSimpleSubscribable end
     Rocket.as_subscribable(::Type{<:ExplicitlyDefinedSimpleSubscribable}) = SimpleSubscribableTrait{String}()
 
     struct ExplicitlyDefinedScheduledSubscribable end
     Rocket.as_subscribable(::Type{<:ExplicitlyDefinedScheduledSubscribable}) = ScheduledSubscribableTrait{String}()
-    Rocket.getscheduler(::ExplicitlyDefinedScheduledSubscribable) = Rocket.AsapScheduler()
+    Rocket.getscheduler(::ExplicitlyDefinedScheduledSubscribable) = AsapScheduler()
 
     struct ImplementedSimpleSubscribable <: Subscribable{Int} end
 
     function Rocket.on_subscribe!(::ImplementedSimpleSubscribable, actor)
         next!(actor, 1)
-        return Rocket.VoidTeardown()
+        return voidTeardown
     end
 
     struct ImplementedScheduledSubscribable <: ScheduledSubscribable{Int} end
-    Rocket.getscheduler(::ImplementedScheduledSubscribable) = Rocket.AsapScheduler()
+    Rocket.getscheduler(::ImplementedScheduledSubscribable) = AsapScheduler()
 
     function Rocket.on_subscribe!(::ImplementedScheduledSubscribable, actor, scheduler)
         next!(actor, 1, scheduler)
-        return Rocket.VoidTeardown()
+        return voidTeardown
     end
 
     @testset "as_subscribable" begin
@@ -67,11 +67,11 @@ using Rocket
 
         # Check if subscribe! subscribes to a valid subscribable
         actor = SimpleActor{Int}()
-        @test subscribe!(ImplementedSimpleSubscribable(), actor) === Rocket.VoidTeardown()
+        @test subscribe!(ImplementedSimpleSubscribable(), actor) === voidTeardown
         @test actor.events == [ 1 ]
 
         actor = SimpleActor{Int}()
-        @test subscribe!(ImplementedScheduledSubscribable(), actor) === Rocket.VoidTeardown()
+        @test subscribe!(ImplementedScheduledSubscribable(), actor) === voidTeardown
         @test actor.events == [ 1 ]
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match
@@ -96,10 +96,10 @@ using Rocket
         @test_throws MissingCreateActorFactoryImplementationError subscribe!(ImplementedSimpleSubscribable(), NotImplementedFactory())
         @test_throws MissingCreateActorFactoryImplementationError subscribe!(ImplementedScheduledSubscribable(), NotImplementedFactory())
 
-        @test subscribe!(ImplementedSimpleSubscribable(), ImplementedFactory()) === Rocket.VoidTeardown()
+        @test subscribe!(ImplementedSimpleSubscribable(), ImplementedFactory()) === voidTeardown
         @test actor.events == [ 1 ]
 
-        @test subscribe!(ImplementedScheduledSubscribable(), ImplementedFactory()) === Rocket.VoidTeardown()
+        @test subscribe!(ImplementedScheduledSubscribable(), ImplementedFactory()) === voidTeardown
         @test actor.events == [ 1, 1 ]
     end
 
