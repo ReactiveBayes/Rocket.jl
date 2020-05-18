@@ -131,10 +131,10 @@ end
 function on_subscribe!(subject::Subject{D, H, I}, actor) where { D, H, I }
     if isfailed(subject)
         error!(actor, lasterror(subject))
-        return VoidTeardown()
+        return voidTeardown
     elseif iscompleted(subject)
         complete!(actor)
-        return VoidTeardown()
+        return voidTeardown
     else
         instance = makeinstance(D, subject.scheduler)
         return scheduled_subscription!(subject, actor, instance)

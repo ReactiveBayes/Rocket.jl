@@ -38,7 +38,7 @@ struct DefaultIfEmptyProxy{L} <: ActorProxy
     default :: L
 end
 
-actor_proxy!(proxy::DefaultIfEmptyProxy{L}, actor::A) where { L, A } = DefaultIfEmptyActor{L, A}(actor, false, proxy.default)
+actor_proxy!(::Type, proxy::DefaultIfEmptyProxy{L}, actor::A) where { L, A } = DefaultIfEmptyActor{L, A}(actor, false, proxy.default)
 
 mutable struct DefaultIfEmptyActor{L, A} <: Actor{L}
     actor      :: A

@@ -75,17 +75,25 @@ struct ScanProxy{L, R, F} <: ActorProxy
     seed    :: R
 end
 
-actor_proxy!(proxy::ScanProxy{L, R, F}, actor::A) where { L, R, A, F } = ScanActor{L, R, A, F}(proxy.scanFn, proxy.seed, actor)
+actor_proxy!(::Type{R}, proxy::ScanProxy{L, R, F}, actor::A) where { L, R, A, F } = ScanActor{L, R, A, F}(proxy.scanFn, actor, ScanActorProps{R}(proxy.seed))
 
-mutable struct ScanActor{L, R, A, F} <: Actor{L}
-    scanFn  :: F
+mutable struct ScanActorProps{R}
     current :: R
-    actor   :: A
 end
 
+struct ScanActor{L, R, A, F} <: Actor{L}
+    scanFn  :: F
+    actor   :: A
+    props   :: ScanActorProps{R}
+end
+
+getcurrent(actor::ScanActor)         = actor.props.current
+setcurrent!(actor::ScanActor, value) = actor.props.current = value
+
 function on_next!(actor::ScanActor{L, R}, data::L) where { L, R }
-    actor.current = actor.scanFn(data, actor.current)
-    next!(actor.actor, actor.current)
+    update = actor.scanFn(data, getcurrent(actor))
+    setcurrent!(actor, update)
+    next!(actor.actor, update)
 end
 
 on_error!(actor::ScanActor, err) = error!(actor.actor, err)
@@ -108,33 +116,41 @@ end
 operator_right(operator::ScanNoSeedOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::ScanNoSeedOperator{F}, source) where { L, F }
-    return proxy(L, source, ScanNoSeedProxy{L, F}(operator.scanFn))
+    return proxy(L, source, ScanNoSeedProxy{F}(operator.scanFn))
 end
 
-struct ScanNoSeedProxy{L, F} <: ActorProxy
-    scanFn  :: F
+struct ScanNoSeedProxy{F} <: ActorProxy
+    scanFn :: F
 end
 
-actor_proxy!(proxy::ScanNoSeedProxy{L, F}, actor::A) where { L, A, F } = ScanNoSeedActor{L, A, F}(proxy.scanFn, nothing, actor)
+actor_proxy!(::Type{L}, proxy::ScanNoSeedProxy{F}, actor::A) where { L, A, F } = ScanNoSeedActor{L, A, F}(proxy.scanFn, actor, ScanNoSeedActorProps{L}(nothing))
 
-mutable struct ScanNoSeedActor{L, A, F} <: Actor{L}
-    scanFn  :: F
+mutable struct ScanNoSeedActorProps{L}
     current :: Union{L, Nothing}
-    actor   :: A
 end
 
-function on_next!(actor::ScanNoSeedActor{L}, data::L) where { L }
-    if actor.current === nothing
-        actor.current = data
+struct ScanNoSeedActor{L, A, F} <: Actor{L}
+    scanFn :: F
+    actor  :: A
+    props  :: ScanNoSeedActorProps{L}
+end
+
+getcurrent(actor::ScanNoSeedActor)         = actor.props.current
+setcurrent!(actor::ScanNoSeedActor, value) = actor.props.current = value
+
+function on_next!(actor::ScanNoSeedActor{L}, data::L) where L
+    current = getcurrent(actor)
+    if current === nothing
+        setcurrent!(actor, data)
     else
-        actor.current = actor.scanFn(data, actor.current)
+        setcurrent!(actor, actor.scanFn(data, current))
     end
-    next!(actor.actor, actor.current)
+    next!(actor.actor, getcurrent(actor))
 end
 
 on_error!(actor::ScanNoSeedActor, err) = error!(actor.actor, err)
 on_complete!(actor::ScanNoSeedActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::ScanNoSeedOperator)         = print(io, "ScanNoSeedOperator(L -> L)")
-Base.show(io::IO, ::ScanNoSeedProxy{L}) where L = print(io, "ScanNoSeedProxy($L)")
+Base.show(io::IO, ::ScanNoSeedProxy)            = print(io, "ScanNoSeedProxy()")
 Base.show(io::IO, ::ScanNoSeedActor{L}) where L = print(io, "ScanNoSeedActor($L)")

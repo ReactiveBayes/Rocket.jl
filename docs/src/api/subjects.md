@@ -7,6 +7,7 @@ SubjectTrait
 as_subject  
 ValidSubject
 InvalidSubject
+AbstractSubject
 ```
 
 ## Factory

@@ -77,13 +77,13 @@ One of the variants of schedulers is the `AsapScheduler`, which delivers every m
 `AsapScheduler` is a default scheduler for all `Subject` objects.
 
 ```@docs
-Rocket.AsapScheduler
+AsapScheduler
 ```
 
 ```julia
 using Rocket
 
-subject = Subject(Int, scheduler = Rocket.AsapScheduler())
+subject = Subject(Int, scheduler = AsapScheduler())
 
 subscription1 = subscribe!(subject, logger("Actor 1"))
 
@@ -107,17 +107,17 @@ next!(subject, 3)
 
 ## Asynchronous Scheduler
 
-An `AsyncScheduler` is similar to a [`Rocket.AsapScheduler`](@ref). Both allows for Subject to scheduler their messages for multiple listeners,
+An `AsyncScheduler` is similar to a [`AsapScheduler`](@ref). Both allows for Subject to scheduler their messages for multiple listeners,
 but a `AsyncScheduler` delivers all messages asynchronously (but still ordered) using a Julia's built-in `Task` object.
 
 ```@docs
-Rocket.AsyncScheduler
+AsyncScheduler
 ```
 
 ```julia
 using Rocket
 
-subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
+subject = Subject(Int, scheduler = AsyncScheduler())
 
 subscription1 = subscribe!(subject, logger("Actor 1"))
 

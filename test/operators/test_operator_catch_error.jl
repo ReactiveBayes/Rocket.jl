@@ -21,7 +21,7 @@ include("../test_helpers.jl")
             values = @ts([ 1 ] ~ [ 2 ] ~ [ 3 ] ~ [ 1 ] ~ [ 2 ] ~ [ 3 ] ~ [ 1 ] ~ [ 2 ] ~ [ 3 ] ~ [ 1, c ])
         ),
         (
-            source = from(1:5) |> switch_map(Int, (d) -> d == 4 ? throwError(Int, 4) : of(d)) |> catch_error((err, obs) -> of(5)),
+            source = from(1:5) |> switch_map(Int, (d) -> d == 4 ? faulted(Int, 4) : of(d)) |> catch_error((err, obs) -> of(5)),
             values = @ts([ 1, 2, 3, 5, c ])
         ),
         (

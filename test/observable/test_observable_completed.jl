@@ -9,11 +9,15 @@ include("../test_helpers.jl")
 
     println("Testing: completed")
 
+    struct DummyScheduler <: Rocket.AbstractScheduler end
+
     @testset begin
-        @test completed()    == CompletedObservable{Any}()
-        @test completed(Int) == CompletedObservable{Int}()
+        @test completed()    == CompletedObservable{Any, AsapScheduler}(AsapScheduler())
+        @test completed(Int) == CompletedObservable{Int, AsapScheduler}(AsapScheduler())
         @test completed(Int) == completed(Int)
         @test completed(Int) != completed(Float64)
+
+        @test completed(Int; scheduler = DummyScheduler()) == CompletedObservable{Int, DummyScheduler}(DummyScheduler())
     end
 
     @testset begin

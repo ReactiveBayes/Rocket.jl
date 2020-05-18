@@ -41,16 +41,16 @@ struct FilterOperator{F} <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator{F}, source) where { L, F }
-    return proxy(L, source, FilterProxy{L, F}(operator.filterFn))
+    return proxy(L, source, FilterProxy{F}(operator.filterFn))
 end
 
 operator_right(operator::FilterOperator, ::Type{L}) where L = L
 
-struct FilterProxy{L, F} <: ActorProxy
+struct FilterProxy{F} <: ActorProxy
     filterFn::F
 end
 
-actor_proxy!(proxy::FilterProxy{L, F}, actor::A) where { L, A, F } = FilterActor{L, A, F}(proxy.filterFn, actor)
+actor_proxy!(::Type{L}, proxy::FilterProxy{F}, actor::A) where { L, A, F } = FilterActor{L, A, F}(proxy.filterFn, actor)
 
 struct FilterActor{L, A, F} <: Actor{L}
     filterFn :: F
@@ -67,5 +67,5 @@ on_error!(actor::FilterActor, err) = error!(actor.actor, err)
 on_complete!(actor::FilterActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::FilterOperator)         = print(io, "FilterOperator()")
-Base.show(io::IO, ::FilterProxy{L}) where L = print(io, "FilterProxy($L)")
+Base.show(io::IO, ::FilterProxy)            = print(io, "FilterProxy()")
 Base.show(io::IO, ::FilterActor{L}) where L = print(io, "FilterActor($L)")

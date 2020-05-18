@@ -5,9 +5,9 @@ using Rocket
 
 @testset "VoidTeardown" begin
 
-    @test VoidTeardown() isa Teardown
+    @test voidTeardown isa Teardown
     @test Rocket.as_teardown(VoidTeardown) === Rocket.VoidTeardownLogic()
-    @test Rocket.unsubscribe!(VoidTeardown()) === nothing
+    @test Rocket.unsubscribe!(voidTeardown) === nothing
 
 end
 

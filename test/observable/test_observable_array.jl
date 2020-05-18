@@ -11,19 +11,23 @@ include("../test_helpers.jl")
 
     struct DummyObject end
 
+    struct DummyScheduler <: Rocket.AbstractScheduler end
+
     @testset begin
-        @test from([ 1, 2, 3 ]) == ArrayObservable{Int, Rocket.AsapScheduler}([ 1, 2, 3 ], Rocket.AsapScheduler())
-        @test from(( 1, 2, 3 )) == ArrayObservable{Int, Rocket.AsapScheduler}([ 1, 2, 3 ], Rocket.AsapScheduler())
-        @test from(0)           == ArrayObservable{Int, Rocket.AsapScheduler}([ 0 ], Rocket.AsapScheduler())
+        @test from([ 1, 2, 3 ]) == ArrayObservable{Int, AsapScheduler}([ 1, 2, 3 ], AsapScheduler())
+        @test from(( 1, 2, 3 )) == ArrayObservable{Int, AsapScheduler}([ 1, 2, 3 ], AsapScheduler())
+        @test from(0)           == ArrayObservable{Int, AsapScheduler}([ 0 ], AsapScheduler())
 
-        @test from([ 1.0, 2.0, 3.0 ]) == ArrayObservable{Float64, Rocket.AsapScheduler}([ 1.0, 2.0, 3.0 ], Rocket.AsapScheduler())
-        @test from(( 1.0, 2.0, 3.0 )) == ArrayObservable{Float64, Rocket.AsapScheduler}([ 1.0, 2.0, 3.0 ], Rocket.AsapScheduler())
-        @test from(0.0)               == ArrayObservable{Float64, Rocket.AsapScheduler}([ 0.0 ], Rocket.AsapScheduler())
+        @test from([ 1.0, 2.0, 3.0 ]) == ArrayObservable{Float64, AsapScheduler}([ 1.0, 2.0, 3.0 ], AsapScheduler())
+        @test from(( 1.0, 2.0, 3.0 )) == ArrayObservable{Float64, AsapScheduler}([ 1.0, 2.0, 3.0 ], AsapScheduler())
+        @test from(0.0)               == ArrayObservable{Float64, AsapScheduler}([ 0.0 ], AsapScheduler())
 
-        @test from("Hello!") == ArrayObservable{Char, Rocket.AsapScheduler}([ 'H', 'e', 'l', 'l', 'o', '!' ], Rocket.AsapScheduler())
-        @test from('H')      == ArrayObservable{Char, Rocket.AsapScheduler}([ 'H' ], Rocket.AsapScheduler())
+        @test from("Hello!") == ArrayObservable{Char, AsapScheduler}([ 'H', 'e', 'l', 'l', 'o', '!' ], AsapScheduler())
+        @test from('H')      == ArrayObservable{Char, AsapScheduler}([ 'H' ], AsapScheduler())
 
         @test from(0) != from(0.0)
+
+        @test from(0, scheduler = DummyScheduler()) == ArrayObservable{Int, DummyScheduler}([ 0 ], DummyScheduler())
 
         @test_throws Exception from()
         @test_throws Exception from(DummyObject())

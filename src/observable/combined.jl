@@ -73,9 +73,11 @@ struct CombineLatestInnerActor{L, W, I} <: Actor{L}
     wrapper :: W
 end
 
-on_next!(actor::CombineLatestInnerActor{L, W, I}, data::L) where { L, W, I } = __next_received!(actor.wrapper, data, Val{I}())
-on_error!(actor::CombineLatestInnerActor, err)                               = __error_received!(actor.wrapper, err)
-on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = __complete_received!(actor.wrapper, Val{I}())
+Base.show(io::IO, inner::CombineLatestInnerActor{L, W, I}) where { L, W, I } = print(io, "CombineLatestInnerActor($L, $I)")
+
+on_next!(actor::CombineLatestInnerActor{L, W, I}, data::L) where { L, W, I } = next_received!(actor.wrapper, data, Val{I}())
+on_error!(actor::CombineLatestInnerActor, err)                               = error_received!(actor.wrapper, err)
+on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = complete_received!(actor.wrapper, Val{I}())
 
 struct CombineLatestActorWrapper{S, A, F, B}
     storage     :: S
@@ -90,39 +92,39 @@ struct CombineLatestActorWrapper{S, A, F, B}
     CombineLatestActorWrapper{S, A, F, B}(storage::S, actor::A, transformFn::F) where { S, A, F, B } = begin
         cstatus = falses(length(storage))
         vstatus = falses(length(storage))
-        subscriptions = fill!(Vector{Teardown}(undef, length(storage)), VoidTeardown())
+        subscriptions = fill!(Vector{Teardown}(undef, length(storage)), voidTeardown)
         return new(storage, actor, transformFn, cstatus, vstatus, subscriptions)
     end
 end
 
-__isbatch(::CombineLatestActorWrapper{S, A, F, B}) where { S, A, F, B } = B
+isbatch(::CombineLatestActorWrapper{S, A, F, B}) where { S, A, F, B } = B
 
-__cstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.cstatus[index]
-__vstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.vstatus[index]
+cstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.cstatus[index]
+vstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.vstatus[index]
 
-__dispose(wrapper::CombineLatestActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
+dispose(wrapper::CombineLatestActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
-function __next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
+function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
     setstorage!(wrapper.storage, data, index)
     wrapper.vstatus[I] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
         next!(wrapper.actor, wrapper.transformFn(snapshot(wrapper.storage)))
-        if __isbatch(wrapper)
+        if isbatch(wrapper)
             copy!(wrapper.vstatus, wrapper.cstatus)
         end
     end
 end
 
-function __error_received!(wrapper::CombineLatestActorWrapper, err)
-    __dispose(wrapper)
+function error_received!(wrapper::CombineLatestActorWrapper, err)
+    dispose(wrapper)
     error!(wrapper.actor, err)
 end
 
-function __complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
+function complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
     if !all(wrapper.cstatus)
         wrapper.cstatus[I] = true
         if all(wrapper.cstatus) || wrapper.vstatus[I] === false
-            __dispose(wrapper)
+            dispose(wrapper)
             complete!(wrapper.actor)
         end
     end
@@ -140,17 +142,17 @@ function on_subscribe!(observable::CombineLatestObservable{T, S, F, B, ST}, acto
     try
         for (index, source) in enumerate(observable.sources)
             wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
-            if __cstatus(wrapper, index) === true && __vstatus(wrapper, index) === false
-                __dispose(wrapper)
+            if cstatus(wrapper, index) === true && vstatus(wrapper, index) === false
+                dispose(wrapper)
                 break
             end
         end
     catch err
-        __error_received!(wrapper, err)
+        error_received!(wrapper, err)
     end
 
     if all(wrapper.cstatus)
-        __dispose(wrapper)
+        dispose(wrapper)
     end
 
     return CombineLatestSubscription(wrapper)
@@ -163,7 +165,7 @@ end
 as_teardown(::Type{ <: CombineLatestSubscription }) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::CombineLatestSubscription)
-    __dispose(subscription.wrapper)
+    dispose(subscription.wrapper)
     return nothing
 end
 

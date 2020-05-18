@@ -41,19 +41,19 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = throwError(1) |> take_until(of(1)),
+            source = faulted(1) |> take_until(of(1)),
             values = @ts(e(1))
         ),
         (
-            source = throwError(1) |> async(0) |> take_until(of(1)),
+            source = faulted(1) |> async(0) |> take_until(of(1)),
             values = @ts(c)
         ),
         (
-            source = throwError(1) |> take_until(timer(100)),
+            source = faulted(1) |> take_until(timer(100)),
             values = @ts(e(1))
         ),
         (
-            source = throwError(1) |> async(0) |> take_until(timer(100)),
+            source = faulted(1) |> async(0) |> take_until(timer(100)),
             values = @ts(e(1))
         ),
         (

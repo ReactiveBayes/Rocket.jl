@@ -60,7 +60,7 @@ using Rocket
         @test occursin("Data", output)
         @test occursin("42", output)
 
-        subscribe!(throwError("error"), actor)
+        subscribe!(faulted("error"), actor)
         output = String(take!(buffer))
         @test occursin("CustomName", output)
         @test occursin("Error", output)

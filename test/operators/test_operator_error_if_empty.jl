@@ -23,7 +23,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError(Int, "e") |> error_if_empty("Empty"),
+            source      = faulted(Int, "e") |> error_if_empty("Empty"),
             values      = @ts(e("e")),
             source_type = Int
         ),

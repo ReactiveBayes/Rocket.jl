@@ -25,17 +25,17 @@ struct DelayOperator <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::DelayOperator, source) where L
-    return proxy(L, source, DelayProxy{L}(operator.delay))
+    return proxy(L, source, DelayProxy(operator.delay))
 end
 
 operator_right(operator::DelayOperator, ::Type{L}) where L = L
 
-struct DelayProxy{L} <: ActorSourceProxy
+struct DelayProxy <: ActorSourceProxy
     delay :: Int
 end
 
-actor_proxy!(proxy::DelayProxy{L}, actor::A)   where { L, A } = DelayActor{L, A}(proxy.delay, actor)
-source_proxy!(proxy::DelayProxy{L}, source::S) where { L, S } = DelayObservable{L, S}(source)
+actor_proxy!(::Type{L}, proxy::DelayProxy, actor::A)   where { L, A } = DelayActor{L, A}(proxy.delay, actor)
+source_proxy!(::Type{L}, proxy::DelayProxy, source::S) where { L, S } = DelayObservable{L, S}(source)
 
 struct DelayDataMessage{L}
     data :: L
@@ -128,7 +128,7 @@ function on_unsubscribe!(subscription::DelaySubscription)
 end
 
 Base.show(io::IO, ::DelayOperator)              = print(io, "DelayOperator()")
-Base.show(io::IO, ::DelayProxy{L})      where L = print(io, "DelayProxy($L)")
+Base.show(io::IO, ::DelayProxy)                 = print(io, "DelayProxy()")
 Base.show(io::IO, ::DelayActor{L})      where L = print(io, "DelayActor($L)")
 Base.show(io::IO, ::DelayObservable{L}) where L = print(io, "DelayObservable($L)")
 Base.show(io::IO, ::DelaySubscription)          = print(io, "DelaySubscription()")

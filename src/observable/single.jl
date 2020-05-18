@@ -4,24 +4,31 @@ import Base: ==
 import Base: show
 
 """
-    SingleObservable{D}(value::D)
+    SingleObservable{D, H}(value::D, scheduler::H)
 
-SingleObservable wraps single value of type `D` into a synchronous observable
+SingleObservable wraps single value of type `D` into a observable.
+
+# Constructor arguments
+- `value`: a single value to emit
+- `scheduler`: scheduler-like object
 
 # See also: [`of`](@ref), [`Subscribable`](@ref)
 """
-struct SingleObservable{D} <: Subscribable{D}
-    value :: D
+struct SingleObservable{D, H} <: ScheduledSubscribable{D}
+    value     :: D
+    scheduler :: H
 end
 
-function on_subscribe!(observable::SingleObservable, actor)
-    next!(actor, observable.value)
-    complete!(actor)
-    return VoidTeardown()
+getscheduler(observable::SingleObservable) = observable.scheduler
+
+function on_subscribe!(observable::SingleObservable, actor, scheduler)
+    next!(actor, observable.value, scheduler)
+    complete!(actor, scheduler)
+    return voidTeardown
 end
 
 """
-    of(x)
+    of(x; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
 
 Creation operator for the `SingleObservable` that emits a single value x and then completes.
 
@@ -46,9 +53,9 @@ subscribe!(source, logger())
 
 See also: [`SingleObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-of(x::T) where T = SingleObservable{T}(x)
+of(x::T; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = SingleObservable{T, H}(x, scheduler)
 
-Base.:(==)(left::SingleObservable{D},  right::SingleObservable{D})  where D           = left.value == right.value
-Base.:(==)(left::SingleObservable{D1}, right::SingleObservable{D2}) where D1 where D2 = false
+Base.:(==)(left::SingleObservable{D, H},  right::SingleObservable{D, H}) where { D, H } = left.value == right.value
+Base.:(==)(left::SingleObservable,        right::SingleObservable)                      = false
 
-Base.show(io::IO, ::SingleObservable{D}) where D = print(io, "SingleObservable($D)")
+Base.show(io::IO, ::SingleObservable{D, H}) where { D, H } = print(io, "SingleObservable($D, $H)")

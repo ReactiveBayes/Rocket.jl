@@ -48,23 +48,23 @@ struct TakeUntilOperator{N} <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::TakeUntilOperator{N}, source) where { L, N }
-    return proxy(L, source, TakeUntilProxy{L, N}(operator.notifier))
+    return proxy(L, source, TakeUntilProxy{N}(operator.notifier))
 end
 
 operator_right(operator::TakeUntilOperator, ::Type{L}) where L = L
 
-struct TakeUntilProxy{L, N} <: SourceProxy
+struct TakeUntilProxy{N} <: SourceProxy
     notifier :: N
 end
 
-source_proxy!(proxy::TakeUntilProxy{L, N}, source::S) where { L, N, S } = TakeUntilSource{L, N, S}(proxy.notifier, source)
+source_proxy!(::Type{L}, proxy::TakeUntilProxy{N}, source::S) where { L, N, S } = TakeUntilSource{L, N, S}(proxy.notifier, source)
 
 mutable struct TakeUntilInnerActorProps
     isdisposed    :: Bool
     ssubscription :: Teardown
     nsubscription :: Teardown
 
-    TakeUntilInnerActorProps() = new(false, VoidTeardown(), VoidTeardown())
+    TakeUntilInnerActorProps() = new(false, voidTeardown, voidTeardown)
 end
 
 struct TakeUntilInnerActor{L, A} <: Actor{L}
@@ -129,7 +129,7 @@ end
 
 
 Base.show(io::IO, ::TakeUntilOperator)              = print(io, "TakeUntilOperator()")
-Base.show(io::IO, ::TakeUntilProxy{L})      where L = print(io, "TakeUntilProxy($L)")
+Base.show(io::IO, ::TakeUntilProxy)                 = print(io, "TakeUntilProxy()")
 Base.show(io::IO, ::TakeUntilInnerActor{L}) where L = print(io, "TakeUntilInnerActor($L)")
 Base.show(io::IO, ::TakeUntilSource{L})     where L = print(io, "TakeUntilSource($L)")
 Base.show(io::IO, ::TakeUntilSubscription)          = print(io, "TakeUntilSubscription()")

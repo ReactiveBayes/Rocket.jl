@@ -30,7 +30,7 @@ Creates a `ConnectableObservable` with a given subject object and a source obser
 ```jldoctest
 using Rocket
 
-c = connectable(Subject(Int; scheduler = Rocket.AsapScheduler()), from(1:3))
+c = connectable(Subject(Int; scheduler = AsapScheduler()), from(1:3))
 
 subscribe!(c, logger());
 

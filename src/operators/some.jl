@@ -34,16 +34,16 @@ some() = SomeOperator()
 
 struct SomeOperator <: InferableOperator end
 
-function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, operator::SomeOperator, source) where L
-    return proxy(L, source, SomeProxy{L}())
+function on_call!(::Type{Union{L, Nothing}}, ::Type{L}, ::SomeOperator, source) where L
+    return proxy(L, source, SomeProxy())
 end
 
-operator_right(operator::SomeOperator, ::Type{L})                 where L = error("some() operator can operate on streams with data type '<: Union{Nothing, L}', but '<: L' was found.")
-operator_right(operator::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
+operator_right(::SomeOperator, ::Type{Union{L, Nothing}}) where L = L
+operator_right(::SomeOperator, ::Type{L})                 where L = error("some() operator can operate on streams with data type '<: Union{Nothing, $L}', but '<: $L' was found.")
 
-struct SomeProxy{L} <: ActorProxy end
+struct SomeProxy <: ActorProxy end
 
-actor_proxy!(proxy::SomeProxy{L}, actor::A) where { L, A } = SomeActor{L, A}(actor)
+actor_proxy!(::Type{L}, proxy::SomeProxy, actor::A) where { L, A } = SomeActor{L, A}(actor)
 
 struct SomeActor{L, A} <: Actor{Union{L, Nothing}}
     actor :: A
@@ -59,5 +59,5 @@ on_error!(actor::SomeActor, err) = error!(actor.actor, err)
 on_complete!(actor::SomeActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::SomeOperator)         = print(io, "SomeOperator()")
-Base.show(io::IO, ::SomeProxy{L}) where L = print(io, "SomeProxy($L)")
+Base.show(io::IO, ::SomeProxy)            = print(io, "SomeProxy()")
 Base.show(io::IO, ::SomeActor{L}) where L = print(io, "SomeActor($L)")

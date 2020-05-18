@@ -22,7 +22,7 @@ end
 
 similar(::ThreadsScheduler) = ThreadsScheduler()
 
-makeinstance(::Type, ::ThreadsScheduler) = ThreadsSchedulerInstance(false, VoidTeardown())
+makeinstance(::Type, ::ThreadsScheduler) = ThreadsSchedulerInstance(false, voidTeardown)
 
 instancetype(::Type, ::Type{<:ThreadsScheduler}) = ThreadsSchedulerInstance
 

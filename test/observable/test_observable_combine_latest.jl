@@ -45,17 +45,17 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest(throwError(Float64, "err"), completed(Int)),
+            source = combineLatest(faulted(Float64, "err"), completed(Int)),
             values = @ts(e("err")),
             source_type = Tuple{Float64, Int}
         ),
         (
-            source = combineLatest(completed(Int), throwError(Float64, "err")),
+            source = combineLatest(completed(Int), faulted(Float64, "err")),
             values = @ts(c),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest(throwError(Float64, "err1"), throwError(Float64, "err2")),
+            source = combineLatest(faulted(Float64, "err1"), faulted(Float64, "err2")),
             values = @ts(e("err1")),
             source_type = Tuple{Float64, Float64}
         ),
@@ -95,17 +95,17 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((throwError(Float64, "err"), completed(Int)), true),
+            source = combineLatest((faulted(Float64, "err"), completed(Int)), true),
             values = @ts(e("err")),
             source_type = Tuple{Float64, Int}
         ),
         (
-            source = combineLatest((completed(Int), throwError(Float64, "err")), true),
+            source = combineLatest((completed(Int), faulted(Float64, "err")), true),
             values = @ts(c),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest((throwError(Float64, "err1"), throwError(Float64, "err2")), true),
+            source = combineLatest((faulted(Float64, "err1"), faulted(Float64, "err2")), true),
             values = @ts(e("err1")),
             source_type = Tuple{Float64, Float64}
         ),

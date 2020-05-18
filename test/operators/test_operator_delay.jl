@@ -21,7 +21,7 @@ include("../test_helpers.jl")
             values = @ts(50 ~ c)
         ),
         (
-            source = throwError("e") |> delay(50),
+            source = faulted("e") |> delay(50),
             values = @ts(50 ~ e("e"))
         ),
         (

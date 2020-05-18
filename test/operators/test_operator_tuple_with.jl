@@ -29,7 +29,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Char, Int}
         ),
         (
-            source = throwError("e") |> tuple_with_left('0'),
+            source = faulted("e") |> tuple_with_left('0'),
             values = @ts(e("e"))
         )
     ])
@@ -51,7 +51,7 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Char}
         ),
         (
-            source = throwError("e") |> tuple_with_right('0'),
+            source = faulted("e") |> tuple_with_right('0'),
             values = @ts(e("e"))
         )
     ])

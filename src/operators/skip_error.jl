@@ -16,7 +16,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 ```jldoctest
 using Rocket
 
-source = throwError("error")
+source = faulted("error")
 subscribe!(source |> skip_error(), logger())
 ;
 
@@ -31,14 +31,14 @@ skip_error() = SkipErrorOperator()
 struct SkipErrorOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::SkipErrorOperator, source) where L
-    return proxy(L, source, SkipErrorProxy{L}())
+    return proxy(L, source, SkipErrorProxy())
 end
 
 operator_right(operator::SkipErrorOperator, ::Type{L}) where L = L
 
-struct SkipErrorProxy{L} <: ActorProxy end
+struct SkipErrorProxy <: ActorProxy end
 
-actor_proxy!(proxy::SkipErrorProxy{L}, actor::A) where { L, A } = SkipErrorActor{L, A}(actor)
+actor_proxy!(::Type{L}, proxy::SkipErrorProxy, actor::A) where { L, A } = SkipErrorActor{L, A}(actor)
 
 struct SkipErrorActor{L, A} <: Actor{L}
     actor :: A
@@ -49,5 +49,5 @@ on_error!(actor::SkipErrorActor, err)               = begin end
 on_complete!(actor::SkipErrorActor)                 = complete!(actor.actor)
 
 Base.show(io::IO, ::SkipErrorOperator)         = print(io, "SkipErrorOperator()")
-Base.show(io::IO, ::SkipErrorProxy{L}) where L = print(io, "SkipErrorProxy($L)")
+Base.show(io::IO, ::SkipErrorProxy)            = print(io, "SkipErrorProxy()")
 Base.show(io::IO, ::SkipErrorActor{L}) where L = print(io, "SkipErrorActor($L)")

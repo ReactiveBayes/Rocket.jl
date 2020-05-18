@@ -33,7 +33,7 @@ include("../test_helpers.jl")
             source_type = Union{Int, Nothing}
         ),
         (
-            source      = throwError(String, "e") |> max(),
+            source      = faulted(String, "e") |> max(),
             values      = @ts(e("e")),
             source_type = Union{Nothing, String}
         ),

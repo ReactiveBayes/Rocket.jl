@@ -23,12 +23,27 @@ include("../test_helpers.jl")
             source_type = Float64
         ),
         (
+            source      = from(1:5) |> switch_map(Float64, _ -> faulted(Float64, "err")),
+            values      = @ts(e("err")),
+            source_type = Float64
+        ),
+        (
+            source      = from(1:5) |> switch_map(Float64, _ -> completed(Float64)),
+            values      = @ts(c),
+            source_type = Float64
+        ),
+        (
+            source      = from(1:5) |> switch_map(Float64, _ -> never(Float64)),
+            values      = @ts(),
+            source_type = Float64
+        ),
+        (
             source      = completed() |> switch_map(Int, d -> of(1)),
             values      = @ts(c),
             source_type = Int
         ),
         (
-            source      = throwError(Int, "e") |> switch_map(String, d -> string(d)),
+            source      = faulted(Int, "e") |> switch_map(String, d -> string(d)),
             values      = @ts(e("e")),
             source_type = String
         ),
@@ -64,63 +79,115 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> switch_map(Int),
+            source      = from([ of(1), faulted(Int, "err"), of(2) ]) |> switch_map(Int),
             values      = @ts([ 1, e("err") ]),
             source_type = Int
         ),
         (
-            source      = from([ of(1), throwError(Int, "err"), of(2) ]) |> async(0) |> switch_map(Int),
+            source      = from([ of(1), faulted(Int, "err"), of(2) ]) |> async(0) |> switch_map(Int),
             values      = @ts([ 1 ] ~ e("err")),
+            source_type = Int
+        ),
+        (
+            source      = from([ 0, 0 ]) |> switch_map(Int, d -> from([ 1, 2 ]) |> async(0)),
+            values      = @ts([ 1 ] ~ [ 2 ] ~ c),
             source_type = Int
         )
     ])
 
-    @testset begin
+    customsource1 = make(Int) do actor
         subject1 = Subject(Int)
         subject2 = Subject(Int)
-
-        values = []
-
         ssubject = Subject(Any)
+        source   = ssubject |> switch_map(Int)
 
-        source = ssubject |> switch_map(Int)
+        subscribe!(source, lambda(
+            on_next     = (d) -> next!(actor, d),
+            on_error    = (e) -> error!(actor, e),
+            on_complete = () -> complete!(actor)
+        ))
 
-        subscription = subscribe!(source, (d) -> push!(values, d))
-
-        @test values == []
-
-        next!(ssubject, subject1)
-        next!(subject1, 1)
-        next!(subject2, 2)
-
-        @test values == [ 1 ]
-
-        next!(ssubject, subject2)
-        next!(subject1, 1)
-        next!(subject2, 2)
-
-        @test values == [ 1, 2 ]
-
-        next!(ssubject, subject2)
-        next!(subject1, 1)
-        next!(subject2, 2)
-
-        @test values == [ 1, 2, 2 ]
-
-        unsubscribe!(subscription)
-
-        next!(ssubject, subject1)
-        next!(subject1, 1)
-        next!(subject2, 2)
-
-        @test values == [ 1, 2, 2 ]
-
-        next!(ssubject, subject2)
-        next!(subject1, 1)
-        next!(subject2, 2)
-
-        @test values == [ 1, 2, 2 ]
+        @async begin
+            next!(ssubject, subject1)
+            next!(subject1, 1)
+            next!(subject2, 2)
+            @async begin
+                next!(ssubject, subject2)
+                next!(subject1, 3)
+                next!(subject2, 4)
+                @async begin
+                    next!(ssubject, subject2)
+                    next!(subject1, 5)
+                    next!(subject2, 6)
+                end
+            end
+        end
     end
+
+    run_testset([ ( source = customsource1, values = @ts([ 1 ] ~ [ 4 ] ~ [ 6 ]) ) ])
+
+    customsource2 = make(Int) do actor
+        ssubject = Subject(Any)
+        source   = ssubject |> switch_map(Int)
+
+        subscribe!(source, lambda(
+            on_next     = (d) -> next!(actor, d),
+            on_error    = (e) -> error!(actor, e),
+            on_complete = () -> complete!(actor)
+        ))
+
+        @async begin
+            next!(ssubject, from([ 1, 2, 3 ]))
+            complete!(ssubject)
+            next!(ssubject, from([ 1, 2, 3 ])) # should be skipped
+        end
+    end
+
+    run_testset([ ( source = customsource2, values = @ts([ 1, 2, 3, c ]) ) ])
+
+    customsource3 = make(Int) do actor
+        ssubject = Subject(Any)
+        source   = ssubject |> switch_map(Int)
+
+        subscribe!(source, lambda(
+            on_next     = (d) -> next!(actor, d),
+            on_error    = (e) -> error!(actor, e),
+            on_complete = ()  -> complete!(actor)
+        ))
+
+        @async begin
+            complete!(ssubject)
+            next!(ssubject, from([ 1, 2, 3 ]))
+            next!(ssubject, from([ 1, 2, 3 ])) # should be skipped
+        end
+    end
+
+    run_testset([ ( source = customsource3, values = @ts(c) ) ])
+
+    customsource4 = make(Int) do actor
+        subject1 = Subject(Int)
+        ssubject = Subject(Any)
+        source   = ssubject |> switch_map(Int)
+
+        subscribe!(source, lambda(
+            on_next     = (d) -> next!(actor, d),
+            on_error    = (e) -> error!(actor, e),
+            on_complete = ()  -> complete!(actor)
+        ))
+
+        @async begin
+            next!(ssubject, of(0))
+            next!(ssubject, subject1)
+            complete!(ssubject)
+            @async begin
+                next!(subject1, 1)
+                complete!(subject1)
+                next!(ssubject, from([ 1, 2, 3 ])) # should be skipped
+            end
+        end
+    end
+
+    run_testset([ ( source = customsource4, values = @ts([ 0 ] ~ [ 1, c ]) ) ])
 
 end
 

@@ -56,7 +56,7 @@ using Rocket
         factory  = lambda(on_error = (d) -> push!(errors, d))
         synced   = sync(factory)
 
-        subscribe!(throwError("e"), synced)
+        subscribe!(faulted("e"), synced)
 
         wait(synced)
 

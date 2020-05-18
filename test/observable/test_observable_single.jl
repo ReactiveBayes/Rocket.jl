@@ -9,14 +9,18 @@ include("../test_helpers.jl")
 
     println("Testing: of")
 
+    struct DummyScheduler <: Rocket.AbstractScheduler end
+
     @testset begin
-        @test of(1)               == SingleObservable{Int}(1)
-        @test of([ 1, 2, 3 ])     == SingleObservable{Vector{Int}}([ 1, 2, 3 ])
-        @test of(( 1, 2, 3 ))     == SingleObservable{Tuple{Int, Int, Int}}(( 1, 2, 3 ))
-        @test of("Hello, world!") == SingleObservable{String}("Hello, world!")
-        @test of('H')             == SingleObservable{Char}('H')
+        @test of(1)               == SingleObservable{Int, AsapScheduler}(1, AsapScheduler())
+        @test of([ 1, 2, 3 ])     == SingleObservable{Vector{Int}, AsapScheduler}([ 1, 2, 3 ], AsapScheduler())
+        @test of(( 1, 2, 3 ))     == SingleObservable{Tuple{Int, Int, Int}, AsapScheduler}(( 1, 2, 3 ), AsapScheduler())
+        @test of("Hello, world!") == SingleObservable{String, AsapScheduler}("Hello, world!", AsapScheduler())
+        @test of('H')             == SingleObservable{Char, AsapScheduler}('H', AsapScheduler())
         @test of('H')             == of('H')
         @test of(0)               != of(0.0)
+
+        @test of(1, scheduler = DummyScheduler()) == SingleObservable{Int, DummyScheduler}(1, DummyScheduler())
     end
 
     @testset begin

@@ -41,17 +41,17 @@ struct TapOnCompleteOperator{F} <: InferableOperator
     tapFn :: F
 end
 
-operator_right(operator::TapOnCompleteOperator, ::Type{L}) where L = L
-
 function on_call!(::Type{L}, ::Type{L}, operator::TapOnCompleteOperator{F}, source) where { L, F }
-    return proxy(L, source, TapOnCompleteProxy{L, F}(operator.tapFn))
+    return proxy(L, source, TapOnCompleteProxy{F}(operator.tapFn))
 end
 
-struct TapOnCompleteProxy{L, F} <: ActorProxy
+operator_right(operator::TapOnCompleteOperator, ::Type{L}) where L = L
+
+struct TapOnCompleteProxy{F} <: ActorProxy
     tapFn :: F
 end
 
-actor_proxy!(proxy::TapOnCompleteProxy{L, F}, actor::A) where { L, A, F } = TapOnCompleteActor{L, A, F}(proxy.tapFn, actor)
+actor_proxy!(::Type{L}, proxy::TapOnCompleteProxy{F}, actor::A) where { L, A, F } = TapOnCompleteActor{L, A, F}(proxy.tapFn, actor)
 
 struct TapOnCompleteActor{L, A, F} <: Actor{L}
     tapFn :: F
@@ -63,5 +63,5 @@ on_error!(actor::TapOnCompleteActor, err)               = error!(actor.actor, er
 on_complete!(actor::TapOnCompleteActor)                 = begin complete!(actor.actor); actor.tapFn(); end
 
 Base.show(io::IO, ::TapOnCompleteOperator)         = print(io, "TapOnCompleteOperator()")
-Base.show(io::IO, ::TapOnCompleteProxy{L}) where L = print(io, "TapOnCompleteProxy($L)")
+Base.show(io::IO, ::TapOnCompleteProxy)            = print(io, "TapOnCompleteProxy()")
 Base.show(io::IO, ::TapOnCompleteActor{L}) where L = print(io, "TapOnCompleteActor($L)")

@@ -10,7 +10,11 @@ There are operators for different purposes, and they may be categorized as: crea
 - [lowercase](@ref operator_lowercase)
 - [to_array](@ref operator_to_array)
 - [switch_map](@ref operator_switch_map)
-- [switch_map_to](@ref operator_switch_map_to)
+- [`switch_map_to`](@ref operator_switch_map_to)
+- [merge_map](@ref operator_merge_map)
+- [concat_map](@ref operator_concat_map)
+- [`concat_map_to`](@ref operator_concat_map_to)
+- [exhaust_map](@ref operator_exhaust_map)
 
 # See also
 

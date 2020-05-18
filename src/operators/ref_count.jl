@@ -16,7 +16,7 @@ Note that using the [`share`](@ref) operator is exactly the same as using the [`
 ```jldoctest
 using Rocket
 
-subject = Subject(Int, scheduler = Rocket.AsapScheduler())
+subject = Subject(Int, scheduler = AsapScheduler())
 source  = from(1:5) |> multicast(subject) |> ref_count()
 
 actor1 = logger("1")
@@ -46,20 +46,20 @@ ref_count() = RefCountOperator()
 struct RefCountOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::RefCountOperator, source) where L
-    return proxy(L, source, RefCountProxy{L}())
+    return proxy(L, source, RefCountProxy())
 end
 
 operator_right(operator::RefCountOperator, ::Type{L}) where L = L
 
-struct RefCountProxy{L} <: SourceProxy end
+struct RefCountProxy <: SourceProxy end
 
-source_proxy!(proxy::RefCountProxy{L}, source::S) where { L, S } = RefCountSource{L, S}(source)
+source_proxy!(::Type{L}, proxy::RefCountProxy, source::S) where { L, S } = RefCountSource{L, S}(source)
 
 mutable struct RefCountSourceProps
     refcount      :: Int
     сsubscription :: Teardown
 
-    RefCountSourceProps() = new(0, VoidTeardown())
+    RefCountSourceProps() = new(0, voidTeardown)
 end
 
 struct RefCountSource{L, S} <: Subscribable{L}
@@ -99,6 +99,6 @@ function on_unsubscribe!(subscription::RefCountSourceSubscription)
 end
 
 Base.show(io::IO, ::RefCountOperator)           = print(io, "RefCountOperator()")
-Base.show(io::IO, ::RefCountProxy{L})   where L = print(io, "RefCountProxy($L)")
+Base.show(io::IO, ::RefCountProxy)              = print(io, "RefCountProxy()")
 Base.show(io::IO, ::RefCountSource{L})  where L = print(io, "RefCountSource($L)")
 Base.show(io::IO, ::RefCountSourceSubscription) = print(io, "RefCountSubscription()")

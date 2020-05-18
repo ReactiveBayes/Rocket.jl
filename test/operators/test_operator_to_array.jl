@@ -32,7 +32,7 @@ include("../test_helpers.jl")
             values = @ts([ [], c ])
         ),
         (
-            source = throwError(1) |> to_array(),
+            source = faulted(1) |> to_array(),
             values = @ts(e(1))
         ),
         (

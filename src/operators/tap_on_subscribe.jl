@@ -43,14 +43,14 @@ end
 operator_right(operator::TapOnSubscribeOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::TapOnSubscribeOperator{F}, source) where { L, F }
-    return proxy(L, source, TapOnSubscribeProxy{L, F}(operator.tapFn))
+    return proxy(L, source, TapOnSubscribeProxy{F}(operator.tapFn))
 end
 
-struct TapOnSubscribeProxy{L, F} <: SourceProxy
+struct TapOnSubscribeProxy{F} <: SourceProxy
     tapFn :: F
 end
 
-source_proxy!(proxy::TapOnSubscribeProxy{L, F}, source::S) where { L, S, F } = TapOnSubscribeSource{L, S, F}(proxy.tapFn, source)
+source_proxy!(::Type{L}, proxy::TapOnSubscribeProxy{F}, source::S) where { L, S, F } = TapOnSubscribeSource{L, S, F}(proxy.tapFn, source)
 
 struct TapOnSubscribeSource{L, S, F} <: Subscribable{L}
     tapFn  :: F
@@ -63,5 +63,5 @@ function on_subscribe!(source::TapOnSubscribeSource, actor)
 end
 
 Base.show(io::IO, ::TapOnSubscribeOperator)          = print(io, "TapOnSubscribeOperator()")
-Base.show(io::IO, ::TapOnSubscribeProxy{L})  where L = print(io, "TapOnSubscribeProxy($L)")
+Base.show(io::IO, ::TapOnSubscribeProxy)             = print(io, "TapOnSubscribeProxy()")
 Base.show(io::IO, ::TapOnSubscribeSource{L}) where L = print(io, "TapOnSubscribeSource($L)")

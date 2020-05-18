@@ -12,10 +12,10 @@ function LazyObservable(::Type{T}, pending::S) where { T, S }
     return LazyObservable{T, S}(pending)
 end
 
-set!(lazy::LazyObservable{D}, observable::S) where { D, S } = on_lazy_set!(lazy, as_subscribable(S), observable)
+set!(lazy::LazyObservable, observable::S) where S = on_lazy_set!(lazy, as_subscribable(S), observable)
 
 on_lazy_set!(lazy::LazyObservable{D},  ::InvalidSubscribable,        observable) where D  = throw(InvalidSubscribableTraitUsageError(observable))
-on_lazy_set!(lazy::LazyObservable{D1}, ::ValidSubscribableTrait{D1}, observable) where D1 = begin
+on_lazy_set!(lazy::LazyObservable{D1}, ::ValidSubscribableTrait{D2}, observable) where { D1, D2 <: D1 } = begin
     next!(lazy.pending, observable)
     complete!(lazy.pending)
 end

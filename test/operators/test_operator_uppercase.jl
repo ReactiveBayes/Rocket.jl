@@ -21,7 +21,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source      = throwError(String, "e") |> uppercase(),
+            source      = faulted(String, "e") |> uppercase(),
             values      = @ts(e("e")),
             source_type = String
         ),

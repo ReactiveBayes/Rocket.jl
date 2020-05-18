@@ -27,7 +27,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = throwError(1) |> noop(),
+            source = faulted(1) |> noop(),
             values = @ts(e(1))
         ),
         (

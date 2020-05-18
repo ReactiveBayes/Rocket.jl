@@ -40,17 +40,17 @@ struct CatchErrorOperator{F} <: InferableOperator
 end
 
 function on_call!(::Type{L}, ::Type{L}, operator::CatchErrorOperator{F}, source) where { L, F }
-    return proxy(L, source, CatchErrorProxy{L, F}(operator.selectorFn))
+    return proxy(L, source, CatchErrorProxy{F}(operator.selectorFn))
 end
 
 operator_right(operator::CatchErrorOperator, ::Type{L}) where L = L
 
-struct CatchErrorProxy{L, F} <: ActorSourceProxy
+struct CatchErrorProxy{F} <: ActorSourceProxy
     selectorFn :: F
 end
 
-actor_proxy!(proxy::CatchErrorProxy{L, F},  actor::A)  where { L, A, F } = CatchErrorActor{L, A, F}(proxy.selectorFn, actor, false, nothing, nothing)
-source_proxy!(proxy::CatchErrorProxy{L, F}, source::S) where { L, S, F } = CatchErrorSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::CatchErrorProxy{F},  actor::A)  where { L, A, F } = CatchErrorActor{L, A, F}(proxy.selectorFn, actor, false, nothing, nothing)
+source_proxy!(::Type{L}, proxy::CatchErrorProxy{F}, source::S) where { L, S, F } = CatchErrorSource{L, S}(source)
 
 mutable struct CatchErrorActor{L, A, F} <: Actor{L}
     selectorFn           :: F
@@ -113,7 +113,7 @@ function on_unsubscribe!(subscription::CatchErrorSubscription)
 end
 
 Base.show(io::IO, ::CatchErrorOperator)             = print(io, "CatchErrorOperator()")
-Base.show(io::IO, ::CatchErrorProxy{L})     where L = print(io, "CatchErrorProxy($L)")
+Base.show(io::IO, ::CatchErrorProxy)                = print(io, "CatchErrorProxy()")
 Base.show(io::IO, ::CatchErrorActor{L})     where L = print(io, "CatchErrorActor($L)")
 Base.show(io::IO, ::CatchErrorSource{L})    where L = print(io, "CatchErrorSource($L)")
 Base.show(io::IO, ::CatchErrorSubscription)         = print(io, "CatchErrorSubscription()")

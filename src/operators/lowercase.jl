@@ -34,23 +34,23 @@ lowercase() = LowercaseOperator()
 struct LowercaseOperator <: InferableOperator end
 
 function on_call!(::Type{L}, ::Type{L}, operator::LowercaseOperator, source) where L
-    return proxy(L, source, LowercaseProxy{L}())
+    return proxy(L, source, LowercaseProxy())
 end
 
 operator_right(::LowercaseOperator, ::Type{L}) where L = L
 
-struct LowercaseProxy{L} <: ActorProxy end
+struct LowercaseProxy <: ActorProxy end
 
-actor_proxy!(proxy::LowercaseProxy{L}, actor::A) where { L, A } = LowercaseActor{L, A}(actor)
+actor_proxy!(::Type{L}, proxy::LowercaseProxy, actor::A) where { L, A } = LowercaseActor{L, A}(actor)
 
 struct LowercaseActor{L, A} <: Actor{L}
     actor :: A
 end
 
 on_next!(actor::LowercaseActor{L}, data::L) where L = next!(actor.actor, lowercase(data))
-on_error!(actor::LowercaseActor, err)       where L = error!(actor.actor, err)
-on_complete!(actor::LowercaseActor)         where L = complete!(actor.actor)
+on_error!(actor::LowercaseActor, err)               = error!(actor.actor, err)
+on_complete!(actor::LowercaseActor)                 = complete!(actor.actor)
 
 Base.show(io::IO, ::LowercaseOperator)         = print(io, "LowercaseOperator()")
-Base.show(io::IO, ::LowercaseProxy{L}) where L = print(io, "LowercaseProxy($L)")
+Base.show(io::IO, ::LowercaseProxy)            = print(io, "LowercaseProxy()")
 Base.show(io::IO, ::LowercaseActor{L}) where L = print(io, "LowercaseActor($L)")

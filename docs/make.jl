@@ -19,7 +19,7 @@ makedocs(
                 "Function"          => "observables/types/function.md",
                 "Single"            => "observables/types/single.md",
                 "Array"             => "observables/types/array.md",
-                "Error"             => "observables/types/error.md",
+                "Faulted"           => "observables/types/faulted.md",
                 "Never"             => "observables/types/never.md",
                 "Completed"         => "observables/types/completed.md",
                 "Timer"             => "observables/types/timer.md",
@@ -56,7 +56,11 @@ makedocs(
                     "lowercase"                      => "operators/transformation/lowercase.md",
                     "to_array"                       => "operators/transformation/to_array.md",
                     "switch_map"                     => "operators/transformation/switch_map.md",
-                    "switch_map_to"                  => "operators/transformation/switch_map_to.md",
+                    "`switch_map_to`"                => "operators/transformation/switch_map_to.md",
+                    "merge_map"                      => "operators/transformation/merge_map.md",
+                    "concat_map"                     => "operators/transformation/concat_map.md",
+                    "`concat_map_to`"                => "operators/transformation/concat_map_to.md",
+                    "exhaust_map"                    => "operators/transformation/exhaust_map.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",
@@ -106,6 +110,7 @@ makedocs(
                     "skip_next"               => "operators/utility/skip_next.md",
                     "skip_error"              => "operators/utility/skip_error.md",
                     "skip_complete"           => "operators/utility/skip_complete.md",
+                    "discontinue"             => "operators/utility/discontinue.md",
                 ]
             ],
             "Subjects" => [

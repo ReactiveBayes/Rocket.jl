@@ -39,7 +39,7 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = throwError("e") |> scan(+),
+            source      = faulted("e") |> scan(+),
             values      = @ts(e("e")),
         ),
         (

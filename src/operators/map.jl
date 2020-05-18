@@ -50,7 +50,7 @@ struct MapProxy{L, F} <: ActorProxy
     mappingFn::F
 end
 
-actor_proxy!(proxy::MapProxy{L, F}, actor::A) where { L, A, F } = MapActor{L, A, F}(proxy.mappingFn, actor)
+actor_proxy!(::Type, proxy::MapProxy{L, F}, actor::A) where { L, A, F } = MapActor{L, A, F}(proxy.mappingFn, actor)
 
 struct MapActor{L, A, F} <: Actor{L}
     mappingFn  :: F

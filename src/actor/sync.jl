@@ -144,7 +144,7 @@ using Rocket
 actor  = keep(Int)
 synced = sync(actor)
 
-subscribe!(from(0:5, scheduler = Rocket.AsyncScheduler()), synced)
+subscribe!(from(0:5, scheduler = AsyncScheduler()), synced)
 
 yield()
 
@@ -166,7 +166,7 @@ values = Int[]
 factory  = lambda(on_next = (d) -> push!(values, d))
 synced   = sync(factory)
 
-subscribe!(from(0:5, scheduler = Rocket.AsyncScheduler()), synced)
+subscribe!(from(0:5, scheduler = AsyncScheduler()), synced)
 
 yield()
 

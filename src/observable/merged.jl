@@ -109,7 +109,7 @@ subscribe!(observable, logger())
 ```jldoctest
 using Rocket
 
-subject = Subject(Int, scheduler = Rocket.AsyncScheduler())
+subject = Subject(Int, scheduler = AsyncScheduler())
 
 observable = merged((subject, of(2.0), from("Hello")))
 

@@ -34,7 +34,7 @@ using Rocket
 
     function Rocket.on_subscribe!(subject::ImplementedSubject, actor)
         complete!(actor)
-        return VoidTeardown()
+        return voidTeardown
     end
 
     struct ImplementedAutoSubject{T} <: AbstractSubject{T}
@@ -49,7 +49,7 @@ using Rocket
 
     function Rocket.on_subscribe!(subject::ImplementedAutoSubject, actor)
         complete!(actor)
-        return VoidTeardown()
+        return voidTeardown
     end
 
     @testset "as_subject" begin
@@ -77,8 +77,8 @@ using Rocket
         @test_throws MissingOnSubscribeImplementationError subscribe!(ActorMissingSubject{Int}(), actor)
 
         # Check if subscribe! subscribes to a valid subscribable
-        @test subscribe!(ImplementedSubject{Int}(), actor)     === VoidTeardown()
-        @test subscribe!(ImplementedAutoSubject{Int}(), actor) === VoidTeardown()
+        @test subscribe!(ImplementedSubject{Int}(), actor)     === voidTeardown
+        @test subscribe!(ImplementedAutoSubject{Int}(), actor) === voidTeardown
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match
         @test_throws InconsistentActorWithSubscribableDataTypesError subscribe!(ImplementedSubject{Int}(), actor_s)
@@ -95,12 +95,12 @@ using Rocket
 
         # Check if subscribe! subscribes to a valid subscribable
         subject = ImplementedSubject{Int}()
-        @test subscribe!(source, subject) === VoidTeardown()
+        @test subscribe!(source, subject) === voidTeardown
         @test subject.values == [ 1, 2, 3, 4, 5 ]
 
         # Check if subscribe! subscribes to a valid subscribable
         subject = ImplementedAutoSubject{Int}()
-        @test subscribe!(source, subject) === VoidTeardown()
+        @test subscribe!(source, subject) === voidTeardown
         @test subject.values == [ 1, 2, 3, 4, 5 ]
 
         # Check if subscribe! throws an error if subscribable and actor data types does not match

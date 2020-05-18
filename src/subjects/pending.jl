@@ -93,7 +93,7 @@ function on_subscribe!(subject::PendingSubjectInstance, actor)
             next!(actor, last)
         end
         complete!(actor)
-        return VoidTeardown()
+        return voidTeardown
     else
         return subscribe!(subject.subject, actor)
     end
