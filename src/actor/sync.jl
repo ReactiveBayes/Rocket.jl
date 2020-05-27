@@ -28,8 +28,7 @@ struct SyncActor{T, A} <: Actor{T}
     end
 end
 
-Base.show(io::IO, ::Type{ <: SyncActor{T, A} }) where { T, A } = print(io, "SyncActor{$A}")
-Base.show(io::IO, actor::SyncActor{T, A})       where { T, A } = print(io, "SyncActor($A)")
+Base.show(io::IO, actor::SyncActor{T, A}) where { T, A } = print(io, "SyncActor($A)")
 
 iswithlock(actor::SyncActor) = actor.withlock
 

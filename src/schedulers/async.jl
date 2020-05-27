@@ -9,8 +9,7 @@ import Base: show
 """
 struct AsyncScheduler{N} <: AbstractScheduler end
 
-Base.show(io::IO, ::Type{<:AsyncScheduler}) = print(io, "AsyncScheduler")
-Base.show(io::IO, ::AsyncScheduler)         = print(io, "AsyncScheduler()")
+Base.show(io::IO, ::AsyncScheduler) = print(io, "AsyncScheduler()")
 
 function AsyncScheduler(size::Int = typemax(Int))
     return AsyncScheduler{size}()
@@ -77,8 +76,7 @@ struct AsyncSchedulerSubscription{ H <: AsyncSchedulerInstance } <: Teardown
     instance :: H
 end
 
-Base.show(io::IO, ::Type{ <: AsyncSchedulerSubscription }) = print(io, "AsyncSchedulerSubscription")
-Base.show(io::IO, ::AsyncSchedulerSubscription)            = print(io, "AsyncSchedulerSubscription()")
+Base.show(io::IO, ::AsyncSchedulerSubscription) = print(io, "AsyncSchedulerSubscription()")
 
 as_teardown(::Type{ <: AsyncSchedulerSubscription}) = UnsubscribableTeardownLogic()
 

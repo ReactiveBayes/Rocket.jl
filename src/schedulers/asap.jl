@@ -10,8 +10,7 @@ import Base: show
 """
 struct AsapScheduler <: AbstractScheduler end
 
-Base.show(io::IO, ::Type{<:AsapScheduler}) = print(io, "AsapScheduler")
-Base.show(io::IO, ::AsapScheduler)         = print(io, "AsapScheduler()")
+Base.show(io::IO, ::AsapScheduler) = print(io, "AsapScheduler()")
 
 similar(::AsapScheduler) = AsapScheduler()
 

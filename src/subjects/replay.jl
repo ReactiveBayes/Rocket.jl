@@ -31,8 +31,7 @@ struct ReplaySubjectInstance{D, S} <: AbstractSubject{D}
     buffer  :: CircularBuffer{D}
 end
 
-Base.show(io::IO, ::Type{ <: ReplaySubjectInstance{D, S} }) where { D, S } = print(io, "ReplaySubjectInstance{$D, $S}")
-Base.show(io::IO, ::ReplaySubjectInstance{D, S})            where { D, S } = print(io, "ReplaySubjectInstance($D, $S)")
+Base.show(io::IO, ::ReplaySubjectInstance{D, S}) where { D, S } = print(io, "ReplaySubjectInstance($D, $S)")
 
 function ReplaySubject(::Type{D}, size::Int) where D
     return ReplaySubject(D, size, SubjectFactory(AsapScheduler()))
@@ -81,8 +80,7 @@ struct ReplaySubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSu
     size    :: Int
 end
 
-Base.show(io::IO, ::Type{ <: ReplaySubjectFactoryInstance{F} }) where F = print(io, "ReplaySubjectFactoryInstance{$F}")
-Base.show(io::IO, subject::ReplaySubjectFactoryInstance{F})     where F = print(io, "ReplaySubjectFactoryInstance($F, size = $(subject.size))")
+Base.show(io::IO, subject::ReplaySubjectFactoryInstance{F}) where F = print(io, "ReplaySubjectFactoryInstance($F, size = $(subject.size))")
 
 create_subject(::Type{L}, factory::ReplaySubjectFactoryInstance) where L = ReplaySubject(L, factory.size, factory.factory)
 

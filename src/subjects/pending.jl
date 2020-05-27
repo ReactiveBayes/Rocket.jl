@@ -31,8 +31,7 @@ mutable struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
     last    :: Union{Nothing, D}
 end
 
-Base.show(io::IO, ::Type{ <: PendingSubjectInstance{D, S} }) where { D, S } = print(io, "PendingSubject{$D, $S}")
-Base.show(io::IO, ::PendingSubjectInstance{D, S})            where { D, S } = print(io, "PendingSubject($D, $S)")
+Base.show(io::IO, ::PendingSubjectInstance{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
 
 function PendingSubject(::Type{D}) where D
     return PendingSubject(D, SubjectFactory(AsapScheduler()))
@@ -105,8 +104,7 @@ struct PendingSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractS
     factory :: F
 end
 
-Base.show(io::IO, ::Type{ <: PendingSubjectFactoryInstance{F} }) where F = print(io, "PendingSubjectFactoryInstance{$F}")
-Base.show(io::IO, subject::PendingSubjectFactoryInstance{F})     where F = print(io, "PendingSubjectFactoryInstance($F)")
+Base.show(io::IO, subject::PendingSubjectFactoryInstance{F}) where F = print(io, "PendingSubjectFactoryInstance($F)")
 
 create_subject(::Type{L}, factory::PendingSubjectFactoryInstance) where L = PendingSubject(L, factory.factory)
 

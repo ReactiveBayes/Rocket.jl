@@ -12,8 +12,7 @@ See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled
 """
 struct ThreadsScheduler <: AbstractScheduler end
 
-Base.show(io::IO, ::Type{<:ThreadsScheduler}) = print(io, "ThreadsScheduler")
-Base.show(io::IO, ::ThreadsScheduler)         = print(io, "ThreadsScheduler()")
+Base.show(io::IO, ::ThreadsScheduler) = print(io, "ThreadsScheduler()")
 
 mutable struct ThreadsSchedulerInstance
     isunsubscribed :: Bool
@@ -78,8 +77,7 @@ end
 
 as_teardown(::Type{ <: ThreadsSchedulerSubscription}) = UnsubscribableTeardownLogic()
 
-Base.show(io::IO, ::Type{ <: ThreadsSchedulerSubscription }) = print(io, "ThreadsSchedulerSubscription")
-Base.show(io::IO, ::ThreadsSchedulerSubscription)            = print(io, "ThreadsSchedulerSubscription()")
+Base.show(io::IO, ::ThreadsSchedulerSubscription) = print(io, "ThreadsSchedulerSubscription()")
 
 function on_unsubscribe!(subscription::ThreadsSchedulerSubscription)
     dispose(subscription.instance)

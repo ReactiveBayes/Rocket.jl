@@ -108,10 +108,10 @@ function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I})
     setstorage!(wrapper.storage, data, index)
     wrapper.vstatus[I] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
-        next!(wrapper.actor, wrapper.transformFn(snapshot(wrapper.storage)))
         if isbatch(wrapper)
             copy!(wrapper.vstatus, wrapper.cstatus)
         end
+        next!(wrapper.actor, wrapper.transformFn(snapshot(wrapper.storage)))
     end
 end
 

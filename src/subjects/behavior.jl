@@ -28,8 +28,7 @@ mutable struct BehaviourSubjectProps{D}
     current :: D
 end
 
-Base.show(io::IO, ::Type{ <: BehaviourSubjectProps }) = print(io, "BehaviourSubjectProps")
-Base.show(io::IO, ::BehaviourSubjectProps)            = print(io, "BehaviourSubjectProps()")
+Base.show(io::IO, ::BehaviourSubjectProps) = print(io, "BehaviourSubjectProps()")
 
 ##
 
@@ -38,8 +37,7 @@ struct BehaviorSubjectInstance{D, S} <: AbstractSubject{D}
     props   :: BehaviourSubjectProps{D}
 end
 
-Base.show(io::IO, ::Type{ <: BehaviorSubjectInstance{D, S} }) where { D, S } = print(io, "BehaviorSubject{$D, $S}")
-Base.show(io::IO, ::BehaviorSubjectInstance{D, S})            where { D, S } = print(io, "BehaviorSubject($D, $S)")
+Base.show(io::IO, ::BehaviorSubjectInstance{D, S}) where { D, S } = print(io, "BehaviorSubject($D, $S)")
 
 function BehaviorSubject(value::D) where D
     return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
@@ -95,8 +93,7 @@ struct BehaviorSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: Abstract
     default
 end
 
-Base.show(io::IO, ::Type{ <: BehaviorSubjectFactoryInstance{F} }) where F = print(io, "BehaviorSubjectFactory{$F}")
-Base.show(io::IO, subject::BehaviorSubjectFactoryInstance{F})     where F = print(io, "BehaviorSubjectFactory($F, default = $(subject.default))")
+Base.show(io::IO, subject::BehaviorSubjectFactoryInstance{F}) where F = print(io, "BehaviorSubjectFactory($F, default = $(subject.default))")
 
 create_subject(::Type{L}, factory::BehaviorSubjectFactoryInstance) where L = BehaviorSubject(L, convert(L, factory.default), factory.factory)
 

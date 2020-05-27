@@ -9,8 +9,7 @@ struct SubjectListener{I}
     actor
 end
 
-Base.show(io::IO, ::Type{ <: SubjectListener }) = print(io, "SubjectListener")
-Base.show(io::IO, ::SubjectListener)            = print(io, "SubjectListener()")
+Base.show(io::IO, ::SubjectListener) = print(io, "SubjectListener()")
 
 mutable struct SubjectProps
     iscompleted :: Bool
@@ -20,8 +19,7 @@ mutable struct SubjectProps
     SubjectProps() = new(false, false, nothing)
 end
 
-Base.show(io::IO, ::Type{ <: SubjectProps }) = print(io, "SubjectProps")
-Base.show(io::IO, ::SubjectProps)            = print(io, "SubjectProps()")
+Base.show(io::IO, ::SubjectProps) = print(io, "SubjectProps()")
 
 ##
 
@@ -45,8 +43,7 @@ function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: Abst
     return Subject{D, H, instancetype(D, H)}(scheduler)
 end
 
-Base.show(io::IO, ::Type{ <: Subject{ D, H }}) where { D, H } = print(io, "Subject{$D, $H}")
-Base.show(io::IO, ::Subject{D, H})             where { D, H } = print(io, "Subject($D, $H)")
+Base.show(io::IO, ::Subject{D, H}) where { D, H } = print(io, "Subject($D, $H)")
 
 ##
 
@@ -60,7 +57,7 @@ setlasterror!(subject::Subject, err) = subject.props.lasterror = err
 
 ##
 
-function on_next!(subject::Subject{D}, data::D) where D
+function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
     failedlisteners = nothing
     listeners       = copy(subject.listeners)
 
@@ -72,7 +69,7 @@ function on_next!(subject::Subject{D}, data::D) where D
             @warn exception
             error!(listener.actor, exception, listener.schedulerinstance)
             if failedlisteners === nothing
-                failedlisteners = similar(listeners)
+                failedlisteners = Vector{SubjectListener{I}}()
             end
             push!(failedlisteners, listener)
         end
@@ -161,8 +158,7 @@ function on_unsubscribe!(subscription::SubjectSubscription)
     return nothing
 end
 
-Base.show(io::IO, ::Type{ <: SubjectSubscription }) where { D, H } = print(io, "SubjectSubscription")
-Base.show(io::IO, ::SubjectSubscription)            where { D, H } = print(io, "SubjectSubscription()")
+Base.show(io::IO, ::SubjectSubscription) = print(io, "SubjectSubscription()")
 
 ##
 
@@ -179,5 +175,4 @@ end
 
 create_subject(::Type{L}, factory::SubjectFactory) where L = Subject(L, scheduler = similar(factory.scheduler))
 
-Base.show(io::IO, ::Type{ <: SubjectFactory{H} }) where { H } = print(io, "SubjectFactory{$H}")
-Base.show(io::IO, ::SubjectFactory{H})            where { H } = print(io, "SubjectFactory($H)")
+Base.show(io::IO, ::SubjectFactory{H}) where H = print(io, "SubjectFactory($H)")
