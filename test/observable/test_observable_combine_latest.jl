@@ -60,52 +60,47 @@ include("../test_helpers.jl")
             source_type = Tuple{Float64, Float64}
         ),
         (
-            source = combineLatest((of(1), of(2)), false, (Int, (t) -> t[1]^2 + t[2]^2)),
-            values = @ts([ 5, c ]),
-            source_type = Int
-        ),
-        (
-            source = combineLatest((of(1), from(1:5)), true),
+            source = combineLatest(of(1), from(1:5), batch = trues(2)),
             values = @ts([ (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), c ]),
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((of(1) |> async(0), from(1:5)), true),
+            source = combineLatest(of(1) |> async(0), from(1:5), batch = trues(2)),
             values = @ts([ (1, 5) ] ~ c),
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((from(1:5), of(2.0)), true),
+            source = combineLatest(from(1:5), of(2.0), batch = trues(2)),
             values = @ts([ (5, 2), c ]),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest((from(1:5) |> async(0), of(2.0)), true),
+            source = combineLatest(from(1:5) |> async(0), of(2.0), batch = trues(2)),
             values = @ts([ (1, 2.0) ] ~ [ (2, 2.0) ] ~ [ (3, 2.0) ] ~ [ (4, 2.0) ] ~ [ (5, 2.0) ] ~ c),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest((completed(Int), of(1)), true),
+            source = combineLatest(completed(Int), of(1), batch = trues(2)),
             values = @ts(c),
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((completed(Int), completed(Int)), true),
+            source = combineLatest(completed(Int), completed(Int), batch = trues(2)),
             values = @ts(c),
             source_type = Tuple{Int, Int}
         ),
         (
-            source = combineLatest((faulted(Float64, "err"), completed(Int)), true),
+            source = combineLatest(faulted(Float64, "err"), completed(Int), batch = trues(2)),
             values = @ts(e("err")),
             source_type = Tuple{Float64, Int}
         ),
         (
-            source = combineLatest((completed(Int), faulted(Float64, "err")), true),
+            source = combineLatest(completed(Int), faulted(Float64, "err"), batch = trues(2)),
             values = @ts(c),
             source_type = Tuple{Int, Float64}
         ),
         (
-            source = combineLatest((faulted(Float64, "err1"), faulted(Float64, "err2")), true),
+            source = combineLatest(faulted(Float64, "err1"), faulted(Float64, "err2"), batch = trues(2)),
             values = @ts(e("err1")),
             source_type = Tuple{Float64, Float64}
         ),
@@ -174,7 +169,7 @@ include("../test_helpers.jl")
         s4 = of(5)
         s5 = from(1:10)
 
-        latest = combineLatest((s1, s2, s3, s4, s5), true)
+        latest = combineLatest(s1, s2, s3, s4, s5, batch = trues(5))
         actor  = keep(Tuple{Int, Float64, String, Int, Int})
         subscription = subscribe!(latest, actor)
 
