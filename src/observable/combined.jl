@@ -1,4 +1,5 @@
 export combineLatest
+export PushEach, PushNew, PushNewBut, PushStrategy
 
 import Base: show
 
@@ -49,14 +50,49 @@ subscribe!(latest, logger())
 
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
-combineLatest()                                             = error("combineLatest requires at least on observable on input")
-combineLatest(args...; batch = nothing)                     = combineLatest(tuple(args...), batch)
-combineLatest(sources::S, batch::U) where { S <: Tuple, U } = begin
-    CombineLatestObservable{combined_type(sources), S, U}(sources, as_batch(batch))
+function combineLatest end
+
+"""
+    PushEach
+
+`PushEach` update strategy specifies combineLatest operator to emit new value each time an inner observable emit a new value
+
+See also: [`combineLatest`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
+"""
+struct PushEach end
+
+"""
+    PushNew
+
+`PushNew` update strategy specifies combineLatest operator to emit new value if and only if all inner observables have a new value
+
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
+"""
+struct PushNew end
+
+"""
+    PushNewBut{I}
+
+`PushNewBut{I}` update strategy specifies combineLatest operator to emit new value if and only if all inner observables except with index `I` have a new value
+
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNew`](@ref), [`PushStrategy`](@ref)
+"""
+struct PushNewBut{I} end
+
+"""
+    PushStrategy(strategy::BitArray{1})
+
+`PushStrategy` update strategy specifies combineLatest operator to emit new value if and only if all inner observables with index such that `strategy[index] = false` have a new value
+
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref)
+"""
+struct PushStrategy
+    strategy :: BitArray{1}
 end
 
-as_batch(::Nothing)       = nothing
-as_batch(batch::BitArray) = map(!, batch)
+combineLatest(; strategy = PushEach())                                      = error("combineLatest operator expects at least one inner observable on input")
+combineLatest(args...; strategy = PushEach())                               = combineLatest(tuple(args...), strategy)
+combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G } = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
 
 combined_type(sources) = Tuple{ map(source -> subscribable_extract_type(source), sources)... }
 
@@ -74,28 +110,45 @@ on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = c
 
 ##
 
-struct CombineLatestActorWrapper{S, A, U}
+struct CombineLatestActorWrapper{S, A, G}
     storage :: S
     actor   :: A
 
-    nsize   :: Int
-    ustatus :: U           # Batched update status
-    cstatus :: BitArray{1} # Completion status
-    vstatus :: BitArray{1} # Values status
+    nsize    :: Int
+    strategy :: G           # Push update strategy
+    cstatus  :: BitArray{1} # Completion status
+    vstatus  :: BitArray{1} # Values status
 
     subscriptions :: Vector{Teardown}
 
-    CombineLatestActorWrapper{S, A, U}(storage::S, actor::A, ustatus::U) where { S, A, U } = begin
+    CombineLatestActorWrapper{S, A, G}(storage::S, actor::A, strategy::G) where { S, A, G } = begin
         nsize   = length(storage)
         vstatus = falses(nsize)
         cstatus = falses(nsize)
         subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
-        return new(storage, actor, nsize, ustatus, cstatus, vstatus, subscriptions)
+        return new(storage, actor, nsize, strategy, cstatus, vstatus, subscriptions)
     end
 end
 
-isbatch(wrapper::CombineLatestActorWrapper{ <: Any, <: Any, <: BitArray}) = true
-isbatch(wrapper::CombineLatestActorWrapper)                               = false
+push_update!(wrapper::CombineLatestActorWrapper) = push_update!(wrapper.nsize, wrapper.vstatus, wrapper.cstatus, wrapper.strategy)
+
+function push_update!(::Int, ::BitArray{1}, ::BitArray{1}, ::PushEach)
+    return nothing
+end
+
+function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNew)
+    unsafe_copyto!(vstatus, 1, cstatus, 1, nsize)
+end
+
+function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNewBut{I}) where I
+    push_update!(nsize, vstatus, cstatus, PushNew())
+    vstatus[I] = true
+end
+
+function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, strategy::PushStrategy)
+    push_update!(nsize, vstatus, cstatus, PushNew())
+    map!(|, vstatus, vstatus, strategy.strategy)
+end
 
 cstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.cstatus[index]
 vstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.vstatus[index]
@@ -106,10 +159,7 @@ function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I})
     setstorage!(wrapper.storage, data, index)
     wrapper.vstatus[I] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
-        if isbatch(wrapper)
-            unsafe_copyto!(wrapper.vstatus, 1, wrapper.cstatus, 1, wrapper.nsize)
-            map!(|, wrapper.vstatus, wrapper.vstatus, wrapper.ustatus)
-        end
+        push_update!(wrapper)
         next!(wrapper.actor, snapshot(wrapper.storage))
     end
 end
@@ -131,15 +181,14 @@ end
 
 ##
 
-struct CombineLatestObservable{T, S, U} <: Subscribable{T}
-    sources :: S
-    ustatus :: U
+struct CombineLatestObservable{T, S, G} <: Subscribable{T}
+    sources  :: S
+    strategy :: G
 end
 
-function on_subscribe!(observable::CombineLatestObservable{T, S, U}, actor::A) where { T, S, U, A }
+function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) where { T, S, G, A }
     storage = getmstorage(T)
-
-    wrapper = CombineLatestActorWrapper{typeof(storage), A, U}(storage, actor, observable.ustatus)
+    wrapper = CombineLatestActorWrapper{typeof(storage), A, G}(storage, actor, observable.strategy)
 
     for (index, source) in enumerate(observable.sources)
         wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
