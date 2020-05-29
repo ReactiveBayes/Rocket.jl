@@ -1,17 +1,18 @@
 export combineLatest
-export PushEach, PushNew, PushNewBut, PushStrategy
+export PushEach, PushEachBut, PushNew, PushNewBut, PushStrategy
 
 import Base: show
 
 """
-    combineLatest(sources...; batch = nothing)
-    combineLatest(sources::Tuple, batch::U = nothing) where U
+    combineLatest(sources...; strategy = PushEach())
+    combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, U }
 
 Combines multiple Observables to create an Observable whose values are calculated from the latest values of each of its input Observables.
+Accept optinal update strategy object.
 
 # Arguments
 - `sources`: input sources
-- `batch`: optional update strategy for batching new values together
+- `strategy`: optional update strategy for batching new values together
 
 # Examples
 ```jldoctest
@@ -31,24 +32,21 @@ subscribe!(latest, logger())
 [LogActor] Completed
 ```
 
-```jldoctest
+```
 using Rocket
 
-latest = combineLatest(of(1), from(2:5)) |> map(Int, sum)
+latest = combineLatest(of(1) |> async(0), from(2:5) |> async(0), strategy = PushNew())
 
 subscribe!(latest, logger())
 ;
 
 # output
 
-[LogActor] Data: 3
-[LogActor] Data: 4
-[LogActor] Data: 5
-[LogActor] Data: 6
+[LogActor] Data: (1, 2)
 [LogActor] Completed
 ```
 
-See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
+See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
 """
 function combineLatest end
 
@@ -57,16 +55,25 @@ function combineLatest end
 
 `PushEach` update strategy specifies combineLatest operator to emit new value each time an inner observable emit a new value
 
-See also: [`combineLatest`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
+See also: [`combineLatest`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
 """
 struct PushEach end
+
+"""
+    PushEachBut{I}
+
+`PushEachBut` update strategy specifies combineLatest operator to emit new value if and only if an inner observable with index `I` have a new value
+
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
+"""
+struct PushEachBut{I} end
 
 """
     PushNew
 
 `PushNew` update strategy specifies combineLatest operator to emit new value if and only if all inner observables have a new value
 
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
 """
 struct PushNew end
 
@@ -75,7 +82,7 @@ struct PushNew end
 
 `PushNewBut{I}` update strategy specifies combineLatest operator to emit new value if and only if all inner observables except with index `I` have a new value
 
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNew`](@ref), [`PushStrategy`](@ref)
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushStrategy`](@ref)
 """
 struct PushNewBut{I} end
 
@@ -84,7 +91,7 @@ struct PushNewBut{I} end
 
 `PushStrategy` update strategy specifies combineLatest operator to emit new value if and only if all inner observables with index such that `strategy[index] = false` have a new value
 
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref)
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref)
 """
 struct PushStrategy
     strategy :: BitArray{1}
@@ -105,7 +112,7 @@ end
 Base.show(io::IO, inner::CombineLatestInnerActor{L, W, I}) where { L, W, I } = print(io, "CombineLatestInnerActor($L, $I)")
 
 on_next!(actor::CombineLatestInnerActor{L, W, I}, data::L) where { L, W, I } = next_received!(actor.wrapper, data, Val{I}())
-on_error!(actor::CombineLatestInnerActor, err)                               = error_received!(actor.wrapper, err)
+on_error!(actor::CombineLatestInnerActor{L, W, I}, err)    where { L, W, I } = error_received!(actor.wrapper, err, Val{I}())
 on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = complete_received!(actor.wrapper, Val{I}())
 
 ##
@@ -136,18 +143,26 @@ function push_update!(::Int, ::BitArray{1}, ::BitArray{1}, ::PushEach)
     return nothing
 end
 
+function push_update!(::Int, vstatus::BitArray{1}, ::BitArray{1}, ::PushEachBut{I}) where I
+    vstatus[I] = false
+    return nothing
+end
+
 function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNew)
     unsafe_copyto!(vstatus, 1, cstatus, 1, nsize)
+    return nothing
 end
 
 function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNewBut{I}) where I
     push_update!(nsize, vstatus, cstatus, PushNew())
     vstatus[I] = true
+    return nothing
 end
 
 function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, strategy::PushStrategy)
     push_update!(nsize, vstatus, cstatus, PushNew())
     map!(|, vstatus, vstatus, strategy.strategy)
+    return nothing
 end
 
 cstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.cstatus[index]
@@ -164,9 +179,11 @@ function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I})
     end
 end
 
-function error_received!(wrapper::CombineLatestActorWrapper, err)
-    dispose(wrapper)
-    error!(wrapper.actor, err)
+function error_received!(wrapper::CombineLatestActorWrapper, err, index::Val{I}) where I
+    if !wrapper.cstatus[I]
+        dispose(wrapper)
+        error!(wrapper.actor, err)
+    end
 end
 
 function complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
