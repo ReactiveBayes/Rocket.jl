@@ -27,6 +27,7 @@ makedocs(
                 "Proxy"             => "observables/types/proxy.md",
                 "File"              => "observables/types/file.md",
                 "Combined"          => "observables/types/combined.md",
+                "Race"              => "observables/types/race.md",
                 "Connectable"       => "observables/types/connectable.md",
                 "Merged"            => "observables/types/merged.md",
                 "Network"           => "observables/types/network.md",

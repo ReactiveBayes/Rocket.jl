@@ -10,16 +10,16 @@ mutable struct LazyObservableProps
     LazyObservableProps() = new(false)
 end
 
-struct LazyObservable{D, S} <: Subscribable{D}
-    pending :: S
+struct LazyObservable{D} <: Subscribable{D}
+    pending :: PendingSubjectInstance{Any,Subject{Any,AsapScheduler,AsapScheduler}}
     props   :: LazyObservableProps
 end
 
 isready(lazy::LazyObservable)   = lazy.props.isready
 setready!(lazy::LazyObservable) = lazy.props.isready = true
 
-function LazyObservable(::Type{T}, pending::S) where { T, S }
-    return LazyObservable{T, S}(pending, LazyObservableProps())
+function LazyObservable(::Type{T}, pending) where T
+    return LazyObservable{T}(pending, LazyObservableProps())
 end
 
 set!(lazy::LazyObservable, observable::S) where S = on_lazy_set!(lazy, as_subscribable(S), observable)
