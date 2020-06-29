@@ -139,13 +139,3 @@ Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/mas
 ![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Reactive.jl")
 
 ![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Signals.jl")
-
-## TODO
-
-This package in under development and some features of the reactive framework not yet implemented.
-
-### List of not implemented features
-
-- Join operators: `concatAll`, etc..
-- More transformation, filtering, utility operators
-- Possible bugs (welcome to open a PR)
