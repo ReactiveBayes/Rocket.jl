@@ -33,6 +33,7 @@ doctest(Rocket)
     include("./observable/test_observable_merged.jl")
     include("./observable/test_observable_concat.jl")
     include("./observable/test_observable_generate.jl")
+    include("./observable/test_observable_defer.jl")
 
     include("./test_subject.jl")
     include("./subjects/test_subject.jl")

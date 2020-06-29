@@ -33,6 +33,7 @@ makedocs(
                 "Concat"            => "observables/types/concat.md",
                 "Generate"          => "observables/types/generate.md",
                 "Network"           => "observables/types/network.md",
+                "Defer"             => "observables/types/defer.md",
             ],
             "Actors" => [
                 "Lambda"        => "actors/types/lambda.md",
