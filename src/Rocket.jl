@@ -30,6 +30,7 @@ include("subjects/behavior.jl")
 include("subjects/replay.jl")
 include("subjects/pending.jl")
 
+include("observable/generate.jl")
 include("observable/single.jl")
 include("observable/array.jl")
 include("observable/faulted.jl")

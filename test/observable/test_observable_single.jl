@@ -55,7 +55,12 @@ include("../test_helpers.jl")
             source = of("Hello, world!"),
             values = @ts([ "Hello, world!", c ]),
             source_type = String
-        )
+        ),
+        (
+            source = of(1, scheduler = AsyncScheduler(0)),
+            values = @ts([ 1 ] ~ c),
+            source_type = Int
+        ),
     ])
 
 end

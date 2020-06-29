@@ -40,6 +40,10 @@ include("../test_helpers.jl")
         (
             source = faulted(0),
             values = @ts(e(0))
+        ),
+        (
+            source = faulted(0, scheduler = AsyncScheduler(0)),
+            values = @ts(0 ~ e(0))
         )
     ])
 

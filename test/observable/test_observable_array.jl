@@ -80,6 +80,11 @@ include("../test_helpers.jl")
             source = from((0, 1, 2)),
             values = @ts([ 0, 1, 2, c ]),
             source_type = Int
+        ),
+        (
+            source = from((0, 1, 2), scheduler = AsyncScheduler(0)),
+            values = @ts([ 0 ] ~ [ 1 ] ~ [ 2 ] ~ c),
+            source_type = Int
         )
     ])
 

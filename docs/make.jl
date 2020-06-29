@@ -31,6 +31,7 @@ makedocs(
                 "Connectable"       => "observables/types/connectable.md",
                 "Merged"            => "observables/types/merged.md",
                 "Concat"            => "observables/types/concat.md",
+                "Generate"          => "observables/types/generate.md",
                 "Network"           => "observables/types/network.md",
             ],
             "Actors" => [
