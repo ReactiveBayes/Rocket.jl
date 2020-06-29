@@ -39,3 +39,17 @@ function setTimeout(f::Function, timeout::Int)
         f()
     end
 end
+
+"""
+    combined_type(sources)
+
+Returns a Tuple el-type of observable el-types in `sources` argument in the same order
+"""
+combined_type(sources) = Tuple{ map(source -> subscribable_extract_type(source), sources)... }
+
+"""
+    union_type(sources)
+
+Returns a Union el-type of observable el-types in `sources` argument
+"""
+union_type(sources) = Union{ map(source -> subscribable_extract_type(source), sources)... }

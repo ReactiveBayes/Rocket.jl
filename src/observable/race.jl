@@ -4,7 +4,7 @@ import Base: show
 
 """
     race(sources...)
-    combineLatest(sources::S) where { S <: Tuple }
+    race(sources::S) where { S <: Tuple }
 
 Combines multiple Observables to create an Observable that mirrors the output of the first Observable to emit an item.
 Essentially it subscribes to the observable that was the first to start emitting.
@@ -27,7 +27,7 @@ subscribe!(race(source1, source2), logger())
 [LogActor] Completed
 ```
 
-```jldoctest
+```
 using Rocket
 
 source1 = of(1) |> async()
@@ -45,8 +45,6 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 race()                                = error("race operator expects at least one inner observable on input")
 race(args...)                         = race(tuple(args...))
 race(sources::S) where { S <: Tuple } = RaceObservable{union_type(sources), S}(sources)
-
-union_type(sources) = Union{ map(source -> subscribable_extract_type(source), sources)... }
 
 ##
 

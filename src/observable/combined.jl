@@ -101,8 +101,6 @@ combineLatest(; strategy = PushEach())                                      = er
 combineLatest(args...; strategy = PushEach())                               = combineLatest(tuple(args...), strategy)
 combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G } = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
 
-combined_type(sources) = Tuple{ map(source -> subscribable_extract_type(source), sources)... }
-
 ##
 
 struct CombineLatestInnerActor{L, W, I} <: Actor{L}

@@ -30,6 +30,7 @@ makedocs(
                 "Race"              => "observables/types/race.md",
                 "Connectable"       => "observables/types/connectable.md",
                 "Merged"            => "observables/types/merged.md",
+                "Concat"            => "observables/types/concat.md",
                 "Network"           => "observables/types/network.md",
             ],
             "Actors" => [
