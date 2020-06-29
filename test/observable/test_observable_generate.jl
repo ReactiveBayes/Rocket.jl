@@ -1,4 +1,4 @@
-module RocketCompleteObservableTest
+module RocketGenerateObservableTest
 
 using Test
 using Rocket

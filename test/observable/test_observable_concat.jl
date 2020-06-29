@@ -1,4 +1,4 @@
-module RocketRaceObservableTest
+module RocketConcatObservableTest
 
 using Test
 using Rocket
