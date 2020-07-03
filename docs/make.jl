@@ -139,3 +139,9 @@ makedocs(
         prettyurls = get(ENV, "CI", nothing) == "true"
     )
 )
+
+if get(ENV, "CI", nothing) == "true"
+    deploydocs(
+        repo = "github.com/biaslab/Rocket.jl.git"
+    )
+end
