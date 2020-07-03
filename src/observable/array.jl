@@ -60,8 +60,15 @@ for `scalarness(::Type{<:MyType})` function and to specify scalarness behavior. 
 - `x`: an object to be wrapped into array of values
 - `scheduler`: optional, scheduler-like object
 
+For an object `x` to be a valid input for a from operator it must implement
+`Rocket.scalarness(::Type{ <: T })` method which should return either `Rocket.Scalar` or
+`Rocket.NonScalar` objects. In first case `from` operator will treat `x` as a single scalar value and will wrap
+it into a vector while in the second case `from` operator will convert `x` object into an array using `collect` function.
+
+For arbitrary iterable objects consider using `iterable` creation operator.
+
 # Note
-`from` operators creates a copy of `x`
+`from` operators creates a copy of `x` using `collect` on a given object.
 
 # Examples
 
@@ -137,7 +144,7 @@ subscribe!(source, logger())
 
 ```
 
-See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref), [`iterable`](@ref)
 """
 from(x; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }               = from(as_array(x); scheduler = scheduler)
 from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler } = ArrayObservable{D, H}(copy(a), scheduler)

@@ -17,16 +17,3 @@ function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator, source::Single
         return completed(L)
     end
 end
-
-# Specific method for combineLatest operator over SingleObservable
-# function combineLatest(source1::SingleObservable{S1}, source2::SingleObservable{S2}) where S1 where S2
-#     return SingleObservable{Tuple{S1, S2}}((source1.value, source2.value))
-# end
-#
-# function combineLatest(source1::SingleObservable{S1}, source2) where S1
-#     return source2 |> tuple_with_left(source1.value)
-# end
-#
-# function combineLatest(source1, source2::SingleObservable{S2}) where S2
-#     return source1 |> tuple_with_right(source2.value)
-# end
