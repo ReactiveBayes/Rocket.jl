@@ -1,8 +1,5 @@
 language: julia
 
-env:
-  - COVERAGE_JULIA_VERSION="1.4"
-
 os:
   - linux
 
@@ -43,5 +40,4 @@ jobs:
 stages:
   - test
   - coverage
-  - name: documentation
-    if: branch = master
+  - documentation
