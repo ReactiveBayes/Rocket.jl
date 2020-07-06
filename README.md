@@ -1,7 +1,8 @@
 # Reactive extensions library for Julia
 
 [![Build Status](https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master)](https://travis-ci.org/biaslab/Rocket.jl)
-[![Documentation](https://img.shields.io/badge/doc-stable-blue.svg)](https://biaslab.github.io/rocket/docs)
+[![Documentation Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://biaslab.github.io/Rocket.jl/stable)
+[![Documentation Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://biaslab.github.io/Rocket.jl/dev)
 [![Coverage](https://codecov.io/gh/biaslab/Rocket.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/biaslab/Rocket.jl?branch=master)
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
@@ -53,7 +54,7 @@ IJulia.clear_output(false);
 
 ## Documentation
 
-Full documentation is available at [BIASlab website](http://biaslab.github.io/rocket/docs/).
+Full documentation is available at [BIASlab website](https://biaslab.github.io/Rocket.jl/stable).
 
 It is also possible to build a documentation locally. Just execute
 
@@ -121,7 +122,7 @@ For debugging purposes you can use a general `LambdaActor` actor or just pass a 
 
 What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
 
-List of all available operators can be found in the documentation ([link](https://biaslab.github.io/rocket/docs/operators/all.html)).
+List of all available operators can be found in the documentation ([link](https://biaslab.github.io/Rocket.jl/stable/operators/all/)).
 
 ```Julia
 squared_int_values = source_of_int_values |> map(Int, (d) -> d ^ 2)
