@@ -84,7 +84,7 @@ using Rocket
         @test float_source  |> InferableIntoZeroTupleOperator() == Rocket.from([ (0.0, 0.0) ])
     end
 
-    @testset "Operators composition" begin
+    @testset "Operators composition with +" begin
         int_source    = SomeSubscribable{Int}()
 
         operators = IdentityIntOperator() + IdentityIntOperator()
@@ -92,6 +92,18 @@ using Rocket
         @test operators isa OperatorsComposition
         @test operators + IdentityIntOperator() isa OperatorsComposition
         @test IdentityIntOperator() + operators isa OperatorsComposition
+
+        @test int_source |> operators === int_source
+    end
+
+    @testset "Operators composition with |>" begin
+        int_source    = SomeSubscribable{Int}()
+
+        operators = IdentityIntOperator() |> IdentityIntOperator()
+
+        @test operators isa OperatorsComposition
+        @test operators |> IdentityIntOperator() isa OperatorsComposition
+        @test IdentityIntOperator() |> operators isa OperatorsComposition
 
         @test int_source |> operators === int_source
     end

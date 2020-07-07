@@ -395,12 +395,29 @@ operator_right(operator, L) = throw(MissingOperatorRightImplementationError(oper
     OperatorsComposition(operators)
 
 OperatorsComposition is an object which helps to create a composition of multiple operators. To create a composition of two or more operators
-overloaded `+` can be used.
+overloaded `+` or `|>` can be used.
 
 ```jldoctest
 using Rocket
 
 composition = map(Int, (d) -> d ^ 2) + filter(d -> d % 2 == 0)
+
+source = from(1:5) |> composition
+
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 4
+[LogActor] Data: 16
+[LogActor] Completed
+```
+
+```jldoctest
+using Rocket
+
+composition = map(Int, (d) -> d ^ 2) |> filter(d -> d % 2 == 0)
 
 source = from(1:5) |> composition
 
@@ -422,10 +439,16 @@ call_operator_composition!(composition::OperatorsComposition, source) = reduce(|
 
 Base.:|>(source, composition::OperatorsComposition) = call_operator_composition!(composition, source)
 
+# Backward compatibility
 Base.:+(o1::AbstractOperator, o2::AbstractOperator)         = OperatorsComposition((o1, o2))
 Base.:+(o1::AbstractOperator, c::OperatorsComposition)      = OperatorsComposition((o1, c.operators...))
 Base.:+(c::OperatorsComposition, o2::AbstractOperator)      = OperatorsComposition((c.operators..., o2))
 Base.:+(c1::OperatorsComposition, c2::OperatorsComposition) = OperatorsComposition((c1.operators..., c2.operators...))
+
+Base.:|>(o1::AbstractOperator, o2::AbstractOperator)         = OperatorsComposition((o1, o2))
+Base.:|>(o1::AbstractOperator, c::OperatorsComposition)      = OperatorsComposition((o1, c.operators...))
+Base.:|>(c::OperatorsComposition, o2::AbstractOperator)      = OperatorsComposition((c.operators..., o2))
+Base.:|>(c1::OperatorsComposition, c2::OperatorsComposition) = OperatorsComposition((c1.operators..., c2.operators...))
 
 # -------------------------------- #
 # Errors                           #
