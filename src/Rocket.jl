@@ -102,6 +102,7 @@ include("operators/schedule_on.jl")
 include("operators/async.jl")
 include("operators/parallel.jl")
 include("operators/discontinue.jl")
+include("operators/with_latest.jl")
 
 include("extensions/observable/single.jl")
 

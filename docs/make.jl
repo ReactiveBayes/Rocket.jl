@@ -91,6 +91,9 @@ makedocs(
                     "catch_error"                    => "operators/errors/catch_error.md",
                     "rerun"                          => "operators/errors/rerun.md"
                 ],
+                "Join" => [
+                    "with_latest" => "operators/join/with_latest.md"
+                ],
                 "Multicasting" => [
                     "About multicasting operators" => "operators/multicasting/about.md",
                     "multicast"                    => "operators/multicasting/multicast.md",

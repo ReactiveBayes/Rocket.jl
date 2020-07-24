@@ -43,7 +43,7 @@ subscribe!(race(source1, source2), logger())
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
 race()                                = error("race operator expects at least one inner observable on input")
-race(args...)                         = race(tuple(args...))
+race(args...)                         = race(args)
 race(sources::S) where { S <: Tuple } = RaceObservable{union_type(sources), S}(sources)
 
 ##

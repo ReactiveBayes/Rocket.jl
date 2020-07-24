@@ -98,7 +98,7 @@ struct PushStrategy
 end
 
 combineLatest(; strategy = PushEach())                                      = error("combineLatest operator expects at least one inner observable on input")
-combineLatest(args...; strategy = PushEach())                               = combineLatest(tuple(args...), strategy)
+combineLatest(args...; strategy = PushEach())                               = combineLatest(args, strategy)
 combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G } = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
 
 ##
@@ -128,8 +128,8 @@ struct CombineLatestActorWrapper{S, A, G}
 
     CombineLatestActorWrapper{S, A, G}(storage::S, actor::A, strategy::G) where { S, A, G } = begin
         nsize   = length(storage)
-        vstatus = falses(nsize)
         cstatus = falses(nsize)
+        vstatus = falses(nsize)
         subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
         return new(storage, actor, nsize, strategy, cstatus, vstatus, subscriptions)
     end

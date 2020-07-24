@@ -87,6 +87,7 @@ doctest(Rocket)
     include("./operators/test_operator_concat_map_to.jl")
     include("./operators/test_operator_exhaust_map.jl")
     include("./operators/test_operator_discontinue.jl")
+    include("./operators/test_operator_with_latest.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0

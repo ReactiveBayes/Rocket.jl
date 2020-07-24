@@ -64,6 +64,10 @@ There are operators for different purposes, and they may be categorized as: crea
 - [catch_error](@ref operator_catch_error)
 - [rerun](@ref operator_rerun)
 
+## Join operator
+
+- [with_latest](@ref operator_with_latest)
+
 ## Multicasting operators
 
 - [multicast](@ref operator_multicast)
