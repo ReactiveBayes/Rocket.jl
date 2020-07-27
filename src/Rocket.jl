@@ -52,6 +52,7 @@ include("observable/lazy.jl")
 include("observable/connectable.jl")
 include("observable/scheduled.jl")
 include("observable/defer.jl")
+include("observable/zipped.jl")
 
 include("operators/map.jl")
 include("operators/map_to.jl")

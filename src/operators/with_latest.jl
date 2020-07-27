@@ -26,6 +26,7 @@ subscribe!(source |> with_latest(from(1:5)), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref)
 """
+with_latest()                                = error("with_latest operator expects at least one inner observable on input")
 with_latest(sources...)                      = with_latest(sources)
 with_latest(sources::S) where { S <: Tuple } = WithLatestOperator{S}(sources)
 
