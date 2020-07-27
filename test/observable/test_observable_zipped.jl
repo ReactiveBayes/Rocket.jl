@@ -96,6 +96,16 @@ include("../test_helpers.jl")
             values      = @ts([ (1, 1, 'c'), c ]),
             source_type = Tuple{Int, Int, Char}
         ),
+        (
+            source      = zipped(from(1:2), from(1:2)),
+            values      = @ts([ (1, 1), (2, 2), c ]),
+            source_type = Tuple{Int, Int}
+        ),
+        (
+            source      = zipped(from(1:3), from(1:3) |> ignore(1), from(1:3) |> ignore(2)),
+            values      = @ts([ (1, 2, 3), c ]),
+            source_type = Tuple{Int, Int, Int}
+        ),
     ])
 
     @testset begin

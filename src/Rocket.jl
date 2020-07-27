@@ -104,6 +104,7 @@ include("operators/async.jl")
 include("operators/parallel.jl")
 include("operators/discontinue.jl")
 include("operators/with_latest.jl")
+include("operators/ignore.jl")
 
 include("extensions/observable/single.jl")
 

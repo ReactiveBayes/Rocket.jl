@@ -50,6 +50,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [last](@ref operator_last)
 - [find](@ref operator_find)
 - [find_index](@ref operator_find_index)
+- [ignore](@ref operator_ignore)
 
 ## Mathematical and Aggregate operators
 

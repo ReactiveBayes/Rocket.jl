@@ -177,14 +177,10 @@ function on_subscribe!(observable::ZipObservable{T, C}, actor::A) where { T, C, 
 
     for (index, source) in enumerate(observable.sources)
         wrapper.subscriptions[index] = subscribe!(source, ZipInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
-        if cstatus(wrapper, index) === true && first_vstatus(wrapper, index) === false
+        if all(wrapper.cstatus) || (cstatus(wrapper, index) === true && first_vstatus(wrapper, index) === false)
             dispose(wrapper)
             break
         end
-    end
-
-    if all(wrapper.cstatus)
-        dispose(wrapper)
     end
 
     return ZipSubscription(wrapper)

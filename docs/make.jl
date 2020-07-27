@@ -77,7 +77,8 @@ makedocs(
                     "first"                     => "operators/filtering/first.md",
                     "last"                      => "operators/filtering/last.md",
                     "find"                      => "operators/filtering/find.md",
-                    "find_index"                 => "operators/filtering/find_index.md",
+                    "find_index"                => "operators/filtering/find_index.md",
+                    "ignore"                    => "operators/filtering/ignore.md",
                 ],
                 "Mathematical and Aggregate" => [
                     "About mathematical operators" => "operators/mathematical/about.md",
