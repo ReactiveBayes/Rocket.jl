@@ -23,6 +23,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [generate](@ref observable_generate)
 - [network](@ref observable_network)
 - [defer](@ref observable_defer)
+- [zipped](@ref observable_zipped)
 
 ## Transformation operators
 
