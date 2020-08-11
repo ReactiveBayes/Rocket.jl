@@ -136,13 +136,14 @@ function dispose!(actor::SwitchMapActor)
     actor.props.isdisposed = true
     unsubscribe!(actor.props.msubscription)
     unsubscribe!(actor.props.isubscription)
+    return nothing
 end
 
 struct SwitchMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 
-source_proxy!(::Type{R}, proxy::SwitchMapProxy{L, R, F}, source::S) where { L, R, F, S } = SwitchMapSource{L, S}(source)
+source_proxy!(::Type, proxy::SwitchMapProxy{L}, source::S) where { L, S } = SwitchMapSource{L, S}(source)
 
 function on_subscribe!(source::SwitchMapSource, actor::SwitchMapActor)
     actor.props.msubscription = subscribe!(source.source, actor)

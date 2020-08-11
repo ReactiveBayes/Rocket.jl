@@ -125,7 +125,7 @@ end
 
 ##
 
-function on_subscribe!(subject::Subject{D, H, I}, actor) where { D, H, I }
+function on_subscribe!(subject::Subject{D}, actor) where { D }
     if isfailed(subject)
         error!(actor, lasterror(subject))
         return voidTeardown
@@ -134,15 +134,12 @@ function on_subscribe!(subject::Subject{D, H, I}, actor) where { D, H, I }
         return voidTeardown
     else
         instance = makeinstance(D, subject.scheduler)
-        return scheduled_subscription!(subject, actor, instance)
+        listener = SubjectListener(instance, actor)
+        push!(subject.listeners, listener)
+        return SubjectSubscription(subject, listener)
     end
 end
 
-function on_subscribe!(subject::Subject{D, H, I}, actor, instance) where { D, H, I }
-    listener = SubjectListener{I}(instance, actor)
-    push!(subject.listeners, listener)
-    return SubjectSubscription(subject, listener)
-end
 
 ##
 

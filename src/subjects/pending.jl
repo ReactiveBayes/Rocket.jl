@@ -26,9 +26,16 @@ function PendingSubjectFactory end
 
 ##
 
-mutable struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
-    subject :: Union{Nothing, S}
-    last    :: Union{Nothing, D}
+mutable struct PendingSubjectProps{D}
+    isdisposed :: Bool
+    last       :: Union{Nothing, D}
+
+    PendingSubjectProps{D}() where D = new(false, nothing)
+end
+
+struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
+    subject :: S
+    props   :: PendingSubjectProps{D}
 end
 
 Base.show(io::IO, ::PendingSubjectInstance{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
@@ -47,16 +54,15 @@ end
 
 as_pending_subject(::Type{D},  ::InvalidSubject,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
 as_pending_subject(::Type{D1}, ::ValidSubject{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_pending_subject(::Type{D},  ::ValidSubject{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, nothing)
+as_pending_subject(::Type{D},  ::ValidSubject{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, PendingSubjectProps{D}())
 
 ##
 
-getlast(subject::PendingSubjectInstance)         = subject.last
-setlast!(subject::PendingSubjectInstance, value) = subject.last = value
+getlast(subject::PendingSubjectInstance)         = subject.props.last
+setlast!(subject::PendingSubjectInstance, value) = subject.props.last = value
 
-isdisposed(subject::PendingSubjectInstance) = subject.subject === nothing
-dispose(subject::PendingSubjectInstance)    = subject.subject = nothing
-
+isdisposed(subject::PendingSubjectInstance) = subject.props.isdisposed
+dispose!(subject::PendingSubjectInstance)   = subject.props.isdisposed = true
 
 ##
 
@@ -79,7 +85,7 @@ function on_complete!(subject::PendingSubjectInstance)
             next!(subject.subject, last)
         end
         complete!(subject.subject)
-        dispose(subject)
+        dispose!(subject)
     end
 end
 
