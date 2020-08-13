@@ -82,7 +82,7 @@ setcurrent!(actor::SumActor, value) = actor.props.current = value
 
 function on_next!(actor::SumActor{L}, data::L) where L
     current = getcurrent(actor)
-    if current == nothing
+    if current === nothing
         setcurrent!(actor, data)
     else
         setcurrent!(actor, current + data)

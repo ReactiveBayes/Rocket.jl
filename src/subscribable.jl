@@ -1,6 +1,6 @@
 export SubscribableTrait, ValidSubscribableTrait, SimpleSubscribableTrait, ScheduledSubscribableTrait, InvalidSubscribable
 export AbstractSubscribable, Subscribable, ScheduledSubscribable, as_subscribable
-export subscribe!, on_subscribe!
+export subscribe!, subscribe2!, on_subscribe!
 export subscribable_extract_type
 
 export InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableDataTypesError
@@ -180,6 +180,10 @@ ERROR: Type Int64 is not a valid subscribable type.
 See also: [`on_subscribe!`](@ref), [`as_subscribable`](@ref)
 """
 function subscribe!(subscribable::T, actor::S) where { T, S }
+    return subscribable_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
+end
+
+function subscribe2!(subscribable::T, actor::S) where { T, S }
     return subscribable_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
 end
 
