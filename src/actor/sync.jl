@@ -137,7 +137,7 @@ Accepts optional named `timeout` argument which specifies maximum number of mill
 Also accepts optional `withlock` boolean flag indicating that every `next!`, `error!` and `complete!` event should be guarded with `ReentrantLock`.
 
 # Examples
-```jldoctest
+```
 using Rocket
 
 actor  = keep(Int)
@@ -157,7 +157,7 @@ show(synced.actor.values)
 Can also be used with an `<: AbstractActorFactory` as an argument. In this case `sync` function will return a special actor factory object, which
 will store all created actors in array and wrap them with a `sync` function. `wait(sync_factory)` method will wait for all of the created actors to be completed in the order of creation (but only once for each of them).
 
-```jldoctest
+```
 using Rocket
 
 values = Int[]

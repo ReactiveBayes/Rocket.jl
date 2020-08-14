@@ -106,7 +106,7 @@ subscribe!(observable, logger())
 [LogActor] Completed
 ```
 
-```jldoctest
+```
 using Rocket
 
 subject = Subject(Int, scheduler = AsyncScheduler())

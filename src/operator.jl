@@ -243,12 +243,12 @@ Can be used as a supertype for any operator. Automatically specifies TypedOperat
 ```jldoctest
 using Rocket
 
-struct MyOperator <: TypedOperator{Float64, String} end
+struct MyOperator <: TypedOperator{Float64,String} end
 
 as_operator(MyOperator)
 
 # output
-TypedOperatorTrait{Float64, String}()
+TypedOperatorTrait{Float64,String}()
 ```
 
 See also: [`AbstractOperator`](@ref), [`TypedOperatorTrait`](@ref)
