@@ -243,12 +243,12 @@ Can be used as a supertype for any operator. Automatically specifies TypedOperat
 ```jldoctest
 using Rocket
 
-struct MyOperator <: TypedOperator{Int, String} end
+struct MyOperator <: TypedOperator{Float64, String} end
 
 as_operator(MyOperator)
 
 # output
-TypedOperatorTrait{Int, String}()
+TypedOperatorTrait{Float64, String}()
 ```
 
 See also: [`AbstractOperator`](@ref), [`TypedOperatorTrait`](@ref)
@@ -262,12 +262,12 @@ Can be used as a supertype for any operator. Automatically specifies LeftTypedOp
 ```jldoctest
 using Rocket
 
-struct MyOperator <: LeftTypedOperator{Int} end
+struct MyOperator <: LeftTypedOperator{Float64} end
 
 as_operator(MyOperator)
 
 # output
-LeftTypedOperatorTrait{Int}()
+LeftTypedOperatorTrait{Float64}()
 ```
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperatorTrait`](@ref), [`operator_right`](@ref)
@@ -281,12 +281,12 @@ Can be used as a supertype for any operator. Automatically specifies RightTypedO
 ```jldoctest
 using Rocket
 
-struct MyOperator <: RightTypedOperator{Int} end
+struct MyOperator <: RightTypedOperator{Float64} end
 
 as_operator(MyOperator)
 
 # output
-RightTypedOperatorTrait{Int}()
+RightTypedOperatorTrait{Float64}()
 ```
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperatorTrait`](@ref)

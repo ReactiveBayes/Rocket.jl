@@ -35,7 +35,7 @@ using Rocket
 
     @testset "as_subscribable" begin
         # Check if arbitrary dummy type has invalid subscribable type
-        @test as_subscribable(DummyType) === InvalidSubscribable()
+        @test as_subscribable(DummyType) === InvalidSubscribableTrait()
 
         # Check if as_subscribable returns valid subscribable type for subtypes of Subscribable abstract type
         @test as_subscribable(NotImplementedSubscribable)          === SimpleSubscribableTrait{Int}()

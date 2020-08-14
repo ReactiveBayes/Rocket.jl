@@ -1,5 +1,5 @@
 export ActorTrait, InvalidActorTrait, BaseActorTrait, NextActorTrait, ErrorActorTrait, CompletionActorTrait
-export Actor, NextActor, ErrorActor, CompletionActor
+export AbstractActor, Actor, NextActor, ErrorActor, CompletionActor
 export AbstractActorFactory, create_actor
 export next!, error!, complete!
 export on_next!, on_error!, on_complete!
@@ -227,6 +227,11 @@ complete!(actor::T, scheduler) where T = actor_on_complete!(as_actor(T), actor, 
 actor_on_next!(::InvalidActorTrait,     actor, data) = throw(InvalidActorTraitUsageError(actor))
 actor_on_error!(::InvalidActorTrait,    actor, err)  = throw(InvalidActorTraitUsageError(actor))
 actor_on_complete!(::InvalidActorTrait, actor)       = throw(InvalidActorTraitUsageError(actor))
+
+actor_on_next!(::BaseActorTrait{T},       actor, data::R) where { R, T } = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::NextActorTrait{T},       actor, data::R) where { R, T } = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::ErrorActorTrait{T},      actor, data::R) where { R, T } = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+actor_on_next!(::CompletionActorTrait{T}, actor, data::R) where { R, T } = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
 
 actor_on_next!(::BaseActorTrait{T},       actor, data::R) where { T, R <: T } = begin on_next!(actor, data); return nothing end
 actor_on_next!(::NextActorTrait{T},       actor, data::R) where { T, R <: T } = begin on_next!(actor, data); return nothing end

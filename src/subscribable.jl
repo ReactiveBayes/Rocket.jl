@@ -98,7 +98,7 @@ This function checks subscribable trait behavior specification. Can be used expl
 
 See also: [`subscribe!`](@ref)
 """
-as_subscribable(::Type)                                        = InvalidSubscribable()
+as_subscribable(::Type)                                        = InvalidSubscribableTrait()
 as_subscribable(::Type{ <: Subscribable{T} })          where T = SimpleSubscribableTrait{T}()
 as_subscribable(::Type{ <: ScheduledSubscribable{T} }) where T = ScheduledSubscribableTrait{T}()
 as_subscribable(::O)                                   where O = as_subscribable(O)

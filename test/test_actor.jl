@@ -9,7 +9,7 @@ using Rocket
     struct AbstractDummyActor <: AbstractActor{Any} end
 
     struct SpecifiedAbstractActor end
-    Rocket.as_actor(::Type{<:SpecifiedAbstractActor}) = BaseActorTrait{Int}()
+    Rocket.as_actor(::Type{ <: SpecifiedAbstractActor }) = BaseActorTrait{Int}()
 
     struct NotImplementedActor <: Actor{Any}
         events :: Vector{Any}

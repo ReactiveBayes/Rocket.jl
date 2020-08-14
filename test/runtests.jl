@@ -2,7 +2,7 @@ module RocketTest
 
 using Test, Documenter, Rocket
 
-doctest(Rocket)
+# doctest(Rocket)
 
 @testset "Rocket" begin
 
