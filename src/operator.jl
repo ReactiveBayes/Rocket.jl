@@ -6,7 +6,7 @@ export OperatorsComposition, call_operator_composition!
 export InvalidOperatorTraitUsageError, InconsistentSourceOperatorDataTypesError
 export MissingOnCallImplementationError, MissingOperatorRightImplementationError
 
-import Base: show
+import Base: show, showerror
 import Base: |>
 import Base: +
 
@@ -61,9 +61,9 @@ subscribe!(source |> MyTypedOperator(), logger())
 [LogActor] Completed
 ```
 
-See also: [`TypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
+See also: [`OperatorTrait`](@ref), [`TypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
-struct TypedOperatorTrait{L, R}   <: OperatorTrait end
+struct TypedOperatorTrait{L, R} <: OperatorTrait end
 
 """
 Left typed operator trait specifies operator to be statically typed with input data type.
@@ -114,9 +114,9 @@ subscribe!(source |> CountIntegersOperator(), logger())
 [LogActor] Completed
 ```
 
-See also: [`LeftTypedOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`enumerate`](@ref), [`logger`](@ref)
+See also: [`OperatorTrait`](@ref), [`LeftTypedOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`enumerate`](@ref), [`logger`](@ref)
 """
-struct LeftTypedOperatorTrait{L}  <: OperatorTrait end
+struct LeftTypedOperatorTrait{L} <: OperatorTrait end
 
 """
 Right typed operator trait specifies operator to be statically typed with output data type. It can operate on input Observable with any data type `L`
@@ -162,7 +162,7 @@ subscribe!(source |> ConvertToFloatOperator(), logger())
 [LogActor] Completed
 ```
 
-See also: [`RightTypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
+See also: [`OperatorTrait`](@ref), [`RightTypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
 struct RightTypedOperatorTrait{R} <: OperatorTrait end
 
@@ -217,20 +217,24 @@ subscribe!(source |> IdentityOperator(), logger())
 
 ```
 
-See also: [`InferableOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
+See also: [`OperatorTrait`](@ref), [`InferableOperator`](@ref), [`operator_right`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
-struct InferableOperatorTrait     <: OperatorTrait end
+struct InferableOperatorTrait <: OperatorTrait end
 
 """
 InvalidOperatorTrait trait specifies special 'invalid' behavior and types with such a trait specification cannot be used as an operator for an observable stream.
 By default any type has InvalidOperatorTrait trait specification
+
+See also: [`OperatorTrait`](@ref)
 """
-struct InvalidOperatorTrait       <: OperatorTrait end
+struct InvalidOperatorTrait <: OperatorTrait end
 
 """
 Supertype for all operators
+
+See also: [`TypedOperator`](@ref), [`LeftTypedOperator`](@ref), [`RightTypedOperator`](@ref), [`InferableOperator`](@ref)
 """
-abstract type AbstractOperator      end
+abstract type AbstractOperator end
 
 """
 Can be used as a supertype for any operator. Automatically specifies TypedOperatorTrait behavior.
@@ -241,16 +245,15 @@ using Rocket
 
 struct MyOperator <: TypedOperator{Int, String} end
 
-println(as_operator(MyOperator) === TypedOperatorTrait{Int, String}())
-;
+as_operator(MyOperator)
 
 # output
-true
+TypedOperatorTrait{Int, String}()
 ```
 
-See also: [`TypedOperatorTrait`](@ref)
+See also: [`AbstractOperator`](@ref), [`TypedOperatorTrait`](@ref)
 """
-abstract type TypedOperator{L, R}   <: AbstractOperator end
+abstract type TypedOperator{L, R} <: AbstractOperator end
 
 """
 Can be used as a supertype for any operator. Automatically specifies LeftTypedOperatorTrait behavior.
@@ -261,14 +264,13 @@ using Rocket
 
 struct MyOperator <: LeftTypedOperator{Int} end
 
-println(as_operator(MyOperator) === LeftTypedOperatorTrait{Int}())
-;
+as_operator(MyOperator)
 
 # output
-true
+LeftTypedOperatorTrait{Int}()
 ```
 
-See also: [`LeftTypedOperatorTrait`](@ref), [`operator_right`](@ref)
+See also: [`AbstractOperator`](@ref), [`LeftTypedOperatorTrait`](@ref), [`operator_right`](@ref)
 """
 abstract type LeftTypedOperator{L}  <: AbstractOperator end
 
@@ -281,14 +283,13 @@ using Rocket
 
 struct MyOperator <: RightTypedOperator{Int} end
 
-println(as_operator(MyOperator) === RightTypedOperatorTrait{Int}())
-;
+as_operator(MyOperator)
 
 # output
-true
+RightTypedOperatorTrait{Int}()
 ```
 
-See also: [`RightTypedOperatorTrait`](@ref)
+See also: [`AbstractOperator`](@ref), [`RightTypedOperatorTrait`](@ref)
 """
 abstract type RightTypedOperator{R} <: AbstractOperator end
 
@@ -301,67 +302,50 @@ using Rocket
 
 struct MyOperator <: InferableOperator end
 
-println(as_operator(MyOperator) === InferableOperatorTrait())
-;
+as_operator(MyOperator)
 
 # output
-true
+InferableOperatorTrait()
 ```
 
-See also: [`InferableOperatorTrait`](@ref), [`operator_right`](@ref)
+See also: [`AbstractOperator`](@ref), [`InferableOperatorTrait`](@ref), [`operator_right`](@ref)
 """
-abstract type InferableOperator     <: AbstractOperator end
+abstract type InferableOperator <: AbstractOperator end
 
 """
-    as_operator(::Type)
+    as_operator(any)
 
 This function checks operator trait behavior. May be used explicitly to specify operator trait behavior for any object.
 
 See also: [`OperatorTrait`](@ref), [`AbstractOperator`](@ref)
 """
-as_operator(::Type)                                          = InvalidOperatorTrait()
-as_operator(::Type{<:TypedOperator{L, R}})   where L where R = TypedOperatorTrait{L, R}()
-as_operator(::Type{<:LeftTypedOperator{L}})  where L         = LeftTypedOperatorTrait{L}()
-as_operator(::Type{<:RightTypedOperator{R}}) where R         = RightTypedOperatorTrait{R}()
-as_operator(::Type{<:InferableOperator})                     = InferableOperatorTrait()
+as_operator(::Type)                                            = InvalidOperatorTrait()
+as_operator(::Type{ <: TypedOperator{L, R} })   where { L, R } = TypedOperatorTrait{L, R}()
+as_operator(::Type{ <: LeftTypedOperator{L} })  where L        = LeftTypedOperatorTrait{L}()
+as_operator(::Type{ <: RightTypedOperator{R} }) where R        = RightTypedOperatorTrait{R}()
+as_operator(::Type{ <: InferableOperator })                    = InferableOperatorTrait()
+as_operator(::O)                                where O        = as_operator(O)
 
-call_operator!(operator::T, source::S) where T where S = call_operator!(as_operator(T), as_subscribable(S), operator, source)
+call_operator!(operator::O, source::S) where { O, S } = check_call_operator!(as_operator(O), as_subscribable(S), operator, source)
 
-function call_operator!(::InvalidOperatorTrait, ::InvalidSubscribable, operator, source)
-    throw(InvalidSubscribableTraitUsageError(source))
-end
+check_call_operator!(::InvalidOperatorTrait, _,                          operator, source) = throw(InvalidOperatorTraitUsageError(operator))
+check_call_operator!(::InvalidOperatorTrait, ::InvalidSubscribableTrait, operator, source) = throw(InvalidOperatorTraitUsageError(operator))
+check_call_operator!(_,                      ::InvalidSubscribableTrait, operator, source) = throw(InvalidSubscribableTraitUsageError(source))
 
-function call_operator!(as_operator, ::InvalidSubscribable, operator, source)
-    throw(InvalidSubscribableTraitUsageError(source))
-end
+check_call_operator!(::TypedOperatorTrait{L},      ::SimpleSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
+check_call_operator!(::LeftTypedOperatorTrait{L},  ::SimpleSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
+check_call_operator!(::TypedOperatorTrait{L, R},   ::SimpleSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
+check_call_operator!(::LeftTypedOperatorTrait{L},  ::SimpleSubscribableTrait{L}, operator, source)    where L           = on_call!(L, operator_right(operator, L), operator, source)
+check_call_operator!(::RightTypedOperatorTrait{R}, ::SimpleSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
+check_call_operator!(::InferableOperatorTrait,     ::SimpleSubscribableTrait{L},  operator, source)   where L           = on_call!(L, operator_right(operator, L), operator, source)
 
-function call_operator!(::InvalidOperatorTrait, as_subscribable, operator, source)
-    throw(InvalidOperatorTraitUsageError(operator))
-end
+check_call_operator!(::TypedOperatorTrait{L},      ::ScheduledSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
+check_call_operator!(::LeftTypedOperatorTrait{L},  ::ScheduledSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
+check_call_operator!(::TypedOperatorTrait{L, R},   ::ScheduledSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
+check_call_operator!(::LeftTypedOperatorTrait{L},  ::ScheduledSubscribableTrait{L}, operator, source)    where L           = on_call!(L, operator_right(operator, L), operator, source)
+check_call_operator!(::RightTypedOperatorTrait{R}, ::ScheduledSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
+check_call_operator!(::InferableOperatorTrait,     ::ScheduledSubscribableTrait{L},  operator, source)   where L           = on_call!(L, operator_right(operator, L), operator, source)
 
-function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribableTrait{NotL}, operator, source) where L where R where NotL
-    throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
-end
-
-function call_operator!(::TypedOperatorTrait{L, R}, ::ValidSubscribableTrait{L}, operator, source) where L where R
-    on_call!(L, R, operator, source)
-end
-
-function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribableTrait{NotL}, operator, source) where L where NotL
-    throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
-end
-
-function call_operator!(::LeftTypedOperatorTrait{L}, ::ValidSubscribableTrait{L}, operator, source) where L
-    on_call!(L, operator_right(operator, L), operator, source)
-end
-
-function call_operator!(::RightTypedOperatorTrait{R}, ::ValidSubscribableTrait{L}, operator, source) where L where R
-    on_call!(L, R, operator, source)
-end
-
-function call_operator!(::InferableOperatorTrait, ::ValidSubscribableTrait{L}, operator, source) where L
-    on_call!(L, operator_right(operator, L), operator, source)
-end
 
 Base.:|>(source, operator::O) where { O <: AbstractOperator } = call_operator!(operator, source)
 
@@ -383,9 +367,9 @@ type of data of output Observable given the type of data of input Observable.
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOperator`](@ref)
 """
-operator_right(operator::O, ::Type{L}) where { O <: TypedOperator{L, R}   } where L where R = R
-operator_right(operator::O, ::Type{L}) where { O <: RightTypedOperator{R} } where L where R = R
-operator_right(operator, L) = throw(MissingOperatorRightImplementationError(operator))
+operator_right(::TypedOperator{L, R},   ::Type{L}) where { L, R } = R
+operator_right(::RightTypedOperator{R}, ::Type{L}) where { L, R } = R
+operator_right(operator, _) = throw(MissingOperatorRightImplementationError(operator))
 
 # -------------------------------- #
 # Operators composition            #
@@ -463,7 +447,7 @@ struct InvalidOperatorTraitUsageError
     operator
 end
 
-function Base.show(io::IO, err::InvalidOperatorTraitUsageError)
+function Base.showerror(io::IO, err::InvalidOperatorTraitUsageError)
     print(io, "Type $(typeof(err.operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rocket.as_operator(::Type{<:$(typeof(err.operator))}).")
 end
 
@@ -476,7 +460,7 @@ struct InconsistentSourceOperatorDataTypesError{L, NotL}
     operator
 end
 
-function Base.show(io::IO, err::InconsistentSourceOperatorDataTypesError{L, NotL}) where L where NotL
+function Base.showerror(io::IO, err::InconsistentSourceOperatorDataTypesError{L, NotL}) where L where NotL
     print(io, "Operator of type $(typeof(err.operator)) expects source data to be of type $(L), but $(NotL) found.")
 end
 
@@ -489,7 +473,7 @@ struct MissingOnCallImplementationError
     operator
 end
 
-function Base.show(io::IO, err::MissingOnCallImplementationError)
+function Base.showerror(io::IO, err::MissingOnCallImplementationError)
     print(io, "You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(err.operator)), source).")
 end
 
@@ -502,6 +486,6 @@ struct MissingOperatorRightImplementationError
     operator
 end
 
-function Base.show(io::IO, err::MissingOperatorRightImplementationError)
+function Base.showerror(io::IO, err::MissingOperatorRightImplementationError)
     print(io, "You probably forgot to implement operator_right(operator::$(typeof(err.operator)), L).")
 end

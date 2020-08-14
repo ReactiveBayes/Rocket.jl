@@ -41,5 +41,6 @@ See also: [`concat_map`](@ref), [`AbstractOperator`](@ref), [`RightTypedOperator
 """
 concat_map_to(source::S) where S = as_concat_map_to(as_subscribable(S), source)
 
-as_concat_map_to(::InvalidSubscribable,  source)              = throw(InvalidSubscribableTraitUsageError(source))
-as_concat_map_to(::ValidSubscribableTrait{R}, source) where R = concat_map(R, (_) -> source)
+as_concat_map_to(::InvalidSubscribableTrait,      source)         = throw(InvalidSubscribableTraitUsageError(source))
+as_concat_map_to(::SimpleSubscribableTrait{R},    source) where R = concat_map(R, (_) -> source)
+as_concat_map_to(::ScheduledSubscribableTrait{R}, source) where R = concat_map(R, (_) -> source)

@@ -153,11 +153,11 @@ struct ErrorEventEqualityFailedException          <: Exception end
 
 test_on_source(source::S, test; maximum_wait::Float64 = 60000.0, actor = nothing, check_timings = true) where S = test_on_source(as_subscribable(S), source, test, maximum_wait, actor, check_timings)
 
-function test_on_source(::InvalidSubscribable, source, test, maximum_wait, actor, check_timings)
-    throw(InvalidSubscribableTraitUsageError(source))
-end
+test_on_source(::InvalidSubscribableTrait,      source, test, maximum_wait, actor, check_timings)         = throw(InvalidSubscribableTraitUsageError(source))
+test_on_source(::SimpleSubscribableTrait{T},    source, test, maximum_wait, actor, check_timings) where T = _test_on_source(T, source, test, maximum_wait, actor, check_timings)
+test_on_source(::ScheduledSubscribableTrait{T}, source, test, maximum_wait, actor, check_timings) where T = _test_on_source(T, source, test, maximum_wait, actor, check_timings)
 
-function test_on_source(::ValidSubscribableTrait{T}, source, test, maximum_wait, actor, check_timings) where T
+function _test_on_source(::Type{T}, source, test, maximum_wait, actor, check_timings) where T
     actor = actor === nothing ? test_actor(T) : actor
 
     is_completed = false

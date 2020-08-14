@@ -29,5 +29,6 @@ Base.show(io::IO, ::ScheduledActor{L, H})  where { L, H } = print(io, "Scheduled
 
 scheduled(source::S, scheduler::H) where { S, H <: AbstractScheduler } = as_scheduled(as_subscribable(S), source, scheduler)
 
-as_scheduled(::InvalidSubscribable,       source, scheduler)                         = throw(InvalidSubscribableTraitUsageError(source))
-as_scheduled(::ValidSubscribableTrait{L}, source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
+as_scheduled(::InvalidSubscribableTrait,      source, scheduler)                         = throw(InvalidSubscribableTraitUsageError(source))
+as_scheduled(::SimpleSubscribableTrait{L},    source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
+as_scheduled(::ScheduledSubscribableTrait{L}, source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
