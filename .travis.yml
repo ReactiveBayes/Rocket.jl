@@ -21,13 +21,13 @@ jobs:
         - julia -e 'import Pkg; Pkg.test("Rocket")'
       after_success: skip
     - stage: coverage
-      julia: 1.4
+      julia: 1.5
       script:
         - julia -e 'import Pkg; Pkg.test("Rocket", coverage=true, julia_args=["--inline=no"])';
         - julia -e 'import Pkg; cd(Pkg.dir("Rocket")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
       after_success: skip
     - stage: documentation
-      julia: 1.4
+      julia: 1.5
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
