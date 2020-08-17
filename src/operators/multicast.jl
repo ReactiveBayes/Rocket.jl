@@ -50,8 +50,8 @@ See also: [`ConnectableObservable`](@ref), [`Subject`](@ref), [`share`](@ref), [
 multicast(subject::S) where S                               = as_multicast(as_subject(S), subject)
 multicast(factory::F) where { F <: AbstractSubjectFactory } = MulticastWithFactoryOperator{F}(factory)
 
-as_multicast(::ValidSubject{D}, subject::S) where { D, S } = MulticastOperator{S}(subject)
-as_multicast(::InvalidSubject,  subject::S) where {    S } = throw(InvalidSubjectTraitUsageError(subject))
+as_multicast(::ValidSubjectTrait{D}, subject::S) where { D, S } = MulticastOperator{S}(subject)
+as_multicast(::InvalidSubjectTrait,  subject::S) where {    S } = throw(InvalidSubjectTraitUsageError(subject))
 
 struct MulticastOperator{S} <: InferableOperator
     subject :: S

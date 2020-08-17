@@ -1,6 +1,6 @@
 export SubscribableTrait, SimpleSubscribableTrait, ScheduledSubscribableTrait, InvalidSubscribableTrait
 export AbstractSubscribable, Subscribable, ScheduledSubscribable, as_subscribable
-export subscribe!, subscribe2!, on_subscribe!
+export subscribe!, on_subscribe!
 export subscribable_extract_type
 
 export InvalidSubscribableTraitUsageError, InconsistentActorWithSubscribableDataTypesError
@@ -96,7 +96,7 @@ abstract type ScheduledSubscribable{T} <: AbstractSubscribable{T} end
 
 This function checks subscribable trait behavior specification. Can be used explicitly to specify subscribable trait behavior for any object.
 
-See also: [`subscribe!`](@ref)
+See also: [`SubscribableTrait`](@ref)
 """
 as_subscribable(::Type)                                        = InvalidSubscribableTrait()
 as_subscribable(::Type{ <: Subscribable{T} })          where T = SimpleSubscribableTrait{T}()
@@ -177,6 +177,8 @@ function subscribe!(subscribable::T, actor::S) where { T, S }
     return check_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
 end
 
+# We don't use an abstract types here and dispatch on all possible combinations of types because of the issue #37045 JuliaLang/julia
+# https://github.com/JuliaLang/julia/issues/37045
 check_on_subscribe!(::InvalidSubscribableTrait,       _,                          subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
 check_on_subscribe!(::SimpleSubscribableTrait,        ::InvalidActorTrait,        subscribable, actor)                  = throw(InvalidActorTraitUsageError(actor))
 check_on_subscribe!(::ScheduledSubscribableTrait,     ::InvalidActorTrait,        subscribable, actor)                  = throw(InvalidActorTraitUsageError(actor))

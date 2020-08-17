@@ -2,6 +2,8 @@
 
 ```@docs
 setTimeout
+Rocket.combined_type
+Rocket.union_type
 ```
 
 # Helpers

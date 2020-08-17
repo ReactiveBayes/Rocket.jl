@@ -55,9 +55,9 @@ function BehaviorSubject(::Type{D}, value, subject::S) where { D, S }
     return as_behavior_subject(D, as_subject(S), convert(D, value), subject)
 end
 
-as_behavior_subject(::Type{D},  ::InvalidSubject,    current,     subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_behavior_subject(::Type{D1}, ::ValidSubject{D2},  current,     subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_behavior_subject(::Type{D},  ::ValidSubject{D},   current::D,  subject::S) where { D, S }   = BehaviorSubjectInstance{D, S}(subject, BehaviourSubjectProps{D}(current))
+as_behavior_subject(::Type{D},  ::InvalidSubjectTrait,    current,     subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
+as_behavior_subject(::Type{D1}, ::ValidSubjectTrait{D2},  current,     subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
+as_behavior_subject(::Type{D},  ::ValidSubjectTrait{D},   current::D,  subject::S) where { D, S }   = BehaviorSubjectInstance{D, S}(subject, BehaviourSubjectProps{D}(current))
 
 ##
 

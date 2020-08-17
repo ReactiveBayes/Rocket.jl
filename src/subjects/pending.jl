@@ -52,9 +52,9 @@ function PendingSubject(::Type{D}, subject::S) where { D, S }
     return as_pending_subject(D, as_subject(S), subject)
 end
 
-as_pending_subject(::Type{D},  ::InvalidSubject,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_pending_subject(::Type{D1}, ::ValidSubject{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_pending_subject(::Type{D},  ::ValidSubject{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, PendingSubjectProps{D}())
+as_pending_subject(::Type{D},  ::InvalidSubjectTrait,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
+as_pending_subject(::Type{D1}, ::ValidSubjectTrait{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
+as_pending_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, PendingSubjectProps{D}())
 
 ##
 

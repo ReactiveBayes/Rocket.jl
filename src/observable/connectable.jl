@@ -50,15 +50,15 @@ See also: [`ConnectableObservable`](@ref), [`connect`](@ref), [`subscribe!`](@re
 """
 connectable(subject::J, source::S) where { J, S } = as_connectable(as_subject(J), as_subscribable(S), subject, source)
 
-as_connectable(::InvalidSubject, ::InvalidSubscribableTrait, subject, source) = throw(InvalidSubjectTraitUsageError(subject))
-as_connectable(::InvalidSubject, _,                          subject, source) = throw(InvalidSubjectTraitUsageError(subject))
-as_connectable(_,                ::InvalidSubscribableTrait, subject, source) = throw(InvalidSubscribableTraitUsageError(source))
+as_connectable(::InvalidSubjectTrait, ::InvalidSubscribableTrait, subject, source) = throw(InvalidSubjectTraitUsageError(subject))
+as_connectable(::InvalidSubjectTrait, _,                          subject, source) = throw(InvalidSubjectTraitUsageError(subject))
+as_connectable(_,                     ::InvalidSubscribableTrait, subject, source) = throw(InvalidSubscribableTraitUsageError(source))
 
-as_connectable(::ValidSubject{D1}, ::SimpleSubscribableTrait{D2},    subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
-as_connectable(::ValidSubject{D1}, ::ScheduledSubscribableTrait{D2}, subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
+as_connectable(::ValidSubjectTrait{D1}, ::SimpleSubscribableTrait{D2},    subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
+as_connectable(::ValidSubjectTrait{D1}, ::ScheduledSubscribableTrait{D2}, subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
 
-as_connectable(::ValidSubject{D},  ::SimpleSubscribableTrait{D},    subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
-as_connectable(::ValidSubject{D},  ::ScheduledSubscribableTrait{D}, subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
+as_connectable(::ValidSubjectTrait{D},  ::SimpleSubscribableTrait{D},    subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
+as_connectable(::ValidSubjectTrait{D},  ::ScheduledSubscribableTrait{D}, subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
 
 """
     connect(connectable::ConnectableObservable)

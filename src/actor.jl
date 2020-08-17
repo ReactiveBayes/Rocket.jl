@@ -160,7 +160,7 @@ abstract type CompletionActor{T} <: AbstractActor{T} end
 
 This function checks actor trait behavior specification. May be used explicitly to specify actor trait behavior for any object.
 
-See also: [`ActorTrait`](@ref), [`ValidActorTrait`](@ref), [`InvalidActorTrait`](@ref)
+See also: [`ActorTrait`](@ref)
 """
 as_actor(::Type)                                  = InvalidActorTrait()
 as_actor(::Type{ <: Actor{T} })           where T = BaseActorTrait{T}()

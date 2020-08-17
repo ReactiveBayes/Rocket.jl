@@ -1,9 +1,20 @@
 # Reactive extensions library for Julia
 
-[![Build Status](https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master)](https://travis-ci.org/biaslab/Rocket.jl)
-[![Documentation Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://biaslab.github.io/Rocket.jl/stable)
-[![Documentation Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://biaslab.github.io/Rocket.jl/dev)
-[![Coverage](https://codecov.io/gh/biaslab/Rocket.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/biaslab/Rocket.jl?branch=master)
+| **Documentation**                                                               | **Build Status**                                                                                |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][codecov-img]][codecov-url] |
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://biaslab.github.io/Rocket.jl/dev
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://biaslab.github.io/Rocket.jl/stable
+
+[travis-img]: https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/biaslab/Rocket.jl
+
+[codecov-img]: https://codecov.io/gh/biaslab/Rocket.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/biaslab/Rocket.jl?branch=master
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 

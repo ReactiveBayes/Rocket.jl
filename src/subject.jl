@@ -1,15 +1,15 @@
 export SubjectTrait
-export ValidSubject, InvalidSubject, as_subject
+export ValidSubjectTrait, InvalidSubjectTrait, as_subject
 export AbstractSubject, AbstractSubjectFactory, create_subject
 
 export InvalidSubjectTraitUsageError, InconsistentSubjectDataTypesError
 
-import Base: show
+import Base: showerror
 
 """
 Abstract type for all possible subject traits
 
-See also: [`ValidSubject`](@ref), [`InvalidSubject`](@ref), [`as_subject`](@ref)
+See also: [`ValidSubjectTrait`](@ref), [`InvalidSubjectTrait`](@ref), [`as_subject`](@ref)
 """
 abstract type SubjectTrait end
 
@@ -18,19 +18,19 @@ Valid subject trait behavior
 
 See also: [`SubjectTrait`](@ref)
 """
-struct ValidSubject{D} <: SubjectTrait end
+struct ValidSubjectTrait{D} <: SubjectTrait end
 
 """
 Default subject trait behavior for all types.
 
 See also: [`SubjectTrait`](@ref)
 """
-struct InvalidSubject  <: SubjectTrait end
+struct InvalidSubjectTrait <: SubjectTrait end
 
 """
 Supertype for Subject types. Automatically specifies `ValidSubject`, `SimpleSubscribableTrait` and `BaseActorTrait` traits.
 
-See also: [`Subject`](@ref), [`ValidSubject`](@ref), [`SimpleSubscribableTrait`](@ref), [`BaseActorTrait`](@ref)
+See also: [`Subject`](@ref), [`ValidSubjectTrait`](@ref), [`SimpleSubscribableTrait`](@ref), [`BaseActorTrait`](@ref)
 """
 abstract type AbstractSubject{D} end
 
@@ -41,10 +41,12 @@ This function checks subject trait behavior specification. Should be used explic
 
 See also: [`SubjectTrait`](@ref)
 """
-as_subject(::Type) = InvalidSubject()
+as_subject(::Type)                                  = InvalidSubjectTrait()
+as_subject(::Type{ <: AbstractSubject{D} }) where D = ValidSubjectTrait{D}()
+as_subject(::O)                             where O = as_subject(O)
 
-as_subject(::Type{ <: AbstractSubject{D} })      where D = ValidSubject{D}()
-as_actor(::Type{ <: AbstractSubject{D} })        where D = BaseActorTrait{D}()
+as_actor(::Type{ <: AbstractSubject{D} }) where D = BaseActorTrait{D}()
+
 as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTrait{D}()
 
 
@@ -55,7 +57,7 @@ as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTra
 """
 Abstract type for all possible subject factories
 
-See also: [`SubjectTrait`](@ref), [`ValidSubject`](@ref), [`InvalidSubject`](@ref)
+See also: [`SubjectTrait`](@ref), [`ValidSubjectTrait`](@ref), [`InvalidSubjectTrait`](@ref)
 """
 abstract type AbstractSubjectFactory end
 
@@ -81,7 +83,7 @@ struct InvalidSubjectTraitUsageError <: Exception
     subject
 end
 
-function Base.show(io::IO, err::InvalidSubjectTraitUsageError)
+function Base.showerror(io::IO, err::InvalidSubjectTraitUsageError)
     print(io, "Type $(typeof(err.subject)) is not a valid subject type. \nConsider implement as_subject(::Type{<:$(typeof(err.subject))}).")
 end
 
@@ -94,7 +96,7 @@ struct InconsistentSubjectDataTypesError{T1, T2} <: Exception
     subject
 end
 
-function Base.show(io::IO, err::InconsistentSubjectDataTypesError{T1, T2}) where T1 where T2
+function Base.showerror(io::IO, err::InconsistentSubjectDataTypesError{T1, T2}) where T1 where T2
     # TODO: better error message
     print(io, "Subject of type $(typeof(err.subject)) operates on data of type $(T2), while context requires subject to operate on data of type $(T1).")
 end

@@ -5,8 +5,8 @@
 ```@docs
 SubjectTrait
 as_subject  
-ValidSubject
-InvalidSubject
+ValidSubjectTrait
+InvalidSubjectTrait
 AbstractSubject
 ```
 

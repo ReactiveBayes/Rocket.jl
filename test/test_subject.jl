@@ -8,14 +8,14 @@ using Rocket
     struct DummySubjectType end
 
     struct NotImplementedSubject{T} end
-    Rocket.as_subject(::Type{<:NotImplementedSubject{T}}) where T = ValidSubject{T}()
+    Rocket.as_subject(::Type{<:NotImplementedSubject{T}}) where T = ValidSubjectTrait{T}()
 
     struct ActorMissingSubject{T} end
-    Rocket.as_subject(::Type{<:ActorMissingSubject{T}})      where T = ValidSubject{T}()
+    Rocket.as_subject(::Type{<:ActorMissingSubject{T}})      where T = ValidSubjectTrait{T}()
     Rocket.as_subscribable(::Type{<:ActorMissingSubject{T}}) where T = SimpleSubscribableTrait{T}()
 
     struct SubscribableMissingSubject{T} end
-    Rocket.as_subject(::Type{<:SubscribableMissingSubject{T}})      where T = ValidSubject{T}()
+    Rocket.as_subject(::Type{<:SubscribableMissingSubject{T}})      where T = ValidSubjectTrait{T}()
     Rocket.as_actor(::Type{<:SubscribableMissingSubject{T}})        where T = BaseActorTrait{T}()
 
     struct ImplementedSubject{T}
@@ -24,7 +24,7 @@ using Rocket
         ImplementedSubject{T}() where T = new(Vector{T}())
     end
 
-    Rocket.as_subject(::Type{<:ImplementedSubject{T}})      where T = ValidSubject{T}()
+    Rocket.as_subject(::Type{<:ImplementedSubject{T}})      where T = ValidSubjectTrait{T}()
     Rocket.as_actor(::Type{<:ImplementedSubject{T}})        where T = BaseActorTrait{T}()
     Rocket.as_subscribable(::Type{<:ImplementedSubject{T}}) where T = SimpleSubscribableTrait{T}()
 
@@ -54,11 +54,11 @@ using Rocket
 
     @testset "as_subject" begin
         # Check if arbitrary dummy type has invalid subject type
-        @test as_subject(DummySubjectType) === InvalidSubject()
+        @test as_subject(DummySubjectType) === InvalidSubjectTrait()
 
         # Check if as_subject returns valid subject type for an implemented subject object
-        @test as_subject(ImplementedSubject{Int})     === ValidSubject{Int}()
-        @test as_subject(ImplementedAutoSubject{Int}) === ValidSubject{Int}()
+        @test as_subject(ImplementedSubject{Int})     === ValidSubjectTrait{Int}()
+        @test as_subject(ImplementedAutoSubject{Int}) === ValidSubjectTrait{Int}()
 
         @test as_actor(ImplementedSubject{Int})     === BaseActorTrait{Int}()
         @test as_actor(ImplementedAutoSubject{Int}) === BaseActorTrait{Int}()

@@ -7,10 +7,9 @@ Any observable-like should implement a valid subscribable logic.
 ```@docs
 as_subscribable
 SubscribableTrait
-ValidSubscribableTrait
 SimpleSubscribableTrait
 ScheduledSubscribableTrait
-InvalidSubscribable
+InvalidSubscribableTrait
 ```
 
 ## Types

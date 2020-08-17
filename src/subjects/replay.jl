@@ -45,9 +45,9 @@ function ReplaySubject(::Type{D}, size::Int, subject::S) where { D, S }
     return as_replay_subject(D, as_subject(S), size, subject)
 end
 
-as_replay_subject(::Type{D},  ::InvalidSubject,    size::Int, subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_replay_subject(::Type{D1}, ::ValidSubject{D2},  size::Int, subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_replay_subject(::Type{D},  ::ValidSubject{D},   size::Int, subject::S) where { D, S }   = ReplaySubjectInstance{D, S}(subject, CircularBuffer{D}(size))
+as_replay_subject(::Type{D},  ::InvalidSubjectTrait,    size::Int, subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
+as_replay_subject(::Type{D1}, ::ValidSubjectTrait{D2},  size::Int, subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
+as_replay_subject(::Type{D},  ::ValidSubjectTrait{D},   size::Int, subject::S) where { D, S }   = ReplaySubjectInstance{D, S}(subject, CircularBuffer{D}(size))
 
 ##
 
