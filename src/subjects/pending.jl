@@ -27,8 +27,7 @@ function PendingSubjectFactory end
 ##
 
 mutable struct PendingSubjectProps{D}
-    isdisposed :: Bool
-    last       :: Union{Nothing, D}
+    last :: Union{Nothing, D}
 
     PendingSubjectProps{D}() where D = new(false, nothing)
 end
@@ -61,38 +60,37 @@ as_pending_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, 
 getlast(subject::PendingSubjectInstance)         = subject.props.last
 setlast!(subject::PendingSubjectInstance, value) = subject.props.last = value
 
-isdisposed(subject::PendingSubjectInstance) = subject.props.isdisposed
-dispose!(subject::PendingSubjectInstance)   = subject.props.isdisposed = true
+iscompleted(subject::PendingSubjectInstance) = iscompleted(subject.subject)
+isfailed(subject::PendingSubjectInstance)    = isfailed(subject.subject)
 
 ##
 
 function on_next!(subject::PendingSubjectInstance{D}, data::D) where D
-    if !isdisposed(subject)
+    if !completed(subject) && !isfailed(subject)
         setlast!(subject, data)
     end
 end
 
 function on_error!(subject::PendingSubjectInstance, err)
-    if !isdisposed(subject)
+    if !completed(subject) && !isfailed(subject)
         error!(subject.subject, err)
     end
 end
 
 function on_complete!(subject::PendingSubjectInstance)
-    if !isdisposed(subject)
+    if !completed(subject) && !isfailed(subject)
         last = getlast(subject)
         if last !== nothing
             next!(subject.subject, last)
         end
         complete!(subject.subject)
-        dispose!(subject)
     end
 end
 
 ##
 
 function on_subscribe!(subject::PendingSubjectInstance, actor)
-    if isdisposed(subject)
+    if iscompleted(subject)
         last = getlast(subject)
         if last !== nothing
             next!(actor, last)

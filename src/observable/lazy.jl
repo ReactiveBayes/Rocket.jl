@@ -30,4 +30,4 @@ end
 
 lazy(::Type{T} = Any) where T = LazyObservable(T, PendingSubject(Any))
 
-Base.show(io::IO, observable::LazyObservable{D}) where D = print(io, "LazyObservable($D)")
+Base.show(io::IO, ::LazyObservable{D}) where D = print(io, "LazyObservable($D)")
