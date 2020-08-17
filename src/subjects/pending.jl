@@ -29,7 +29,7 @@ function PendingSubjectFactory end
 mutable struct PendingSubjectProps{D}
     last :: Union{Nothing, D}
 
-    PendingSubjectProps{D}() where D = new(false, nothing)
+    PendingSubjectProps{D}() where D = new(nothing)
 end
 
 struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
@@ -66,19 +66,19 @@ isfailed(subject::PendingSubjectInstance)    = isfailed(subject.subject)
 ##
 
 function on_next!(subject::PendingSubjectInstance{D}, data::D) where D
-    if !completed(subject) && !isfailed(subject)
+    if !iscompleted(subject) && !isfailed(subject)
         setlast!(subject, data)
     end
 end
 
 function on_error!(subject::PendingSubjectInstance, err)
-    if !completed(subject) && !isfailed(subject)
+    if !iscompleted(subject) && !isfailed(subject)
         error!(subject.subject, err)
     end
 end
 
 function on_complete!(subject::PendingSubjectInstance)
-    if !completed(subject) && !isfailed(subject)
+    if !iscompleted(subject) && !isfailed(subject)
         last = getlast(subject)
         if last !== nothing
             next!(subject.subject, last)
