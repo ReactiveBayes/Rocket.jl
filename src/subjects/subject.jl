@@ -134,10 +134,14 @@ function on_subscribe!(subject::Subject{D}, actor) where { D }
         return voidTeardown
     else
         instance = makeinstance(D, subject.scheduler)
-        listener = SubjectListener(instance, actor)
-        push!(subject.listeners, listener)
-        return SubjectSubscription(subject, listener)
+        return scheduled_subscription!(subject, actor, instance)
     end
+end
+
+function on_subscribe!(subject::Subject{D, H, I}, actor, instance) where { D, H, I }
+    listener = SubjectListener{I}(instance, actor)
+    push!(subject.listeners, listener)
+    return SubjectSubscription(subject, listener)
 end
 
 
