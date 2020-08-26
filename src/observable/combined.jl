@@ -143,7 +143,7 @@ function push_update!(::Int, ::BitArray{1}, ::BitArray{1}, ::PushEach)
 end
 
 function push_update!(::Int, vstatus::BitArray{1}, ::BitArray{1}, ::PushEachBut{I}) where I
-    vstatus[I] = false
+    @inbounds vstatus[I] = false
     return nothing
 end
 
@@ -154,7 +154,7 @@ end
 
 function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNewBut{I}) where I
     push_update!(nsize, vstatus, cstatus, PushNew())
-    vstatus[I] = true
+    @inbounds vstatus[I] = true
     return nothing
 end
 
@@ -164,14 +164,14 @@ function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, strat
     return nothing
 end
 
-cstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.cstatus[index]
-vstatus(wrapper::CombineLatestActorWrapper, index) = wrapper.vstatus[index]
+cstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.cstatus[index]
+vstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.vstatus[index]
 
 dispose(wrapper::CombineLatestActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
 function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
     setstorage!(wrapper.storage, data, index)
-    wrapper.vstatus[I] = true
+    @inbounds wrapper.vstatus[I] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
         push_update!(wrapper)
         next!(wrapper.actor, snapshot(wrapper.storage))
@@ -179,7 +179,7 @@ function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I})
 end
 
 function error_received!(wrapper::CombineLatestActorWrapper, err, index::Val{I}) where I
-    if !wrapper.cstatus[I]
+    if !(@inbounds wrapper.cstatus[I])
         dispose(wrapper)
         error!(wrapper.actor, err)
     end
@@ -187,8 +187,8 @@ end
 
 function complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
     if !all(wrapper.cstatus)
-        wrapper.cstatus[I] = true
-        if all(wrapper.cstatus) || wrapper.vstatus[I] === false
+        @inbounds wrapper.cstatus[I] = true
+        if all(wrapper.cstatus) || (@inbounds wrapper.vstatus[I] === false)
             dispose(wrapper)
             complete!(wrapper.actor)
         end
@@ -207,7 +207,7 @@ function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) w
     wrapper = CombineLatestActorWrapper{typeof(storage), A, G}(storage, actor, observable.strategy)
 
     for (index, source) in enumerate(observable.sources)
-        wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
+        @inbounds wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
         if cstatus(wrapper, index) === true && vstatus(wrapper, index) === false
             dispose(wrapper)
             break
