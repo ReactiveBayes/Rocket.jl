@@ -69,7 +69,7 @@ function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
             @warn exception
             error!(listener.actor, exception, listener.schedulerinstance)
             if failedlisteners === nothing
-                failedlisteners = Vector{SubjectListener{I}}()
+                failedlisteners = Base.similar(listeners, 0)
             end
             push!(failedlisteners, listener)
         end
@@ -138,8 +138,8 @@ function on_subscribe!(subject::Subject{D}, actor) where { D }
     end
 end
 
-function on_subscribe!(subject::Subject{D, H, I}, actor, instance) where { D, H, I }
-    listener = SubjectListener{I}(instance, actor)
+function on_subscribe!(subject::Subject, actor, instance)
+    listener = SubjectListener(instance, actor)
     push!(subject.listeners, listener)
     return SubjectSubscription(subject, listener)
 end

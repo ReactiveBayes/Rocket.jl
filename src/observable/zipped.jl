@@ -58,9 +58,10 @@ subscribe!(source, logger())
 
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
-zipped()                                = error("zipped operator expects at least one inner observable on input")
-zipped(args...)                         = zipped(args)
-zipped(sources::S) where { S <: Tuple } = ZipObservable{combined_type(sources), S}(sources)
+zipped()                                 = error("zipped operator expects at least one inner observable on input")
+zipped(args...)                          = zipped(args)
+zipped(sources::S) where { S <: Tuple }  = ZipObservable{combined_type(sources), S}(sources)
+zipped(sources::V) where { V <: Vector } = ZipObservable{combined_type(sources), V}(sources)
 
 ##
 

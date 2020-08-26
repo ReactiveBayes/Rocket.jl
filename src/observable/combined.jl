@@ -97,9 +97,10 @@ struct PushStrategy
     strategy :: BitArray{1}
 end
 
-combineLatest(; strategy = PushEach())                                      = error("combineLatest operator expects at least one inner observable on input")
-combineLatest(args...; strategy = PushEach())                               = combineLatest(args, strategy)
-combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G } = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
+combineLatest(; strategy = PushEach())                                       = error("combineLatest operator expects at least one inner observable on input")
+combineLatest(args...; strategy = PushEach())                                = combineLatest(args, strategy)
+combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G }  = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
+combineLatest(sources::V, strategy::G = PushEach()) where { V <: Vector, G } = CombineLatestObservable{combined_type(sources), V, G}(sources, strategy)
 
 ##
 
