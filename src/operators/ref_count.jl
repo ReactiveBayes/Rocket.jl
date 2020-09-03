@@ -57,7 +57,7 @@ source_proxy!(::Type{L}, proxy::RefCountProxy, source::S) where { L, S } = RefCo
 
 mutable struct RefCountSourceProps
     refcount      :: Int
-    сsubscription :: Teardown
+    csubscription :: Teardown
 
     RefCountSourceProps() = new(0, voidTeardown)
 end
@@ -73,7 +73,7 @@ function on_subscribe!(refcount_source::RefCountSource, actor)
     subscription = subscribe!(refcount_source.csource, actor)
     refcount_source.props.refcount += 1
     if refcount_source.props.refcount === 1
-        refcount_source.props.сsubscription = connect(refcount_source.csource)
+        refcount_source.props.csubscription = connect(refcount_source.csource)
     end
     return RefCountSourceSubscription(refcount_source, subscription)
 end
@@ -92,7 +92,8 @@ function on_unsubscribe!(subscription::RefCountSourceSubscription)
     if refcount_source !== nothing
         refcount_source.props.refcount -= 1
         if refcount_source.props.refcount === 0
-            unsubscribe!(refcount_source.props.сsubscription)
+            unsubscribe!(refcount_source.props.csubscription)
+            refcount_source.props.csubscription = voidTeardown
         end
         subscription.refcount_source = nothing
     end

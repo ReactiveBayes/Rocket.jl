@@ -54,11 +54,11 @@ as_connectable(::InvalidSubjectTrait, ::InvalidSubscribableTrait, subject, sourc
 as_connectable(::InvalidSubjectTrait, _,                          subject, source) = throw(InvalidSubjectTraitUsageError(subject))
 as_connectable(_,                     ::InvalidSubscribableTrait, subject, source) = throw(InvalidSubscribableTraitUsageError(source))
 
-as_connectable(::ValidSubjectTrait{D1}, ::SimpleSubscribableTrait{D2},    subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
-as_connectable(::ValidSubjectTrait{D1}, ::ScheduledSubscribableTrait{D2}, subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError(source, subject))
+as_connectable(::ValidSubjectTrait{D1}, ::SimpleSubscribableTrait{D2},    subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError{D2, D1}(source, subject))
+as_connectable(::ValidSubjectTrait{D1}, ::ScheduledSubscribableTrait{D2}, subject, source) where { D1, D2  } = throw(InconsistentActorWithSubscribableDataTypesError{D2, D1}(source, subject))
 
-as_connectable(::ValidSubjectTrait{D},  ::SimpleSubscribableTrait{D},    subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
-as_connectable(::ValidSubjectTrait{D},  ::ScheduledSubscribableTrait{D}, subject::J, source::S) where { D, J, S } = ConnectableObservable{D, J, S}(subject, source)
+as_connectable(::ValidSubjectTrait{D1},  ::SimpleSubscribableTrait{D2},    subject::J, source::S) where { D1, D2 <: D1, J, S } = ConnectableObservable{D2, J, S}(subject, source)
+as_connectable(::ValidSubjectTrait{D1},  ::ScheduledSubscribableTrait{D2}, subject::J, source::S) where { D1, D2 <: D1, J, S } = ConnectableObservable{D2, J, S}(subject, source)
 
 """
     connect(connectable::ConnectableObservable)
