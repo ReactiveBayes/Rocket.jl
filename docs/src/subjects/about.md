@@ -139,10 +139,3 @@ next!(subject, 3)
 # [Actor 2] Data: 3
 
 ```
-
-## Subject creation
-
-```@docs
-Subject
-SubjectFactory
-```

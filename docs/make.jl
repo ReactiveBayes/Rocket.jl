@@ -124,6 +124,7 @@ makedocs(
                 ]
             ],
             "Subjects" => [
+                "Subject"  => "subjects/types/subject.md",
                 "Behavior" => "subjects/types/behavior.md",
                 "Replay"   => "subjects/types/replay.md",
                 "Pending"  => "subjects/types/pending.md",

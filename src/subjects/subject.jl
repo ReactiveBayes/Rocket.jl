@@ -29,7 +29,10 @@ Base.show(io::IO, ::SubjectProps) = print(io, "SubjectProps()")
 A Subject is a special type of Observable that allows values to be multicasted to many Observers. Subjects are like EventEmitters.
 Every Subject is an Observable and an Actor. You can subscribe to a Subject, and you can call `next!` to feed values as well as `error!` and `complete!`.
 
-See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref)
+Note: By convention, every actor subscribed to a Subject observable is not allowed to throw exceptions during `next!`, `error!` and `complete!` calls. 
+Doing so would lead to undefined behaviour. Use `safe()` operator to bypass this rule. 
+
+See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref), [`safe`](@ref)
 """
 struct Subject{D, H, I} <: AbstractSubject{D}
     listeners :: Vector{SubjectListener{I}}
@@ -58,25 +61,8 @@ setlasterror!(subject::Subject, err) = subject.props.lasterror = err
 ##
 
 function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
-    failedlisteners = nothing
-    listeners       = copy(subject.listeners)
-
-    for listener in listeners
-        try
-            next!(listener.actor, data, listener.schedulerinstance)
-        catch exception
-            @warn "An exception occured during next! invocation in subject $(subject) for actor $(listener.actor). Cannot deliver data $(data)"
-            @warn exception
-            error!(listener.actor, exception, listener.schedulerinstance)
-            if failedlisteners === nothing
-                failedlisteners = Base.similar(listeners, 0)
-            end
-            push!(failedlisteners, listener)
-        end
-    end
-
-    if failedlisteners !== nothing
-        unsubscribe_listeners!(subject, failedlisteners)
+    for listener in copy(subject.listeners)
+        scheduled_next!(listener.actor, data, listener.schedulerinstance)
     end
 end
 
@@ -84,18 +70,9 @@ function on_error!(subject::Subject, err)
     if !iscompleted(subject) && !isfailed(subject)
         setfailed!(subject)
         setlasterror!(subject, err)
-
-        listeners = copy(subject.listeners)
-
-        for listener in listeners
-            try
-                error!(listener.actor, err, listener.schedulerinstance)
-            catch exception
-                @warn "An exception occured during error! invocation in subject $(subject) for actor $(listener.actor). Cannot deliver error $(error)"
-                @warn exception
-            end
+        for listener in copy(subject.listeners)
+            scheduled_error!(listener.actor, err, listener.schedulerinstance)
         end
-
         unsubscribe_listeners!(subject, subject.listeners)
     end
 end
@@ -103,18 +80,9 @@ end
 function on_complete!(subject::Subject)
     if !iscompleted(subject) && !isfailed(subject)
         setcompleted!(subject)
-
-        listeners = copy(subject.listeners)
-
-        for listener in listeners
-            try
-                complete!(listener.actor, listener.schedulerinstance)
-            catch exception
-                @warn "An exception occured during complete! invocation in subject $(subject) for actor $(listener.actor)."
-                @warn exception
-            end
+        for listener in copy(subject.listeners)
+            scheduled_complete!(listener.actor, listener.schedulerinstance)
         end
-
         unsubscribe_listeners!(subject, subject.listeners)
     end
 end
