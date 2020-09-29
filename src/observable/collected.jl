@@ -4,11 +4,11 @@ import Base: show
 
 ## TODO Undocumented and untested
 
-collectLatest(::Type{T}, sources::S) where { T, S } = CollectLatestObservable{T, S}(sources)
+collectLatest(::Type{T}, sources::S, ::Type{R} = Vector{T}, mappingFn::F = copy) where { T, S, R, F } = CollectLatestObservable{T, S, R, F}(sources, mappingFn)
 
 ## 
 
-struct CollectLatestObservableWrapper{L, A}
+struct CollectLatestObservableWrapper{L, A, F}
     actor   :: A
     storage :: Vector{L}
 
@@ -18,12 +18,14 @@ struct CollectLatestObservableWrapper{L, A}
 
     subscriptions :: Vector{Teardown}
 
-    CollectLatestObservableWrapper{L, A}(::Type{L}, actor::A, nsize::Int) where { L, A } = begin
+    mappingFn :: F
+
+    CollectLatestObservableWrapper{L, A, F}(::Type{L}, actor::A, nsize::Int, mappingFn::F) where { L, A, F } = begin
         storage = Vector{L}(undef, nsize)
         cstatus = falses(nsize)
         vstatus = falses(nsize)
         subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
-        return new(actor, storage, nsize, cstatus, vstatus, subscriptions)
+        return new(actor, storage, nsize, cstatus, vstatus, subscriptions, mappingFn)
     end
 end
 
@@ -47,8 +49,8 @@ function next_received!(wrapper::CollectLatestObservableWrapper, data, index::In
     @inbounds wrapper.storage[index] = data
     @inbounds wrapper.vstatus[index] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
-        next!(wrapper.actor, copy(wrapper.storage))
         unsafe_copyto!(wrapper.vstatus, 1, wrapper.cstatus, 1, wrapper.nsize)
+        next!(wrapper.actor, wrapper.mappingFn(wrapper.storage))
     end
 end
 
@@ -71,13 +73,14 @@ end
 
 ## 
 
-struct CollectLatestObservable{T, S} <: Subscribable{ Vector{T} }
-    sources :: S
+struct CollectLatestObservable{T, S, R, F} <: Subscribable{ R }
+    sources   :: S
+    mappingFn :: F
 end
 
 function on_subscribe!(observable::CollectLatestObservable{L}, actor::A) where { L, A }
     sources = observable.sources
-    wrapper = CollectLatestObservableWrapper{L, A}(L, actor, length(sources))
+    wrapper = CollectLatestObservableWrapper{L, A, typeof(observable.mappingFn)}(L, actor, length(sources), observable.mappingFn)
     W       = typeof(wrapper)
 
     for (index, source) in enumerate(sources)
