@@ -81,7 +81,9 @@ Base.show(io::IO, ::AsyncSchedulerSubscription) = print(io, "AsyncSchedulerSubsc
 as_teardown(::Type{ <: AsyncSchedulerSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::AsyncSchedulerSubscription)
-    dispose(subscription.instance)
+    @async begin
+        dispose(subscription.instance)
+    end
     return nothing
 end
 
