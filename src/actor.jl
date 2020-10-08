@@ -202,6 +202,12 @@ See also: [`AbstractActor`](@ref), [`on_next!`](@ref)
 next!(actor::T, data)            where T = actor_on_next!(as_actor(T), actor, data)
 next!(actor::T, data, scheduler) where T = actor_on_next!(as_actor(T), actor, data, scheduler)
 
+# Specialized methods for default built-in type of actor (more efficient usage of stack and unnecessary checks bypass)
+next!(actor::Actor{T}, data::T)            where T = begin on_next!(actor, data); return nothing end
+next!(actor::Actor{T}, data::T, scheduler) where T = begin scheduled_next!(actor, data, scheduler); return nothing end
+next!(actor::Actor{T}, data::R)            where { T, R } = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+next!(actor::Actor{T}, data::R, scheduler) where { T, R } = throw(InconsistentSourceActorDataTypesError{T, R}(actor))
+
 """
     error!(actor, err)
     error!(actor, err, scheduler)
@@ -213,6 +219,10 @@ See also: [`AbstractActor`](@ref), [`on_error!`](@ref)
 error!(actor::T, err)            where T = actor_on_error!(as_actor(T), actor, err)
 error!(actor::T, err, scheduler) where T = actor_on_error!(as_actor(T), actor, err, scheduler)
 
+# Specialized methods for default built-in type of actor (more efficient usage of stack and unnecessary checks bypass)
+error!(actor::Actor, err)            = begin on_error!(actor, err); return nothing end
+error!(actor::Actor, err, scheduler) = begin scheduled_error!(actor, err, scheduler); return nothing end
+
 """
     complete!(actor)
     complete!(actor, scheduler)
@@ -223,6 +233,10 @@ See also: [`AbstractActor`](@ref), [`on_complete!`](@ref)
 """
 complete!(actor::T)            where T = actor_on_complete!(as_actor(T), actor)
 complete!(actor::T, scheduler) where T = actor_on_complete!(as_actor(T), actor, scheduler)
+
+# Specialized methods for default built-in type of actor (more efficient usage of stack and unnecessary checks bypass)
+error!(actor::Actor)            = begin on_complete!(actor); return nothing end
+error!(actor::Actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
 
 actor_on_next!(::InvalidActorTrait,     actor, data) = throw(InvalidActorTraitUsageError(actor))
 actor_on_error!(::InvalidActorTrait,    actor, err)  = throw(InvalidActorTraitUsageError(actor))

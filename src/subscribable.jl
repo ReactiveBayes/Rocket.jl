@@ -173,9 +173,11 @@ ERROR: Type Int64 is not a valid subscribable type.
 
 See also: [`on_subscribe!`](@ref), [`as_subscribable`](@ref)
 """
-function subscribe!(subscribable::T, actor::S) where { T, S } 
-    return check_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
-end
+subscribe!(subscribable::T, actor::S) where { T, S } = check_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
+
+# Specialised methods for built-in default subscribable and actor types
+subscribe!(subscribable::Subscribable{T1},          actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+subscribe!(subscribable::ScheduledSubscribable{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
 
 # We don't use an abstract types here and dispatch on all possible combinations of types because of the issue #37045 JuliaLang/julia
 # https://github.com/JuliaLang/julia/issues/37045
