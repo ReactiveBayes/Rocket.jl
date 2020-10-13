@@ -52,9 +52,11 @@ getchannel(instance::AsyncSchedulerInstance) = instance.channel
 
 function dispose(instance::AsyncSchedulerInstance)
     if !isunsubscribed(instance)
-        unsubscribe!(instance.props.subscription)
         instance.props.isunsubscribed = true
         close(instance.channel)
+        @async begin
+            unsubscribe!(instance.props.subscription)
+        end
     end
 end
 
@@ -63,13 +65,13 @@ function __process_channeled_message(instance::AsyncSchedulerInstance{D}, messag
 end
 
 function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerErrorMessage, actor)
-    dispose(instance)
     on_error!(actor, message.err)
+    dispose(instance)
 end
 
 function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerCompleteMessage, actor)
-    dispose(instance)
     on_complete!(actor)
+    dispose(instance)
 end
 
 struct AsyncSchedulerSubscription{ H <: AsyncSchedulerInstance } <: Teardown
@@ -81,16 +83,14 @@ Base.show(io::IO, ::AsyncSchedulerSubscription) = print(io, "AsyncSchedulerSubsc
 as_teardown(::Type{ <: AsyncSchedulerSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::AsyncSchedulerSubscription)
-    @async begin
-        dispose(subscription.instance)
-    end
+    dispose(subscription.instance)
     return nothing
 end
 
 function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance)
     subscription = AsyncSchedulerSubscription(instance)
 
-    scheduling = @async begin
+    chanelling_task = @async begin
         while !isunsubscribed(instance)
             message = take!(getchannel(instance))
             if !isunsubscribed(instance)
@@ -99,9 +99,7 @@ function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance
         end
     end
 
-    bind(getchannel(instance), scheduling)
-
-    @async begin
+    subscription_task = @async begin
         if !isunsubscribed(instance)
             tmp = on_subscribe!(source, actor, instance)
             if !isunsubscribed(instance)
@@ -111,6 +109,9 @@ function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance
             end
         end
     end
+
+    bind(getchannel(instance), chanelling_task)
+    bind(getchannel(instance), subscription_task)
 
     return subscription
 end
