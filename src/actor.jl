@@ -235,8 +235,8 @@ complete!(actor::T)            where T = actor_on_complete!(as_actor(T), actor)
 complete!(actor::T, scheduler) where T = actor_on_complete!(as_actor(T), actor, scheduler)
 
 # Specialized methods for default built-in type of actor (more efficient usage of stack and unnecessary checks bypass)
-error!(actor::Actor)            = begin on_complete!(actor); return nothing end
-error!(actor::Actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
+complete!(actor::Actor)            = begin on_complete!(actor); return nothing end
+complete!(actor::Actor, scheduler) = begin scheduled_complete!(actor, scheduler); return nothing end
 
 actor_on_next!(::InvalidActorTrait,     actor, data) = throw(InvalidActorTraitUsageError(actor))
 actor_on_error!(::InvalidActorTrait,    actor, err)  = throw(InvalidActorTraitUsageError(actor))
