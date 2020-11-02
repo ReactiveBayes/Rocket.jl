@@ -1,6 +1,6 @@
 export AsapScheduler
 
-import Base: show
+import Base: show, similar
 
 """
     AsapScheduler
@@ -12,7 +12,7 @@ struct AsapScheduler <: AbstractScheduler end
 
 Base.show(io::IO, ::AsapScheduler) = print(io, "AsapScheduler()")
 
-similar(::AsapScheduler) = AsapScheduler()
+Base.similar(::AsapScheduler) = AsapScheduler()
 
 makeinstance(::Type, ::AsapScheduler) = AsapScheduler()
 

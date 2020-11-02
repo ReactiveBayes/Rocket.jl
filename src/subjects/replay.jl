@@ -1,7 +1,7 @@
 export ReplaySubject, ReplaySubjectFactory
 
-import DataStructures: CircularBuffer
-import Base: show
+import DataStructures: CircularBuffer, capacity
+import Base: show, similar
 
 """
     ReplaySubject(::Type{D}, size::Int) where D
@@ -32,6 +32,8 @@ struct ReplaySubjectInstance{D, S} <: AbstractSubject{D}
 end
 
 Base.show(io::IO, ::ReplaySubjectInstance{D, S}) where { D, S } = print(io, "ReplaySubjectInstance($D, $S)")
+
+Base.similar(subject::ReplaySubjectInstance{D, S}) where { D, S } = ReplaySubject(D, capacity(subject.buffer), similar(subject.subject))
 
 function ReplaySubject(::Type{D}, size::Int) where D
     return ReplaySubject(D, size, SubjectFactory(AsapScheduler()))

@@ -1,6 +1,6 @@
 export PendingScheduler, release!
 
-import Base: show
+import Base: show, similar
 
 mutable struct PendingActorProps{L}
     last :: Union{Nothing, L}
@@ -35,7 +35,7 @@ end
 
 Base.show(io::IO, ::PendingScheduler) = print(io, "PendingScheduler()")
 
-similar(::PendingScheduler) = PendingScheduler()
+Base.similar(::PendingScheduler) = PendingScheduler()
 
 makeinstance(_, scheduler::PendingScheduler) = scheduler
 

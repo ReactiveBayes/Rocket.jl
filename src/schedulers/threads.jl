@@ -1,7 +1,7 @@
 
 # experimental
 
-import Base: show
+import Base: show, similar
 
 """
     ThreadsScheduler
@@ -19,7 +19,7 @@ mutable struct ThreadsSchedulerInstance
     subscription   :: Teardown
 end
 
-similar(::ThreadsScheduler) = ThreadsScheduler()
+Base.similar(::ThreadsScheduler) = ThreadsScheduler()
 
 makeinstance(::Type, ::ThreadsScheduler) = ThreadsSchedulerInstance(false, voidTeardown)
 

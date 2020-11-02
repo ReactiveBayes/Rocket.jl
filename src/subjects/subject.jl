@@ -1,6 +1,6 @@
 export Subject, SubjectFactory
 
-import Base: show
+import Base: show, similar
 
 ##
 
@@ -47,6 +47,8 @@ function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: Abst
 end
 
 Base.show(io::IO, ::Subject{D, H}) where { D, H } = print(io, "Subject($D, $H)")
+
+Base.similar(subject::Subject{D, H}) where { D, H } = Subject(D; scheduler = similar(subject.scheduler))
 
 ##
 

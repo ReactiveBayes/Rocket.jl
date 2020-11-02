@@ -1,6 +1,6 @@
 export BehaviorSubject, BehaviorSubjectFactory
 
-import Base: show
+import Base: show, similar
 
 """
     BehaviorSubject(value::D) where D
@@ -38,6 +38,8 @@ struct BehaviorSubjectInstance{D, S} <: AbstractSubject{D}
 end
 
 Base.show(io::IO, ::BehaviorSubjectInstance{D, S}) where { D, S } = print(io, "BehaviorSubject($D, $S)")
+
+Base.similar(subject::BehaviorSubjectInstance{D, S}) where { D, S } = BehaviorSubject(D, getcurrent(subject), similar(subject.subject))
 
 function BehaviorSubject(value::D) where D
     return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))

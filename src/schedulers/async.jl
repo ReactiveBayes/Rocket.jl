@@ -1,6 +1,6 @@
 export AsyncScheduler
 
-import Base: show
+import Base: show, similar
 
 """
     AsyncScheduler
@@ -15,7 +15,7 @@ function AsyncScheduler(size::Int = typemax(Int))
     return AsyncScheduler{size}()
 end
 
-similar(::AsyncScheduler{N}) where N = AsyncScheduler{N}()
+Base.similar(::AsyncScheduler{N}) where N = AsyncScheduler{N}()
 
 makeinstance(::Type{D}, ::AsyncScheduler{N}) where { D, N } = AsyncSchedulerInstance{D}(N)
 

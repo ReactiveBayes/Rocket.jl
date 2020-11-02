@@ -1,6 +1,6 @@
 export PendingSubject, PendingSubjectFactory
 
-import Base: show
+import Base: show, similar
 
 """
     PendingSubject(::Type{D}) where D
@@ -38,6 +38,8 @@ struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
 end
 
 Base.show(io::IO, ::PendingSubjectInstance{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
+
+Base.similar(subject::PendingSubjectInstance{D, S}) where { D, S } = PendingSubject(D, similar(subject.subject))
 
 function PendingSubject(::Type{D}) where D
     return PendingSubject(D, SubjectFactory(AsapScheduler()))
