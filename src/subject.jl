@@ -49,6 +49,9 @@ as_actor(::Type{ <: AbstractSubject{D} }) where D = BaseActorTrait{D}()
 
 as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTrait{D}()
 
+# Specialised methods for built-in default subject and actor types
+subscribe!(subject::AbstractSubject{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subject, actor)
+
 
 # -------------------------------- #
 # Subject factory                  #
