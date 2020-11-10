@@ -8,6 +8,14 @@ using Rocket
     println("Testing: BehaviorSubject")
 
     @testset begin
+        subject1 = BehaviorSubject(0)
+        @test eltype(subject1) === Int
+
+        subject2 = BehaviorSubject(0.0)
+        @test eltype(subject2) === Float64
+    end
+
+    @testset begin
         subject = BehaviorSubject(0)
 
         actor1 = keep(Int)
@@ -110,6 +118,53 @@ using Rocket
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
+    end
+
+    @testset begin
+        subject1 = BehaviorSubject(0)
+        subject2 = similar(subject1)
+
+        @test subject1 !== subject2
+        @test typeof(subject2) <: Rocket.BehaviorSubjectInstance
+        @test eltype(subject2) === Int
+
+        actor1 = keep(Int)
+        actor2 = keep(Int)
+
+        subscription1 = subscribe!(subject1, actor1)
+        subscription2 = subscribe!(subject2, actor2)
+
+        @test actor1.values == [ 0 ]
+        @test actor2.values == [ 0 ]
+
+        @test subscription1 !== subscription2
+
+        next!(subject1, 1)
+
+        @test actor1.values == [ 0, 1 ]
+        @test actor2.values == [ 0 ]
+
+        next!(subject2, 2)
+
+        @test actor1.values == [ 0, 1 ]
+        @test actor2.values == [ 0, 2 ]
+
+        unsubscribe!(subscription1)
+        unsubscribe!(subscription2)
+
+        subject3 = similar(subject2)
+
+        @test subject2 !== subject3
+        @test typeof(subject3) <: Rocket.BehaviorSubjectInstance
+        @test eltype(subject3) === Int
+
+        actor3 = keep(Int)
+
+        subscription3 = subscribe!(subject3, actor3)
+
+        @test actor3.values == [ 2 ]
+
+        unsubscribe!(subscription3)
     end
 
 end

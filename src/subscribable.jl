@@ -110,11 +110,11 @@ subscribable_extract_type(::SimpleSubscribableTrait{T},    _) where T = T
 subscribable_extract_type(::ScheduledSubscribableTrait{T}, _) where T = T
 subscribable_extract_type(::InvalidSubscribableTrait, source)         = throw(InvalidSubscribableTraitUsageError(source))
 
-Base.eltype(source::Subscribable)           = subscribable_extract_type(source)
-Base.eltype(source::ScheduledSubscribable)  = subscribable_extract_type(source)
+Base.eltype(::Subscribable{T})          where T = T
+Base.eltype(::ScheduledSubscribable{T}) where T = T
 
-Base.eltype(source::Type{ <: Subscribable })          = subscribable_extract_type(source)
-Base.eltype(source::Type{ <: ScheduledSubscribable }) = subscribable_extract_type(source)
+Base.eltype(::Type{ <: Subscribable{T} })          where T = T
+Base.eltype(::Type{ <: ScheduledSubscribable{T} }) where T = T
 
 """
     subscribe!(subscribable::T, actor::S)   where { T, S }

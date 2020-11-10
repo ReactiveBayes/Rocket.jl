@@ -8,6 +8,14 @@ using Rocket
     println("Testing: PendingSubject")
 
     @testset begin
+        subject1 = PendingSubject(Int)
+        @test eltype(subject1) === Int
+
+        subject2 = PendingSubject(Float64)
+        @test eltype(subject2) === Float64
+    end
+
+    @testset begin
         subject = PendingSubject(Int)
 
         actor1 = keep(Int)
@@ -118,6 +126,46 @@ using Rocket
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 5 ]
         @test actor2.values == [ 5 ]
+
+        unsubscribe!(subscription1)
+        unsubscribe!(subscription2)
+    end
+
+    @testset begin
+        subject1 = PendingSubject(Int)
+        subject2 = similar(subject1)
+
+        @test subject1 !== subject2
+        @test typeof(subject2) <: Rocket.PendingSubjectInstance
+        @test eltype(subject2) === Int
+
+        actor1 = keep(Int)
+        actor2 = keep(Int)
+
+        subscription1 = subscribe!(subject1, actor1)
+        subscription2 = subscribe!(subject2, actor2)
+
+        @test subscription1 !== subscription2
+
+        next!(subject1, 1)
+
+        @test actor1.values == [ ]
+        @test actor2.values == [ ]
+
+        next!(subject2, 2)
+
+        @test actor1.values == [ ]
+        @test actor2.values == [ ]
+
+        complete!(subject1)
+
+        @test actor1.values == [ 1 ]
+        @test actor2.values == [ ]
+
+        complete!(subject2)
+
+        @test actor1.values == [ 1 ]
+        @test actor2.values == [ 2 ]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)

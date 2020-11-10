@@ -8,6 +8,14 @@ using Rocket
     println("Testing: Subject")
 
     @testset begin
+        subject1 = Subject(Int)
+        @test eltype(subject1) === Int
+
+        subject2 = Subject(Float64)
+        @test eltype(subject2) === Float64
+    end
+
+    @testset begin
         subject = Subject(Int)
 
         actor1 = keep(Int)
@@ -113,6 +121,36 @@ using Rocket
         @test values        == [ 1, 2, 3, 4, 5 ]
         @test actor1.values == [ 1, 2, 3, 4, 5 ]
         @test actor2.values == [ 1, 2, 3, 4, 5 ]
+
+        unsubscribe!(subscription1)
+        unsubscribe!(subscription2)
+    end
+
+    @testset begin
+        subject1 = Subject(Int)
+        subject2 = similar(subject1)
+
+        @test subject1 !== subject2
+        @test typeof(subject2) <: Subject
+        @test eltype(subject2) === Int
+
+        actor1 = keep(Int)
+        actor2 = keep(Int)
+
+        subscription1 = subscribe!(subject1, actor1)
+        subscription2 = subscribe!(subject2, actor2)
+
+        @test subscription1 !== subscription2
+
+        next!(subject1, 1)
+
+        @test actor1.values == [ 1 ]
+        @test actor2.values == [  ]
+
+        next!(subject2, 2)
+
+        @test actor1.values == [ 1 ]
+        @test actor2.values == [ 2 ]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)

@@ -90,7 +90,7 @@ end
 function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance)
     subscription = AsyncSchedulerSubscription(instance)
 
-    chanelling_task = @async begin
+    channeling_task = @async begin
         while !isunsubscribed(instance)
             message = take!(getchannel(instance))
             if !isunsubscribed(instance)
@@ -110,7 +110,7 @@ function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance
         end
     end
 
-    bind(getchannel(instance), chanelling_task)
+    bind(getchannel(instance), channeling_task)
 
     return subscription
 end

@@ -4,7 +4,7 @@ export AbstractSubject, AbstractSubjectFactory, create_subject
 
 export InvalidSubjectTraitUsageError, InconsistentSubjectDataTypesError
 
-import Base: showerror
+import Base: showerror, eltype
 
 """
 Abstract type for all possible subject traits
@@ -52,6 +52,8 @@ as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTra
 # Specialised methods for built-in default subject and actor types
 subscribe!(subject::AbstractSubject{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subject, actor)
 
+Base.eltype(::AbstractSubject{D})            where D = D
+Base.eltype(::Type{ <: AbstractSubject{D} }) where D = D
 
 # -------------------------------- #
 # Subject factory                  #
