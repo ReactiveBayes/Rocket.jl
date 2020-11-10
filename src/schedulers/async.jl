@@ -111,7 +111,6 @@ function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance
     end
 
     bind(getchannel(instance), chanelling_task)
-    bind(getchannel(instance), subscription_task)
 
     return subscription
 end
