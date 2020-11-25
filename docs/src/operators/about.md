@@ -19,7 +19,7 @@ For example, the operator called [`map()`](@ref operator_map) is analogous to th
 
 ```julia
 source = from([ 1, 2, 3 ])
-subscribe!(source |> map(Int, Int, (d) -> d ^ 2), lambda(
+subscribe!(source |> map(Int, (d) -> d ^ 2), lambda(
     on_next = (d) -> println(d)
 ))
 
@@ -33,7 +33,7 @@ Another useful operator is [`first()`](@ref):
 
 ```julia
 source = from([ 1, 2, 3 ])
-subscribe!(source |> first(Int), lambda(
+subscribe!(source |> first(), lambda(
     on_next     = (d) -> println(d),
     on_complete = ()  -> "Completed"
 ))
@@ -42,11 +42,6 @@ subscribe!(source |> first(Int), lambda(
 // 1
 // Completed
 ```
-
-Note that the [`map()`](@ref operator_map) is constructed on the fly, since it must be given the mapping function to. By contrast, [`first()`](@ref) could be a constant, but it is nonetheless constructed on the fly. In general, all operators are constructed - whether they need arguments or not.
-
-!!! tip "Performance tip"
-    Do not use lambda based operators in real Julia code as them lack of performance. Either use macro helpers to generate efficient versions of operators (like [`@CreateMapOperator()`](@ref operator_map) and/or [`@CreateFilterOperator()`](@ref operator_filter), etc..) or implement your own operators without using lambda functions.
 
 ## Creation operators
 
@@ -75,7 +70,7 @@ Pipeable operators are special objects that can be used like ordinary functions 
 ```julia
 using Rocket
 
-source = from([ i for i in 1:100 ]) |> filter((d) -> d % 2 === 0) |> map(Int, (d) -> d ^ 2) |> sum()
+source = from(1:100) |> filter((d) -> d % 2 === 0) |> map(Int, (d) -> d ^ 2) |> sum()
 
 subscribe!(source, logger())
 
@@ -84,12 +79,12 @@ subscribe!(source, logger())
 // [LogActor] Completed
 ```
 
-It is also possible to create an operator composition. It might be useful to create an alias for some often used operator chain
+It is also possible to create an operator composition with `+` or `|>`. It might be useful to create an alias for some often used operator chain
 
 ```julia
 using Rocket
 
-mapAndFilter = map(Int, d -> d ^ 2) + filter(d -> d % 2 == 0)
+mapAndFilter = map(Int, d -> d ^ 2) + filter(d -> d % 2 == 0) 
 
 source = from(1:5) |> mapAndFilter
 
