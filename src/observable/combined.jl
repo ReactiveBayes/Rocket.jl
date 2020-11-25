@@ -91,7 +91,7 @@ struct PushNewBut{I} end
 
 `PushStrategy` update strategy specifies combineLatest operator to emit new value if and only if all inner observables with index such that `strategy[index] = false` have a new value
 
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref)
+See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`collectLatest`](@ref)
 """
 struct PushStrategy
     strategy :: BitArray{1}
@@ -124,6 +124,7 @@ struct CombineLatestActorWrapper{S, A, G}
     strategy :: G           # Push update strategy
     cstatus  :: BitArray{1} # Completion status
     vstatus  :: BitArray{1} # Values status
+    ustatus  :: BitArray{1} # Updates status
 
     subscriptions :: Vector{Teardown}
 
@@ -131,8 +132,9 @@ struct CombineLatestActorWrapper{S, A, G}
         nsize   = length(storage)
         cstatus = falses(nsize)
         vstatus = falses(nsize)
+        ustatus = falses(nsize)
         subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
-        return new(storage, actor, nsize, strategy, cstatus, vstatus, subscriptions)
+        return new(storage, actor, nsize, strategy, cstatus, vstatus, ustatus, subscriptions)
     end
 end
 
@@ -166,12 +168,14 @@ end
 
 cstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.cstatus[index]
 vstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.vstatus[index]
+ustatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.ustatus[index]
 
 dispose(wrapper::CombineLatestActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
 function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
     setstorage!(wrapper.storage, data, index)
     @inbounds wrapper.vstatus[I] = true
+    @inbounds wrapper.ustatus[I] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
         push_update!(wrapper)
         next!(wrapper.actor, snapshot(wrapper.storage))
@@ -188,6 +192,9 @@ end
 function complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
     if !all(wrapper.cstatus)
         @inbounds wrapper.cstatus[I] = true
+        if ustatus(wrapper, I)
+            @inbounds wrapper.vstatus[I] = true
+        end
         if all(wrapper.cstatus) || (@inbounds wrapper.vstatus[I] === false)
             dispose(wrapper)
             complete!(wrapper.actor)

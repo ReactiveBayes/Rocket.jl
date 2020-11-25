@@ -116,6 +116,8 @@ Base.eltype(::ScheduledSubscribable{T}) where T = T
 Base.eltype(::Type{ <: Subscribable{T} })          where T = T
 Base.eltype(::Type{ <: ScheduledSubscribable{T} }) where T = T
 
+union_type(::AbstractVector{ <: AbstractSubscribable{T} }) where T = T
+
 """
     subscribe!(subscribable::T, actor::S)   where { T, S }
     subscribe!(subscribable::T, factory::F) where { T, F <: AbstractActorFactory }

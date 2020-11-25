@@ -25,6 +25,11 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
+            source = combineLatest(of(1) |> async(0), from(1:5) |> async(0)),
+            values = @ts([ (1, 1) ] ~ [ (1, 2) ] ~ [ (1, 3) ] ~ [ (1, 4) ] ~ [ (1, 5) ] ~ c),
+            source_type = Tuple{Int, Int}
+        ),
+        (
             source = combineLatest(from(1:5), of(2.0)),
             values = @ts([ (5, 2), c ]),
             source_type = Tuple{Int, Float64}
@@ -215,7 +220,15 @@ include("../test_helpers.jl")
 
         complete!(s2)
 
-        @test values == [ (1, 2.0, "Hello", 5, 10), (2, 3.0, "Hello, world!", 5, 10), "completed"  ]
+        @test values == [ (1, 2.0, "Hello", 5, 10), (2, 3.0, "Hello, world!", 5, 10)  ]
+
+        next!(s3, "Something")
+
+        @test values == [ (1, 2.0, "Hello", 5, 10), (2, 3.0, "Hello, world!", 5, 10), (2, 3.0, "Something", 5, 10)  ]
+
+        complete!(s3)
+
+        @test values == [ (1, 2.0, "Hello", 5, 10), (2, 3.0, "Hello, world!", 5, 10), (2, 3.0, "Something", 5, 10), "completed"  ]
 
         unsubscribe!(subscription)
     end
@@ -287,15 +300,15 @@ include("../test_helpers.jl")
 
         complete!(s2)
 
-        @test values == [ (1, 2.0, "Hello"), (1, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "foo"), "completed" ]
+        @test values == [ (1, 2.0, "Hello"), (1, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "foo") ]
 
         next!(s3, "bar")
 
-        @test values == [ (1, 2.0, "Hello"), (1, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "foo"), "completed" ]
+        @test values == [ (1, 2.0, "Hello"), (1, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "foo"), (4, 5.0, "bar") ]
 
         complete!(s3)
 
-        @test values == [ (1, 2.0, "Hello"), (1, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "foo"), "completed" ]
+        @test values == [ (1, 2.0, "Hello"), (1, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "foo"), (4, 5.0, "bar"), "completed" ]
 
         unsubscribe!(subscription)
     end
@@ -357,11 +370,27 @@ include("../test_helpers.jl")
 
         complete!(s1);
 
-        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, ""), "completed" ]
+        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, "") ]
 
         next!(s2, 5.0)
 
-        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, ""), "completed" ]
+        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, "") ]
+
+        next!(s3, "1")
+
+        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "1") ]
+
+        complete!(s3)
+
+        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "1") ]
+
+        next!(s2, 6.0)
+
+        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "1"), (4, 6.0, "1") ]
+
+        complete!(s2)
+
+        @test values == [ (1, 2.0, "Hello"), (2, 3.0, "Hello, world!"), (4, 4.0, ""), (4, 5.0, "1"), (4, 6.0, "1"), "completed" ]
 
         unsubscribe!(subscription)
     end
