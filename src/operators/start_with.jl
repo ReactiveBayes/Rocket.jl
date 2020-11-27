@@ -1,6 +1,34 @@
 export start_with
 
-start_with(value) = StartWithOperator(value)
+"""
+    start_with(object::O) where O
+
+Creates a `start_with` operator, which forces an observable to emit given `object` as a first value.
+
+# Producing
+
+Stream of type `<: Subscribable{Union{L, O}}` where `L` refers to type of source stream `<: Subscribable{L}`
+
+# Examples
+```jldoctest
+using Rocket
+
+source = from(1:3) |> start_with(0)
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Data: 3
+[LogActor] Completed
+```
+
+See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+"""
+start_with(object) = StartWithOperator(object)
 
 struct StartWithOperator{V} <: InferableOperator
     value :: V

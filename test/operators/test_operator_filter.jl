@@ -27,7 +27,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = faulted("e", ) |> filter(d -> d % 2 == 1),
+            source = faulted("e") |> filter(d -> d % 2 == 1),
             values = @ts(e("e"))
         ),
         (
