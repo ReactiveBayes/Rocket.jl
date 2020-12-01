@@ -16,6 +16,7 @@ include("schedulers/asap.jl")
 include("schedulers/async.jl")
 include("schedulers/threads.jl")
 include("schedulers/pending.jl")
+include("schedulers/postponed.jl")
 
 include("actor/function.jl")
 include("actor/lambda.jl")
