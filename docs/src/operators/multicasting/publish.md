@@ -4,6 +4,7 @@
 publish
 publish_behavior
 publish_replay
+publish_recent
 ```
 
 ## See also

@@ -3,6 +3,7 @@
 ```@docs
 share
 share_replay
+share_recent
 ```
 
 ## See also

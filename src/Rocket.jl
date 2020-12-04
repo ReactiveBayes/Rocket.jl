@@ -31,6 +31,7 @@ include("subjects/subject.jl")
 include("subjects/behavior.jl")
 include("subjects/replay.jl")
 include("subjects/pending.jl")
+include("subjects/recent.jl")
 
 include("observable/generate.jl")
 include("observable/single.jl")

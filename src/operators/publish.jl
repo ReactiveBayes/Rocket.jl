@@ -1,6 +1,7 @@
 export publish
 export publish_behavior
 export publish_replay
+export publish_recent
 
 """
     publish(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
@@ -28,3 +29,12 @@ publish_behavior(default; scheduler::H = AsapScheduler()) where { H <: AbstractS
 See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`ReplaySubjectFactory`](@ref)
 """
 publish_replay(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(ReplaySubjectFactory(size, scheduler = scheduler))
+
+"""
+    publish_recent(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+
+`publish_recent(size)` is a shortcut for `multicast(RecentSubjectFactory())`
+
+See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`RecentSubjectFactory`](@ref)
+"""
+publish_recent(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(RecentSubjectFactory(scheduler = scheduler))

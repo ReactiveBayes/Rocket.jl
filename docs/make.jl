@@ -130,6 +130,7 @@ makedocs(
                 "Behavior" => "subjects/types/behavior.md",
                 "Replay"   => "subjects/types/replay.md",
                 "Pending"  => "subjects/types/pending.md",
+                "Recent"   => "subjects/types/recent.md",
             ]
         ],
         "API"          => [
