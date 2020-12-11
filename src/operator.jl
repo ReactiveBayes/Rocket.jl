@@ -328,6 +328,16 @@ as_operator(::O)                                where O        = as_operator(O)
 
 call_operator!(operator::O, source::S) where { O, S } = check_call_operator!(as_operator(O), as_subscribable(S), operator, source)
 
+call_operator!(operator::TypedOperator{L, R},        source::Subscribable{L}) where { L, R } = on_call!(L, R, operator, source)
+call_operator!(operator::LeftTypedOperator{L},       source::Subscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
+call_operator!(operator::RightTypedOperatorTrait{R}, source::Subscribable{L}) where { L, R } = on_call!(L, R, operator, source)
+call_operator!(operator::InferableOperator,          source::Subscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
+
+call_operator!(operator::TypedOperator{L, R},        source::ScheduledSubscribable{L}) where { L, R } = on_call!(L, R, operator, source)
+call_operator!(operator::LeftTypedOperator{L},       source::ScheduledSubscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
+call_operator!(operator::RightTypedOperatorTrait{R}, source::ScheduledSubscribable{L}) where { L, R } = on_call!(L, R, operator, source)
+call_operator!(operator::InferableOperator,          source::ScheduledSubscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
+
 check_call_operator!(::InvalidOperatorTrait, _,                          operator, source) = throw(InvalidOperatorTraitUsageError(operator))
 check_call_operator!(::InvalidOperatorTrait, ::InvalidSubscribableTrait, operator, source) = throw(InvalidOperatorTraitUsageError(operator))
 check_call_operator!(_,                      ::InvalidSubscribableTrait, operator, source) = throw(InvalidSubscribableTraitUsageError(source))
