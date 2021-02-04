@@ -10,8 +10,8 @@
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://biaslab.github.io/Rocket.jl/stable
 
-[travis-img]: https://travis-ci.org/biaslab/Rocket.jl.svg?branch=master
-[travis-url]: https://travis-ci.org/biaslab/Rocket.jl
+[travis-img]: https://travis-ci.com/biaslab/Rocket.jl.svg?branch=master
+[travis-url]: https://travis-ci.com/biaslab/Rocket.jl
 
 [codecov-img]: https://codecov.io/gh/biaslab/Rocket.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/biaslab/Rocket.jl?branch=master
