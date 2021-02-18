@@ -30,6 +30,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [map](@ref operator_map)
 - [map_to](@ref operator_map_to)
 - [scan](@ref operator_scan)
+- [accumulated](@ref operator_accumulated)
 - [enumerate](@ref operator_enumerate)
 - [uppercase](@ref operator_uppercase)
 - [lowercase](@ref operator_lowercase)

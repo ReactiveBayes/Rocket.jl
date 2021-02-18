@@ -58,6 +58,7 @@ makedocs(
                     "map"                            => "operators/transformation/map.md",
                     "map_to"                         => "operators/transformation/map_to.md",
                     "scan"                           => "operators/transformation/scan.md",
+                    "accumulated"                    => "operators/transformation/accumulated.md",
                     "enumerate"                      => "operators/transformation/enumerate.md",
                     "uppercase"                      => "operators/transformation/uppercase.md",
                     "lowercase"                      => "operators/transformation/lowercase.md",

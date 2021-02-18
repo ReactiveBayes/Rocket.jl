@@ -109,6 +109,7 @@ include("operators/discontinue.jl")
 include("operators/with_latest.jl")
 include("operators/ignore.jl")
 include("operators/start_with.jl")
+include("operators/accumulated.jl")
 
 include("extensions/observable/single.jl")
 
