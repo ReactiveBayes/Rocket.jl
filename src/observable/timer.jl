@@ -43,61 +43,89 @@ See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [
 """
 function timer(delay::Int)
     @assert delay >= 0 "'delay' argument should be positive"
-    return TimerObservable{delay, 0}()
+    return TimerObservable(delay, 0)
 end
 
 function timer(delay::Int, period::Int)
     @assert delay >= 0 "'delay' argument should be positive"
     @assert period >= 0 "'period' argument should be positive"
-    return TimerObservable{delay, period}()
+    return TimerObservable(delay, period)
 end
 
 """
-    TimerObservable{Delay, Period}()
+    TimerObservable
 
-An Observable that starts emitting after an `Delay` and emits
-ever increasing numbers after each `Period` of time thereafter.
+An Observable that starts emitting after an `delay` and emits
+ever increasing numbers after each `period` of time thereafter.
 
 # Parameters
-- `Delay`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
-- `Period`: The minimum period of time in milliseconds between emissions of the subsequent numbers.
+- `delay`: The initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0`.
+- `period`: The minimum period of time in milliseconds between emissions of the subsequent numbers.
 
 See also: [`timer`](@ref), [`Subscribable`](@ref)
 """
-struct TimerObservable{Delay, Period} <: Subscribable{Int} end
+struct TimerObservable <: Subscribable{Int} 
+    delay  :: Int
+    period :: Int
+end
+
+getdelay_ms(observable::TimerObservable)  = observable.delay
+getperiod_ms(observable::TimerObservable) = observable.period
+
+getdelay_sec(observable::TimerObservable)  = getdelay_ms(observable) / MILLISECONDS_IN_SECOND
+getperiod_sec(observable::TimerObservable) = getperiod_ms(observable) / MILLISECONDS_IN_SECOND
 
 struct TimerSubscription <: Teardown
     timer  :: Timer
 end
 
-as_teardown(::Type{<:TimerSubscription}) = UnsubscribableTeardownLogic()
+as_teardown(::Type{ <: TimerSubscription }) = UnsubscribableTeardownLogic()
 
-function on_subscribe!(observable::TimerObservable{Delay, Period}, actor) where { Delay, Period }
+mutable struct TimerActorProps
+    counter :: Int
+end
 
-    timer = Timer(Delay / MILLISECONDS_IN_SECOND, interval = Period / MILLISECONDS_IN_SECOND)
+struct TimerActor{A} <: Actor{ Nothing }
+    actor :: A
+    once  :: Bool
+    props :: TimerActorProps
+end
 
-    @async begin
-        try
-            if isopen(timer)
-                if Period === 0
-                    wait(timer)
-                    next!(actor, 0)
-                    complete!(actor)
-                else
-                    current = 0
-                    while true
-                        wait(timer)
-                        next!(actor, current)
-                        current += 1
-                    end
-                end
-            end
-        catch err
-            if !(err isa EOFError)
-                error!(actor, err)
+TimerActor(actor::A, once::Bool) where A = TimerActor{A}(actor, once, TimerActorProps(0))
+
+getcounter(actor::TimerActor) = actor.props.counter
+itcounter!(actor::TimerActor) = actor.props.counter = actor.props.counter + 1
+
+isonce(actor::TimerActor) = actor.once
+
+function on_next!(actor::TimerActor, ::Nothing)
+    next!(actor.actor, getcounter(actor))
+    if isonce(actor)
+        complete!(actor)
+    else 
+        itcounter!(actor)
+    end
+end
+
+on_error!(actor::TimerActor, err) = error!(actor.actor, err)
+on_complete!(actor::TimerActor)   = complete!(actor.actor)
+
+function on_subscribe!(observable::TimerObservable, actor)
+
+    tactor   = TimerActor(actor, getperiod_ms(observable) === 0)
+
+    callback = let tactor = tactor
+        (timer) -> begin 
+            try 
+                next!(tactor, nothing)
+            catch err
+                error!(tactor, err)
+                close(timer)
             end
         end
     end
+
+    timer = Timer(callback, getdelay_sec(observable), interval = getperiod_sec(observable))
 
     return TimerSubscription(timer)
 end
@@ -108,7 +136,7 @@ function on_unsubscribe!(subscription::TimerSubscription)
 end
 
 
-Base.:(==)(t1::TimerObservable{D1, P1}, t2::TimerObservable{D2, P2}) where { D1, P1, D2, P2 } = D1 === D2 && P1 === P2
+Base.:(==)(t1::TimerObservable, t2::TimerObservable) = getdelay_ms(t1) === getdelay_ms(t1) && getperiod_ms(t1) === getperiod_ms(t2)
 
-Base.show(io::IO, ::TimerObservable{Delay, Period}) where { Delay, Period } = print(io, "TimerObservable($Delay, $Period)")
-Base.show(io::IO, ::TimerSubscription)                                      = print(io, "TimerSubscription()")
+Base.show(io::IO, observable::TimerObservable)   = print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
+Base.show(io::IO, ::TimerSubscription)           = print(io, "TimerSubscription()")
