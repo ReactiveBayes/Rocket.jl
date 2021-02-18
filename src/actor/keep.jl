@@ -1,4 +1,4 @@
-export KeepActor, keep
+export KeepActor, keep, getvalues
 
 """
     KeepActor{D}() where D
@@ -27,6 +27,8 @@ struct KeepActor{T} <: Actor{T}
 
     KeepActor{T}() where T = new(Vector{T}())
 end
+
+getvalues(actor::KeepActor) = actor.values
 
 on_next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
 on_error!(actor::KeepActor, err)               = error(err)

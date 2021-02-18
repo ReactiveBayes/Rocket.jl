@@ -14,6 +14,7 @@ using Rocket
         subscribe!(source, actor)
 
         @test actor.values == [ 1, 2, 3 ]
+        @test getvalues(actor) == [ 1, 2, 3 ]
     end
 
     @testset begin
