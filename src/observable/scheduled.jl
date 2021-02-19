@@ -32,3 +32,6 @@ scheduled(source::S, scheduler::H) where { S, H <: AbstractScheduler } = as_sche
 as_scheduled(::InvalidSubscribableTrait,      source, scheduler)                         = throw(InvalidSubscribableTraitUsageError(source))
 as_scheduled(::SimpleSubscribableTrait{L},    source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
 as_scheduled(::ScheduledSubscribableTrait{L}, source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
+
+as_scheduled(::SimpleSubscribableTrait,    source, scheduler::AsapScheduler) = source
+as_scheduled(::ScheduledSubscribableTrait, source, scheduler::AsapScheduler) = source
