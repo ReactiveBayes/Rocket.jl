@@ -97,6 +97,32 @@ struct PushStrategy
     strategy :: BitArray{1}
 end
 
+function push_update!(::Int, ::BitArray{1}, ::BitArray{1}, ::PushEach)
+    return nothing
+end
+
+function push_update!(::Int, vstatus::BitArray{1}, ::BitArray{1}, ::PushEachBut{I}) where I
+    @inbounds vstatus[I] = false
+    return nothing
+end
+
+function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNew)
+    unsafe_copyto!(vstatus, 1, cstatus, 1, nsize)
+    return nothing
+end
+
+function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNewBut{I}) where I
+    push_update!(nsize, vstatus, cstatus, PushNew())
+    @inbounds vstatus[I] = true
+    return nothing
+end
+
+function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, strategy::PushStrategy)
+    push_update!(nsize, vstatus, cstatus, PushNew())
+    map!(|, vstatus, vstatus, strategy.strategy)
+    return nothing
+end
+
 combineLatest(; strategy = PushEach())                                       = error("combineLatest operator expects at least one inner observable on input")
 combineLatest(args...; strategy = PushEach())                                = combineLatest(args, strategy)
 combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G }  = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
@@ -139,32 +165,6 @@ struct CombineLatestActorWrapper{S, A, G}
 end
 
 push_update!(wrapper::CombineLatestActorWrapper) = push_update!(wrapper.nsize, wrapper.vstatus, wrapper.cstatus, wrapper.strategy)
-
-function push_update!(::Int, ::BitArray{1}, ::BitArray{1}, ::PushEach)
-    return nothing
-end
-
-function push_update!(::Int, vstatus::BitArray{1}, ::BitArray{1}, ::PushEachBut{I}) where I
-    @inbounds vstatus[I] = false
-    return nothing
-end
-
-function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNew)
-    unsafe_copyto!(vstatus, 1, cstatus, 1, nsize)
-    return nothing
-end
-
-function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNewBut{I}) where I
-    push_update!(nsize, vstatus, cstatus, PushNew())
-    @inbounds vstatus[I] = true
-    return nothing
-end
-
-function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, strategy::PushStrategy)
-    push_update!(nsize, vstatus, cstatus, PushNew())
-    map!(|, vstatus, vstatus, strategy.strategy)
-    return nothing
-end
 
 cstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.cstatus[index]
 vstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.vstatus[index]
