@@ -23,6 +23,7 @@ using Rocket
 
         @test_throws ErrorException subscribe!(source, actor)
         @test actor.values == []
+        @test getvalues(actor) == []
     end
 
     @testset begin

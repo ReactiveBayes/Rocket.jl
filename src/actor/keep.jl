@@ -11,16 +11,16 @@ and does nothing on completion event.
 using Rocket
 
 source = from(1:5)
-actor  = KeepActor{Int}()
+actor  = keep(Int)
 
 subscribe!(source, actor)
-show(actor.values)
+show(getvalues(actor))
 
 # output
 [1, 2, 3, 4, 5]
 ```
 
-See also: [`Actor`](@ref)
+See also: [`Actor`](@ref), [`keep`](@ref)
 """
 struct KeepActor{T} <: Actor{T}
     values :: Vector{T}

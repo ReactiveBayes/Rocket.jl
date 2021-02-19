@@ -24,6 +24,7 @@ include("actor/logger.jl")
 include("actor/void.jl")
 include("actor/sync.jl")
 include("actor/keep.jl")
+include("actor/buffer.jl")
 include("actor/server.jl")
 include("actor/test.jl")
 

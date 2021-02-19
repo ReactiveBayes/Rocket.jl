@@ -44,6 +44,7 @@ makedocs(
                 "Logger"        => "actors/types/logger.md",
                 "Sync"          => "actors/types/sync.md",
                 "Keep"          => "actors/types/keep.md",
+                "Buffer"        => "actors/types/buffer.md",
                 "Void"          => "actors/types/void.md",
                 "Function"      => "actors/types/function.md",
                 "Server"        => "actors/types/server.md",
