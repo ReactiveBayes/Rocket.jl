@@ -42,6 +42,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [`concat_map_to`](@ref operator_concat_map_to)
 - [exhaust_map](@ref operator_exhaust_map)
 - [start_with](@ref operator_start_with)
+- [pairwise](@ref operator_pairwise)
 
 ## Filtering operators
 

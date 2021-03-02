@@ -72,6 +72,7 @@ makedocs(
                     "`concat_map_to`"                => "operators/transformation/concat_map_to.md",
                     "exhaust_map"                    => "operators/transformation/exhaust_map.md",
                     "start_with"                     => "operators/transformation/start_with.md",
+                    "pairwise"                       => "operators/transformation/pairwise.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",
