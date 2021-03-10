@@ -47,6 +47,7 @@ There are operators for different purposes, and they may be categorized as: crea
 ## Filtering operators
 
 - [filter](@ref operator_filter)
+- [filter_type](@ref operator_filter_type)
 - [some](@ref operator_some)
 - [take](@ref operator_take)
 - [take_until](@ref operator_take_until)

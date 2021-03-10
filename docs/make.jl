@@ -77,6 +77,7 @@ makedocs(
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",
                     "filter"                    => "operators/filtering/filter.md",
+                    "filter_type"               => "operators/filtering/filter_type.md",
                     "some"                      => "operators/filtering/some.md",
                     "take"                      => "operators/filtering/take.md",
                     "take_until"                => "operators/filtering/take_until.md",

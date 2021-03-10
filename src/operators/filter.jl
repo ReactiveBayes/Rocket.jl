@@ -6,7 +6,7 @@ import Base: show
 """
     filter(filterFn::F) where { F <: Function }
 
-Creates a filter operator, which filters items by the source Observable by emitting only
+Creates a filter operator, which filters items of the source Observable by emitting only
 those that satisfy a specified `filterFn` predicate.
 
 # Producing
