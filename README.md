@@ -144,10 +144,12 @@ subscribe!(squared_int_values, lambda(
 
 ## Rocket.jl is fast
 
-Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl) and [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl).
+Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl).
 
-Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
+We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo):
 
 ![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Reactive.jl")
 
 ![Rocket.jl vs Signals.jl](demo/pics/signals-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Signals.jl")
+
+![Rocket.jl vs Observables.jl](demo/pics/observables-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Observables.jl")
