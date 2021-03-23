@@ -53,3 +53,12 @@ combined_type(sources) = Tuple{ map(source -> subscribable_extract_type(source),
 Returns a Union el-type of observable el-types in `sources` argument
 """
 union_type(sources) = Union{ map(source -> subscribable_extract_type(source), sources)... }
+
+
+"""
+    similar_typeof(something, ::Type{L})
+
+Returns a result of `typeof(similar(something, L))`. Provides and optimised, allocation-free method for built-in AbstractArray.
+"""
+similar_typeof(::AbstractArray{T, N}, ::Type{L}) where { T, N, L } = Array{L, N}
+similar_typeof(something, ::Type{L})             where { L }       = typeof(similar(something, L))
