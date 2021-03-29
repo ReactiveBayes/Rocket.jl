@@ -23,17 +23,11 @@ See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`RecentSu
 """
 function RecentSubjectFactory end
 
-mutable struct RecentSubjectProps{D}
-    recent :: Union{D, Nothing}
-end
-
-Base.show(io::IO, ::RecentSubjectProps) = print(io, "RecentSubjectProps()")
-
 ##
 
-struct RecentSubjectInstance{D, S} <: AbstractSubject{D}
+mutable struct RecentSubjectInstance{D, S} <: AbstractSubject{D}
     subject :: S
-    props   :: RecentSubjectProps{D}
+    recent  :: Union{D, Nothing}
 end
 
 Base.show(io::IO, ::RecentSubjectInstance{D, S}) where { D, S } = print(io, "RecentSubject($D, $S)")
@@ -54,12 +48,12 @@ end
 
 as_recent_subject(::Type{D},  ::InvalidSubjectTrait,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
 as_recent_subject(::Type{D1}, ::ValidSubjectTrait{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_recent_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = RecentSubjectInstance{D, S}(subject, RecentSubjectProps{D}(nothing))
+as_recent_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = RecentSubjectInstance{D, S}(subject, nothing)
 
 ##
 
-getrecent(subject::RecentSubjectInstance)         = subject.props.recent
-setrecent!(subject::RecentSubjectInstance, value) = subject.props.recent = value
+getrecent(subject::RecentSubjectInstance)         = subject.recent
+setrecent!(subject::RecentSubjectInstance, value) = subject.recent = value
 
 ##
 

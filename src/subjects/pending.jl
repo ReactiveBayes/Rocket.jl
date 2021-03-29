@@ -26,15 +26,9 @@ function PendingSubjectFactory end
 
 ##
 
-mutable struct PendingSubjectProps{D}
-    last :: Union{Nothing, D}
-
-    PendingSubjectProps{D}() where D = new(nothing)
-end
-
-struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
+mutable struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
     subject :: S
-    props   :: PendingSubjectProps{D}
+    last    :: Union{Nothing, D}
 end
 
 Base.show(io::IO, ::PendingSubjectInstance{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
@@ -55,32 +49,29 @@ end
 
 as_pending_subject(::Type{D},  ::InvalidSubjectTrait,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
 as_pending_subject(::Type{D1}, ::ValidSubjectTrait{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_pending_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, PendingSubjectProps{D}())
+as_pending_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, nothing)
 
 ##
 
-getlast(subject::PendingSubjectInstance)         = subject.props.last
-setlast!(subject::PendingSubjectInstance, value) = subject.props.last = value
-
-iscompleted(subject::PendingSubjectInstance) = iscompleted(subject.subject)
-isfailed(subject::PendingSubjectInstance)    = isfailed(subject.subject)
+getlast(subject::PendingSubjectInstance)         = subject.last
+setlast!(subject::PendingSubjectInstance, value) = subject.last = value
 
 ##
 
 function on_next!(subject::PendingSubjectInstance{D}, data::D) where D
-    if !iscompleted(subject) && !isfailed(subject)
+    if isactive(subject.subject)
         setlast!(subject, data)
     end
 end
 
 function on_error!(subject::PendingSubjectInstance, err)
-    if !iscompleted(subject) && !isfailed(subject)
+    if isactive(subject.subject)
         error!(subject.subject, err)
     end
 end
 
 function on_complete!(subject::PendingSubjectInstance)
-    if !iscompleted(subject) && !isfailed(subject)
+    if isactive(subject.subject)
         last = getlast(subject)
         if last !== nothing
             next!(subject.subject, last)
@@ -92,7 +83,7 @@ end
 ##
 
 function on_subscribe!(subject::PendingSubjectInstance, actor)
-    if iscompleted(subject)
+    if iscompleted(subject.subject)
         last = getlast(subject)
         if last !== nothing
             next!(actor, last)

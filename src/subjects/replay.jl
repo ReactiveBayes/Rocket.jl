@@ -54,8 +54,10 @@ as_replay_subject(::Type{D},  ::ValidSubjectTrait{D},   size::Int, subject::S) w
 ##
 
 function on_next!(subject::ReplaySubjectInstance{D}, data::D) where D
-    push!(subject.buffer, data)
-    next!(subject.subject, data)
+    if isactive(subject.subject)
+        push!(subject.buffer, data)
+        next!(subject.subject, data)
+    end
 end
 
 function on_error!(subject::ReplaySubjectInstance, err)

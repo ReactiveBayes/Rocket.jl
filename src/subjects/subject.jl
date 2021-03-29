@@ -11,16 +11,6 @@ end
 
 Base.show(io::IO, ::SubjectListener) = print(io, "SubjectListener()")
 
-mutable struct SubjectProps
-    iscompleted :: Bool
-    isfailed    :: Bool
-    lasterror   :: Any
-
-    SubjectProps() = new(false, false, nothing)
-end
-
-Base.show(io::IO, ::SubjectProps) = print(io, "SubjectProps()")
-
 ##
 
 """
@@ -34,12 +24,15 @@ Doing so would lead to undefined behaviour. Use `safe()` operator to bypass this
 
 See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref), [`safe`](@ref)
 """
-struct Subject{D, H, I} <: AbstractSubject{D}
-    listeners :: Vector{SubjectListener{I}}
-    props     :: SubjectProps
-    scheduler :: H
+mutable struct Subject{D, H, I} <: AbstractSubject{D}
+    listeners   :: Vector{SubjectListener{I}}
+    scheduler   :: H
+    isactive    :: Bool
+    iscompleted :: Bool
+    isfailed    :: Bool
+    lasterror   :: Any
 
-    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(Vector{SubjectListener{I}}(), SubjectProps(), scheduler)
+    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(Vector{SubjectListener{I}}(), scheduler, true, false, false, nothing)
 end
 
 function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler }
@@ -52,13 +45,15 @@ Base.similar(subject::Subject{D, H}) where { D, H } = Subject(D; scheduler = sim
 
 ##
 
-iscompleted(subject::Subject) = subject.props.iscompleted
-isfailed(subject::Subject)    = subject.props.isfailed
-lasterror(subject::Subject)   = subject.props.lasterror
+isactive(subject::Subject)    = subject.isactive
+iscompleted(subject::Subject) = subject.iscompleted
+isfailed(subject::Subject)    = subject.isfailed
+lasterror(subject::Subject)   = subject.lasterror
 
-setcompleted!(subject::Subject)      = subject.props.iscompleted = true
-setfailed!(subject::Subject)         = subject.props.isfailed = true
-setlasterror!(subject::Subject, err) = subject.props.lasterror = err
+setinactive!(subject::Subject)       = subject.isactive    = false
+setcompleted!(subject::Subject)      = subject.iscompleted = true
+setfailed!(subject::Subject)         = subject.isfailed    = true
+setlasterror!(subject::Subject, err) = subject.lasterror   = err
 
 ##
 
@@ -69,23 +64,27 @@ function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
 end
 
 function on_error!(subject::Subject, err)
-    if !iscompleted(subject) && !isfailed(subject)
+    if isactive(subject)
+        setinactive!(subject)
         setfailed!(subject)
         setlasterror!(subject, err)
         for listener in copy(subject.listeners)
             scheduled_error!(listener.actor, err, listener.schedulerinstance)
         end
         unsubscribe_listeners!(subject, subject.listeners)
+        resize!(subject.listeners, 0)
     end
 end
 
 function on_complete!(subject::Subject)
-    if !iscompleted(subject) && !isfailed(subject)
+    if isactive(subject)
+        setinactive!(subject)
         setcompleted!(subject)
         for listener in copy(subject.listeners)
             scheduled_complete!(listener.actor, listener.schedulerinstance)
         end
         unsubscribe_listeners!(subject, subject.listeners)
+        resize!(subject.listeners, 0)
     end
 end
 
@@ -113,7 +112,6 @@ function on_subscribe!(subject::Subject, actor, instance)
     push!(subject.listeners, listener)
     return SubjectSubscription(subject, listener)
 end
-
 
 ##
 
