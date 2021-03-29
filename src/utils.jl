@@ -82,14 +82,6 @@ macro subscribable(structure)
 
     type = structure.args[2].args[2].args[1]
 
-    # generated = if type === :Subscribable || type === :AbstractSubject
-    #     map(actor_type -> :(Rocket.subscribe!(observable::$(name){D}, actor::$(actor_type){D}) where D = Rocket.on_subscribe!(observable, actor)), actor_types)
-    # elseif type === :ScheduledSubscribable
-    #     map(actor_type -> :(Rocket.subscribe!(observable::$(name){D}, actor::$(actor_type){D}) where D = Rocket.scheduled_subscription!(observable, actor, Rocket.makeinstance(D, Rocket.getscheduler(observable)))), actor_types)
-    # else
-    #     error("Unreacheable in @subscribable macro")
-    # end
-
     structure = quote
         Core.@__doc__ $structure
 
