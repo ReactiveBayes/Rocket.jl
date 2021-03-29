@@ -66,19 +66,15 @@ struct SumProxy{D} <: ActorProxy
     from :: D
 end
 
-actor_proxy!(::Type{Union{L, Nothing}}, proxy::SumProxy, actor::A) where { L, A } = SumActor{L, A}(actor, SumActorProps{L}(proxy.from))
+actor_proxy!(::Type{Union{L, Nothing}}, proxy::SumProxy, actor::A) where { L, A } = SumActor{L, A}(actor, proxy.from)
 
-mutable struct SumActorProps{L}
+mutable struct SumActor{L, A} <: Actor{L}
+    actor   :: A
     current :: Union{L, Nothing}
 end
 
-struct SumActor{L, A} <: Actor{L}
-    actor :: A
-    props :: SumActorProps{L}
-end
-
-getcurrent(actor::SumActor)         = actor.props.current
-setcurrent!(actor::SumActor, value) = actor.props.current = value
+getcurrent(actor::SumActor)         = actor.current
+setcurrent!(actor::SumActor, value) = actor.current = value
 
 function on_next!(actor::SumActor{L}, data::L) where L
     current = getcurrent(actor)

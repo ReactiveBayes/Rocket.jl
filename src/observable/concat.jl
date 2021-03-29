@@ -65,26 +65,22 @@ end
 
 ##
 
-mutable struct ConcatInnerActorProps
+mutable struct ConcatInnerActor{D, S, A} <: Actor{D}
+    sources       :: S
+    actor         :: A
     current_index :: Int
     subscription  :: Teardown
-end
-
-struct ConcatInnerActor{D, S, A} <: Actor{D}
-    sources :: S
-    actor   :: A
-    props   :: ConcatInnerActorProps
 
     ConcatInnerActor{D, S, A}(sources::S, actor::A) where { D, S, A } = begin
-        return new(sources, actor, ConcatInnerActorProps(1, voidTeardown))
+        return new(sources, actor, 1, voidTeardown)
     end
 end
 
-get_current_index(actor::ConcatInnerActor)         = actor.props.current_index
-set_current_index!(actor::ConcatInnerActor, index) = actor.props.current_index = index
+get_current_index(actor::ConcatInnerActor)         = actor.current_index
+set_current_index!(actor::ConcatInnerActor, index) = actor.current_index = index
 
-get_subscription(actor::ConcatInnerActor)                = actor.props.subscription
-set_subscription!(actor::ConcatInnerActor, subscription) = actor.props.subscription = subscription
+get_subscription(actor::ConcatInnerActor)                = actor.subscription
+set_subscription!(actor::ConcatInnerActor, subscription) = actor.subscription = subscription
 
 function on_next!(actor::ConcatInnerActor{D}, data::D) where D
     next!(actor.actor, data)

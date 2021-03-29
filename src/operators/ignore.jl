@@ -52,23 +52,17 @@ end
 
 actor_proxy!(::Type{L}, proxy::IgnoreProxy, actor::A)  where { L, A } = IgnoreActor{L, A}(proxy.count, actor)
 
-mutable struct IgnoreActorProps
+mutable struct IgnoreActor{L, A} <: Actor{L}
+    count         :: Int
+    actor         :: A
     skipped_count :: Int
 
-    IgnoreActorProps() = new(0)
-end
-
-struct IgnoreActor{L, A} <: Actor{L}
-    count :: Int
-    actor :: A
-    props :: IgnoreActorProps
-
-    IgnoreActor{L, A}(count::Int, actor::A) where { L, A } = new(count, actor, IgnoreActorProps())
+    IgnoreActor{L, A}(count::Int, actor::A) where { L, A } = new(count, actor, 0)
 end
 
 function on_next!(actor::IgnoreActor{L}, data::L) where L
-    if actor.props.skipped_count < actor.count
-        actor.props.skipped_count += 1
+    if actor.skipped_count < actor.count
+        actor.skipped_count += 1
     else
         next!(actor.actor, data)
     end

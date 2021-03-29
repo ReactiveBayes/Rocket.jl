@@ -48,19 +48,15 @@ struct MaxProxy{D} <: ActorProxy
     from :: D
 end
 
-actor_proxy!(::Type{Union{L, Nothing}}, proxy::MaxProxy, actor::A) where { L, A } = MaxActor{L, A}(actor, MaxActorProps{L}(proxy.from))
+actor_proxy!(::Type{Union{L, Nothing}}, proxy::MaxProxy, actor::A) where { L, A } = MaxActor{L, A}(actor, proxy.from)
 
-mutable struct MaxActorProps{L}
+mutable struct MaxActor{L, A} <: Actor{L}
+    actor   :: A
     current :: Union{L, Nothing}
 end
 
-struct MaxActor{L, A} <: Actor{L}
-    actor :: A
-    props :: MaxActorProps{L}
-end
-
-getcurrent(actor::MaxActor)         = actor.props.current
-setcurrent!(actor::MaxActor, value) = actor.props.current = value
+getcurrent(actor::MaxActor)         = actor.current
+setcurrent!(actor::MaxActor, value) = actor.current = value
 
 function on_next!(actor::MaxActor{L}, data::L) where L
     current = getcurrent(actor)

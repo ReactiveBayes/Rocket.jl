@@ -59,41 +59,35 @@ end
 
 source_proxy!(::Type{L}, proxy::TakeUntilProxy{N}, source::S) where { L, N, S } = TakeUntilSource{L, N, S}(proxy.notifier, source)
 
-mutable struct TakeUntilInnerActorProps
+mutable struct TakeUntilInnerActor{L, A} <: Actor{L}
+    actor         :: A
     isdisposed    :: Bool
     ssubscription :: Teardown
     nsubscription :: Teardown
 
-    TakeUntilInnerActorProps() = new(false, voidTeardown, voidTeardown)
-end
-
-struct TakeUntilInnerActor{L, A} <: Actor{L}
-    actor :: A
-    props :: TakeUntilInnerActorProps
-
-    TakeUntilInnerActor{L, A}(actor::A) where { L, A } = new(actor, TakeUntilInnerActorProps())
+    TakeUntilInnerActor{L, A}(actor::A) where { L, A } = new(actor, false, voidTeardown, voidTeardown)
 end
 
 on_next!(actor::TakeUntilInnerActor{L}, data::L) where L = next!(actor.actor, data)
 
 function on_error!(actor::TakeUntilInnerActor, err)
-    if !actor.props.isdisposed
+    if !actor.isdisposed
         error!(actor.actor, err)
         __dispose(actor)
     end
 end
 
 function on_complete!(actor::TakeUntilInnerActor)
-    if !actor.props.isdisposed
+    if !actor.isdisposed
         complete!(actor.actor)
         __dispose(actor)
     end
 end
 
 function __dispose(actor::TakeUntilInnerActor)
-    actor.props.isdisposed = true
-    unsubscribe!(actor.props.ssubscription)
-    unsubscribe!(actor.props.nsubscription)
+    actor.isdisposed = true
+    unsubscribe!(actor.ssubscription)
+    unsubscribe!(actor.nsubscription)
 end
 
 @subscribable struct TakeUntilSource{L, N, S} <: Subscribable{L}
@@ -104,10 +98,10 @@ end
 function on_subscribe!(observable::TakeUntilSource{L}, actor::A) where { L, A }
     inner = TakeUntilInnerActor{L, A}(actor)
 
-    inner.props.ssubscription = subscribe!(observable.source, inner)
+    inner.ssubscription = subscribe!(observable.source, inner)
 
-    if !inner.props.isdisposed
-        inner.props.nsubscription = subscribe!(observable.notifier |> take(1), lambda(
+    if !inner.isdisposed
+        inner.nsubscription = subscribe!(observable.notifier |> take(1), lambda(
             on_next  = (_)   -> complete!(inner),
             on_error = (err) -> error!(inner, err)
         ))

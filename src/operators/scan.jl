@@ -75,20 +75,16 @@ struct ScanProxy{L, R, F} <: ActorProxy
     seed    :: R
 end
 
-actor_proxy!(::Type{R}, proxy::ScanProxy{L, R, F}, actor::A) where { L, R, A, F } = ScanActor{L, R, A, F}(proxy.scanFn, actor, ScanActorProps{R}(proxy.seed))
+actor_proxy!(::Type{R}, proxy::ScanProxy{L, R, F}, actor::A) where { L, R, A, F } = ScanActor{L, R, A, F}(proxy.scanFn, actor, proxy.seed)
 
-mutable struct ScanActorProps{R}
+mutable struct ScanActor{L, R, A, F} <: Actor{L}
+    scanFn  :: F
+    actor   :: A
     current :: R
 end
 
-struct ScanActor{L, R, A, F} <: Actor{L}
-    scanFn  :: F
-    actor   :: A
-    props   :: ScanActorProps{R}
-end
-
-getcurrent(actor::ScanActor)         = actor.props.current
-setcurrent!(actor::ScanActor, value) = actor.props.current = value
+getcurrent(actor::ScanActor)         = actor.current
+setcurrent!(actor::ScanActor, value) = actor.current = value
 
 function on_next!(actor::ScanActor{L, R}, data::L) where { L, R }
     update = actor.scanFn(data, getcurrent(actor))
@@ -123,20 +119,16 @@ struct ScanNoSeedProxy{F} <: ActorProxy
     scanFn :: F
 end
 
-actor_proxy!(::Type{L}, proxy::ScanNoSeedProxy{F}, actor::A) where { L, A, F } = ScanNoSeedActor{L, A, F}(proxy.scanFn, actor, ScanNoSeedActorProps{L}(nothing))
+actor_proxy!(::Type{L}, proxy::ScanNoSeedProxy{F}, actor::A) where { L, A, F } = ScanNoSeedActor{L, A, F}(proxy.scanFn, actor, nothing)
 
-mutable struct ScanNoSeedActorProps{L}
+mutable struct ScanNoSeedActor{L, A, F} <: Actor{L}
+    scanFn  :: F
+    actor   :: A
     current :: Union{L, Nothing}
 end
 
-struct ScanNoSeedActor{L, A, F} <: Actor{L}
-    scanFn :: F
-    actor  :: A
-    props  :: ScanNoSeedActorProps{L}
-end
-
-getcurrent(actor::ScanNoSeedActor)         = actor.props.current
-setcurrent!(actor::ScanNoSeedActor, value) = actor.props.current = value
+getcurrent(actor::ScanNoSeedActor)         = actor.current
+setcurrent!(actor::ScanNoSeedActor, value) = actor.current = value
 
 function on_next!(actor::ScanNoSeedActor{L}, data::L) where L
     current = getcurrent(actor)

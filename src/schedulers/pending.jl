@@ -2,19 +2,17 @@ export PendingScheduler, release!
 
 import Base: show, similar
 
-mutable struct PendingActorProps{L}
-    last :: Union{Nothing, L}
-end
-
-struct PendingActor{L, A} <: Actor{L}
+mutable struct PendingActor{L, A} <: Actor{L}
     actor :: A
-    props :: PendingActorProps{L}
+    last  :: Union{Nothing, L}
+
+    PendingActor{L, A}(::Type{L}, actor::A) where { L, A } = new(actor, nothing)
 end
 
-PendingActor(::Type{L}, actor::A) where { L, A } = PendingActor{L, A}(actor, PendingActorProps{L}(nothing))
 
-getlast(actor::PendingActor)        = actor.props.last
-setlast!(actor::PendingActor, last) = actor.props.last = last
+
+getlast(actor::PendingActor)        = actor.last
+setlast!(actor::PendingActor, last) = actor.last = last
 
 function release!(actor::PendingActor, reset::Bool)
     last = getlast(actor)

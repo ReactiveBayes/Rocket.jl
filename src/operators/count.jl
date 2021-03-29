@@ -42,22 +42,16 @@ struct CountProxy <: ActorProxy end
 
 actor_proxy!(::Type, proxy::CountProxy, actor::A) where A = CountActor{A}(actor)
 
-mutable struct CountActorProps
+mutable struct CountActor{A} <: Actor{Any}
+    actor   :: A
     current :: Int
 
-    CountActorProps() = new(0)
+    CountActor{A}(actor::A) where A = new(actor, 0)
 end
 
-struct CountActor{A} <: Actor{Any}
-    actor :: A
-    props :: CountActorProps
-
-    CountActor{A}(actor::A) where A = new(actor, CountActorProps())
-end
-
-on_next!(actor::CountActor, data) = begin actor.props.current += 1 end
+on_next!(actor::CountActor, data) = begin actor.current += 1 end
 on_error!(actor::CountActor, err) = begin error!(actor.actor, err) end
-on_complete!(actor::CountActor)   = begin next!(actor.actor, actor.props.current); complete!(actor.actor) end
+on_complete!(actor::CountActor)   = begin next!(actor.actor, actor.current); complete!(actor.actor) end
 
 Base.show(io::IO, ::CountOperator) = print(io, "CountOperator()")
 Base.show(io::IO, ::CountProxy)    = print(io, "CountProxy()")

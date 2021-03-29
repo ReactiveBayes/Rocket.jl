@@ -81,20 +81,16 @@ end
 
 as_teardown(::Type{ <: TimerSubscription }) = UnsubscribableTeardownLogic()
 
-mutable struct TimerActorProps
+mutable struct TimerActor{A} <: Actor{ Nothing }
+    actor   :: A
+    once    :: Bool
     counter :: Int
 end
 
-struct TimerActor{A} <: Actor{ Nothing }
-    actor :: A
-    once  :: Bool
-    props :: TimerActorProps
-end
+TimerActor(actor::A, once::Bool) where A = TimerActor{A}(actor, once, 0)
 
-TimerActor(actor::A, once::Bool) where A = TimerActor{A}(actor, once, TimerActorProps(0))
-
-getcounter(actor::TimerActor) = actor.props.counter
-itcounter!(actor::TimerActor) = actor.props.counter = actor.props.counter + 1
+getcounter(actor::TimerActor) = actor.counter
+itcounter!(actor::TimerActor) = actor.counter = actor.counter + 1
 
 isonce(actor::TimerActor) = actor.once
 

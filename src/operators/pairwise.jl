@@ -38,22 +38,18 @@ end
 
 struct PairwiseProxy{L} <: ActorProxy end
 
-actor_proxy!(::Type{ Tuple{L, L} }, ::PairwiseProxy{L}, actor::A) where { L, A } = PairwiseActor{L, A}(actor, PairwiseActorProps{L}(nothing))
+actor_proxy!(::Type{ Tuple{L, L} }, ::PairwiseProxy{L}, actor::A) where { L, A } = PairwiseActor{L, A}(actor, nothing)
 
-mutable struct PairwiseActorProps{L}
+mutable struct PairwiseActor{L, A} <: Actor{L}
+    actor    :: A
     previous :: Union{Nothing, L}
 end
 
-struct PairwiseActor{L, A} <: Actor{L}
-    actor :: A
-    props :: PairwiseActorProps{L}
-end
-
 function on_next!(actor::PairwiseActor{L}, data::L) where L 
-    if actor.props.previous !== nothing
-        next!(actor.actor, (actor.props.previous, data))
+    if actor.previous !== nothing
+        next!(actor.actor, (actor.previous, data))
     end
-    actor.props.previous = data
+    actor.previous = data
 end
 
 on_error!(actor::PairwiseActor, err) = error!(actor.actor, err)

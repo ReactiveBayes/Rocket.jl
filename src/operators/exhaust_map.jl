@@ -51,33 +51,25 @@ end
 
 actor_proxy!(::Type{R}, proxy::ExhaustMapProxy{L, R, F}, actor::A) where { L, R, F, A } = ExhaustMapActor{L, R, F, A}(proxy.mappingFn, actor)
 
-# m - main
-# i - inner
-mutable struct ExhaustMapActorProps
+mutable struct ExhaustMapActor{L, R, F, A} <: Actor{L}
+    mappingFn     :: F
+    actor         :: A
     msubscription :: Teardown
     isubscription :: Teardown
     ismcompleted  :: Bool
     isicompleted  :: Bool
     isdisposed    :: Bool
 
-    ExhaustMapActorProps() = new(voidTeardown, voidTeardown, false, true, false)
+    ExhaustMapActor{L, R, F, A}(mappingFn::F, actor::A) where { L, R, F, A } = new(mappingFn, actor, voidTeardown, voidTeardown, false, true, false)
 end
 
-struct ExhaustMapActor{L, R, F, A} <: Actor{L}
-    mappingFn :: F
-    actor     :: A
-    props     :: ExhaustMapActorProps
+ismcompleted(actor::ExhaustMapActor) = actor.ismcompleted
+isicompleted(actor::ExhaustMapActor) = actor.isicompleted
 
-    ExhaustMapActor{L, R, F, A}(mappingFn::F, actor::A) where { L, R, F, A } = new(mappingFn, actor, ExhaustMapActorProps())
-end
+setmcompleted!(actor::ExhaustMapActor, value::Bool) = actor.ismcompleted = value
+seticompleted!(actor::ExhaustMapActor, value::Bool) = actor.isicompleted = value
 
-ismcompleted(actor::ExhaustMapActor) = actor.props.ismcompleted
-isicompleted(actor::ExhaustMapActor) = actor.props.isicompleted
-
-setmcompleted!(actor::ExhaustMapActor, value::Bool) = actor.props.ismcompleted = value
-seticompleted!(actor::ExhaustMapActor, value::Bool) = actor.props.isicompleted = value
-
-isdisposed(actor::ExhaustMapActor)   = actor.props.isdisposed
+isdisposed(actor::ExhaustMapActor)   = actor.isdisposed
 
 struct ExhaustMapInnerActor{R, S} <: Actor{R}
     main :: S
@@ -86,7 +78,7 @@ end
 on_next!(actor::ExhaustMapInnerActor{R}, data::R) where R = next!(actor.main.actor, data)
 on_error!(actor::ExhaustMapInnerActor,   err)             = error!(actor.main, err)
 on_complete!(actor::ExhaustMapInnerActor)                 = begin
-    actor.main.props.isubscription = voidTeardown
+    actor.main.isubscription = voidTeardown
     seticompleted!(actor.main, true)
     if ismcompleted(actor.main)
         complete!(actor.main)
@@ -96,9 +88,9 @@ end
 function on_next!(actor::S, data::L) where { L, R, S <: ExhaustMapActor{L, R} }
     if !isdisposed(actor)
         if isicompleted(actor)
-            unsubscribe!(actor.props.isubscription)
+            unsubscribe!(actor.isubscription)
             seticompleted!(actor, false)
-            actor.props.isubscription = subscribe!(actor.mappingFn(data), ExhaustMapInnerActor{R, S}(actor))
+            actor.isubscription = subscribe!(actor.mappingFn(data), ExhaustMapInnerActor{R, S}(actor))
         end
     end
 end
@@ -119,9 +111,9 @@ function on_complete!(actor::ExhaustMapActor)
 end
 
 function dispose!(actor::ExhaustMapActor)
-    actor.props.isdisposed = true
-    unsubscribe!(actor.props.msubscription)
-    unsubscribe!(actor.props.isubscription)
+    actor.isdisposed = true
+    unsubscribe!(actor.msubscription)
+    unsubscribe!(actor.isubscription)
 end
 
 @subscribable struct ExhaustMapSource{L, S} <: Subscribable{L}
@@ -131,7 +123,7 @@ end
 source_proxy!(::Type{R}, proxy::ExhaustMapProxy{L, R, F}, source::S) where { L, R, F, S } = ExhaustMapSource{L, S}(source)
 
 function on_subscribe!(source::ExhaustMapSource, actor::ExhaustMapActor)
-    actor.props.msubscription = subscribe!(source.source, actor)
+    actor.msubscription = subscribe!(source.source, actor)
     return ExhaustMapSubscription(actor)
 end
 

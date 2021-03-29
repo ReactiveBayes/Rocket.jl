@@ -25,24 +25,20 @@ operator_right(operator::SafeOperator, ::Type{L}) where L = L
 
 struct SafeProxy <: ActorSourceProxy end
 
-actor_proxy!(::Type{L}, proxy::SafeProxy, actor::A)   where { L, A } = SafeActor{L, A}(actor, SafeActorProps(false, voidTeardown))
+actor_proxy!(::Type{L}, proxy::SafeProxy, actor::A)   where { L, A } = SafeActor{L, A}(actor, false, voidTeardown)
 source_proxy!(::Type{L}, proxy::SafeProxy, source::S) where { L, S } = SafeSource{L, S}(source)
 
-mutable struct SafeActorProps
+mutable struct SafeActor{L, A} <: Actor{L}
+    actor        :: A
     isfailed     :: Bool
     subscription :: Teardown
 end
 
-struct SafeActor{L, A} <: Actor{L}
-    actor :: A
-    props :: SafeActorProps
-end
+isfailed(actor::SafeActor)   = actor.isfailed
+setfailed!(actor::SafeActor) = actor.isfailed = true
 
-isfailed(actor::SafeActor)   = actor.props.isfailed
-setfailed!(actor::SafeActor) = actor.props.isfailed = true
-
-getsubscription(actor::SafeActor)         = actor.props.subscription
-setsubscription!(actor::SafeActor, value) = actor.props.subscription = value
+getsubscription(actor::SafeActor)         = actor.subscription
+setsubscription!(actor::SafeActor, value) = actor.subscription = value
 
 function on_next!(actor::SafeActor{L}, data::L) where L
     if !isfailed(actor)

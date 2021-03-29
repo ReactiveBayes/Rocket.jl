@@ -44,28 +44,22 @@ struct DiscontinueProxy <: ActorProxy end
 
 actor_proxy!(::Type{L}, proxy::DiscontinueProxy, actor::A) where { L, A } = DiscontinueActor{L, A}(actor)
 
-mutable struct DiscontinueActorProps
+mutable struct DiscontinueActor{L, A} <: Actor{L}
+    actor                :: A
     isnextpropagated     :: Bool
     iserrorpropagated    :: Bool
     iscompletepropagated :: Bool
 
-    DiscontinueActorProps() = new(false, false, false)
+    DiscontinueActor{L, A}(actor::A) where { L, A } = new(actor, false, false, false)
 end
 
-struct DiscontinueActor{L, A} <: Actor{L}
-    actor :: A
-    props :: DiscontinueActorProps
+isnextpropagated(actor::DiscontinueActor)     = actor.isnextpropagated
+iserrorpropagated(actor::DiscontinueActor)    = actor.iserrorpropagated
+iscompletepropagated(actor::DiscontinueActor) = actor.iscompletepropagated
 
-    DiscontinueActor{L, A}(actor::A) where { L, A } = new(actor, DiscontinueActorProps())
-end
-
-isnextpropagated(actor::DiscontinueActor)     = actor.props.isnextpropagated
-iserrorpropagated(actor::DiscontinueActor)    = actor.props.iserrorpropagated
-iscompletepropagated(actor::DiscontinueActor) = actor.props.iscompletepropagated
-
-setnextpropagated!(actor::DiscontinueActor, value::Bool)     = actor.props.isnextpropagated = value
-seterrorpropagated!(actor::DiscontinueActor, value::Bool)    = actor.props.iserrorpropagated = value
-setcompletepropagated!(actor::DiscontinueActor, value::Bool) = actor.props.iscompletepropagated = value
+setnextpropagated!(actor::DiscontinueActor, value::Bool)     = actor.isnextpropagated = value
+seterrorpropagated!(actor::DiscontinueActor, value::Bool)    = actor.iserrorpropagated = value
+setcompletepropagated!(actor::DiscontinueActor, value::Bool) = actor.iscompletepropagated = value
 
 function on_next!(actor::DiscontinueActor{L}, data::L) where L
     if !isnextpropagated(actor)

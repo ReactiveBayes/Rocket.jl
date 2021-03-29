@@ -61,21 +61,17 @@ on_complete!(actor::RaceInnerActor{L, W, I})      where { L, W, I } = complete_r
 
 ##
 
-mutable struct RaceActorWrapperProps
+mutable struct RaceActorWrapper{A}
+    actor               :: A
+    subscriptions       :: Vector{Teardown}
     first_emmited_index :: Union{Nothing, Int}
-end
 
-struct RaceActorWrapper{A}
-    actor         :: A
-    subscriptions :: Vector{Teardown}
-    props         :: RaceActorWrapperProps
-
-    RaceActorWrapper{A}(actor::A) where A = new(actor, Vector{Teardown}(), RaceActorWrapperProps(nothing))
+    RaceActorWrapper{A}(actor::A) where A = new(actor, Vector{Teardown}(), nothing)
 end
 
 has_emmited(wrapper::RaceActorWrapper)                     = get_first_emmited_index(wrapper) !== nothing
-get_first_emmited_index(wrapper::RaceActorWrapper)         = wrapper.props.first_emmited_index
-set_first_emmited_index!(wrapper::RaceActorWrapper, index) = wrapper.props.first_emmited_index = index
+get_first_emmited_index(wrapper::RaceActorWrapper)         = wrapper.first_emmited_index
+set_first_emmited_index!(wrapper::RaceActorWrapper, index) = wrapper.first_emmited_index = index
 
 function next_received!(wrapper::RaceActorWrapper, data, index::Val{I}) where I
     first = get_first_emmited_index(wrapper)

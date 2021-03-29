@@ -48,19 +48,15 @@ struct MinProxy{D} <: ActorProxy
     from :: D
 end
 
-actor_proxy!(::Type{Union{L, Nothing}}, proxy::MinProxy, actor::A) where { L, A } = MinActor{L, A}(actor, MinActorProps{L}(proxy.from))
+actor_proxy!(::Type{Union{L, Nothing}}, proxy::MinProxy, actor::A) where { L, A } = MinActor{L, A}(actor, proxy.from)
 
-mutable struct MinActorProps{L}
+mutable struct MinActor{L, A} <: Actor{L}
+    actor   :: A
     current :: Union{L, Nothing}
 end
 
-struct MinActor{L, A} <: Actor{L}
-    actor   :: A
-    props   :: MinActorProps{L}
-end
-
-getcurrent(actor::MinActor)         = actor.props.current
-setcurrent!(actor::MinActor, value) = actor.props.current = value
+getcurrent(actor::MinActor)         = actor.current
+setcurrent!(actor::MinActor, value) = actor.current = value
 
 function on_next!(actor::MinActor{L}, data::L) where L
     current = getcurrent(actor)

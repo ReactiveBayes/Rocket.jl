@@ -56,8 +56,9 @@ end
 
 actor_proxy!(::Type{R}, proxy::ConcatMapProxy{L, R, F}, actor::A) where { L, R, F, A } = ConcatMapActor{L, R, F, A}(proxy.mappingFn, actor)
 
-# m - main
-mutable struct ConcatMapActorProps{L}
+mutable struct ConcatMapActor{L, R, F, A} <: Actor{L}
+    mappingFn     :: F
+    actor         :: A
     msubscription :: Teardown
     ismcompleted  :: Bool
     isdisposed    :: Bool
@@ -65,30 +66,22 @@ mutable struct ConcatMapActorProps{L}
     active_listener :: Union{Nothing, Any}
     pending_data    :: Deque{L}
 
-    ConcatMapActorProps{L}() where L = new(voidTeardown, false, false, nothing, Deque{L}())
-end
-
-struct ConcatMapActor{L, R, F, A} <: Actor{L}
-    mappingFn  :: F
-    actor      :: A
-    props      :: ConcatMapActorProps{L}
-
     ConcatMapActor{L, R, F, A}(mappingFn::F, actor::A) where { L, R, F, A } = begin
-        return new(mappingFn, actor, ConcatMapActorProps{L}())
+        return new(mappingFn, actor, voidTeardown, false, false, nothing, Deque{L}())
     end
 end
 
-getactive(actor::ConcatMapActor)  = actor.props.active_listener
-getpending(actor::ConcatMapActor) = actor.props.pending_data
+getactive(actor::ConcatMapActor)  = actor.active_listener
+getpending(actor::ConcatMapActor) = actor.pending_data
 
-setactive!(actor::ConcatMapActor, active)    = actor.props.active_listener = active
+setactive!(actor::ConcatMapActor, active)    = actor.active_listener = active
 pushpending!(actor::ConcatMapActor, pending) = push!(getpending(actor), pending)
 
-isdisposed(actor::ConcatMapActor)   = actor.props.isdisposed
-ismcompleted(actor::ConcatMapActor) = actor.props.ismcompleted
+isdisposed(actor::ConcatMapActor)   = actor.isdisposed
+ismcompleted(actor::ConcatMapActor) = actor.ismcompleted
 isicompleted(actor::ConcatMapActor) = getactive(actor) === nothing && length(getpending(actor)) === 0
 
-setmcompleted!(actor::ConcatMapActor, value::Bool) = actor.props.ismcompleted = value
+setmcompleted!(actor::ConcatMapActor, value::Bool) = actor.ismcompleted = value
 
 function seticompleted!(actor::ConcatMapActor, inner)
     setactive!(actor, nothing)
@@ -101,7 +94,7 @@ end
 
 function attach_source_with_map!(actor::M, data::L) where { L, R, M <: ConcatMapActor{L, R} }
     if getactive(actor) === nothing
-        inner = ConcatMapInnerActor{R, M}(actor, ConcatMapInnerActorProps())
+        inner = ConcatMapInnerActor{R, M}(actor, voidTeardown)
         setactive!(actor, inner)
         setsubscription!(inner, subscribe!(actor.mappingFn(data), inner))
     else
@@ -109,19 +102,13 @@ function attach_source_with_map!(actor::M, data::L) where { L, R, M <: ConcatMap
     end
 end
 
-mutable struct ConcatMapInnerActorProps
+mutable struct ConcatMapInnerActor{R, M} <: Actor{R}
+    main         :: M
     subscription :: Teardown
-
-    ConcatMapInnerActorProps() = new(voidTeardown)
 end
 
-struct ConcatMapInnerActor{R, M} <: Actor{R}
-    main  :: M
-    props :: ConcatMapInnerActorProps
-end
-
-getsubscription(actor::ConcatMapInnerActor)                = actor.props.subscription
-setsubscription!(actor::ConcatMapInnerActor, subscription) = actor.props.subscription = subscription
+getsubscription(actor::ConcatMapInnerActor)                = actor.subscription
+setsubscription!(actor::ConcatMapInnerActor, subscription) = actor.subscription = subscription
 
 on_next!(actor::ConcatMapInnerActor{R}, data::R) where R = next!(actor.main.actor, data)
 on_error!(actor::ConcatMapInnerActor, err)               = error!(actor.main, err)
@@ -151,8 +138,8 @@ function on_complete!(actor::ConcatMapActor)
 end
 
 function dispose!(actor::ConcatMapActor)
-    actor.props.isdisposed = true
-    unsubscribe!(actor.props.msubscription)
+    actor.isdisposed = true
+    unsubscribe!(actor.msubscription)
     active = getactive(actor)
     if active !== nothing
         unsubscribe!(getsubscription(active))
@@ -168,7 +155,7 @@ end
 source_proxy!(::Type{R}, proxy::ConcatMapProxy{L, R, F}, source::S) where { L, R, F, S } = ConcatMapSource{L, S}(source)
 
 function on_subscribe!(source::ConcatMapSource, actor::ConcatMapActor)
-    actor.props.msubscription = subscribe!(source.source, actor)
+    actor.msubscription = subscribe!(source.source, actor)
     return ConcatMapSubscription(actor)
 end
 

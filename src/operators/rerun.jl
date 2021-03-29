@@ -53,24 +53,18 @@ end
 
 source_proxy!(::Type{L}, proxy::RerunProxy, source::S) where { L, S } = RerunSource{L, S}(proxy.count, source)
 
-mutable struct RerunActorProps
+mutable struct RerunInnerActor{L, S, A} <: Actor{L}
+    source       :: S
+    actor        :: A
     count        :: Int
     subscription :: Teardown
-
-    RerunActorProps(count::Int) = new(count, voidTeardown)
 end
 
-struct RerunInnerActor{L, S, A} <: Actor{L}
-    source :: S
-    actor  :: A
-    props  :: RerunActorProps
-end
+getsubscription(actor::RerunInnerActor)         = actor.subscription
+setsubscription!(actor::RerunInnerActor, value) = actor.subscription = value
 
-getsubscription(actor::RerunInnerActor)         = actor.props.subscription
-setsubscription!(actor::RerunInnerActor, value) = actor.props.subscription = value
-
-getcount(actor::RerunInnerActor)         = actor.props.count
-setcount!(actor::RerunInnerActor, value) = actor.props.count = max(-1, value)
+getcount(actor::RerunInnerActor)         = actor.count
+setcount!(actor::RerunInnerActor, value) = actor.count = max(-1, value)
 
 function on_next!(actor::RerunInnerActor{L}, data::L) where L
     next!(actor.actor, data)
@@ -98,7 +92,7 @@ end
 end
 
 function on_subscribe!(source::RerunSource{L, S}, actor::A) where { L, S, A }
-    inner = RerunInnerActor{L, S, A}(source.source, actor, RerunActorProps(source.count))
+    inner = RerunInnerActor{L, S, A}(source.source, actor, source.count, voidTeardown)
 
     setsubscription!(inner, subscribe!(source.source, inner))
 

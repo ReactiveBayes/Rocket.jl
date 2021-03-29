@@ -55,29 +55,22 @@ end
 actor_proxy!(::Type{L}, proxy::TakeProxy,  actor::A)  where { L, A } = TakeActor{L, A}(proxy.maxcount, actor)
 source_proxy!(::Type{L}, proxy::TakeProxy, source::S) where { L, S } = TakeSource{L, S}(source)
 
-mutable struct TakeActorProps
+mutable struct TakeActor{L, A} <: Actor{L}
+    maxcount     :: Int
+    actor        :: A
     isdisposed   :: Bool
     count        :: Int
     subscription :: Teardown
 
-    TakeActorProps() = new(false, 0, voidTeardown)
-end
-
-struct TakeActor{L, A} <: Actor{L}
-    maxcount :: Int
-    actor    :: A
-    props    :: TakeActorProps
-
-    TakeActor{L, A}(maxcount::Int, actor::A) where { L, A } = new(maxcount, actor, TakeActorProps())
+    TakeActor{L, A}(maxcount::Int, actor::A) where { L, A } = new(maxcount, actor, false, 0, voidTeardown)
 end
 
 function on_next!(actor::TakeActor{L}, data::L) where L
-    props = actor.props
-    if !props.isdisposed
-        if props.count < actor.maxcount
+    if !actor.isdisposed
+        if actor.count < actor.maxcount
             next!(actor.actor, data)
-            props.count += 1
-            if props.count == actor.maxcount
+            actor.count += 1
+            if actor.count == actor.maxcount
                 complete!(actor)
             end
         end
@@ -85,22 +78,22 @@ function on_next!(actor::TakeActor{L}, data::L) where L
 end
 
 function on_error!(actor::TakeActor, err)
-    if !actor.props.isdisposed
+    if !actor.isdisposed
         error!(actor.actor, err)
         __dispose(actor)
     end
 end
 
 function on_complete!(actor::TakeActor)
-    if !actor.props.isdisposed
+    if !actor.isdisposed
         complete!(actor.actor)
         __dispose(actor)
     end
 end
 
 function __dispose(actor::TakeActor)
-    actor.props.isdisposed = true
-    unsubscribe!(actor.props.subscription)
+    actor.isdisposed = true
+    unsubscribe!(actor.subscription)
 end
 
 @subscribable struct TakeSource{L, S} <: Subscribable{L}
@@ -109,7 +102,7 @@ end
 
 function on_subscribe!(observable::TakeSource, actor::TakeActor)
     subscription = subscribe!(observable.source, actor)
-    actor.props.subscription = subscription
+    actor.subscription = subscription
     return subscription
 end
 

@@ -245,10 +245,10 @@ using Rocket
 
 struct MyOperator <: TypedOperator{Float64,String} end
 
-as_operator(MyOperator)
+as_operator(MyOperator) === TypedOperatorTrait{Float64,String}()
 
 # output
-TypedOperatorTrait{Float64,String}()
+true
 ```
 
 See also: [`AbstractOperator`](@ref), [`TypedOperatorTrait`](@ref)
@@ -264,10 +264,10 @@ using Rocket
 
 struct MyOperator <: LeftTypedOperator{Float64} end
 
-as_operator(MyOperator)
+as_operator(MyOperator) === LeftTypedOperatorTrait{Float64}()
 
 # output
-LeftTypedOperatorTrait{Float64}()
+true
 ```
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperatorTrait`](@ref), [`operator_right`](@ref)
@@ -283,10 +283,10 @@ using Rocket
 
 struct MyOperator <: RightTypedOperator{Float64} end
 
-as_operator(MyOperator)
+as_operator(MyOperator) === RightTypedOperatorTrait{Float64}()
 
 # output
-RightTypedOperatorTrait{Float64}()
+true
 ```
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperatorTrait`](@ref)
@@ -302,10 +302,10 @@ using Rocket
 
 struct MyOperator <: InferableOperator end
 
-as_operator(MyOperator)
+as_operator(MyOperator) === InferableOperatorTrait()
 
 # output
-InferableOperatorTrait()
+true
 ```
 
 See also: [`AbstractOperator`](@ref), [`InferableOperatorTrait`](@ref), [`operator_right`](@ref)

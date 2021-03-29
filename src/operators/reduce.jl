@@ -72,20 +72,16 @@ struct ReduceProxy{L, R, F} <: ActorProxy
     seed     :: R
 end
 
-actor_proxy!(::Type{R}, proxy::ReduceProxy{L, R, F}, actor::A) where { L, R, A, F } = ReduceActor{L, R, A, F}(proxy.reduceFn, actor, ReduceActorProps{R}(proxy.seed))
+actor_proxy!(::Type{R}, proxy::ReduceProxy{L, R, F}, actor::A) where { L, R, A, F } = ReduceActor{L, R, A, F}(proxy.reduceFn, actor, proxy.seed)
 
-mutable struct ReduceActorProps{R}
-    current :: R
-end
-
-struct ReduceActor{L, R, A, F} <: Actor{L}
+mutable struct ReduceActor{L, R, A, F} <: Actor{L}
     reduceFn :: F
     actor    :: A
-    props    :: ReduceActorProps{R}
+    current  :: R
 end
 
-getcurrent(actor::ReduceActor)         = actor.props.current
-setcurrent!(actor::ReduceActor, value) = actor.props.current = value
+getcurrent(actor::ReduceActor)         = actor.current
+setcurrent!(actor::ReduceActor, value) = actor.current = value
 
 function on_next!(actor::ReduceActor{L, R}, data::L) where { L, R }
     setcurrent!(actor, actor.reduceFn(data, getcurrent(actor)))
@@ -124,20 +120,16 @@ struct ReduceNoSeedProxy{F} <: ActorProxy
     reduceFn :: F
 end
 
-actor_proxy!(::Type{L}, proxy::ReduceNoSeedProxy{F}, actor::A) where { L, A, F } = ReduceNoSeedActor{L, A, F}(proxy.reduceFn, actor, ReduceNoSeedActorProps{L}(nothing))
+actor_proxy!(::Type{L}, proxy::ReduceNoSeedProxy{F}, actor::A) where { L, A, F } = ReduceNoSeedActor{L, A, F}(proxy.reduceFn, actor, nothing)
 
-mutable struct ReduceNoSeedActorProps{L}
-    current :: Union{L, Nothing}
-end
-
-struct ReduceNoSeedActor{L, A, F} <: Actor{L}
+mutable struct ReduceNoSeedActor{L, A, F} <: Actor{L}
     reduceFn :: F
     actor    :: A
-    props    :: ReduceNoSeedActorProps{L}
+    current  :: Union{L, Nothing}
 end
 
-getcurrent(actor::ReduceNoSeedActor)         = actor.props.current
-setcurrent!(actor::ReduceNoSeedActor, value) = actor.props.current = value
+getcurrent(actor::ReduceNoSeedActor)         = actor.current
+setcurrent!(actor::ReduceNoSeedActor, value) = actor.current = value
 
 function on_next!(actor::ReduceNoSeedActor{L}, data::L) where L
     current = getcurrent(actor)

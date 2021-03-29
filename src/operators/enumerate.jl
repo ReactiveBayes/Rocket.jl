@@ -46,19 +46,15 @@ operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{Int, L}
 
 struct EnumerateProxy <: ActorProxy end
 
-actor_proxy!(::Type{Tuple{Int, L}}, proxy::EnumerateProxy, actor::A) where { L, A } = EnumerateActor{L, A}(actor, EnumerateActorProps(1))
+actor_proxy!(::Type{Tuple{Int, L}}, proxy::EnumerateProxy, actor::A) where { L, A } = EnumerateActor{L, A}(actor, 1)
 
-mutable struct EnumerateActorProps
+mutable struct EnumerateActor{L, A} <: Actor{L}
+    actor   :: A
     current :: Int
 end
 
-struct EnumerateActor{L, A} <: Actor{L}
-    actor :: A
-    props :: EnumerateActorProps
-end
-
-getcurrent(actor::EnumerateActor)           = actor.props.current
-setcurrent!(actor::EnumerateActor, current) = actor.props.current = current
+getcurrent(actor::EnumerateActor)           = actor.current
+setcurrent!(actor::EnumerateActor, current) = actor.current = current
 
 function on_next!(actor::EnumerateActor{L}, data::L) where L
     current = getcurrent(actor)

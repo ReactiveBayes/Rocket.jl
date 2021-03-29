@@ -33,29 +33,25 @@ struct AsyncSchedulerCompleteMessage end
 
 const AsyncSchedulerMessage{D} = Union{AsyncSchedulerDataMessage{D}, AsyncSchedulerErrorMessage, AsyncSchedulerCompleteMessage}
 
-mutable struct AsyncSchedulerInstanceProps
+mutable struct AsyncSchedulerInstance{D}
+    channel        :: Channel{AsyncSchedulerMessage{D}}
     isunsubscribed :: Bool
     subscription   :: Teardown
-end
-
-struct AsyncSchedulerInstance{D}
-    channel :: Channel{AsyncSchedulerMessage{D}}
-    props   :: AsyncSchedulerInstanceProps
 
     AsyncSchedulerInstance{D}(size::Int = typemax(Int)) where D = begin
-        return new(Channel{AsyncSchedulerMessage{D}}(size), AsyncSchedulerInstanceProps(false, voidTeardown))
+        return new(Channel{AsyncSchedulerMessage{D}}(size), false, voidTeardown)
     end
 end
 
-isunsubscribed(instance::AsyncSchedulerInstance) = instance.props.isunsubscribed
+isunsubscribed(instance::AsyncSchedulerInstance) = instance.isunsubscribed
 getchannel(instance::AsyncSchedulerInstance) = instance.channel
 
 function dispose(instance::AsyncSchedulerInstance)
     if !isunsubscribed(instance)
-        instance.props.isunsubscribed = true
+        instance.isunsubscribed = true
         close(instance.channel)
         @async begin
-            unsubscribe!(instance.props.subscription)
+            unsubscribe!(instance.subscription)
         end
     end
 end
@@ -103,7 +99,7 @@ function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance
         if !isunsubscribed(instance)
             tmp = on_subscribe!(source, actor, instance)
             if !isunsubscribed(instance)
-                subscription.instance.props.subscription = tmp
+                subscription.instance.subscription = tmp
             else
                 unsubscribe!(tmp)
             end
