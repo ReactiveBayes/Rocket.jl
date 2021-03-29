@@ -118,7 +118,7 @@ end
 
 ## 
 
-struct CollectLatestObservable{T, S, R, F} <: Subscribable{ R }
+@subscribable struct CollectLatestObservable{T, S, R, F} <: Subscribable{R}
     sources   :: S
     mappingFn :: F
 end

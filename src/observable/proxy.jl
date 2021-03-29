@@ -89,7 +89,7 @@ An interface for proxied Observables.
 
 See also: [`proxy`](@ref)
 """
-struct ProxyObservable{L, S, P} <: Subscribable{L}
+@subscribable struct ProxyObservable{L, S, P} <: Subscribable{L}
     proxied_source :: S
     proxy          :: P
 end

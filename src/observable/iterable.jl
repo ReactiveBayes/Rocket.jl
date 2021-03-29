@@ -57,7 +57,7 @@ function iterable(iterator::I; scheduler::H = AsapScheduler()) where { I, H <: A
     return IterableObservable{eltype(I), I, H}(iterator, scheduler)
 end
 
-struct IterableObservable{D, I, H} <: ScheduledSubscribable{D}
+@subscribable struct IterableObservable{D, I, H} <: ScheduledSubscribable{D}
     iterator  :: I
     scheduler :: H
 end

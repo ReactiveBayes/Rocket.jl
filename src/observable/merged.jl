@@ -6,7 +6,7 @@ import Base: show
 # Merge observable     #
 # -------------------- #
 
-struct MergeObservable{D, S} <: Subscribable{D}
+@subscribable struct MergeObservable{D, S} <: Subscribable{D}
     sources :: S
 end
 

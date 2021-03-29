@@ -13,7 +13,7 @@ on_next!(actor::ScheduledActor{L}, data::L) where L = next!(actor.actor, data, a
 on_error!(actor::ScheduledActor, err)               = error!(actor.actor, err, actor.scheduler)
 on_complete!(actor::ScheduledActor)                 = complete!(actor.actor, actor.scheduler)
 
-struct ScheduledSource{L, H <: AbstractScheduler, S} <: ScheduledSubscribable{L}
+@subscribable struct ScheduledSource{L, H <: AbstractScheduler, S} <: ScheduledSubscribable{L}
     source    :: S
     scheduler :: H
 end

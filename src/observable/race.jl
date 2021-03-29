@@ -122,7 +122,7 @@ end
 
 ##
 
-struct RaceObservable{T, S} <: Subscribable{T}
+@subscribable struct RaceObservable{T, S} <: Subscribable{T}
     sources :: S
 end
 

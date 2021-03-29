@@ -204,7 +204,7 @@ end
 
 ##
 
-struct CombineLatestObservable{T, S, G} <: Subscribable{T}
+@subscribable struct CombineLatestObservable{T, S, G} <: Subscribable{T}
     sources  :: S
     strategy :: G
 end

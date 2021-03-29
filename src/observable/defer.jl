@@ -32,7 +32,7 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 defer(::Type{D}, factoryFn::F) where { D, F <: Function } = DeferObservable{D, F}(factoryFn)
 
-struct DeferObservable{D, F} <: Subscribable{D}
+@subscribable struct DeferObservable{D, F} <: Subscribable{D}
     factoryFn :: F
 end
 

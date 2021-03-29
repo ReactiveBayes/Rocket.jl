@@ -39,6 +39,4 @@ end
 
 create_actor(::Type{L}, factory::FunctionActorFactory{F}) where { L, F } = FunctionActor{L, F}(factory.on_next)
 
-function subscribe!(source, fn::F) where { F <: Function }
-    return subscribe!(source, FunctionActorFactory{F}(fn))
-end
+subscribe!(source, fn::F) where { F <: Function } = subscribe!(source, FunctionActorFactory{F}(fn))

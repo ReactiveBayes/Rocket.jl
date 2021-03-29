@@ -11,7 +11,7 @@ It subscribes to the source when its `connect` method is called.
 
 See also: [`connect`](@ref), [`Subscribable`](@ref)
 """
-struct ConnectableObservable{D, J, S} <: Subscribable{D}
+@subscribable struct ConnectableObservable{D, J, S} <: Subscribable{D}
     subject :: J
     source  :: S
 end

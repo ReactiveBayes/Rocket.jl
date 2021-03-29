@@ -12,7 +12,7 @@ NetworkObservable listens for the messages of type `D` from remote server with s
 
 # See also: [`network`](@ref), [`Subscribable`](@ref)
 """
-struct NetworkObservable{D, A, P, S} <: Subscribable{D} end
+@subscribable struct NetworkObservable{D, A, P, S} <: Subscribable{D} end
 
 function on_subscribe!(observable::NetworkObservable{D, Address, Port, S}, actor) where { D, Address, Port, S }
     clientside = Sockets.connect(Address, Port)

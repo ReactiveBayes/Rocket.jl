@@ -50,7 +50,7 @@ concat(sources::S) where { S <: Tuple } = ConcatObservable{union_type(sources), 
 
 ##
 
-struct ConcatObservable{D, S} <: Subscribable{D}
+@subscribable struct ConcatObservable{D, S} <: Subscribable{D}
     sources :: S
 end
 

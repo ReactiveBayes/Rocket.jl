@@ -167,7 +167,7 @@ end
 
 ##
 
-struct ZipObservable{T, C} <: Subscribable{T}
+@subscribable struct ZipObservable{T, C} <: Subscribable{T}
     sources  :: C
 end
 

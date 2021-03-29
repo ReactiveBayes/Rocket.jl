@@ -33,7 +33,7 @@ ArrayObservable wraps a regular Julia array into an observable. Uses scheduler o
 
 See also: [`Subscribable`](@ref), [`from`](@ref)
 """
-struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
+@subscribable struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
     values    :: Vector{D}
     scheduler :: H
 end

@@ -96,7 +96,7 @@ end
 
 ##
 
-struct CombineLatestUpdatesObservable{S, G} <: Subscribable{S}
+@subscribable struct CombineLatestUpdatesObservable{S, G} <: Subscribable{S}
     sources  :: S
     strategy :: G
 end

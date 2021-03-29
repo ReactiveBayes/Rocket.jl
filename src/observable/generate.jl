@@ -37,7 +37,7 @@ function generate(initial::D, condition::C, iterator::I; scheduler::H = AsapSche
     return GenerateObservable{D, C, I, H}(initial, condition, iterator, scheduler)
 end
 
-struct GenerateObservable{D, C, I, H} <: ScheduledSubscribable{D}
+@subscribable struct GenerateObservable{D, C, I, H} <: ScheduledSubscribable{D}
     initial   :: D
     condition :: C
     iterator  :: I

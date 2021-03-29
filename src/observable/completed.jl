@@ -13,7 +13,7 @@ Observable that emits no items to the Actor and just sends a complete notificati
 
 See also: [`Subscribable`](@ref), [`completed`](@ref)
 """
-struct CompletedObservable{D, H} <: ScheduledSubscribable{D}
+@subscribable struct CompletedObservable{D, H} <: ScheduledSubscribable{D}
     scheduler :: H
 end
 

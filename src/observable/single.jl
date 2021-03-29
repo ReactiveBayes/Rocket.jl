@@ -14,7 +14,7 @@ SingleObservable wraps single value of type `D` into a observable.
 
 # See also: [`of`](@ref), [`Subscribable`](@ref)
 """
-struct SingleObservable{D, H} <: ScheduledSubscribable{D}
+@subscribable struct SingleObservable{D, H} <: ScheduledSubscribable{D}
     value     :: D
     scheduler :: H
 end

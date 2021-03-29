@@ -12,7 +12,7 @@ An Observable that emits no items to the Observer and never completes.
 
 See also: [`Subscribable`](@ref), [`never`](@ref)
 """
-struct NeverObservable{D} <: Subscribable{D} end
+@subscribable struct NeverObservable{D} <: Subscribable{D} end
 
 function on_subscribe!(observable::NeverObservable, actor)
     return voidTeardown

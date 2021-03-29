@@ -50,7 +50,14 @@ as_actor(::Type{ <: AbstractSubject{D} }) where D = BaseActorTrait{D}()
 as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTrait{D}()
 
 # Specialised methods for built-in default subject and actor types
-subscribe!(subject::AbstractSubject{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subject, actor)
+@inline subscribe!(subject::AbstractSubject{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subject, actor)
+@inline subscribe!(subject::AbstractSubject{T},  actor::Actor{T})  where { T }            = on_subscribe!(subject, actor)
+
+@inline subscribe!(subscribable::Subscribable{T1},          actor::AbstractSubject{T2}) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+@inline subscribe!(subscribable::ScheduledSubscribable{T1}, actor::AbstractSubject{T2}) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+
+@inline subscribe!(subscribable::Subscribable{T},          actor::AbstractSubject{T}) where { T } = on_subscribe!(subscribable, actor)
+@inline subscribe!(subscribable::ScheduledSubscribable{T}, actor::AbstractSubject{T}) where { T } = scheduled_subscription!(subscribable, actor, makeinstance(T, getscheduler(subscribable)))
 
 Base.eltype(::AbstractSubject{D})            where D = D
 Base.eltype(::Type{ <: AbstractSubject{D} }) where D = D

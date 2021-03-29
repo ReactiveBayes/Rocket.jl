@@ -175,43 +175,46 @@ ERROR: Type Int64 is not a valid subscribable type.
 
 See also: [`on_subscribe!`](@ref), [`as_subscribable`](@ref)
 """
-subscribe!(subscribable::T, actor::S) where { T, S } = check_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
+@inline subscribe!(subscribable::T, actor::S) where { T, S } = check_on_subscribe!(as_subscribable(T), as_actor(S), subscribable, actor)
 
 # Specialised methods for built-in default subscribable and actor types
-subscribe!(subscribable::Subscribable{T1},          actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
-subscribe!(subscribable::ScheduledSubscribable{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+@inline subscribe!(subscribable::Subscribable{T1},          actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+@inline subscribe!(subscribable::ScheduledSubscribable{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+
+@inline subscribe!(subscribable::Subscribable{T},          actor::Actor{T}) where { T } = on_subscribe!(subscribable, actor)
+@inline subscribe!(subscribable::ScheduledSubscribable{T}, actor::Actor{T}) where { T } = scheduled_subscription!(subscribable, actor, makeinstance(T, getscheduler(subscribable)))
 
 # We don't use an abstract types here and dispatch on all possible combinations of types because of the issue #37045 JuliaLang/julia
 # https://github.com/JuliaLang/julia/issues/37045
-check_on_subscribe!(::InvalidSubscribableTrait,       _,                          subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
-check_on_subscribe!(::SimpleSubscribableTrait,        ::InvalidActorTrait,        subscribable, actor)                  = throw(InvalidActorTraitUsageError(actor))
-check_on_subscribe!(::ScheduledSubscribableTrait,     ::InvalidActorTrait,        subscribable, actor)                  = throw(InvalidActorTraitUsageError(actor))
-check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::BaseActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::NextActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::ErrorActorTrait{T2},      subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::CompletionActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::BaseActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::NextActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::ErrorActorTrait{T2},      subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::CompletionActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::InvalidSubscribableTrait,       _,                          subscribable, actor)                  = throw(InvalidSubscribableTraitUsageError(subscribable))
+@inline check_on_subscribe!(::SimpleSubscribableTrait,        ::InvalidActorTrait,        subscribable, actor)                  = throw(InvalidActorTraitUsageError(actor))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait,     ::InvalidActorTrait,        subscribable, actor)                  = throw(InvalidActorTraitUsageError(actor))
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::BaseActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::NextActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::ErrorActorTrait{T2},      subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1},    ::CompletionActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::BaseActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::NextActorTrait{T2},       subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::ErrorActorTrait{T2},      subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::CompletionActorTrait{T2}, subscribable, actor) where { T1, T2 } = throw(InconsistentActorWithSubscribableDataTypesError{T1, T2}(subscribable, actor))
 
-check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::BaseActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
-check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::NextActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
-check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::ErrorActorTrait{T2},      subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
-check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::CompletionActorTrait{T2}, subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::BaseActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::NextActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::ErrorActorTrait{T2},      subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
+@inline check_on_subscribe!(::SimpleSubscribableTrait{T1}, ::CompletionActorTrait{T2}, subscribable, actor) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
 
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::BaseActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::NextActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::ErrorActorTrait{T2},      subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
-check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::CompletionActorTrait{T2}, subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::BaseActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::NextActorTrait{T2},       subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::ErrorActorTrait{T2},      subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+@inline check_on_subscribe!(::ScheduledSubscribableTrait{T1}, ::CompletionActorTrait{T2}, subscribable, actor) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
 
-function subscribe!(subscribable::T, factory::F) where { T, F <: AbstractActorFactory }
+@inline function subscribe!(subscribable::T, factory::F) where { T, F <: AbstractActorFactory }
     return check_on_subscribe_with_factory!(as_subscribable(T), subscribable, factory)
 end
 
-check_on_subscribe_with_factory!(::InvalidSubscribableTrait,      subscribable, factory)         = throw(InvalidSubscribableTraitUsageError(subscribable))
-check_on_subscribe_with_factory!(::SimpleSubscribableTrait{L},    subscribable, factory) where L = subscribe!(subscribable, create_actor(L, factory))
-check_on_subscribe_with_factory!(::ScheduledSubscribableTrait{L}, subscribable, factory) where L = subscribe!(subscribable, create_actor(L, factory))
+@inline check_on_subscribe_with_factory!(::InvalidSubscribableTrait,      subscribable, factory)         = throw(InvalidSubscribableTraitUsageError(subscribable))
+@inline check_on_subscribe_with_factory!(::SimpleSubscribableTrait{L},    subscribable, factory) where L = subscribe!(subscribable, create_actor(L, factory))
+@inline check_on_subscribe_with_factory!(::ScheduledSubscribableTrait{L}, subscribable, factory) where L = subscribe!(subscribable, create_actor(L, factory))
 
 """
     on_subscribe!(subscribable, actor)

@@ -14,7 +14,7 @@ Observable that emits no items to the Actor and just sends an error notification
 
 See also: [`faulted`](@ref)
 """
-struct FaultedObservable{D, H} <: ScheduledSubscribable{D}
+@subscribable struct FaultedObservable{D, H} <: ScheduledSubscribable{D}
     err
     scheduler :: H
 end

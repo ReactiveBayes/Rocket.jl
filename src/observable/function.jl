@@ -14,7 +14,7 @@ import Base: show
 
     See also: [`Subscribable`](@ref), [`make`](@ref)
 """
-struct FunctionObservable{D, F} <: Subscribable{D}
+@subscribable struct FunctionObservable{D, F} <: Subscribable{D}
     f :: F
 end
 
