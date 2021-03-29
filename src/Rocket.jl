@@ -34,6 +34,12 @@ include("subjects/replay.jl")
 include("subjects/pending.jl")
 include("subjects/recent.jl")
 
+@generate_subscribe! Subject AbstractSubject
+@generate_subscribe! BehaviorSubjectInstance AbstractSubject
+@generate_subscribe! ReplaySubjectInstance AbstractSubject
+@generate_subscribe! PendingSubjectInstance AbstractSubject
+@generate_subscribe! RecentSubjectInstance AbstractSubject
+
 include("observable/generate.jl")
 include("observable/single.jl")
 include("observable/array.jl")
