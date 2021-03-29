@@ -115,7 +115,7 @@ end
 
 ##
 
-struct WithLatestObservable{T, M, S} <: Subscribable{T}
+@subscribable struct WithLatestObservable{T, M, S} <: Subscribable{T}
     main      :: M
     secondary :: S
 end

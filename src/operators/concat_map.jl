@@ -161,7 +161,7 @@ function dispose!(actor::ConcatMapActor)
     empty!(getpending(actor))
 end
 
-struct ConcatMapSource{L, S} <: Subscribable{L}
+@subscribable struct ConcatMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 

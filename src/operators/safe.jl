@@ -82,7 +82,7 @@ function dispose!(actor::SafeActor)
     unsubscribe!(getsubscription(actor))
 end
 
-struct SafeSource{L, S} <: Subscribable{L}
+@subscribable struct SafeSource{L, S} <: Subscribable{L}
     source :: S
 end
 

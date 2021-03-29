@@ -87,7 +87,7 @@ end
 
 Base.close(actor::DebounceTimeActor, excp = DebounceTimeCompletionException()) = notify(actor.condition, excp; error = true)
 
-struct DebounceTimeObservable{L, S} <: Subscribable{L}
+@subscribable struct DebounceTimeObservable{L, S} <: Subscribable{L}
     source :: S
 end
 

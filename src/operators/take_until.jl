@@ -96,7 +96,7 @@ function __dispose(actor::TakeUntilInnerActor)
     unsubscribe!(actor.props.nsubscription)
 end
 
-struct TakeUntilSource{L, N, S} <: Subscribable{L}
+@subscribable struct TakeUntilSource{L, N, S} <: Subscribable{L}
     notifier :: N
     source   :: S
 end

@@ -163,7 +163,7 @@ function dispose!(actor::MergeMapActor)
     empty!(getpending(actor))
 end
 
-struct MergeMapSource{L, S} <: Subscribable{L}
+@subscribable struct MergeMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 

@@ -46,7 +46,7 @@ end
 
 source_proxy!(::Type{L}, proxy::StartWithProxy{V}, source::S) where { L, V, S } = StartWithSource{L, V, S}(proxy.value, source)
 
-struct StartWithSource{L, V, S} <: Subscribable{L}
+@subscribable struct StartWithSource{L, V, S} <: Subscribable{L}
     value  :: V
     source :: S
 end

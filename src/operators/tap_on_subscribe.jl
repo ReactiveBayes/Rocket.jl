@@ -52,7 +52,7 @@ end
 
 source_proxy!(::Type{L}, proxy::TapOnSubscribeProxy{F}, source::S) where { L, S, F } = TapOnSubscribeSource{L, S, F}(proxy.tapFn, source)
 
-struct TapOnSubscribeSource{L, S, F} <: Subscribable{L}
+@subscribable struct TapOnSubscribeSource{L, S, F} <: Subscribable{L}
     tapFn  :: F
     source :: S
 end

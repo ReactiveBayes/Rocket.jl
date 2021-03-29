@@ -124,7 +124,7 @@ function dispose!(actor::ExhaustMapActor)
     unsubscribe!(actor.props.isubscription)
 end
 
-struct ExhaustMapSource{L, S} <: Subscribable{L}
+@subscribable struct ExhaustMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 

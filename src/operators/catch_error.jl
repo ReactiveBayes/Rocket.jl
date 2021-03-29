@@ -86,7 +86,7 @@ function on_complete!(actor::CatchErrorActor)
     end
 end
 
-struct CatchErrorSource{L, S} <: Subscribable{L}
+@subscribable struct CatchErrorSource{L, S} <: Subscribable{L}
     source :: S
 end
 

@@ -139,7 +139,7 @@ function dispose!(actor::SwitchMapActor)
     return nothing
 end
 
-struct SwitchMapSource{L, S} <: Subscribable{L}
+@subscribable struct SwitchMapSource{L, S} <: Subscribable{L}
     source :: S
 end
 

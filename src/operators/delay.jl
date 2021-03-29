@@ -103,7 +103,7 @@ on_complete!(actor::DelayActor{L})      where L = put!(actor.channel, DelayQueue
 
 Base.close(actor::DelayActor) = close(actor.channel, DelayCompletionException())
 
-struct DelayObservable{L, S} <: Subscribable{L}
+@subscribable struct DelayObservable{L, S} <: Subscribable{L}
     source :: S
 end
 

@@ -103,7 +103,7 @@ function __dispose(actor::TakeActor)
     unsubscribe!(actor.props.subscription)
 end
 
-struct TakeSource{L, S} <: Subscribable{L}
+@subscribable struct TakeSource{L, S} <: Subscribable{L}
     source :: S
 end
 

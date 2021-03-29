@@ -92,7 +92,7 @@ function on_complete!(actor::RerunInnerActor)
     complete!(actor.actor)
 end
 
-struct RerunSource{L, S} <: Subscribable{L}
+@subscribable struct RerunSource{L, S} <: Subscribable{L}
     count  :: Int
     source :: S
 end

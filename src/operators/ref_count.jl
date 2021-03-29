@@ -62,7 +62,7 @@ mutable struct RefCountSourceProps
     RefCountSourceProps() = new(0, voidTeardown)
 end
 
-struct RefCountSource{L, S} <: Subscribable{L}
+@subscribable struct RefCountSource{L, S} <: Subscribable{L}
     csource :: S
     props   :: RefCountSourceProps
 
