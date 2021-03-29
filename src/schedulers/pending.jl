@@ -5,11 +5,9 @@ import Base: show, similar
 mutable struct PendingActor{L, A} <: Actor{L}
     actor :: A
     last  :: Union{Nothing, L}
-
-    PendingActor{L, A}(::Type{L}, actor::A) where { L, A } = new(actor, nothing)
 end
 
-
+make_pending_actor(::Type{L}, actor::A) where { L, A } = PendingActor{L, A}(actor, nothing)
 
 getlast(actor::PendingActor)        = actor.last
 setlast!(actor::PendingActor, last) = actor.last = last
@@ -73,7 +71,7 @@ function on_unsubscribe!(subscription::PendingSchedulerSubscription)
 end
 
 function scheduled_subscription!(source::S, actor, instance::PendingScheduler) where S
-    pending = PendingActor(subscribable_extract_type(S), actor)
+    pending = make_pending_actor(subscribable_extract_type(S), actor)
     register!(instance, pending)
     subscription = on_subscribe!(source, pending, instance)
     return PendingSchedulerSubscription(subscription, instance, pending)
