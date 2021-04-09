@@ -22,15 +22,18 @@ show(getvalues(actor))
 
 See also: [`Actor`](@ref), [`buffer`](@ref)
 """
-struct BufferActor{T} <: Actor{Vector{T}}
-    values :: Vector{T}
+struct BufferActor{T, R} <: Actor{R}
+    values :: R
+end
 
-    BufferActor{T}(size::Int) where T = new(Vector{T}(undef, size))
+function BufferActor(::Type{T}, size) where T 
+    storage = Array{T}(undef, size)
+    return BufferActor{T, typeof(storage)}(storage)
 end
 
 getvalues(actor::BufferActor) = actor.values
 
-on_next!(actor::BufferActor{T}, data::Vector{T}) where T = copyto!(actor.values, data)
+on_next!(actor::BufferActor{T, R}, data::R) where {T, R} = copyto!(actor.values, data)
 on_error!(actor::BufferActor, err)                       = error(err)
 on_complete!(actor::BufferActor)                         = begin end
 
@@ -57,4 +60,27 @@ true
 
 See also: [`BufferActor`](@ref), [`AbstractActor`](@ref)
 """
-buffer(::Type{T}, size::Int) where T = BufferActor{T}(size)
+buffer(::Type{T}, size...)     where T = BufferActor(T, size)
+buffer(::Type{T}, size::Tuple) where T = BufferActor(T, size)
+
+
+# Julia iterable interface
+
+Base.IteratorSize(::Type{ <: BufferActor{T, R} })   where { T, R } = Base.IteratorSize(R)
+Base.IteratorEltype(::Type{ <: BufferActor{T, R} }) where { T, R } = Base.IteratorEltype(R)
+
+Base.IndexStyle(::Type{ <: BufferActor{T, R} }) where { T, R } = Base.IndexStyle(R)
+
+Base.eltype(::Type{ <: BufferActor{T} }) where T = T
+
+Base.iterate(actor::BufferActor)        = iterate(actor.values)
+Base.iterate(actor::BufferActor, state) = iterate(actor.values, state)
+
+Base.collect(actor::BufferActor)     = collect(actor.values)
+Base.size(actor::BufferActor)        = size(actor.values)
+Base.length(actor::BufferActor)      = length(actor.values)
+Base.getindex(actor::BufferActor, I)    = Base.getindex(actor.values, I)
+Base.getindex(actor::BufferActor, I...) = Base.getindex(actor.values, I...)
+
+Base.firstindex(actor::BufferActor) = firstindex(actor.values)
+Base.lastindex(actor::BufferActor)  = lastindex(actor.values)

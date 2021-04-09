@@ -70,9 +70,9 @@ Base.eltype(::Type{ <: KeepActor{T} }) where T = T
 Base.iterate(actor::KeepActor)        = iterate(actor.values)
 Base.iterate(actor::KeepActor, state) = iterate(actor.values, state)
 
-Base.size(actor::KeepActor)                 = (length(actor.values), )
-Base.length(actor::KeepActor)               = length(actor.values)
-Base.getindex(actor::KeepActor, index::Int) = actor.values[index]
+Base.size(actor::KeepActor)        = (length(actor.values), )
+Base.length(actor::KeepActor)      = length(actor.values)
+Base.getindex(actor::KeepActor, I) = Base.getindex(actor.values, I)
 
 Base.firstindex(actor::KeepActor) = firstindex(actor.values)
 Base.lastindex(actor::KeepActor)  = lastindex(actor.values)
