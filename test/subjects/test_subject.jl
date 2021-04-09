@@ -156,6 +156,28 @@ using Rocket
         unsubscribe!(subscription2)
     end
 
+    @testset begin
+        subject = Subject(Int)
+
+        limited = subject |> take(1)
+
+        actor1 = keep(Int)
+        actor2 = keep(Int)
+
+        subscription1 = subscribe!(limited, actor1)
+        subscription2 = subscribe!(subject, actor2)
+
+        next!(subject, 1)
+
+        @test actor1.values == [ 1 ]
+        @test actor2.values == [ 1 ]
+
+        next!(subject, 2)
+
+        @test actor1.values == [ 1 ]
+        @test actor2.values == [ 1, 2 ]
+    end
+
 end
 
 end

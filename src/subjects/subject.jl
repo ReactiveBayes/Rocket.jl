@@ -25,14 +25,14 @@ Doing so would lead to undefined behaviour. Use `safe()` operator to bypass this
 See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref), [`safe`](@ref)
 """
 mutable struct Subject{D, H, I} <: AbstractSubject{D}
-    listeners   :: Vector{SubjectListener{I}}
+    listeners   :: List{SubjectListener{I}}
     scheduler   :: H
     isactive    :: Bool
     iscompleted :: Bool
     isfailed    :: Bool
     lasterror   :: Any
 
-    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(Vector{SubjectListener{I}}(), scheduler, true, false, false, nothing)
+    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(List(SubjectListener{I}), scheduler, true, false, false, nothing)
 end
 
 function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler }
@@ -58,7 +58,7 @@ setlasterror!(subject::Subject, err) = subject.lasterror   = err
 ##
 
 function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
-    for listener in copy(subject.listeners)
+    for listener in subject.listeners
         scheduled_next!(listener.actor, data, listener.schedulerinstance)
     end
 end
@@ -68,11 +68,10 @@ function on_error!(subject::Subject, err)
         setinactive!(subject)
         setfailed!(subject)
         setlasterror!(subject, err)
-        for listener in copy(subject.listeners)
+        for listener in subject.listeners
             scheduled_error!(listener.actor, err, listener.schedulerinstance)
         end
-        unsubscribe_listeners!(subject, subject.listeners)
-        resize!(subject.listeners, 0)
+        empty!(subject.listeners)
     end
 end
 
@@ -80,16 +79,11 @@ function on_complete!(subject::Subject)
     if isactive(subject)
         setinactive!(subject)
         setcompleted!(subject)
-        for listener in copy(subject.listeners)
+        for listener in subject.listeners
             scheduled_complete!(listener.actor, listener.schedulerinstance)
         end
-        unsubscribe_listeners!(subject, subject.listeners)
-        resize!(subject.listeners, 0)
+        empty!(subject.listeners)
     end
-end
-
-function unsubscribe_listeners!(subject::Subject, listeners)
-    foreach((listener) -> unsubscribe!(SubjectSubscription(subject, listener)), copy(listeners))
 end
 
 ##
@@ -108,22 +102,21 @@ function on_subscribe!(subject::Subject{D}, actor) where { D }
 end
 
 function on_subscribe!(subject::Subject, actor, instance)
-    listener = SubjectListener(instance, actor)
-    push!(subject.listeners, listener)
-    return SubjectSubscription(subject, listener)
+    listener      = SubjectListener(instance, actor)
+    listener_node = pushnode!(subject.listeners, listener)
+    return SubjectSubscription(listener_node)
 end
 
 ##
 
-struct SubjectSubscription{ S, L } <: Teardown
-    subject  :: S
-    listener :: L
+struct SubjectSubscription{N} <: Teardown
+    listener_node :: N
 end
 
 as_teardown(::Type{ <: SubjectSubscription }) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::SubjectSubscription)
-    filter!((listener) -> listener !== subscription.listener, subscription.subject.listeners)
+    remove(subscription.listener_node)
     return nothing
 end
 
