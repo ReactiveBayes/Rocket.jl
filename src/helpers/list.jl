@@ -2,18 +2,15 @@
 
 mutable struct ListNode{T}
     data :: T
-    prev :: Union{Nothing, ListNode{T}}
-    next :: Union{Nothing, ListNode{T}}
+    prev :: ListNode{T}
+    next :: ListNode{T}
 
     function ListNode(::Type{T}) where T 
-        node = new{T}()
-        node.prev = nothing
-        node.next = nothing
-        return node
+        return new{T}()
     end
 
     function ListNode(data::T) where T 
-        return new{T}(data, nothing, nothing)
+        return new{T}(data)
     end
 end
 
@@ -27,11 +24,8 @@ struct List{T}
         first = ListNode(T)
         last  = ListNode(T)
 
-        first.prev = nothing
         first.next = last
-
-        last.prev = first
-        last.next = nothing
+        last.prev  = first
 
         return new{T}(first, last)
     end
@@ -87,10 +81,5 @@ end
 Base.IteratorSize(::Type{ <: List })   = Base.SizeUnknown()
 Base.IteratorEltype(::Type{ <: List }) = Base.HasEltype()
 
-function Base.iterate(list::List)
-    isempty(list) ? nothing : (list.first.next.data, list.first.next.next)
-end
-
-function Base.iterate(list::List, state::ListNode)
-    list.last === state ? nothing : (state.data, state.next)
-end
+Base.iterate(list::List)                  = isempty(list) ? nothing : (list.first.next.data, list.first.next.next)
+Base.iterate(list::List, state::ListNode) = list.last === state ? nothing : (state.data, state.next)
