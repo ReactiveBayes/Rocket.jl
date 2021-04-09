@@ -57,3 +57,22 @@ true
 See also: [`KeepActor`](@ref), [`AbstractActor`](@ref)
 """
 keep(::Type{T}) where T = KeepActor{T}()
+
+# Julia iterable interface
+
+Base.IteratorSize(::Type{ <: KeepActor })   = Base.HasLength()
+Base.IteratorEltype(::Type{ <: KeepActor }) = Base.HasEltype()
+
+Base.IndexStyle(::Type{ <: KeepActor }) = Base.IndexLinear()
+
+Base.eltype(::Type{ <: KeepActor{T} }) where T = T
+
+Base.iterate(actor::KeepActor)        = iterate(actor.values)
+Base.iterate(actor::KeepActor, state) = iterate(actor.values, state)
+
+Base.size(actor::KeepActor)                 = (length(actor.values), )
+Base.length(actor::KeepActor)               = length(actor.values)
+Base.getindex(actor::KeepActor, index::Int) = actor.values[index]
+
+Base.firstindex(actor::KeepActor) = firstindex(actor.values)
+Base.lastindex(actor::KeepActor)  = lastindex(actor.values)
