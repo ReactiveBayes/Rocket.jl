@@ -8,7 +8,7 @@ import Base: show
 Creates a `error_if_empty` operator, which emits a given error if the source Observable completes
 without emitting any next value, otherwise mirrors the source Observable.
 
-```
+```jldoctest
 using Rocket
 
 source = completed(Int) |> error_if_empty("Empty")

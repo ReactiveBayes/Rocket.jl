@@ -3,11 +3,12 @@ export pairwise
 import Base: show
 
 """
-    pairwise()
+    pairwise([ initial ])
 
 Creates a pairwise operator, which groups pairs of consecutive emissions together and emits them as a tuple of two values.
+Accepts optional initial seed value to start pairing from.
 
-```
+```jldoctest
 using Rocket
 
 source = from(1:5) |> pairwise()
@@ -17,7 +18,25 @@ subscribe!(source, logger())
 
 # output
 
-[LogActor] Data  (1, 2)
+[LogActor] Data: (1, 2)
+[LogActor] Data: (2, 3)
+[LogActor] Data: (3, 4)
+[LogActor] Data: (4, 5)
+[LogActor] Completed
+```
+
+```jldoctest
+using Rocket
+
+source = from(1:5) |> pairwise(0)
+
+subscribe!(source, logger())
+;
+
+# output
+
+[LogActor] Data: (0, 1)
+[LogActor] Data: (1, 2)
 [LogActor] Data: (2, 3)
 [LogActor] Data: (3, 4)
 [LogActor] Data: (4, 5)
@@ -26,7 +45,8 @@ subscribe!(source, logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`logger`](@ref)
 """
-pairwise() = PairwiseOperator()
+pairwise()        = PairwiseOperator()
+pairwise(initial) = start_with(initial) + pairwise()
 
 struct PairwiseOperator <: InferableOperator end
 

@@ -9,16 +9,21 @@ Creates a noop operator, which does nothing, but breaks operator composition typ
 It might be useful for very long chain of operators, because Julia tries to statically infer data types at compile-time for the whole chain and
 can run into StackOverflow issues.
 
-```
+```jldoctest
 using Rocket
 
-source = from(1:5)
+# foo() block to enforce local scope for scope variable
+function foo()
+    source = from(1:5)
 
-for i in 1:1000
-    source = source |> map(Int, d -> d + 1) |> noop()
+    for i in 1:1000
+        source = source |> map(Int, d -> d + 1) |> noop()
+    end
+
+    subscribe!(source, logger())
 end
 
-subscribe!(source, logger())
+foo()
 ;
 
 # output
