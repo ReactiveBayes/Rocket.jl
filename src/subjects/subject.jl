@@ -91,10 +91,10 @@ end
 function on_subscribe!(subject::Subject{D}, actor) where { D }
     if isfailed(subject)
         error!(actor, lasterror(subject))
-        return voidTeardown
+        return SubjectSubscription(nothing)
     elseif iscompleted(subject)
         complete!(actor)
-        return voidTeardown
+        return SubjectSubscription(nothing)
     else
         instance = makeinstance(D, subject.scheduler)
         return scheduled_subscription!(subject, actor, instance)
@@ -109,14 +109,17 @@ end
 
 ##
 
-struct SubjectSubscription{N} <: Teardown
-    listener_node :: N
+mutable struct SubjectSubscription <: Teardown
+    listener_node :: Union{Nothing, ListNode}
 end
 
 as_teardown(::Type{ <: SubjectSubscription }) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::SubjectSubscription)
-    remove(subscription.listener_node)
+    if subscription.listener_node !== nothing
+        remove(subscription.listener_node)
+        subscription.listener_node = nothing
+    end
     return nothing
 end
 

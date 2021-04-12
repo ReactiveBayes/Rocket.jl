@@ -178,6 +178,57 @@ using Rocket
         @test actor2.values == [ 1, 2 ]
     end
 
+    @testset begin
+
+        main = Subject(Int)
+
+        listener1 = Subject(Int)
+        listener2 = Subject(Int)
+        listener3 = Subject(Int)
+
+        keep1 = keep(Int)
+        keep2 = keep(Int)
+        keep3 = keep(Int)
+
+        k1 = subscribe!(listener1, keep1)
+        k2 = subscribe!(listener2, keep2)
+        k3 = subscribe!(listener3, keep3)
+
+        sub1 = subscribe!(main, listener1)
+        sub2 = subscribe!(main, listener2)
+        sub3 = subscribe!(main, listener3)
+
+        next!(main, 1)
+
+        @test keep1.values == [ 1 ]
+        @test keep2.values == [ 1 ]
+        @test keep3.values == [ 1 ]
+
+        unsubscribe!(sub2)
+
+        next!(main, 2)
+
+        @test keep1.values == [ 1, 2 ]
+        @test keep2.values == [ 1 ]
+        @test keep3.values == [ 1, 2 ]
+
+        unsubscribe!(sub3)
+
+        next!(main, 3)
+
+        @test keep1.values == [ 1, 2, 3 ]
+        @test keep2.values == [ 1 ]
+        @test keep3.values == [ 1, 2 ]
+
+        unsubscribe!(sub2) # sub2 here is intentional
+
+        next!(main, 4)
+
+        @test keep1.values == [ 1, 2, 3, 4 ]
+        @test keep2.values == [ 1 ]
+        @test keep3.values == [ 1, 2 ]
+    end
+
 end
 
 end
