@@ -23,7 +23,7 @@ struct SyncActor{T, A} <: Actor{T}
     withlock  :: Bool
     timeout   :: Int
 
-    SyncActor{T, A}(actor::A; withlock::Bool = false, timeout::Int = -1) where { T, A } = begin
+    SyncActor{T, A}(actor::A; withlock::Bool = true, timeout::Int = -1) where { T, A } = begin
         return new(ReentrantLock(), Condition(), actor, SyncActorProps(false, false), withlock, timeout)
     end
 end
@@ -33,7 +33,7 @@ Base.show(io::IO, actor::SyncActor{T, A}) where { T, A } = print(io, "SyncActor(
 iswithlock(actor::SyncActor) = actor.withlock
 
 Base.lock(actor::SyncActor)   = lock(actor.lock)
-Base.unlock(actor::SyncActor) = lock(actor.lock)
+Base.unlock(actor::SyncActor) = unlock(actor.lock)
 
 iscompleted(actor::SyncActor) = actor.props.iscompleted
 isfailed(actor::SyncActor)    = actor.props.isfailed
@@ -112,7 +112,7 @@ struct SyncActorFactory{F} <: AbstractActorFactory
     timeout  :: Int
     props    :: SyncActorFactoryProps
 
-    SyncActorFactory{F}(factory::F; withlock::Bool = false, timeout::Int = -1) where { F <: AbstractActorFactory } = begin
+    SyncActorFactory{F}(factory::F; withlock::Bool = true, timeout::Int = -1) where { F <: AbstractActorFactory } = begin
         return new(factory, withlock, timeout, SyncActorFactoryProps(Vector{SyncActor}()))
     end
 end
