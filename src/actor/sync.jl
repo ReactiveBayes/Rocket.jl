@@ -178,8 +178,8 @@ show(values)
 
 See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 """
-sync(actor::A; withlock::Bool = false, timeout::Int = -1)   where A                             = as_sync(as_actor(A), actor, withlock, timeout)
-sync(factory::F; withlock::Bool = false, timeout::Int = -1) where { F <: AbstractActorFactory } = SyncActorFactory{F}(factory; withlock = withlock, timeout = timeout)
+sync(actor::A; withlock::Bool = true, timeout::Int = -1)   where A                             = as_sync(as_actor(A), actor, withlock, timeout)
+sync(factory::F; withlock::Bool = true, timeout::Int = -1) where { F <: AbstractActorFactory } = SyncActorFactory{F}(factory; withlock = withlock, timeout = timeout)
 
 as_sync(::InvalidActorTrait,       actor::A, withlock::Bool, timeout::Int) where { A }    = throw(InvalidActorTraitUsageError(actor))
 as_sync(::BaseActorTrait{D},       actor::A, withlock::Bool, timeout::Int) where { D, A } = SyncActor{D, A}(actor; withlock = withlock, timeout = timeout)
