@@ -6,7 +6,7 @@ import Base: show
     take_until(notifier::S)
 
 Creates a take operator, which returns an Observable
-that emits the values emitted by the source Observable until a `notifier` Observable emits a value.
+that emits the values emitted by the source Observable until a `notifier` Observable emits a value or a completion event.
 
 # Arguments
 - `notifier::S`: The Observable whose first emitted value will cause the output Observable of `take_until` to stop emitting values from the source Observable.
@@ -39,6 +39,22 @@ subscribe!(source, logger())
 [LogActor] Completed
 ```
 
+```julia
+using Rocket 
+
+source = interval(100)
+
+subscribe!(source |> take_until(source |> filter(i -> i == 3)), logger())
+;
+
+# output 
+
+[LogActor] Data: 0
+[LogActor] Data: 1
+[LogActor] Data: 2
+[LogActor] Completed
+```
+
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
 take_until(notifier::N) where N = TakeUntilOperator{N}(notifier)
@@ -68,19 +84,23 @@ mutable struct TakeUntilInnerActor{L, A} <: Actor{L}
     TakeUntilInnerActor{L, A}(actor::A) where { L, A } = new(actor, false, voidTeardown, voidTeardown)
 end
 
-on_next!(actor::TakeUntilInnerActor{L}, data::L) where L = next!(actor.actor, data)
+function on_next!(actor::TakeUntilInnerActor{L}, data::L) where L 
+    if !actor.isdisposed
+        next!(actor.actor, data)
+    end
+end
 
 function on_error!(actor::TakeUntilInnerActor, err)
     if !actor.isdisposed
-        error!(actor.actor, err)
         __dispose(actor)
+        error!(actor.actor, err)
     end
 end
 
 function on_complete!(actor::TakeUntilInnerActor)
     if !actor.isdisposed
-        complete!(actor.actor)
         __dispose(actor)
+        complete!(actor.actor)
     end
 end
 
@@ -90,6 +110,14 @@ function __dispose(actor::TakeUntilInnerActor)
     unsubscribe!(actor.nsubscription)
 end
 
+struct TakeUntilInnerActorGuard{I} <: Actor{Any}
+    inner :: I
+end
+
+on_next!(guard::TakeUntilInnerActorGuard, _)    = complete!(guard.inner)
+on_error!(guard::TakeUntilInnerActorGuard, err) = error!(guard.inner, err)
+on_complete!(guard::TakeUntilInnerActorGuard)   = complete!(guard.inner)
+
 @subscribable struct TakeUntilSource{L, N, S} <: Subscribable{L}
     notifier :: N
     source   :: S
@@ -97,14 +125,16 @@ end
 
 function on_subscribe!(observable::TakeUntilSource{L}, actor::A) where { L, A }
     inner = TakeUntilInnerActor{L, A}(actor)
+    guard = TakeUntilInnerActorGuard(inner)
 
-    inner.ssubscription = subscribe!(observable.source, inner)
+    inner.nsubscription = subscribe!(observable.notifier, guard)
 
     if !inner.isdisposed
-        inner.nsubscription = subscribe!(observable.notifier |> take(1), lambda(
-            on_next  = (_)   -> complete!(inner),
-            on_error = (err) -> error!(inner, err)
-        ))
+        inner.ssubscription = subscribe!(observable.source, inner)
+        # Extra check for cases when __dispose has been called during main subscription
+        if inner.isdisposed
+            unsubscribe!(inner.ssubscription)
+        end
     end
 
     return TakeUntilSubscription(inner)
