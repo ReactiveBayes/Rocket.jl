@@ -116,6 +116,7 @@ makedocs(
                     "About utility operators" => "operators/utility/about.md",
                     "tap"                     => "operators/utility/tap.md",
                     "`tap_on_subscribe`"      => "operators/utility/tap_on_subscribe.md",
+                    "`tap_on_unsubscribe`"    => "operators/utility/tap_on_unsubscribe.md",
                     "`tap_on_complete`"       => "operators/utility/tap_on_complete.md",
                     "delay"                   => "operators/utility/delay.md",
                     "safe"                    => "operators/utility/safe.md",

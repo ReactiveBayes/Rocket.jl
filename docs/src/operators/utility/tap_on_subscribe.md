@@ -1,6 +1,8 @@
 # [TapOnSubscribe Operator](@id operator_tap_on_subscribe)
 
 ```@docs
+TapBeforeSubscription
+TapAfterSubscription
 tap_on_subscribe
 ```
 
