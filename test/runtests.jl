@@ -7,6 +7,7 @@ doctest(Rocket)
 @testset "Rocket" begin
 
     include("./helpers/test_list.jl")
+    include("./helpers/test_updates.jl")
 
     include("./test_teardown.jl")
     include("./teardown/test_void_teardown.jl")
