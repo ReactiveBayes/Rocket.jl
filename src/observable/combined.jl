@@ -1,5 +1,4 @@
 export combineLatest
-export PushEach, PushEachBut, PushNew, PushNewBut, PushStrategy
 
 import Base: show
 
@@ -50,79 +49,6 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`PushEach`](@ref), [`Pu
 """
 function combineLatest end
 
-"""
-    PushEach
-
-`PushEach` update strategy specifies combineLatest operator to emit new value each time an inner observable emit a new value
-
-See also: [`combineLatest`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
-"""
-struct PushEach end
-
-"""
-    PushEachBut{I}
-
-`PushEachBut` update strategy specifies combineLatest operator to emit new value if and only if an inner observable with index `I` have a new value
-
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
-"""
-struct PushEachBut{I} end
-
-"""
-    PushNew
-
-`PushNew` update strategy specifies combineLatest operator to emit new value if and only if all inner observables have a new value
-
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
-"""
-struct PushNew end
-
-"""
-    PushNewBut{I}
-
-`PushNewBut{I}` update strategy specifies combineLatest operator to emit new value if and only if all inner observables except with index `I` have a new value
-
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushStrategy`](@ref)
-"""
-struct PushNewBut{I} end
-
-"""
-    PushStrategy(strategy::BitArray{1})
-
-`PushStrategy` update strategy specifies combineLatest operator to emit new value if and only if all inner observables with index such that `strategy[index] = false` have a new value
-
-See also: [`combineLatest`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`collectLatest`](@ref)
-"""
-struct PushStrategy
-    strategy :: BitArray{1}
-end
-
-function push_update!(::Int, ::BitArray{1}, ::BitArray{1}, ::PushEach)
-    return nothing
-end
-
-function push_update!(::Int, vstatus::BitArray{1}, ::BitArray{1}, ::PushEachBut{I}) where I
-    @inbounds vstatus[I] = false
-    return nothing
-end
-
-function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNew)
-    unsafe_copyto!(vstatus, 1, cstatus, 1, nsize)
-    return nothing
-end
-
-function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, ::PushNewBut{I}) where I
-    push_update!(nsize, vstatus, cstatus, PushNew())
-    @inbounds vstatus[I] = true
-    return nothing
-end
-
-function push_update!(nsize::Int, vstatus::BitArray{1}, cstatus::BitArray, strategy::PushStrategy)
-    push_update!(nsize, vstatus, cstatus, PushNew())
-    map!(|, vstatus, vstatus, strategy.strategy)
-    return nothing
-end
-
 combineLatest(; strategy = PushEach())                                       = error("combineLatest operator expects at least one inner observable on input")
 combineLatest(args...; strategy = PushEach())                                = combineLatest(args, strategy)
 combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G }  = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
@@ -142,60 +68,51 @@ on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = c
 
 ##
 
-struct CombineLatestActorWrapper{S, A, G}
-    storage :: S
-    actor   :: A
-
-    nsize    :: Int
-    strategy :: G           # Push update strategy
-    cstatus  :: BitArray{1} # Completion status
-    vstatus  :: BitArray{1} # Values status
-    ustatus  :: BitArray{1} # Updates status
-
+struct CombineLatestActorWrapper{S, A, G, U}
+    storage       :: S
+    actor         :: A
+    nsize         :: Int
+    strategy      :: G
+    updates       :: U
     subscriptions :: Vector{Teardown}
-
-    CombineLatestActorWrapper{S, A, G}(storage::S, actor::A, strategy::G) where { S, A, G } = begin
-        nsize   = length(storage)
-        cstatus = falses(nsize)
-        vstatus = falses(nsize)
-        ustatus = falses(nsize)
-        subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
-        return new(storage, actor, nsize, strategy, cstatus, vstatus, ustatus, subscriptions)
-    end
 end
 
-push_update!(wrapper::CombineLatestActorWrapper) = push_update!(wrapper.nsize, wrapper.vstatus, wrapper.cstatus, wrapper.strategy)
+function CombineLatestActorWrapper(::Type{T}, actor::A, strategy::G) where { T, A, G } 
+    storage       = getmstorage(T)
+    updates       = getustorage(T)
+    nsize         = length(storage)
+    subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
+    return CombineLatestActorWrapper(storage, actor, nsize, strategy, updates, subscriptions)
+end
 
-cstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.cstatus[index]
-vstatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.vstatus[index]
-ustatus(wrapper::CombineLatestActorWrapper, index) = @inbounds wrapper.ustatus[index]
+push_update!(wrapper::CombineLatestActorWrapper) = push_update!(wrapper.nsize, wrapper.updates, wrapper.strategy)
 
-dispose(wrapper::CombineLatestActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
+dispose(wrapper::CombineLatestActorWrapper) = begin fill_cstatus!(wrapper.updates, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
 function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
     setstorage!(wrapper.storage, data, index)
-    @inbounds wrapper.vstatus[I] = true
-    @inbounds wrapper.ustatus[I] = true
-    if all(wrapper.vstatus) && !all(wrapper.cstatus)
+    vstatus!(wrapper.updates, I, true)
+    ustatus!(wrapper.updates, I, true)
+    if all_vstatus(wrapper.updates) && !all_cstatus(wrapper.updates)
         push_update!(wrapper)
         next!(wrapper.actor, snapshot(wrapper.storage))
     end
 end
 
 function error_received!(wrapper::CombineLatestActorWrapper, err, index::Val{I}) where I
-    if !(@inbounds wrapper.cstatus[I])
+    if !(cstatus(wrapper.updates, I))
         dispose(wrapper)
         error!(wrapper.actor, err)
     end
 end
 
 function complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
-    if !all(wrapper.cstatus)
-        @inbounds wrapper.cstatus[I] = true
-        if ustatus(wrapper, I)
-            @inbounds wrapper.vstatus[I] = true
+    if !all_cstatus(wrapper.updates)
+        cstatus!(wrapper.updates, I, true)
+        if ustatus(wrapper.updates, I)
+            vstatus!(wrapper.updates, I, true)
         end
-        if all(wrapper.cstatus) || (@inbounds wrapper.vstatus[I] === false)
+        if all_cstatus(wrapper.updates) || (!vstatus(wrapper.updates, I))
             dispose(wrapper)
             complete!(wrapper.actor)
         end
@@ -210,18 +127,18 @@ end
 end
 
 function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) where { T, S, G, A }
-    storage = getmstorage(T)
-    wrapper = CombineLatestActorWrapper{typeof(storage), A, G}(storage, actor, observable.strategy)
+    wrapper = CombineLatestActorWrapper(T, actor, observable.strategy)
+    W       = typeof(wrapper)
 
     for (index, source) in enumerate(observable.sources)
-        @inbounds wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
-        if cstatus(wrapper, index) === true && vstatus(wrapper, index) === false
+        @inbounds wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), W, index}(wrapper))
+        if cstatus(wrapper.updates, index) && !vstatus(wrapper.updates, index)
             dispose(wrapper)
             break
         end
     end
 
-    if all(wrapper.cstatus)
+    if all_cstatus(wrapper.updates)
         dispose(wrapper)
     end
 

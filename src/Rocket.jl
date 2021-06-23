@@ -3,6 +3,7 @@ module Rocket
 include("utils.jl")
 include("helpers/list.jl")
 include("helpers/mstorage.jl")
+include("helpers/updates.jl")
 
 include("teardown.jl")
 include("teardown/void.jl")
