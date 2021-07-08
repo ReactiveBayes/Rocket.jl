@@ -123,6 +123,7 @@ include("operators/ignore.jl")
 include("operators/start_with.jl")
 include("operators/accumulated.jl")
 include("operators/pairwise.jl")
+include("operators/limit_subscribers.jl")
 
 include("extensions/observable/single.jl")
 

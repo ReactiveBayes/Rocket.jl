@@ -129,6 +129,7 @@ makedocs(
                     "skip_error"              => "operators/utility/skip_error.md",
                     "skip_complete"           => "operators/utility/skip_complete.md",
                     "discontinue"             => "operators/utility/discontinue.md",
+                    "limit_subscribers"       => "operators/utility/limit_subscribers.md",
                 ]
             ],
             "Subjects" => [
