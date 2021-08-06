@@ -7,7 +7,7 @@ import Rocket: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic
 import Rocket: Teardown, as_teardown
 import Rocket: unsubscribe!, teardown!, on_unsubscribe!
 
-import Rocket: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
 
 @testset "Teardown" begin
 
@@ -51,6 +51,25 @@ import Rocket: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplemen
 
         #Check if implemented subscription calls on_unsubscribe!
         @test unsubscribe!(ImplementedSubscription()) === "unsubscribed"
+    end
+
+    @testset "multiple unsubscribe!" begin
+        # Check if arbitrary dummy type throws an error in unsubscribe!
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((DummyType(), ImplementedSubscription()))
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((ImplementedSubscription(), DummyType()))
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([ DummyType(), ImplementedSubscription() ])
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([ ImplementedSubscription(), DummyType() ])
+
+        #Check if implemented subscription calls on_unsubscribe!
+        @test unsubscribe!((ImplementedSubscription(), ImplementedSubscription())) === nothing
+        @test unsubscribe!((ImplementedSubscription(), AnotherDummyType())) === nothing
+        @test unsubscribe!((AnotherDummyType(), ImplementedSubscription())) === nothing
+        @test unsubscribe!((AnotherDummyType(), AnotherDummyType())) === nothing
+
+        @test unsubscribe!([ ImplementedSubscription(), ImplementedSubscription() ]) === nothing
+        @test unsubscribe!([ ImplementedSubscription(), AnotherDummyType() ]) === nothing
+        @test unsubscribe!([ AnotherDummyType(), ImplementedSubscription() ]) === nothing
+        @test unsubscribe!([ AnotherDummyType(), AnotherDummyType() ]) === nothing
     end
 
 end

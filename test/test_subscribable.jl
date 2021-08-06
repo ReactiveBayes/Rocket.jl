@@ -84,6 +84,78 @@ using Rocket
         @test actor.events == [ ]
     end
 
+    @testset "multiple subscribe!" begin
+        # Check if subscribe! throws an error for not valid subscribable
+        @test_throws InvalidSubscribableTraitUsageError             subscribe!(DummyType(), void(Any))
+        @test_throws InvalidActorTraitUsageError                    subscribe!(NotImplementedSubscribable(), DummyType())
+        @test_throws MissingOnSubscribeImplementationError          subscribe!(NotImplementedSubscribable(), void(Any))
+        @test_throws MissingOnScheduledSubscribeImplementationError subscribe!(NotImplementedScheduledSubscribable(), void(Any))
+        @test_throws MissingOnSubscribeImplementationError          subscribe!(ExplicitlyDefinedSimpleSubscribable(), void(Any))
+        @test_throws MissingOnScheduledSubscribeImplementationError subscribe!(ExplicitlyDefinedScheduledSubscribable(), void(Any))
+
+        # Check if subscribe! subscribes to a valid subscribable
+        actor = SimpleActor{Int}()
+        @test subscribe!([
+            (ImplementedSimpleSubscribable(), actor),
+        ]) == [ voidTeardown ]
+        @test actor.events == [ 1 ]
+
+        actor1 = SimpleActor{Int}()
+        actor2 = SimpleActor{Int}()
+        @test subscribe!([
+            (ImplementedSimpleSubscribable(), actor1),
+            (ImplementedSimpleSubscribable(), actor2),
+        ]) == [ voidTeardown, voidTeardown ]
+        @test actor1.events == [ 1 ]
+        @test actor2.events == [ 1 ]
+
+        actor = SimpleActor{Int}()
+        @test subscribe!((
+            (ImplementedSimpleSubscribable(), actor),
+        )) === ( voidTeardown, )
+        @test actor.events == [ 1 ]
+
+        actor1 = SimpleActor{Int}()
+        actor2 = SimpleActor{Int}()
+        @test subscribe!((
+            (ImplementedSimpleSubscribable(), actor1),
+            (ImplementedSimpleSubscribable(), actor2),
+        )) === ( voidTeardown, voidTeardown )
+        @test actor1.events == [ 1 ]
+        @test actor2.events == [ 1 ]
+
+        ## 
+        actor = SimpleActor{Int}()
+        @test subscribe!([
+            (ImplementedScheduledSubscribable(), actor),
+        ]) == [ voidTeardown ]
+        @test actor.events == [ 1 ]
+
+        actor1 = SimpleActor{Int}()
+        actor2 = SimpleActor{Int}()
+        @test subscribe!([
+            (ImplementedScheduledSubscribable(), actor1),
+            (ImplementedScheduledSubscribable(), actor2),
+        ]) == [ voidTeardown, voidTeardown ]
+        @test actor1.events == [ 1 ]
+        @test actor2.events == [ 1 ]
+
+        actor = SimpleActor{Int}()
+        @test subscribe!((
+            (ImplementedScheduledSubscribable(), actor),
+        )) === ( voidTeardown, )
+        @test actor.events == [ 1 ]
+
+        actor1 = SimpleActor{Int}()
+        actor2 = SimpleActor{Int}()
+        @test subscribe!((
+            (ImplementedScheduledSubscribable(), actor1),
+            (ImplementedScheduledSubscribable(), actor2),
+        )) === ( voidTeardown, voidTeardown )
+        @test actor1.events == [ 1 ]
+        @test actor2.events == [ 1 ]
+    end
+
     struct NotImplementedFactory <: AbstractActorFactory end
 
     struct ImplementedFactory <: AbstractActorFactory end

@@ -158,7 +158,23 @@ This example shows how subscribe calls are not shared among multiple Actors of t
 !!! note
     Subscribing to an Observable is like calling a function, providing callbacks where the data will be delivered to.
 
-A `subscribe!` call simply delivers initial values or events to an Actor.
+
+`subscribe!` function also supports multiple subscriptions at once. If the input argument to the `subscribe!` function is a tuple or a vector, it will first check that all of the arguments are valid source objects and actors and if its true will subscribe from each of them individually.
+
+```julia
+
+source1 = Subject(Int)
+source2 = Subject(Int)
+
+subscriptions = subscribe!([
+    (source1, logger()),
+    (source2, logger()),
+])
+
+# Later on
+# unsubscribe!(subscriptions)
+
+```
 
 ### Executing Observables
 
