@@ -77,7 +77,6 @@ See also: [`Teardown`](@ref), [`TeardownLogic`](@ref)
 """
 as_teardown(::Type)             = InvalidTeardownLogic()
 as_teardown(::Type{<:Function}) = CallableTeardownLogic()
-as_teardown(::Type{<:Tuple})    = UnsubscribableTeardownLogic()
 
 """
     unsubscribe!(subscription)
