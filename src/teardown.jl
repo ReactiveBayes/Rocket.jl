@@ -82,6 +82,7 @@ as_teardown(::Type{<:Tuple})    = UnsubscribableTeardownLogic()
 """
     unsubscribe!(subscription)
     unsubscribe!(subscriptions::Tuple)
+    unsubscribe!(subscriptions::AbstractVector)
 
 `unsubscribe!` function is used to cancel Observable execution and to dispose any kind of resources used during an Observable execution.
 If the input argument to the `unsubscribe!` function is either a tuple or a vector, it will first check that all of the arguments are valid subscription objects 

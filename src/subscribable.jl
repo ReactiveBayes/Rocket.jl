@@ -121,6 +121,8 @@ union_type(::AbstractVector{ <: AbstractSubscribable{T} }) where T = T
 """
     subscribe!(subscribable::T, actor::S)   where { T, S }
     subscribe!(subscribable::T, factory::F) where { T, F <: AbstractActorFactory }
+    subscribe!(subscriptions::Tuple)
+    subscribe!(subscriptions::AbstractVector)
 
 `subscribe!` function is used to attach an actor to subscribable.
 It also checks types of subscribable and actors to be a valid Subscribable and Actor objects respectively.
