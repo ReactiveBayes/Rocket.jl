@@ -7,7 +7,7 @@ import Rocket: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic
 import Rocket: Teardown, as_teardown
 import Rocket: unsubscribe!, teardown!, on_unsubscribe!
 
-import Rocket: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
 
 @testset "Teardown" begin
 
@@ -51,6 +51,23 @@ import Rocket: InvalidTeardownLogicTraitUsageError, MissingOnUnsubscribeImplemen
 
         #Check if implemented subscription calls on_unsubscribe!
         @test unsubscribe!(ImplementedSubscription()) === "unsubscribed"
+    end
+
+    @testset "multiple unsubscribe!" begin
+        # Check if arbitrary dummy type throws an error in unsubscribe!
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((DummyType(), ImplementedSubscription()))
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((ImplementedSubscription(), DummyType()))
+
+        #Check if dummy subscription throws an error in unusubscribe!
+        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!((DummySubscription(), ImplementedSubscription()))
+        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!((ImplementedSubscription(), DummySubscription()))
+
+        #Check if implemented subscription calls on_unsubscribe!
+        @test unsubscribe!((ImplementedSubscription(), ImplementedSubscription())) === ("unsubscribed", "unsubscribed")
+        @test unsubscribe!((ImplementedSubscription(), AnotherDummyType())) === ("unsubscribed", nothing)
+        @test unsubscribe!((AnotherDummyType(), ImplementedSubscription())) === (nothing, "unsubscribed")
+        @test unsubscribe!((AnotherDummyType(), AnotherDummyType())) === (nothing, nothing)
+        @test unsubscribe!((AnotherDummyType(), AnotherDummyType(), (ImplementedSubscription(), ImplementedSubscription()))) === (nothing, nothing, ("unsubscribed", "unsubscribed"))
     end
 
 end

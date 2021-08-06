@@ -41,5 +41,6 @@ unsubscribe!
 
 ```@docs
 InvalidTeardownLogicTraitUsageError
+InvalidMultipleTeardownLogicTraitUsageError
 MissingOnUnsubscribeImplementationError
 ```
