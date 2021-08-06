@@ -84,12 +84,28 @@ as_teardown(::Type{<:Tuple})    = UnsubscribableTeardownLogic()
     unsubscribe!(subscriptions::Tuple)
 
 `unsubscribe!` function is used to cancel Observable execution and to dispose any kind of resources used during an Observable execution.
-If the input argument to the `unsubscribe!` function is a tuple, it will first check that all of the arguments are valid subscription objects 
-and if its true will unsubscribe from each of them individually. Function does not check for exceptions during unsubscription process.
+If the input argument to the `unsubscribe!` function is either a tuple or a vector, it will first check that all of the arguments are valid subscription objects 
+and if its true will unsubscribe from each of them individually. 
 
 See also: [`Teardown`](@ref), [`TeardownLogic`](@ref), [`on_unsubscribe!`](@ref)
 """
 unsubscribe!(teardown::T) where T = teardown!(as_teardown(T), teardown)
+
+function unsubscribe!(subscriptions::Union{Tuple, AbstractVector})
+    if !all(subscription -> subscription !== InvalidTeardownLogic(), as_teardown.(typeof.(subscriptions)))
+        index = findnext(subscription -> as_teardown(typeof(subscription)) === InvalidTeardownLogic(), subscriptions, 1)
+        throw(InvalidMultipleTeardownLogicTraitUsageError(index, subscriptions[index]))
+    end
+    foreach(subscriptions) do subscription
+        try 
+            unsubscribe!(subscription)
+        catch error
+            @error "Error occured during multiple unsubscription."
+            @error error
+        end
+    end
+    return nothing
+end
 
 teardown!(::UnsubscribableTeardownLogic, teardown) = on_unsubscribe!(teardown)
 teardown!(::CallableTeardownLogic,       teardown) = teardown()
@@ -105,15 +121,6 @@ for `on_unsubscribe!()` function which will be invoked when actor decides to `un
 See also: [`Teardown`](@ref), [`TeardownLogic`](@ref), [`UnsubscribableTeardownLogic`](@ref)
 """
 on_unsubscribe!(teardown) = throw(MissingOnUnsubscribeImplementationError(teardown))
-
-function on_unsubscribe!(subscriptions::Tuple)
-    if !all(subscription -> subscription !== InvalidTeardownLogic(), as_teardown.(typeof.(subscriptions)))
-        index = findnext(subscription -> as_teardown(typeof(subscription)) === InvalidTeardownLogic(), subscriptions, 1)
-        throw(InvalidMultipleTeardownLogicTraitUsageError(index, subscriptions[index]))
-    end
-    return map(unsubscribe!, subscriptions)
-end
-
 # -------------------------------- #
 # Errors                           #
 # -------------------------------- #

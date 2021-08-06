@@ -124,7 +124,9 @@ union_type(::AbstractVector{ <: AbstractSubscribable{T} }) where T = T
 
 `subscribe!` function is used to attach an actor to subscribable.
 It also checks types of subscribable and actors to be a valid Subscribable and Actor objects respectively.
-Passing not valid subscribable or/and actor object will throw an error.
+Passing not valid subscribable or/and actor object will throw an error. If the input argument to the `subscribe!` function is either a tuple or a vector, 
+it will first check that all of the arguments are valid source and actor objects 
+and if its true will subscribe for each of them individually. 
 
 # Arguments
 - `subscribable`: valid subscribable object
@@ -183,6 +185,32 @@ See also: [`on_subscribe!`](@ref), [`as_subscribable`](@ref)
 
 @inline subscribe!(subscribable::Subscribable{T},          actor::Actor{T}) where { T } = on_subscribe!(subscribable, actor)
 @inline subscribe!(subscribable::ScheduledSubscribable{T}, actor::Actor{T}) where { T } = scheduled_subscription!(subscribable, actor, makeinstance(T, getscheduler(subscribable)))
+
+function subscribe!(args::Union{Tuple, AbstractVector})
+    # First check that all arguments are correct
+    foreach(enumerate(args)) do (index, arg)
+        if length(arg) === 2
+            source = first(arg)
+            actor  = last(arg)
+            if as_subscribable(typeof(source)) === InvalidSubscribableTrait()
+                error("multiple_subscribe! usage: Invalid source '$(source)' found on index $(index)")
+            elseif !(typeof(actor) <: AbstractActorFactory) && !(typeof(actor) <: Function) && as_actor(typeof(actor)) === InvalidActorTrait()
+                error("multiple_subscribe! usage: Invalid actor '$(actor)' found on index $(index)")
+            end
+        else
+            error("Invalid multiple_subscribe! usage: Individual argument should be a size-2 Tuple, found '$(arg)' on index $(index)")
+        end
+    end
+    return map(args) do arg
+        try 
+            return subscribe!(first(arg), last(arg))
+        catch error
+            @error "Error occured during multiple subscription. Return `voidTeardown` for '$arg' argument."
+            @error error
+            return voidTeardown
+        end
+    end
+end
 
 # We don't use an abstract types here and dispatch on all possible combinations of types because of the issue #37045 JuliaLang/julia
 # https://github.com/JuliaLang/julia/issues/37045

@@ -23,7 +23,7 @@ next!(source, 2) # Logs nothing as a single one actor has unsubscribed
     A Subscription essentially just has its own specific method for `unsubscribe!()` function which releases resources or cancel Observable executions. Any Observable has to return a valid `Teardown` object.
 
 
-`unsubscribe!` function also supports multiple unsubscriptions at once. If the input argument to the `unsubscribe!` function is a tuple, it will first check that all of the arguments are valid subscription objects and if its true will unsubscribe from each of them individually. However it does not check for exceptions during unsubscription process.
+`unsubscribe!` function also supports multiple unsubscriptions at once. If the input argument to the `unsubscribe!` function is either a tuple or a vector, it will first check that all of the arguments are valid subscription objects and if its true will unsubscribe from each of them individually.
 
 ```julia
 
@@ -33,6 +33,9 @@ subscription1 = subscribe!(source, logger())
 subscription2 = subscribe!(source, logger())
 
 unsubscribe!((subscription1, subscription2))
+
+# or similarly
+# unsubscribe!([ subscription1, subscription2 ])
 
 ```
 

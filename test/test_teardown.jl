@@ -57,17 +57,21 @@ import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogic
         # Check if arbitrary dummy type throws an error in unsubscribe!
         @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((DummyType(), ImplementedSubscription()))
         @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((ImplementedSubscription(), DummyType()))
-
-        #Check if dummy subscription throws an error in unusubscribe!
-        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!((DummySubscription(), ImplementedSubscription()))
-        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!((ImplementedSubscription(), DummySubscription()))
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([ DummyType(), ImplementedSubscription() ])
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([ ImplementedSubscription(), DummyType() ])
 
         #Check if implemented subscription calls on_unsubscribe!
-        @test unsubscribe!((ImplementedSubscription(), ImplementedSubscription())) === ("unsubscribed", "unsubscribed")
-        @test unsubscribe!((ImplementedSubscription(), AnotherDummyType())) === ("unsubscribed", nothing)
-        @test unsubscribe!((AnotherDummyType(), ImplementedSubscription())) === (nothing, "unsubscribed")
-        @test unsubscribe!((AnotherDummyType(), AnotherDummyType())) === (nothing, nothing)
-        @test unsubscribe!((AnotherDummyType(), AnotherDummyType(), (ImplementedSubscription(), ImplementedSubscription()))) === (nothing, nothing, ("unsubscribed", "unsubscribed"))
+        @test unsubscribe!((ImplementedSubscription(), ImplementedSubscription())) === nothing
+        @test unsubscribe!((ImplementedSubscription(), AnotherDummyType())) === nothing
+        @test unsubscribe!((AnotherDummyType(), ImplementedSubscription())) === nothing
+        @test unsubscribe!((AnotherDummyType(), AnotherDummyType())) === nothing
+        @test unsubscribe!((AnotherDummyType(), AnotherDummyType(), (ImplementedSubscription(), ImplementedSubscription()))) === nothing
+
+        @test unsubscribe!([ ImplementedSubscription(), ImplementedSubscription() ]) === nothing
+        @test unsubscribe!([ ImplementedSubscription(), AnotherDummyType() ]) === nothing
+        @test unsubscribe!([ AnotherDummyType(), ImplementedSubscription() ]) === nothing
+        @test unsubscribe!([ AnotherDummyType(), AnotherDummyType() ]) === nothing
+        @test unsubscribe!([ AnotherDummyType(), AnotherDummyType(), (ImplementedSubscription(), ImplementedSubscription()) ]) === nothing
     end
 
 end
