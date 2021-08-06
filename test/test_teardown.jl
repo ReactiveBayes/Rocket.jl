@@ -65,13 +65,11 @@ import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogic
         @test unsubscribe!((ImplementedSubscription(), AnotherDummyType())) === nothing
         @test unsubscribe!((AnotherDummyType(), ImplementedSubscription())) === nothing
         @test unsubscribe!((AnotherDummyType(), AnotherDummyType())) === nothing
-        @test unsubscribe!((AnotherDummyType(), AnotherDummyType(), (ImplementedSubscription(), ImplementedSubscription()))) === nothing
 
         @test unsubscribe!([ ImplementedSubscription(), ImplementedSubscription() ]) === nothing
         @test unsubscribe!([ ImplementedSubscription(), AnotherDummyType() ]) === nothing
         @test unsubscribe!([ AnotherDummyType(), ImplementedSubscription() ]) === nothing
         @test unsubscribe!([ AnotherDummyType(), AnotherDummyType() ]) === nothing
-        @test unsubscribe!([ AnotherDummyType(), AnotherDummyType(), (ImplementedSubscription(), ImplementedSubscription()) ]) === nothing
     end
 
 end
