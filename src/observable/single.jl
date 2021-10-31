@@ -19,6 +19,7 @@ SingleObservable wraps single value of type `D` into a observable.
     scheduler :: H
 end
 
+getrecent(observable::SingleObservable) = observable.value
 getscheduler(observable::SingleObservable) = observable.scheduler
 
 function on_subscribe!(observable::SingleObservable, actor, scheduler)
