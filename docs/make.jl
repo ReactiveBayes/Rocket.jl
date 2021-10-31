@@ -73,6 +73,8 @@ makedocs(
                     "exhaust_map"                    => "operators/transformation/exhaust_map.md",
                     "start_with"                     => "operators/transformation/start_with.md",
                     "pairwise"                       => "operators/transformation/pairwise.md",
+                    "substitute"                     => "operators/transformation/substitute.md",
+                    "override"                       => "operators/transformation/override.md",
                 ],
                 "Filtering" => [
                     "About filtering operators" => "operators/filtering/about.md",
