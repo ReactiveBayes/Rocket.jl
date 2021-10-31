@@ -41,18 +41,28 @@ include("../test_helpers.jl")
         ),
         (
             source      = from(1:5) |> tap(_ -> release!(global_handler)) |> substitute(Int, identity, global_handler),
-            values      = @ts([ 1, 1, 2, 3, 5, c ]),
+            values      = @ts([ 1, 1, 2, 3, 4, c ]),
             source_type = Int
         ),
         (
+            source      = from(1:5) |> tap(i -> rem(i, 2) == 0 ? release!(global_handler) : nothing) |> substitute(Int, identity, global_handler),
+            values      = @ts([ 1, 1, 1, 3, 3, c ]),
+            source_type = Int
+        ),
+        (
+            source      = from(1:5) |> tap(i -> rem(i, 2) == 0 ? release!(global_handler) : nothing) |> substitute(String, string, global_handler),
+            values      = @ts([ "1", "1", "1", "3", "3", c ]),
+            source_type = String
+        ),
+        (
             source      = from(1:5) |> tap(_ -> release!(global_handler)) |> substitute(String, string, global_handler),
-            values      = @ts([ "1", "1", "2", "3", "5", c ]),
+            values      = @ts([ "1", "1", "2", "3", "4", c ]),
             source_type = String
         ),
         (
             source      = from(1:5) |> async(0) |> substitute(String, i -> string(i), SubstituteHandler()),
             values      = @ts([ "1" ] ~ [ "1" ] ~ [ "1" ] ~ [ "1" ] ~ [ "1" ] ~ c),
-            source_type = Int
+            source_type = String
         ),
     ])
 

@@ -10,6 +10,14 @@ mutable struct SubstituteActor{L, R, F, A} <: Actor{L}
     handler
 end
 
+
+"""
+    SubstituteHandler()
+
+handler used to `release!` new values in `substitute` operator.
+
+See also: [`substitute`](@ref)
+"""
 struct SubstituteHandler 
     list :: List{SubstituteActor}
 
@@ -22,7 +30,51 @@ release!(handler::SubstituteHandler) = foreach(release!, handler.list)
 
 
 """
-    substitute(::Type{T}, mapFn::F, handler::SubstituteHandler) where { F <: Function }
+    substitute(::Type{T}, mapFn::F, handler::SubstituteHandler) where { T, F <: Function }
+
+This operator forces observable to substitute each emmited value with the latest computed value with the corresponding `handler` and `release!` function.
+After `release!` on `handler` `substitute` operator computes new value with `mapFn` but does not emit it until next emission from source observable. 
+Always calls `mapFn` on first value from source observable.
+
+# Producing
+
+Stream of type `<: Subscribable{T}` 
+
+# Examples
+```jldoctest
+using Rocket
+
+subject = Subject(Int)
+
+handler = SubstituteHandler()
+source  = subject |> substitute(String, i -> string("i = $i"), handler)
+
+subscription = subscribe!(source, logger())
+
+next!(source, 1)
+next!(source, 2)
+next!(source, 3)
+
+release!(handler)
+
+next!(source, 4)
+next!(source, 5)
+next!(source, 6)
+
+unsubscribe!(subscription)
+;
+
+# output
+
+[LogActor] Data: i = 1
+[LogActor] Data: i = 1
+[LogActor] Data: i = 1
+[LogActor] Data: i = 3
+[LogActor] Data: i = 3
+[LogActor] Data: i = 3
+```
+
+See also: [`SubstituteHandler`](@ref)
 """
 substitute(::Type{R}, mapFn::F, handler::SubstituteHandler) where { R, F <: Function } = SubstituteOperator{R, F}(mapFn, handler)
 
