@@ -51,15 +51,15 @@ source  = subject |> substitute(String, i -> string("i = ", i), handler)
 
 subscription = subscribe!(source, logger())
 
-next!(source, 1)
-next!(source, 2)
-next!(source, 3)
+next!(subject, 1)
+next!(subject, 2)
+next!(subject, 3)
 
 release!(handler)
 
-next!(source, 4)
-next!(source, 5)
-next!(source, 6)
+next!(subject, 4)
+next!(subject, 5)
+next!(subject, 6)
 
 unsubscribe!(subscription)
 ;
