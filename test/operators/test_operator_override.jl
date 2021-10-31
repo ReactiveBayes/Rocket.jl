@@ -26,8 +26,8 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = from(1:5) |> override(global_handler2) |> tap(i -> Rocket.setvalue!(global_handler2, 3)),
-            values      = @ts([ 1, 3, 3, 3, 3, c ]),
+            source      = from(1:5) |> override(global_handler2) |> tap(i -> Rocket.setvalue!(global_handler2, i)),
+            values      = @ts([ 1, 1, 1, 1, 1, c ]),
             source_type = Int
         ),
         (
