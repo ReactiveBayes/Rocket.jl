@@ -2,6 +2,7 @@
 
 ```@docs
 substitute
+SubstituteHandler
 ```
 
 ## See also

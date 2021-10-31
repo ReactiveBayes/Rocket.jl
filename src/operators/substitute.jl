@@ -47,7 +47,7 @@ using Rocket
 subject = Subject(Int)
 
 handler = SubstituteHandler()
-source  = subject |> substitute(String, i -> string("i = $i"), handler)
+source  = subject |> substitute(String, i -> string("i = ", i), handler)
 
 subscription = subscribe!(source, logger())
 

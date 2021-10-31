@@ -18,6 +18,8 @@ There are operators for different purposes, and they may be categorized as: crea
 - [exhaust_map](@ref operator_exhaust_map)
 - [start_with](@ref operator_start_with)
 - [pairwise](@ref operator_pairwise)
+- [substitute](@ref operator_substitute)
+- [override](@ref operator_override)
 
 # See also
 
