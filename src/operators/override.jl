@@ -3,8 +3,8 @@ export override, OverrideHandler
 import Base: show
 
 """
+    OverrideHandler(::Type{T}, value::Union{Nothing, T}) where T
     OverrideHandler(::Type{T}) where T
-    OverrideHandler(value::T)  where T
 
 Handler used in `substitute` operator.
 
@@ -14,8 +14,8 @@ mutable struct OverrideHandler{T}
     value :: Union{Nothing, T}
 end
 
-OverrideHandler(::Type{T}) where T = OverrideHandler{T}(nothing)
-OverrideHandler(value::T)  where T = OverrideHandler{T}(value)
+OverrideHandler(::Type{T}, value::Union{Nothing, T}) where T = OverrideHandler{T}(value)
+OverrideHandler(::Type{T})                           where T = OverrideHandler{T}(nothing)
 
 setvalue!(handler::OverrideHandler, value) = handler.value = value
 getvalue(handler::OverrideHandler)         = handler.value
@@ -37,7 +37,7 @@ Stream of type `<: Subscribable{Union{L, T}}` where `L` refers to the type of so
 using Rocket 
 
 subject = Subject(Int)
-handler = OverrideHandler(-1)
+handler = OverrideHandler(Int, -1)
 
 source = subject |> override(handler)
 

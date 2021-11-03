@@ -9,14 +9,14 @@ include("../test_helpers.jl")
 
     println("Testing: operator override()")
 
-    run_proxyshowcheck("Override", override(OverrideHandler(Int)))
+    run_proxyshowcheck("Override", override(OverrideHandler(Int, nothing)))
 
-    global_handler1 = OverrideHandler(Int)
-    global_handler2 = OverrideHandler(Int)
+    global_handler1 = OverrideHandler(Int, nothing)
+    global_handler2 = OverrideHandler(Int, nothing)
 
     run_testset([
         (
-            source      = from(1:5) |> override(OverrideHandler('a')),
+            source      = from(1:5) |> override(OverrideHandler(Char, 'a')),
             values      = @ts([ 'a', 'a', 'a', 'a', 'a', c ]),
             source_type = Union{Int, Char}
         ),
@@ -31,17 +31,17 @@ include("../test_helpers.jl")
             source_type = Int
         ),
         (
-            source      = completed(Int) |> override(OverrideHandler('a')),
+            source      = completed(Int) |> override(OverrideHandler(Char, 'a')),
             values      = @ts(c),
             source_type = Union{Int, Char}
         ),
         (
-            source      = faulted(String, "e") |> override(OverrideHandler('a')),
+            source      = faulted(String, "e") |> override(OverrideHandler(Char, 'a')),
             values      = @ts(e("e")),
             source_type = Union{String, Char}
         ),
         (
-            source = never() |> override(OverrideHandler('a')),
+            source = never() |> override(OverrideHandler(Char, 'a')),
             values = @ts()
         )
     ])
