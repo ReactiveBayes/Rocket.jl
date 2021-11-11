@@ -56,15 +56,16 @@ combineLatest(sources::V, strategy::G = PushEach()) where { V <: Vector, G } = C
 
 ##
 
-struct CombineLatestInnerActor{L, W, I} <: Actor{L}
+struct CombineLatestInnerActor{L, W} <: Actor{L}
+    index   :: Int
     wrapper :: W
 end
 
-Base.show(io::IO, inner::CombineLatestInnerActor{L, W, I}) where { L, W, I } = print(io, "CombineLatestInnerActor($L, $I)")
+Base.show(io::IO, ::CombineLatestInnerActor{L, W}) where { L, W } = print(io, "CombineLatestInnerActor($L)")
 
-on_next!(actor::CombineLatestInnerActor{L, W, I}, data::L) where { L, W, I } = next_received!(actor.wrapper, data, Val{I}())
-on_error!(actor::CombineLatestInnerActor{L, W, I}, err)    where { L, W, I } = error_received!(actor.wrapper, err, Val{I}())
-on_complete!(actor::CombineLatestInnerActor{L, W, I})      where { L, W, I } = complete_received!(actor.wrapper, Val{I}())
+on_next!(actor::CombineLatestInnerActor{L, W}, data::L) where { L, W } = next_received!(actor.wrapper, data, actor.index)
+on_error!(actor::CombineLatestInnerActor{L, W}, err)    where { L, W } = error_received!(actor.wrapper, err, actor.index)
+on_complete!(actor::CombineLatestInnerActor{L, W})      where { L, W } = complete_received!(actor.wrapper, actor.index)
 
 ##
 
@@ -89,30 +90,30 @@ push_update!(wrapper::CombineLatestActorWrapper) = push_update!(wrapper.nsize, w
 
 dispose(wrapper::CombineLatestActorWrapper) = begin fill_cstatus!(wrapper.updates, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
-function next_received!(wrapper::CombineLatestActorWrapper, data, index::Val{I}) where I
+function next_received!(wrapper::CombineLatestActorWrapper, data, index::Int)
     setstorage!(wrapper.storage, data, index)
-    vstatus!(wrapper.updates, I, true)
-    ustatus!(wrapper.updates, I, true)
+    vstatus!(wrapper.updates, index, true)
+    ustatus!(wrapper.updates, index, true)
     if all_vstatus(wrapper.updates) && !all_cstatus(wrapper.updates)
         push_update!(wrapper)
         next!(wrapper.actor, snapshot(wrapper.storage))
     end
 end
 
-function error_received!(wrapper::CombineLatestActorWrapper, err, index::Val{I}) where I
-    if !(cstatus(wrapper.updates, I))
+function error_received!(wrapper::CombineLatestActorWrapper, err, index::Int)
+    if !(cstatus(wrapper.updates, index))
         dispose(wrapper)
         error!(wrapper.actor, err)
     end
 end
 
-function complete_received!(wrapper::CombineLatestActorWrapper, ::Val{I}) where I
+function complete_received!(wrapper::CombineLatestActorWrapper, index::Int)
     if !all_cstatus(wrapper.updates)
-        cstatus!(wrapper.updates, I, true)
-        if ustatus(wrapper.updates, I)
-            vstatus!(wrapper.updates, I, true)
+        cstatus!(wrapper.updates, index, true)
+        if ustatus(wrapper.updates, index)
+            vstatus!(wrapper.updates, index, true)
         end
-        if all_cstatus(wrapper.updates) || (!vstatus(wrapper.updates, I))
+        if all_cstatus(wrapper.updates) || (!vstatus(wrapper.updates, index))
             dispose(wrapper)
             complete!(wrapper.actor)
         end
@@ -128,21 +129,27 @@ end
 
 function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) where { T, S, G, A }
     wrapper = CombineLatestActorWrapper(T, actor, observable.strategy)
-    W       = typeof(wrapper)
 
-    for (index, source) in enumerate(observable.sources)
-        @inbounds wrapper.subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), W, index}(wrapper))
-        if cstatus(wrapper.updates, index) && !vstatus(wrapper.updates, index)
-            dispose(wrapper)
-            break
-        end
-    end
+    __combine_latest_unrolled_fill_subscriptions!(observable.sources, wrapper)
 
     if all_cstatus(wrapper.updates)
         dispose(wrapper)
     end
 
     return CombineLatestSubscription(wrapper)
+end
+
+Unrolled.@unroll function __combine_latest_unrolled_fill_subscriptions!(sources, wrapper::W) where { W <: CombineLatestActorWrapper }
+    subscriptions = wrapper.subscriptions
+    updates = wrapper.updates
+    Unrolled.@unroll for index in 1:length(sources)
+        @inbounds source = sources[index]
+        @inbounds subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), W}(index, wrapper))
+        if cstatus(updates, index) && !vstatus(updates, index)
+            dispose(wrapper)
+            return
+        end
+    end
 end
 
 ##

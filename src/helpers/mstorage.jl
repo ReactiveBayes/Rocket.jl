@@ -78,11 +78,34 @@ macro MStorage(n::Int)
         Expr(:block, Expr(:call, Expr(:curly, name, types...)))
     )
 
+    # Generates function `setstorage!`
+    #
+    # function setstorage!(s::$name, v, index::Int)
+    #     if index === 1
+    #         s.v1 = v
+    #         return nothing 
+    #     end 
+    #     ...  
+    # end
+    setstorage = Expr(:function, 
+        Expr(:call, :setstorage!, Expr(:(::), :s, name), :v, Expr(:(::), :index, :Int)),
+        Expr(:block, 
+            map(i -> Expr(:if, 
+                Expr(:call, :(===), :index, i),
+                Expr(:block,
+                    Expr(:(=), Expr(:(.), :s, QuoteNode(fields[i])), :v),
+                    Expr(:return, :nothing)
+                )
+            ), 1:n)...
+        )
+    )
+
     output = quote
         $structure
         $snapshot
         $length
         $mstorage
+        $setstorage
     end
 
     return esc(output)
@@ -134,7 +157,9 @@ end
 
 mstorage(::Type{T}, ::Val{N}) where { N, T <: NTuple{N, Any} } = Vector{Any}(undef, N)
 snapshot(s::S) where { S <: Vector } = tuple(s...)
+
 setstorage!(s::S, v::T, ::Val{I}) where { T, S <: Vector{T}, I } = s[I] = v
+setstorage!(s::S, v::T, I::Int)   where { T, S <: Vector{T} }    = s[I] = v
 
 macro GenerateMStorages()
     output = quote end
