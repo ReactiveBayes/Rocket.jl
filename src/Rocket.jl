@@ -1,6 +1,6 @@
 module Rocket
 
-import Unrolled
+using Unrolled
 
 include("utils.jl")
 include("helpers/list.jl")

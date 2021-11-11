@@ -79,8 +79,11 @@ Base.iterate(actor::BufferActor, state) = iterate(actor.values, state)
 Base.collect(actor::BufferActor)     = collect(actor.values)
 Base.size(actor::BufferActor)        = size(actor.values)
 Base.length(actor::BufferActor)      = length(actor.values)
+
 Base.getindex(actor::BufferActor, I)    = Base.getindex(actor.values, I)
 Base.getindex(actor::BufferActor, I...) = Base.getindex(actor.values, I...)
+
+Base.getindex(actor::BufferActor, ::Unrolled.FixedRange{A, B}) where { A, B } = getindex(actor, A:B)
 
 Base.firstindex(actor::BufferActor) = firstindex(actor.values)
 Base.lastindex(actor::BufferActor)  = lastindex(actor.values)

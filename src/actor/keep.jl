@@ -74,5 +74,7 @@ Base.size(actor::KeepActor)        = (length(actor.values), )
 Base.length(actor::KeepActor)      = length(actor.values)
 Base.getindex(actor::KeepActor, I) = Base.getindex(actor.values, I)
 
+Base.getindex(actor::KeepActor, ::Unrolled.FixedRange{A, B}) where { A, B } = getindex(actor, A:B)
+
 Base.firstindex(actor::KeepActor) = firstindex(actor.values)
 Base.lastindex(actor::KeepActor)  = lastindex(actor.values)

@@ -103,10 +103,10 @@ function on_subscribe!(observable::CombineLatestUpdatesObservable{S, G}, actor::
     return CombineLatestUpdatesSubscription(wrapper)
 end
 
-Unrolled.@unroll function __combine_latest_updates_unrolled_fill_subscriptions!(sources, wrapper::W) where { W <: CombineLatestUpdatesActorWrapper }
+@unroll function __combine_latest_updates_unrolled_fill_subscriptions!(sources, wrapper::W) where { W <: CombineLatestUpdatesActorWrapper }
     subscriptions = wrapper.subscriptions
     updates       = wrapper.updates
-    Unrolled.@unroll for index in 1:length(sources)
+    @unroll for index in 1:length(sources)
         @inbounds source = sources[index]
         @inbounds subscriptions[index] = subscribe!(source, CombineLatestUpdatesInnerActor{eltype(source), W}(index, wrapper))
         if cstatus(updates, index) && !vstatus(updates, index)
