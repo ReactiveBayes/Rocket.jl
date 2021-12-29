@@ -1,17 +1,15 @@
-export map
 
-import Base: map
-import Base: show
+import Base: map, show
 
 """
-    map(::Type{R}, mappingFn::F) where { F <: Function }
+    map(::OpType{R}, mappingFn::F) where { F }
 
-Creates a map operator, which applies a given `mappingFn` to each value emmited by the source
-Observable, and emits the resulting values as an Observable. You have to specify output R type after
-`mappingFn` projection.
+Creates a map operator, which applies a given `mappingFn` callback to each value emmited by the source
+Observable, and emits the resulting values as an Observable. You have to specify output `R` type after
+`mappingFn` projection with the `OpType(R)`.
 
 # Arguments
-- `::Type{R}`: the type of data of transformed value, may be or may not be the same as source type
+- `::OpType{R}`: the type of data of transformed value, may be or may not be the same as source type
 - `mappingFn::Function`: transformation function with `(data::L) -> R` signature, where L is type of data in input source
 
 # Producing
@@ -22,8 +20,8 @@ Stream of type `<: Subscribable{R}`
 ```jldoctest
 using Rocket
 
-source = from([ 1, 2, 3 ])
-subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
+source = from_iterable([ 1, 2, 3 ])
+subscribe!(source |> map(OpType(Int), (d) -> d ^ 2), logger())
 ;
 
 # output
@@ -36,31 +34,34 @@ subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-map(::Type{R}, mappingFn::F) where { R, F <: Function } = MapOperator{R, F}(mappingFn)
+map(::OpType{R}, mapping::F) where { R, F } = MapOperator{R, F}(mapping)
 
-struct MapOperator{R, F} <: RightTypedOperator{R}
-    mappingFn::F
+struct MapOperator{R, F} <: FixedEltypeOperator{R}
+    mapping :: F
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, MapProxy{L, F}(operator.mappingFn))
+struct MapSubscribable{R, F, S} <: Subscribable{R}
+    mapping :: F
+    source  :: S
 end
 
-struct MapProxy{L, F} <: ActorProxy
-    mappingFn::F
+struct MapActor{R, F, A} <: Actor{Any}
+    mapping :: F
+    actor   :: A
 end
 
-actor_proxy!(::Type, proxy::MapProxy{L, F}, actor::A) where { L, A, F } = MapActor{L, A, F}(proxy.mappingFn, actor)
-
-struct MapActor{L, A, F} <: Actor{L}
-    mappingFn  :: F
-    actor      :: A
+function on_call!(_, ::Type{R}, operator::MapOperator{R, F}, source::S) where { R, F, S } 
+    return MapSubscribable{R, F, S}(operator.mapping, source)
 end
 
-on_next!(actor::MapActor{L},  data::L) where L = next!(actor.actor, actor.mappingFn(data))
-on_error!(actor::MapActor, err)                = error!(actor.actor, err)
-on_complete!(actor::MapActor)                  = complete!(actor.actor)
+function on_subscribe!(source::MapSubscribable{R, F}, actor::A, scheduler) where { R, F, A }
+    return on_subscribe!(source.source, MapActor{R, F, A}(source.mapping, actor), scheduler)
+end
 
-Base.show(io::IO, ::MapOperator{R}) where R   = print(io, "MapOperator( -> $R)")
-Base.show(io::IO, ::MapProxy{L})    where L   = print(io, "MapProxy($L)")
-Base.show(io::IO, ::MapActor{L})    where L   = print(io, "MapActor($L)")
+next!(actor::MapActor{R}, data) where R = next!(actor.actor, convert(R, actor.mapping(data)))
+error!(actor::MapActor, err)            = error!(actor.actor, err)
+complete!(actor::MapActor)              = complete!(actor.actor)
+
+Base.show(io::IO, ::MapOperator{R})     where R   = print(io, "MapOperator( -> $R)")
+Base.show(io::IO, ::MapSubscribable{R}) where R   = print(io, "MapSubscribable( -> $R)")
+Base.show(io::IO, ::MapActor{R})        where R   = print(io, "MapActor( -> $R)")

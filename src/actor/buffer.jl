@@ -1,5 +1,7 @@
 export BufferActor, buffer, getvalues
 
+import Base: show
+
 """
     BufferActor{D}() where D
 
@@ -25,6 +27,8 @@ See also: [`Actor`](@ref), [`buffer`](@ref)
 struct BufferActor{T, R} <: Actor{R}
     values :: R
 end
+
+Base.show(io::IO, actor::BufferActor{T}) where T = print(io, "BufferActor($T, $(length(getvalues(actor))))")
 
 function BufferActor(::Type{T}, size) where T 
     storage = Array{T}(undef, size)

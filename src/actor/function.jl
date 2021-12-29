@@ -1,8 +1,6 @@
-export FunctionActor
-export subscribe!
 
 """
-    FunctionActor{D} <: Actor{D}
+    FunctionActor <: Actor{Any}
 
 FunctionActor provides a simple interface to use a single function as a `next!` callback, `error!` callback throws an `ErrorException` and `complete!` callback does nothing.
 Should not be used explicitly because it will be created automatically when passing a `Function` object as an actor in `subscribe!` function.
@@ -25,18 +23,13 @@ subscribe!(source, (t) -> println(t))
 
 See also: [`Actor`](@ref), [`subscribe!`](@ref)
 """
-struct FunctionActor{D, F} <: Actor{D}
+struct FunctionActor{F} <: Actor{Any}
     on_next :: F
 end
 
-on_next!(actor::FunctionActor{D}, data::D) where D = actor.on_next(data)
-on_error!(actor::FunctionActor, err)               = error(err)
-on_complete!(actor::FunctionActor)                 = begin end
+next!(actor::FunctionActor, data) = actor.on_next(data)
+error!(actor::FunctionActor, err) = error(err)
+complete!(actor::FunctionActor)   = begin end
 
-struct FunctionActorFactory{F} <: AbstractActorFactory
-    on_next :: F
-end
-
-create_actor(::Type{L}, factory::FunctionActorFactory{F}) where { L, F } = FunctionActor{L, F}(factory.on_next)
-
-subscribe!(source, fn::F) where { F <: Function } = subscribe!(source, FunctionActorFactory{F}(fn))
+subscribe!(subscribable, fn::F)            where { F <: Function } = subscribe!(subscribable, FunctionActor{F}(fn), getscheduler(subscribable))
+subscribe!(subscribable, fn::F, scheduler) where { F <: Function } = subscribe!(subscribable, FunctionActor{F}(fn), scheduler)

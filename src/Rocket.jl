@@ -13,7 +13,7 @@ include("subscriptions/noop.jl")
 include("scheduler.jl")
 include("actor.jl")
 include("subscribable.jl")
-# include("operator.jl")
+include("operator.jl")
 # include("subject.jl")
 
 include("schedulers/asap.jl")
@@ -25,7 +25,7 @@ include("schedulers/asap.jl")
 # Default scheduler for all subscribables is sync and asap
 getscheduler(any) = AsapScheduler()
 
-# include("actor/function.jl")
+include("actor/function.jl")
 # include("actor/lambda.jl")
 include("actor/logger.jl")
 include("actor/noop.jl")
@@ -65,8 +65,8 @@ include("observable/iterable.jl")
 # include("observable/defer.jl")
 # include("observable/zipped.jl")
 
-# include("operators/map.jl")
-# include("operators/map_to.jl")
+include("operators/map.jl")
+include("operators/map_to.jl")
 # include("operators/reduce.jl")
 # include("operators/scan.jl")
 # include("operators/filter.jl")
@@ -124,7 +124,5 @@ include("observable/iterable.jl")
 # include("operators/limit_subscribers.jl")
 # include("operators/substitute.jl")
 # include("operators/override.jl")
-
-# include("extensions/observable/single.jl")
 
 end # module
