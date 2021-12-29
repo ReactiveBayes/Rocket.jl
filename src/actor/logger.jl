@@ -1,7 +1,9 @@
 export LoggerActor, logger
 
+import Base: show
+
 """
-    LoggerActor{D}(name::String = "LogActor", io::O) where { D, O }
+    LoggerActor(name::String = "LogActor", io::O) where { O }
 
 The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent from an Observable.
 
@@ -11,29 +13,31 @@ The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent fro
 
 See also: [`Actor`](@ref), [`logger`](@ref)
 """
-struct LoggerActor{D, O} <: Actor{D}
+struct LoggerActor{O} <: Actor{Any}
     name :: String
     io   :: O
 
-    LoggerActor{D, O}(name::String, io::O) where { D, O } = new(name, io)
+    LoggerActor{O}(name::String, io::O) where O = new(name, io)
 end
+
+Base.show(io::IO, actor::LoggerActor) = print(io, "LoggerActor(\"$(actor.name)\", $(actor.io))")
 
 # Remark: Here nothing for `io` is a workaround for https://github.com/JuliaDocs/Documenter.jl/issues/1245 where println(actor.io, ...) fails on doctest even if actor.io === stdout
 
-on_next!(actor::LoggerActor{D}, data::D) where D = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Data: $data")
-on_error!(actor::LoggerActor, err)               = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Error: $err")
-on_complete!(actor::LoggerActor)                 = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Completed")
+next!(actor::LoggerActor, data) = next!(actor.io, actor, data)
+error!(actor::LoggerActor, err) = error!(actor.io, actor, err)
+complete!(actor::LoggerActor)   = complete!(actor.io, actor)
 
-struct LoggerActorFactory{O} <: AbstractActorFactory
-    name :: String
-    io   :: O
-end
+next!(::Nothing, actor::LoggerActor, data) = next!(stdout, actor, data)
+error!(::Nothing, actor::LoggerActor, err) = error!(stdout, actor, err)
+complete!(::Nothing, actor::LoggerActor)   = complete!(stdout, actor)
 
-create_actor(::Type{L}, factory::LoggerActorFactory{O}) where { L, O } = LoggerActor{L, O}(factory.name, factory.io)
+next!(io::IO, actor::LoggerActor, data) = println(io, "[$(actor.name)] Data: $data")
+error!(io::IO, actor::LoggerActor, err) = println(io, "[$(actor.name)] Error: $err")
+complete!(io::IO, actor::LoggerActor)   = println(io, "[$(actor.name)] Completed")
 
 """
     logger([ io::IO ], name::String = "LogActor")
-    logger(::Type{T}, [ io::IO ], name::String = "LogActor") where T
 
 Creation operator for the `LoggerActor` actor.
 
@@ -42,7 +46,7 @@ Creation operator for the `LoggerActor` actor.
 ```jldoctest
 using Rocket
 
-source = from([ 0, 1, 2 ])
+source = from_iterable([ 0, 1, 2 ])
 subscribe!(source, logger())
 ;
 
@@ -57,7 +61,7 @@ subscribe!(source, logger())
 ```jldoctest
 using Rocket
 
-source = from([ 0, 1, 2 ])
+source = from_iterable([ 0, 1, 2 ])
 subscribe!(source, logger("CustomName"))
 ;
 
@@ -74,7 +78,7 @@ using Rocket
 
 buffer = IOBuffer()
 
-source = from([ 0, 1, 2 ])
+source = from_iterable([ 0, 1, 2 ])
 subscribe!(source, logger(buffer, "CustomBuffer"))
 ;
 
@@ -87,10 +91,7 @@ print(String(take!(buffer)))
 [CustomBuffer] Completed
 ```
 
-See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
+See also: [`LoggerActor`](@ref), [`Actor`](@ref)
 """
-logger(name::String = "LogActor")                          = LoggerActorFactory(name, nothing)
-logger(io::O, name::String = "LogActor") where { O <: IO } = LoggerActorFactory(name, io)
-
-logger(::Type{T}, name::String = "LogActor")        where { T          } = LoggerActor{T, Nothing}(name, nothing)
-logger(::Type{T}, io::O, name::String = "LogActor") where { T, O <: IO } = LoggerActor{T, O}(name, io)
+logger(name::String = "LogActor")                          = LoggerActor{Nothing}(name, nothing)
+logger(io::O, name::String = "LogActor") where { O <: IO } = LoggerActor{O}(name, io)

@@ -1,9 +1,9 @@
-export iterable
+export from_iterable
 
 import Base: show
 
 """
-    iterable(iterator; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+    from_iterable(iterator, scheduler::H = AsapScheduler()) where { H }
 
 Creation operator for the `IterableObservable` that wraps given iterator into an observable object.
 
@@ -14,8 +14,8 @@ Creation operator for the `IterableObservable` that wraps given iterator into an
 # Note
 `iterable` operators does not create a copy of iterator.
 Any changes in the `iterator` object might be visible in the created observable.
-For side-effects free behavior consider using `from` creation operator which creates a copy of a given object
-with a `collect` function.
+In addition, if iterator is state-full subsequent `subscribe!` functions may deliver different results.
+For side-effects free behavior consider using `from_iterable(collect(iterator))`.
 
 # Examples
 
@@ -51,13 +51,11 @@ subscribe!(source, logger())
 [LogActor] Completed
 ```
 
-See also: [`ScheduledSubscribable`](@ref), [`subscribe!`](@ref), [`from`](@ref)
+See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`from_iterable`](@ref)
 """
-function iterable(iterator::I; scheduler::H = AsapScheduler()) where { I, H <: AbstractScheduler }
-    return IterableObservable{eltype(I), I, H}(iterator, scheduler)
-end
+from_iterable(iterator::I, scheduler::H = AsapScheduler()) where { I, H } = IterableObservable{eltype(I), I, H}(iterator, scheduler)
 
-@subscribable struct IterableObservable{D, I, H} <: ScheduledSubscribable{D}
+struct IterableObservable{D, I, H} <: Subscribable{D}
     iterator  :: I
     scheduler :: H
 end
@@ -71,7 +69,7 @@ function on_subscribe!(observable::IterableObservable, actor, scheduler)
         state = iterate(observable.iterator, state[2])
     end
     complete!(actor, scheduler)
-    return voidTeardown
+    return noopSubscription
 end
 
-Base.show(io::IO, ::IterableObservable{D, I, H}) where { D, I, H } = print(io, "IterableObservable($D, $I, $H)")
+Base.show(io::IO, ::IterableObservable{D, H}) where { D, H } = print(io, "IterableObservable($D, $H)")

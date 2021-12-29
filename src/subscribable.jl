@@ -1,6 +1,6 @@
 export subscribe!
 
-import Base: show, showerror
+import Base: showerror
 import Base: eltype
 
 abstract type Subscribable{T} end
@@ -8,8 +8,8 @@ abstract type Subscribable{T} end
 Base.eltype(::Subscribable{T})            where T = T
 Base.eltype(::Type{ <: Subscribable{T} }) where T = T
 
-# TODO - do i need this?
-union_type(::AbstractVector{ <: AbstractSubscribable{T} }) where T = T
+# TODO 2.0 - do i need this?, most probably yes, for collectLatest?, define in collectLatest?
+union_type(::AbstractVector{ <: Subscribable{T} }) where T = T
 
 """
     subscribe!(subscribable, actor)   
@@ -17,7 +17,7 @@ union_type(::AbstractVector{ <: AbstractSubscribable{T} }) where T = T
     subscribe!(subscriptions::Tuple)
     subscribe!(subscriptions::AbstractVector)
 
-`subscribe!` function is used to attach an actor to subscribable. Must return an instance of `<: AbstractSubscription`.
+`subscribe!` function is used to attach an actor to subscribable. Must return an instance of `<: Subscription`.
 If the input argument to the `subscribe!` function is an iterator of 2-argument iterable elements 
 it subscribes to them sequentially and unsubscribes automatically in case of an error.
 First element is considerend to be a subscribable, second argument is considered to be an actor.

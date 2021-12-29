@@ -1,6 +1,6 @@
-export AbstractScheduler
+export Scheduler
 
-abstract type AbstractScheduler end
+abstract type Scheduler end
 
 """
     getscheduler(subscribable)
@@ -29,5 +29,5 @@ See also: [`getscheduler`](@ref), [`makeinstance`](@ref)
 """
 function instancetype end
 
-# Default method for `AbstractScheduler` is to call the `makeinstance` function
-subscribe!(subscribable, actor, scheduler::AbstractScheduler) = subscribe!(subscribable, actor, makeinstance(eltype(subscribable), scheduler))
+# Default method for `Scheduler` is to call the `makeinstance` function
+subscribe!(subscribable, actor, scheduler::Scheduler) = on_subscribe!(subscribable, actor, makeinstance(eltype(subscribable), scheduler))

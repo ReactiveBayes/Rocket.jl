@@ -33,9 +33,9 @@ end
 
 getvalues(actor::BufferActor) = actor.values
 
-on_next!(actor::BufferActor{T, R}, data::R) where {T, R} = copyto!(actor.values, data)
-on_error!(actor::BufferActor, err)                       = error(err)
-on_complete!(actor::BufferActor)                         = begin end
+next!(actor::BufferActor{T, R}, data::R) where {T, R} = copyto!(actor.values, data)
+error!(actor::BufferActor, err)                       = error(err)
+complete!(actor::BufferActor)                         = begin end
 
 """
     buffer(::Type{T}, size::Int) where T

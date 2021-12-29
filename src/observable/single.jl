@@ -1,6 +1,5 @@
 export SingleObservable, of
 
-import Base: ==
 import Base: show
 
 """
@@ -14,27 +13,28 @@ SingleObservable wraps single value of type `D` into a observable.
 
 # See also: [`of`](@ref), [`Subscribable`](@ref)
 """
-@subscribable struct SingleObservable{D, H} <: ScheduledSubscribable{D}
+struct SingleObservable{D, H} <: Subscribable{D}
     value     :: D
     scheduler :: H
 end
 
-getrecent(observable::SingleObservable) = observable.value
+getrecent(observable::SingleObservable)    = observable.value
 getscheduler(observable::SingleObservable) = observable.scheduler
 
 function on_subscribe!(observable::SingleObservable, actor, scheduler)
     next!(actor, observable.value, scheduler)
     complete!(actor, scheduler)
-    return voidTeardown
+    return noopSubscription
 end
 
 """
-    of(x; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+    of(value, scheduler::H = AsapScheduler()) where { H }
 
 Creation operator for the `SingleObservable` that emits a single value x and then completes.
 
 # Arguments
 - `x`: value to be emmited before completion
+- `scheduler`: optional, scheduler-like object
 
 # Examples
 
@@ -54,9 +54,6 @@ subscribe!(source, logger())
 
 See also: [`SingleObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-of(x::T; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = SingleObservable{T, H}(x, scheduler)
-
-Base.:(==)(left::SingleObservable{D, H},  right::SingleObservable{D, H}) where { D, H } = left.value == right.value
-Base.:(==)(left::SingleObservable,        right::SingleObservable)                      = false
+of(value::T, scheduler::H = AsapScheduler()) where { T, H } = SingleObservable{T, H}(value, scheduler)
 
 Base.show(io::IO, ::SingleObservable{D, H}) where { D, H } = print(io, "SingleObservable($D, $H)")

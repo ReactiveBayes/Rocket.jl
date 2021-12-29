@@ -10,7 +10,7 @@ import Base: show, similar
 
 See also: [`AsapSchedulerInstance`](@ref)
 """
-struct AsapScheduler <: AbstractScheduler end
+struct AsapScheduler <: Scheduler end
 
 Base.show(io::IO, ::AsapScheduler) = print(io, "AsapScheduler()")
 
@@ -21,6 +21,6 @@ struct AsapSchedulerInstance end
 makeinstance(_, ::AsapScheduler)         = AsapSchedulerInstance()
 instancetype(_, ::Type{ AsapScheduler }) = AsapSchedulerInstance
 
-next!(actor, value, ::AsapScheduler) = next!(actor, value)
-error!(actor, err, ::AsapScheduler)  = error!(actor, err)
-complete!(actor, ::AsapScheduler)    = complete!(actor)
+next!(actor, value, ::AsapSchedulerInstance) = next!(actor, value)
+error!(actor, err, ::AsapSchedulerInstance)  = error!(actor, err)
+complete!(actor, ::AsapSchedulerInstance)    = complete!(actor)

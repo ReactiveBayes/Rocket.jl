@@ -1,5 +1,7 @@
 export KeepActor, keep, getvalues
 
+import Base: show
+
 """
     KeepActor{D}() where D
 
@@ -10,7 +12,7 @@ and does nothing on completion event.
 ```jldoctest
 using Rocket
 
-source = from(1:5)
+source = from_iterable(1:5)
 actor  = keep(Int)
 
 subscribe!(source, actor)
@@ -28,11 +30,13 @@ struct KeepActor{T} <: Actor{T}
     KeepActor{T}() where T = new(Vector{T}())
 end
 
+Base.show(io::IO, ::KeepActor{T}) where T = print(io, "KeepActor($T)")
+
 getvalues(actor::KeepActor) = actor.values
 
-on_next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
-on_error!(actor::KeepActor, err)               = error(err)
-on_complete!(actor::KeepActor)                 = begin end
+next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
+error!(actor::KeepActor, err)               = error(err)
+complete!(actor::KeepActor)                 = begin end
 
 """
     keep(::Type{T}) where T
@@ -40,7 +44,7 @@ on_complete!(actor::KeepActor)                 = begin end
 # Arguments
 - `::Type{T}`: Type of keep data
 
-Creation operator for the `KeepActor` actor.
+Creates `KeepActor` actor.
 
 # Examples
 
@@ -54,7 +58,7 @@ actor isa KeepActor{Int}
 true
 ```
 
-See also: [`KeepActor`](@ref), [`AbstractActor`](@ref)
+See also: [`KeepActor`](@ref), [`Actor`](@ref)
 """
 keep(::Type{T}) where T = KeepActor{T}()
 
