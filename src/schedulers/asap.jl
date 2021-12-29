@@ -7,6 +7,8 @@ import Base: show, similar
 
 `AsapScheduler` executes scheduled actions as soon as possible and does not introduce any additional logic.
 `AsapScheduler` is a default scheduler for almost all observables.
+
+See also: [`AsapSchedulerInstance`](@ref)
 """
 struct AsapScheduler <: AbstractScheduler end
 
@@ -14,12 +16,11 @@ Base.show(io::IO, ::AsapScheduler) = print(io, "AsapScheduler()")
 
 Base.similar(::AsapScheduler) = AsapScheduler()
 
-makeinstance(::Type, ::AsapScheduler) = AsapScheduler()
+struct AsapSchedulerInstance end
 
-instancetype(::Type, ::Type{<:AsapScheduler}) = AsapScheduler
+makeinstance(_, ::AsapScheduler)         = AsapSchedulerInstance()
+instancetype(_, ::Type{ AsapScheduler }) = AsapSchedulerInstance
 
-scheduled_subscription!(source, actor, instance::AsapScheduler) = on_subscribe!(source, actor, instance)
-
-scheduled_next!(actor, value, ::AsapScheduler) = on_next!(actor, value)
-scheduled_error!(actor, err, ::AsapScheduler)  = on_error!(actor, err)
-scheduled_complete!(actor, ::AsapScheduler)    = on_complete!(actor)
+next!(actor, value, ::AsapScheduler) = next!(actor, value)
+error!(actor, err, ::AsapScheduler)  = error!(actor, err)
+complete!(actor, ::AsapScheduler)    = complete!(actor)

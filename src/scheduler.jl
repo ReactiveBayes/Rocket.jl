@@ -1,72 +1,33 @@
+export AbstractScheduler
 
-"""
-    AbstractScheduler
-
-Documentation placeholder for AbstractScheduler
-
-See also: [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
-"""
 abstract type AbstractScheduler end
 
 """
-    getscheduler
+    getscheduler(subscribable)
 
-Documentation placeholder for getscheduler
+Returns a scheduler object for `subscribable`.
 
 See also: [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 function getscheduler end
 
 """
-    scheduled_subscription!
+    makeinstance(::Type{ T }, scheduler) where T
 
-Documentation placeholder for scheduled_subscription!
+Creates an instance of a `scheduler` to operate on data type `T`.
 
-See also: [`getscheduler`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
-"""
-function scheduled_subscription! end
-
-"""
-    scheduled_next!
-
-Documentation placeholder for scheduled_next!
-
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
-"""
-function scheduled_next! end
-
-"""
-    scheduled_error!
-
-Documentation placeholder for scheduled_error!
-
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_complete!`](@ref)
-"""
-function scheduled_error! end
-
-"""
-    scheduled_complete!
-
-Documentation placeholder for scheduled_complete!
-
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
-"""
-function scheduled_complete! end
-
-"""
-    makeinstance
-
-Documentation placeholder for makeinstance
-
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
+See also: [`getscheduler`](@ref), [`instancetype`](@ref)
 """
 function makeinstance end
 
 """
-    instancetype
+    instancetype(::Type{T}, scheduler) where T
 
-Documentation placeholder for makeinstance
+Returns an instance object type of `scheduler` based on data type `T`
 
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
+See also: [`getscheduler`](@ref), [`makeinstance`](@ref)
 """
 function instancetype end
+
+# Default method for `AbstractScheduler` is to call the `makeinstance` function
+subscribe!(subscribable, actor, scheduler::AbstractScheduler) = subscribe!(subscribable, actor, makeinstance(eltype(subscribable), scheduler))
