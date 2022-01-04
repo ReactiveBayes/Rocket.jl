@@ -51,7 +51,7 @@ using Rocket
         actor2 = keep(Int)
 
         values = Int[]
-        source = from(1:5) |> tap(d -> push!(values, d))
+        source = from_iterable(1:5) |> tap(d -> push!(values, d))
 
         subscription1 = subscribe!(subject, actor1)
         subscription2 = subscribe!(subject, actor2)
@@ -109,7 +109,7 @@ using Rocket
         actor2 = keep(Int)
 
         values = Int[]
-        source = from(1:5) |> tap(d -> push!(values, d))
+        source = from_iterable(1:5) |> tap(d -> push!(values, d))
 
         subscription1 = subscribe!(subject, actor1)
         subscription2 = subscribe!(subject, actor2)

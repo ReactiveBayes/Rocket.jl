@@ -37,7 +37,7 @@ next!(_)  = throw(MissingDataArgumentInNextCall())
 error!(_) = throw(MissingErrorArgumentInErrorCall())
 
 next!(actor, data) = next!(getscheduler(actor), actor, data)
-error!(actor, err) = error(getscheduler(actor), actor, err)
+error!(actor, err) = error!(getscheduler(actor), actor, err)
 complete!(actor)   = complete!(getscheduler(actor), actor)
 
 # -------------------------------- #

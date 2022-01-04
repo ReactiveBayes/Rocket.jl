@@ -68,7 +68,7 @@ function on_error!(subject::Subject, err)
         for actor in subject.actors
             error!(scheduler, actor, err)
         end
-        empty!(subject.listeners)
+        empty!(subject.actors)
     end
 end
 
@@ -80,7 +80,7 @@ function on_complete!(subject::Subject)
         for actor in subject.actors
             complete!(scheduler, actor)
         end
-        empty!(subject.listeners)
+        empty!(subject.actors)
     end
 end
 

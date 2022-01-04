@@ -1,4 +1,4 @@
-
+export AbstractSubjectFactory, create_subject
 
 abstract type AbstractSubjectFactory end
 

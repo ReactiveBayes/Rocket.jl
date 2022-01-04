@@ -49,7 +49,7 @@ using Rocket
         actor2 = keep(Int)
 
         values = Int[]
-        source = from(1:5) |> tap(d -> push!(values, d))
+        source = from_iterable(1:5) |> tap(d -> push!(values, d))
 
         subscription1 = subscribe!(subject, actor1)
         subscription2 = subscribe!(subject, actor2)
@@ -105,7 +105,7 @@ using Rocket
         actor2 = keep(Int)
 
         values = Int[]
-        source = from(1:5) |> tap(d -> push!(values, d))
+        source = from_iterable(1:5) |> tap(d -> push!(values, d))
 
         subscription1 = subscribe!(subject, actor1)
         subscription2 = subscribe!(subject, actor2)
@@ -125,7 +125,7 @@ using Rocket
         subject2 = similar(subject1)
 
         @test subject1 !== subject2
-        @test typeof(subject2) <: Rocket.BehaviorSubjectInstance
+        @test typeof(subject2) <: Rocket.BehaviorSubject
         @test eltype(subject2) === Int
 
         actor1 = keep(Int)
@@ -155,7 +155,7 @@ using Rocket
         subject3 = similar(subject2)
 
         @test subject2 !== subject3
-        @test typeof(subject3) <: Rocket.BehaviorSubjectInstance
+        @test typeof(subject3) <: Rocket.BehaviorSubject
         @test eltype(subject3) === Int
 
         actor3 = keep(Int)

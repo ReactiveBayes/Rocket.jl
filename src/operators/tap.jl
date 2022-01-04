@@ -3,13 +3,13 @@ export tap
 import Base: show
 
 """
-    tap(tapFn::F) where { F <: Function }
+    tap(tapFn::F) where F
 
 Creates a tap operator, which performs a side effect
 for every emission on the source Observable, but return an Observable that is identical to the source.
 
 # Arguments
-- `tapFn::Function`: side-effect tap function with `(data) -> Nothing` signature
+- `tapFn`: side-effect tap callback with `(data) -> Nothing` signature
 
 # Producing
 
@@ -37,33 +37,36 @@ In tap: 3
 
 See also: [`tap_on_subscribe`](@ref), [`tap_on_complete`](@ref), [`logger`](@ref)
 """
-tap(tapFn::F) where { F <: Function } = TapOperator{F}(tapFn)
+tap(tapFn::F) where F = TapOperator{F}(tapFn)
 
-struct TapOperator{F} <: InferableOperator
+struct TapOperator{F} <: Operator
     tapFn :: F
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::TapOperator{F}, source) where { L, F }
-    return proxy(L, source, TapProxy{F}(operator.tapFn))
+operator_eltype(::TapOperator, ::Type{L}) where L = L
+
+struct TapSubscribable{L, F, S} <: Subscribable{L}
+    tapFn  :: F
+    source :: S
 end
 
-operator_right(operator::TapOperator, ::Type{L}) where L = L
-
-struct TapProxy{F} <: ActorProxy
-    tapFn :: F
-end
-
-actor_proxy!(::Type{L}, proxy::TapProxy{F}, actor::A) where { L, A, F } = TapActor{L, A, F}(proxy.tapFn, actor)
-
-struct TapActor{L, A, F} <: Actor{L}
+struct TapActor{A, F}
     tapFn :: F
     actor :: A
 end
 
-on_next!(actor::TapActor{L}, data::L) where L = begin actor.tapFn(data); next!(actor.actor, data) end
-on_error!(actor::TapActor, err)               = error!(actor.actor, err)
-on_complete!(actor::TapActor)                 = complete!(actor.actor)
+function on_call!(::Type{L}, ::Type{L}, operator::TapOperator{F}, source::S) where { L, F, S }
+    return TapSubscribable{L, F, S}(operator.tapFn, source)
+end
 
-Base.show(io::IO, ::TapOperator)         = print(io, "TapOperator()")
-Base.show(io::IO, ::TapProxy)            = print(io, "TapProxy()")
-Base.show(io::IO, ::TapActor{L}) where L = print(io, "TapActor($L)")
+function on_subscribe!(source::TapSubscribable{L, F}, actor::A) where { L, F, A }
+    return subscribe!(source.source, TapActor{A, F}(source.tapFn, actor))
+end
+
+on_next!(actor::TapActor, data) = begin actor.tapFn(data); on_next!(actor.actor, data) end
+on_error!(actor::TapActor, err) = on_error!(actor.actor, err)
+on_complete!(actor::TapActor)   = on_complete!(actor.actor)
+
+Base.show(io::IO, ::TapOperator)                = print(io, "TapOperator()")
+Base.show(io::IO, ::TapSubscribable{L}) where L = print(io, "TapSubscribable($L)")
+Base.show(io::IO, ::TapActor)                   = print(io, "TapActor()")

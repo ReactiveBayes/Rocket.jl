@@ -12,103 +12,87 @@ Reemits last value on further subscriptions and then completes.
 
 See also: [`PendingSubjectFactory`](@ref), [`Subject`](@ref), [`SubjectFactory`](@ref)
 """
-function PendingSubject end
-
-"""
-    PendingSubjectFactory(factory::F) where { F <: AbstractSubjectFactory }
-    PendingSubjectFactory(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
-
-A variant of SubjectFactory that creates an instance of PendingSubject.
-
-See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`PendingSubject`](@ref), [`Subject`](@ref)
-"""
-function PendingSubjectFactory end
-
-##
-
-mutable struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
+mutable struct PendingSubject{D, S} <: Subscribable{D}
     subject :: S
-    last    :: Union{Nothing, D}
+    last    :: Union{Blank, D}
 end
 
-Base.show(io::IO, ::PendingSubjectInstance{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
-
-Base.similar(subject::PendingSubjectInstance{D, S}) where { D, S } = PendingSubject(D, similar(subject.subject))
-
-function PendingSubject(::Type{D}) where D
-    return PendingSubject(D, SubjectFactory(AsapScheduler()))
-end
-
-function PendingSubject(::Type{D}, factory::F) where { D, F <: AbstractSubjectFactory }
-    return PendingSubject(D, create_subject(D, factory))
-end
-
-function PendingSubject(::Type{D}, subject::S) where { D, S }
-    return as_pending_subject(D, as_subject(S), subject)
-end
-
-as_pending_subject(::Type{D},  ::InvalidSubjectTrait,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_pending_subject(::Type{D1}, ::ValidSubjectTrait{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_pending_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, nothing)
+getscheduler(subject::PendingSubject) = getscheduler(subject.subject)
 
 ##
 
-getlast(subject::PendingSubjectInstance)         = subject.last
-setlast!(subject::PendingSubjectInstance, value) = subject.last = value
+Base.show(io::IO, ::PendingSubject{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
+
+Base.similar(subject::PendingSubject{D, S}) where { D, S } = PendingSubject(D, similar(subject.subject))
+
+PendingSubject(::Type{D}) where D = PendingSubject(D, SubjectFactory(AsapScheduler()))
+
+PendingSubject(::Type{D}, factory::F) where { D, F <: AbstractSubjectFactory } = PendingSubject(D, create_subject(D, factory))
+PendingSubject(::Type{D}, subject::S) where { D, S }                           = PendingSubject{D, S}(subject, blank)
 
 ##
 
-function on_next!(subject::PendingSubjectInstance{D}, data::D) where D
+getlast(subject::PendingSubject)         = subject.last
+setlast!(subject::PendingSubject, value) = subject.last = value
+
+##
+
+function on_next!(subject::PendingSubject{D}, data::D) where D
     if isactive(subject.subject)
         setlast!(subject, data)
     end
 end
 
-function on_error!(subject::PendingSubjectInstance, err)
+function on_error!(subject::PendingSubject, err)
     if isactive(subject.subject)
-        error!(subject.subject, err)
+        on_error!(subject.subject, err)
     end
 end
 
-function on_complete!(subject::PendingSubjectInstance)
+function on_complete!(subject::PendingSubject)
     if isactive(subject.subject)
         last = getlast(subject)
-        if last !== nothing
-            next!(subject.subject, last)
+        if last !== blank
+            on_next!(subject.subject, last)
         end
-        complete!(subject.subject)
+        on_complete!(subject.subject)
     end
 end
 
 ##
 
-function on_subscribe!(subject::PendingSubjectInstance, actor)
+function on_subscribe!(subject::PendingSubject, actor)
     if iscompleted(subject.subject)
         last = getlast(subject)
-        if last !== nothing
-            next!(actor, last)
+        if last !== blank
+            on_next!(actor, last)
         end
-        complete!(actor)
-        return voidTeardown
+        on_complete!(actor)
+        return noopSubscription
     else
-        return subscribe!(subject.subject, actor)
+        return on_subscribe!(subject.subject, actor)
     end
 end
 
 ##
 
-struct PendingSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
+"""
+    PendingSubjectFactory(factory::F) where { F <: AbstractSubjectFactory }
+    PendingSubjectFactory(; scheduler::H = AsapScheduler()) where { H }
+
+A variant of SubjectFactory that creates an instance of PendingSubject.
+
+See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`PendingSubject`](@ref), [`Subject`](@ref)
+"""
+struct PendingSubjectFactory{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
     factory :: F
 end
 
-Base.show(io::IO, subject::PendingSubjectFactoryInstance{F}) where F = print(io, "PendingSubjectFactoryInstance($F)")
 
-create_subject(::Type{L}, factory::PendingSubjectFactoryInstance) where L = PendingSubject(L, factory.factory)
+Base.show(io::IO, subject::PendingSubjectFactory{F}) where F = print(io, "PendingSubjectFactory($F)")
 
-function PendingSubjectFactory(factory::F) where { F <: AbstractSubjectFactory }
-    return PendingSubjectFactoryInstance(factory)
-end
+create_subject(::Type{L}, factory::PendingSubjectFactory) where L = PendingSubject(L, factory.factory)
 
-function PendingSubjectFactory(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
-    return PendingSubjectFactoryInstance(SubjectFactory{H}(scheduler))
+function PendingSubjectFactory(; scheduler::H = AsapScheduler()) where { H }
+    return PendingSubjectFactory(SubjectFactory{H}(scheduler))
 end

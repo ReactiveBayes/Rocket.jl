@@ -36,3 +36,5 @@ TODOs
   - decide on names for
     - filter - type piracy
   - document abstract subject factory
+  - revise subscribe! in operators
+    - maybe define getscheduler and fallback to on_subscribe!
