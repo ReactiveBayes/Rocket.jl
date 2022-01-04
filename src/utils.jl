@@ -62,3 +62,14 @@ Returns a result of `typeof(similar(something, L))`. Provides and optimised, all
 """
 similar_typeof(::AbstractArray{T, N}, ::Type{L}) where { T, N, L } = Array{L, N}
 similar_typeof(something, ::Type{L})             where { L }       = typeof(similar(something, L))
+
+"""
+    Blank 
+
+Blank element used as a placeholder for initial values in some observables
+
+See also: [`blank`](@ref)
+"""
+struct Blank end
+
+const blank = Blank()

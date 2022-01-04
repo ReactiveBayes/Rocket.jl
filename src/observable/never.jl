@@ -1,4 +1,4 @@
-export NeverObservable, never
+export never
 
 import Base: show
 
@@ -12,10 +12,10 @@ An Observable that emits no items to the Observer and never completes.
 
 See also: [`Subscribable`](@ref), [`never`](@ref)
 """
-@subscribable struct NeverObservable{D} <: Subscribable{D} end
+struct NeverObservable{D} <: Subscribable{D} end
 
-function on_subscribe!(observable::NeverObservable, actor)
-    return voidTeardown
+function on_subscribe!(::NeverObservable, actor)
+    return noopSubscription
 end
 
 """
@@ -43,7 +43,7 @@ subscribe!(source, logger())
 
 ```
 
-See also: [`NeverObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
+See also: [`subscribe!`](@ref), [`logger`](@ref)
 """
 never(T = Any) = NeverObservable{T}()
 

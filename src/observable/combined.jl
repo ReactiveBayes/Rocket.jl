@@ -51,21 +51,21 @@ function combineLatest end
 
 combineLatest(; strategy = PushEach())                                       = error("combineLatest operator expects at least one inner observable on input")
 combineLatest(args...; strategy = PushEach())                                = combineLatest(args, strategy)
-combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G }  = CombineLatestObservable{combined_type(sources), S, G}(sources, strategy)
-combineLatest(sources::V, strategy::G = PushEach()) where { V <: Vector, G } = CombineLatestObservable{combined_type(sources), V, G}(sources, strategy)
+combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, G }  = CombineLatestObservable{combined_eltype(sources), S, G}(sources, strategy)
+combineLatest(sources::V, strategy::G = PushEach()) where { V <: Vector, G } = CombineLatestObservable{combined_eltype(sources), V, G}(sources, strategy)
 
 ##
 
-struct CombineLatestInnerActor{L, W} <: Actor{L}
+struct CombineLatestInnerActor{W}
     index   :: Int
     wrapper :: W
 end
 
-Base.show(io::IO, ::CombineLatestInnerActor{L, W}) where { L, W } = print(io, "CombineLatestInnerActor($L)")
+Base.show(io::IO, ::CombineLatestInnerActor) = print(io, "CombineLatestInnerActor()")
 
-on_next!(actor::CombineLatestInnerActor{L, W}, data::L) where { L, W } = next_received!(actor.wrapper, data, actor.index)
-on_error!(actor::CombineLatestInnerActor{L, W}, err)    where { L, W } = error_received!(actor.wrapper, err, actor.index)
-on_complete!(actor::CombineLatestInnerActor{L, W})      where { L, W } = complete_received!(actor.wrapper, actor.index)
+on_next!(actor::CombineLatestInnerActor, data) = next_received!(actor.wrapper, data, actor.index)
+on_error!(actor::CombineLatestInnerActor, err) = error_received!(actor.wrapper, err, actor.index)
+on_complete!(actor::CombineLatestInnerActor)   = complete_received!(actor.wrapper, actor.index)
 
 ##
 
@@ -75,14 +75,14 @@ struct CombineLatestActorWrapper{S, A, G, U}
     nsize         :: Int
     strategy      :: G
     updates       :: U
-    subscriptions :: Vector{Teardown}
+    subscriptions :: Vector{Subscription}
 end
 
 function CombineLatestActorWrapper(::Type{T}, actor::A, strategy::G) where { T, A, G } 
     storage       = getmstorage(T)
     updates       = getustorage(T)
     nsize         = length(storage)
-    subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
+    subscriptions = fill!(Vector{Subscription}(undef, nsize), noopSubscription)
     return CombineLatestActorWrapper(storage, actor, nsize, strategy, updates, subscriptions)
 end
 
@@ -96,14 +96,14 @@ function next_received!(wrapper::CombineLatestActorWrapper, data, index::Int)
     ustatus!(wrapper.updates, index, true)
     if all_vstatus(wrapper.updates) && !all_cstatus(wrapper.updates)
         push_update!(wrapper)
-        next!(wrapper.actor, snapshot(wrapper.storage))
+        on_next!(wrapper.actor, snapshot(wrapper.storage))
     end
 end
 
 function error_received!(wrapper::CombineLatestActorWrapper, err, index::Int)
     if !(cstatus(wrapper.updates, index))
         dispose(wrapper)
-        error!(wrapper.actor, err)
+        on_error!(wrapper.actor, err)
     end
 end
 
@@ -115,19 +115,19 @@ function complete_received!(wrapper::CombineLatestActorWrapper, index::Int)
         end
         if all_cstatus(wrapper.updates) || (!vstatus(wrapper.updates, index))
             dispose(wrapper)
-            complete!(wrapper.actor)
+            on_complete!(wrapper.actor)
         end
     end
 end
 
 ##
 
-@subscribable struct CombineLatestObservable{T, S, G} <: Subscribable{T}
+struct CombineLatestObservable{T, S, G} <: Subscribable{T}
     sources  :: S
     strategy :: G
 end
 
-function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) where { T, S, G, A }
+function on_subscribe!(observable::CombineLatestObservable{T}, actor) where T
     wrapper = CombineLatestActorWrapper(T, actor, observable.strategy)
 
     __combine_latest_unrolled_fill_subscriptions!(observable.sources, wrapper)
@@ -144,7 +144,7 @@ end
     updates = wrapper.updates
     @unroll for index in 1:length(sources)
         @inbounds source = sources[index]
-        @inbounds subscriptions[index] = subscribe!(source, CombineLatestInnerActor{eltype(source), W}(index, wrapper))
+        @inbounds subscriptions[index] = subscribe!(source, CombineLatestInnerActor{W}(index, wrapper))
         if cstatus(updates, index) && !vstatus(updates, index)
             dispose(wrapper)
             return
@@ -154,11 +154,9 @@ end
 
 ##
 
-struct CombineLatestSubscription{W} <: Teardown
+struct CombineLatestSubscription{W} <: Subscription
     wrapper :: W
 end
-
-as_teardown(::Type{ <: CombineLatestSubscription }) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::CombineLatestSubscription)
     dispose(subscription.wrapper)

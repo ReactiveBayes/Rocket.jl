@@ -1,6 +1,5 @@
-export CompletedObservable, completed
+export completed
 
-import Base: ==
 import Base: show
 
 """
@@ -11,17 +10,17 @@ Observable that emits no items to the Actor and just sends a complete notificati
 # Constructor arguments
 - `scheduler`: Scheduler-like object
 
-See also: [`Subscribable`](@ref), [`completed`](@ref)
+See also: [`completed`](@ref)
 """
-@subscribable struct CompletedObservable{D, H} <: ScheduledSubscribable{D}
+struct CompletedObservable{D, H} <: Subscribable{D}
     scheduler :: H
 end
 
 getscheduler(observable::CompletedObservable) = observable.scheduler
 
-function on_subscribe!(observable::CompletedObservable, actor, scheduler)
-    complete!(actor, scheduler)
-    return voidTeardown
+function on_subscribe!(observable::CompletedObservable, actor)
+    complete!(getscheduler(observable), actor)
+    return noopSubscription
 end
 
 """
@@ -50,9 +49,6 @@ subscribe!(source, logger())
 
 See also: [`CompletedObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-completed(::Type{T} = Any; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = CompletedObservable{T, H}(scheduler)
-
-Base.:(==)(::CompletedObservable{T, H}, ::CompletedObservable{T, H}) where { T, H } = true
-Base.:(==)(::CompletedObservable,       ::CompletedObservable)                      = false
+completed(::Type{T} = Any; scheduler::H = AsapScheduler()) where { T, H } = CompletedObservable{T, H}(scheduler)
 
 Base.show(io::IO, ::CompletedObservable{T, H}) where { T, H } = print(io, "CompletedObservable($T, $H)")

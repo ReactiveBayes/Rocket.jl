@@ -1,6 +1,5 @@
-export FaultedObservable, faulted
+export faulted
 
-import Base: ==
 import Base: show
 
 """
@@ -14,21 +13,21 @@ Observable that emits no items to the Actor and just sends an error notification
 
 See also: [`faulted`](@ref)
 """
-@subscribable struct FaultedObservable{D, H} <: ScheduledSubscribable{D}
-    err
+struct FaultedObservable{D, E, H} <: Subscribable{D}
+    err       :: E
     scheduler :: H
 end
 
 getscheduler(observable::FaultedObservable) = observable.scheduler
 
-function on_subscribe!(observable::FaultedObservable, actor, scheduler)
-    error!(actor, observable.err, scheduler)
-    return voidTeardown
+function on_subscribe!(observable::FaultedObservable, actor)
+    error!(getscheduler(observable), actor, observable.err)
+    return noopSubscription
 end
 
 """
-    faulted(err; scheduler::H = AsapScheduler())            where { H <: AbstractScheduler }
-    faulted(::Type{T}, err; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler }
+    faulted(err::E; scheduler::H = AsapScheduler())            where { E, H }
+    faulted(::Type{T}, err::E; scheduler::H = AsapScheduler()) where { T, E, H }
 
 Creation operator for the `FaultedObservable` that emits no items to the Actor and immediately sends an error notification.
 
@@ -52,18 +51,12 @@ subscribe!(source, logger())
 
 ```
 
-See also: [`FaultedObservable`](@ref), [`subscribe!`](@ref)
+See also: [`Subscribable`](@ref), [`logger`](@ref)
 """
 function faulted end
 
-faulted(::Type{T}; scheduler::H = AsapScheduler())      where { T, H <: AbstractScheduler } = error("Missing error value in faulted() constructor.")
-faulted(err; scheduler::H = AsapScheduler())            where { H <: AbstractScheduler }    = FaultedObservable{Any, H}(err, scheduler)
-faulted(::Type{T}, err; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = FaultedObservable{T, H}(err, scheduler)
+faulted(::Type{T}; scheduler::H = AsapScheduler())         where { T, H }    = error("Missing error value in faulted() constructor.")
+faulted(err::E; scheduler::H = AsapScheduler())            where { E, H }    = FaultedObservable{Any, E, H}(err, scheduler)
+faulted(::Type{T}, err::E; scheduler::H = AsapScheduler()) where { T, E, H } = FaultedObservable{T, E, H}(err, scheduler)
 
-Base.:(==)(e1::FaultedObservable{D, H},  e2::FaultedObservable{D, H}) where { D, H } = e1.err == e2.err
-Base.:(==)(e1::FaultedObservable,     e2::FaultedObservable)                         = false
-
-Base.show(io::IO, ::FaultedObservable{D, H}) where { D, H } = print(io, "FaultedObservable($D, $H)")
-
-@deprecate throwError(T)    faulted(T)
-@deprecate throwError(T, e) faulted(T, e)
+Base.show(io::IO, ::FaultedObservable{D, E, H}) where { D, E, H } = print(io, "FaultedObservable($D, $E, $H)")
