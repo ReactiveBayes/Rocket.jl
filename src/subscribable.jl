@@ -75,10 +75,10 @@ See also: [`next!`](@ref), [`error!`](@ref), [`complete!`]
 function subscribe! end
 
 # Generic method that first fallbacks to a specific scheduler of `subscribable`
-subscribe!(subscribable, any) = subscribe!(subscribable, any, getscheduler(subscribable))
+subscribe!(subscribable, actor) = subscribe!(getscheduler(subscribable), subscribable, actor)
 
 # Method for an `AbstractActorFactory`
-subscribe!(subscribable, factory::AbstractActorFactory, scheduler) = subscribe!(subscribable, create_actor(eltype(subscribable), factory), scheduler)
+subscribe!(scheduler, subscribable, factory::AbstractActorFactory) = subscribe!(scheduler, subscribable, create_actor(eltype(subscribable), factory))
 
 # TODO - 2.0
 # Method for either tuple or a vector

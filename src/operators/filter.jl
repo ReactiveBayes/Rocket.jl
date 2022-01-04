@@ -4,7 +4,7 @@ import Base: filter
 import Base: show
 
 """
-    filter(filterFn::F) where { F <: Function }
+    filter(filterFn::F)
 
 Creates a filter operator, which filters items of the source Observable by emitting only
 those that satisfy a specified `filterFn` predicate.
@@ -14,13 +14,13 @@ those that satisfy a specified `filterFn` predicate.
 Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
 # Arguments
-- `filterFn::F`: predicate function with `(data::T) -> Bool` signature
+- `filterFn::F`: predicate function with `(data) -> Bool` signature
 
 # Examples
 ```jldoctest
 using Rocket
 
-source = from([ 1, 2, 3, 4, 5, 6 ])
+source = from_iterable([ 1, 2, 3, 4, 5, 6 ])
 subscribe!(source |> filter((d) -> d % 2 == 0), logger())
 ;
 
@@ -32,40 +32,43 @@ subscribe!(source |> filter((d) -> d % 2 == 0), logger())
 [LogActor] Completed
 ```
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+See also: [`Operator`](@ref), [`from_iterable`](@ref), [`logger`](@ref)
 """
-filter(filterFn::F) where { F <: Function }  = FilterOperator{F}(filterFn)
+filter(filter::F) where { F <: Function }  = FilterOperator{F}(filter)
 
-struct FilterOperator{F} <: InferableOperator
-    filterFn::F
+struct FilterOperator{F} <: Operator
+    filter :: F
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator{F}, source) where { L, F }
-    return proxy(L, source, FilterProxy{F}(operator.filterFn))
+operator_eltype(::FilterOperator, ::Type{L}) where L = L
+
+struct FilterSubscribable{L, F, S} <: Subscribable{L}
+    filter :: F
+    source :: S
 end
 
-operator_right(operator::FilterOperator, ::Type{L}) where L = L
-
-struct FilterProxy{F} <: ActorProxy
-    filterFn::F
+struct FilterActor{F, A}
+    filter :: F
+    actor  :: A
 end
 
-actor_proxy!(::Type{L}, proxy::FilterProxy{F}, actor::A) where { L, A, F } = FilterActor{L, A, F}(proxy.filterFn, actor)
-
-struct FilterActor{L, A, F} <: Actor{L}
-    filterFn :: F
-    actor    :: A
+function on_call!(::Type{L}, ::Type{L}, operator::FilterOperator{F}, source::S) where { L, F, S }
+    return FilterSubscribable{L, F, S}(operator.filter, source)
 end
 
-function on_next!(actor::FilterActor{L}, data::L) where L
-    if actor.filterFn(data)
-        next!(actor.actor, data)
+function on_subscribe!(source::FilterSubscribable{L, F}, actor::A) where { L, F, A }
+    return subscribe!(source.source, FilterActor{F, A}(source.filter, actor))
+end
+
+function on_next!(actor::FilterActor, data)
+    if actor.filter(data)
+        on_next!(actor.actor, data)
     end
 end
 
-on_error!(actor::FilterActor, err) = error!(actor.actor, err)
-on_complete!(actor::FilterActor)   = complete!(actor.actor)
+on_error!(actor::FilterActor, err) = on_error!(actor.actor, err)
+on_complete!(actor::FilterActor)   = on_complete!(actor.actor)
 
-Base.show(io::IO, ::FilterOperator)         = print(io, "FilterOperator()")
-Base.show(io::IO, ::FilterProxy)            = print(io, "FilterProxy()")
-Base.show(io::IO, ::FilterActor{L}) where L = print(io, "FilterActor($L)")
+Base.show(io::IO, ::FilterOperator)                = print(io, "FilterOperator()")
+Base.show(io::IO, ::FilterSubscribable{L}) where L = print(io, "FilterSubscribable($L)")
+Base.show(io::IO, ::FilterActor{L}) where L        = print(io, "FilterActor($L)")

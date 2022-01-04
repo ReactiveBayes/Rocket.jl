@@ -1,6 +1,7 @@
 # 2.0 transition
 
 - actor traits were removed
+  - actor abstract type was removed
   - void actor has been renamed to noop actor
   - void() removed - noop() and noopActor constant instead
   - on_* methods for actors removed
@@ -28,3 +29,7 @@
   - OpType
   - map
     - OpType
+
+TODOs
+  - decide on names for
+    - filter - type piracy

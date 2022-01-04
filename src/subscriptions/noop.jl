@@ -21,4 +21,4 @@ See also: [`NoopSubscription`](@ref), [`unsubscribe!`](@ref)
 """
 const noopSubscription = NoopSubscription()
 
-unsubscribe!(::NoopSubscription) = begin end
+on_unsubscribe!(::NoopSubscription) = begin end

@@ -16,7 +16,9 @@ and if its true will unsubscribe from each of them individually.
 
 See also: [`Subscription`](@ref)
 """
-function unsubscribe! end
+unsubscribe!(subscription) = unsubscribe!(getscheduler(subscription), subscription)
+
+
 
 # TODO - 2.0
 # function unsubscribe!(subscriptions::Union{Tuple, AbstractVector})

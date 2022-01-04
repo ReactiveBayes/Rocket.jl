@@ -20,13 +20,13 @@ subscribe!(source, actor)
 
 ```
 
-See also: [`Actor`](@ref), [`noop`](@ref)
+See also: [`noop`](@ref)
 """
-struct NoopActor <: Actor{Any} end
+struct NoopActor end
 
-next!(::NoopActor, data) = begin end
-error!(::NoopActor, err) = begin end
-complete!(::NoopActor)   = begin end
+on_next!(::NoopActor, data) = begin end
+on_error!(::NoopActor, err) = begin end
+on_complete!(::NoopActor)   = begin end
 
 """
     noopActor 

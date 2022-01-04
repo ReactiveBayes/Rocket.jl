@@ -1,13 +1,7 @@
-export Actor
 export next!, error!, complete!
 export AbstractActorFactory, create_actor
 
 import Base: eltype
-  
-abstract type Actor{T} end
-
-Base.eltype(::Actor{T})            where T = T
-Base.eltype(::Type{ <: Actor{T} }) where T = T
 
 """
     next!(actor, data)
@@ -15,7 +9,7 @@ Base.eltype(::Type{ <: Actor{T} }) where T = T
 
 Delivers a "next" event to an actor. Takes optional `scheduler` object to schedule execution of data delivery.
 
-See also: [`Actor`](@ref), [`error!`](@ref), [`complete!`](@ref)
+See also: [`error!`](@ref), [`complete!`](@ref)
 """
 function next! end
 

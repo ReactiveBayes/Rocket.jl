@@ -21,15 +21,15 @@ subscribe!(source, (t) -> println(t))
 5
 ```
 
-See also: [`Actor`](@ref), [`subscribe!`](@ref)
+See also: [`subscribe!`](@ref)
 """
-struct FunctionActor{F} <: Actor{Any}
+struct FunctionActor{F}
     on_next :: F
 end
 
-next!(actor::FunctionActor, data) = actor.on_next(data)
-error!(actor::FunctionActor, err) = error(err)
-complete!(actor::FunctionActor)   = begin end
+on_next!(actor::FunctionActor, data) = actor.on_next(data)
+on_error!(actor::FunctionActor, err) = error(err)
+on_complete!(actor::FunctionActor)   = begin end
 
-subscribe!(subscribable, fn::F)            where { F <: Function } = subscribe!(subscribable, FunctionActor{F}(fn), getscheduler(subscribable))
-subscribe!(subscribable, fn::F, scheduler) where { F <: Function } = subscribe!(subscribable, FunctionActor{F}(fn), scheduler)
+subscribe!(subscribable, fn::F)            where { F <: Function } = subscribe!(getscheduler(subscribable), subscribable, FunctionActor{F}(fn))
+subscribe!(scheduler, subscribable, fn::F) where { F <: Function } = subscribe!(scheduler, subscribable, FunctionActor{F}(fn))

@@ -62,13 +62,14 @@ end
 
 getscheduler(observable::IterableObservable) = observable.scheduler
 
-function on_subscribe!(observable::IterableObservable, actor, scheduler)
-    state = iterate(observable.iterator)
+function on_subscribe!(observable::IterableObservable, actor)
+    scheduler = getscheduler(observable)
+    state     = iterate(observable.iterator)
     while state !== nothing
-        next!(actor, state[1], scheduler)
+        next!(scheduler, actor, state[1])
         state = iterate(observable.iterator, state[2])
     end
-    complete!(actor, scheduler)
+    complete!(scheduler, actor)
     return noopSubscription
 end
 

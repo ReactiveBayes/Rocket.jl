@@ -21,9 +21,10 @@ end
 getrecent(observable::SingleObservable)    = observable.value
 getscheduler(observable::SingleObservable) = observable.scheduler
 
-function on_subscribe!(observable::SingleObservable, actor, scheduler)
-    next!(actor, observable.value, scheduler)
-    complete!(actor, scheduler)
+function on_subscribe!(observable::SingleObservable, actor)
+    scheduler = getscheduler(observable)
+    next!(scheduler, actor, observable.value)
+    complete!(scheduler, actor)
     return noopSubscription
 end
 

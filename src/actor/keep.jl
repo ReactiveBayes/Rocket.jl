@@ -22,9 +22,9 @@ show(getvalues(actor))
 [1, 2, 3, 4, 5]
 ```
 
-See also: [`Actor`](@ref), [`keep`](@ref)
+See also: [`keep`](@ref)
 """
-struct KeepActor{T} <: Actor{T}
+struct KeepActor{T}
     values :: Vector{T}
 
     KeepActor{T}() where T = new(Vector{T}())
@@ -34,9 +34,9 @@ Base.show(io::IO, ::KeepActor{T}) where T = print(io, "KeepActor($T)")
 
 getvalues(actor::KeepActor) = actor.values
 
-next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
-error!(actor::KeepActor, err)               = error(err)
-complete!(actor::KeepActor)                 = begin end
+on_next!(actor::KeepActor{T}, data::T) where T = push!(actor.values, data)
+on_error!(actor::KeepActor, err)               = error(err)
+on_complete!(actor::KeepActor)                 = begin end
 
 """
     keep(::Type{T}) where T
