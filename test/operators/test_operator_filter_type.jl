@@ -9,23 +9,21 @@ include("../test_helpers.jl")
 
     println("Testing: operator filter_type()")
 
-    run_proxyshowcheck("FilterType", filter_type(Int))
-
-    @test_throws Exception from(1:5) |> filter_type(Float64)
+    @test_throws Exception from_iterable(1:5) |> filter_type(Float64)
 
     run_testset([
         (
-            source      = from(1:5) |> filter_type(Int),
+            source      = from_iterable(1:5) |> filter_type(Int),
             values      = @ts([ 1, 2, 3, 4, 5, c ]),
             source_type = Int
         ),
         (
-            source      = from(Real[ 1, 2.0, 3, 4.0, 5, 6.0 ]) |> filter_type(Int),
+            source      = from_iterable(Real[ 1, 2.0, 3, 4.0, 5, 6.0 ]) |> filter_type(Int),
             values      = @ts([ 1, 3, 5, c ]),
             source_type = Int
         ),
         (
-            source      = from(Union{Int, Float64}[ 1, 2.0, 3, 4.0, 5, 6.0 ]) |> filter_type(Float64),
+            source      = from_iterable(Union{Int, Float64}[ 1, 2.0, 3, 4.0, 5, 6.0 ]) |> filter_type(Float64),
             values      = @ts([ 2.0, 4.0, 6.0, c ]),
             source_type = Float64
         ),

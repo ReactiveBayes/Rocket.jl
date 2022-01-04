@@ -9,43 +9,42 @@ include("../test_helpers.jl")
 
     println("Testing: operator map()")
 
-    run_proxyshowcheck("Map", map(Any, d -> d))
+    # run_proxyshowcheck("Map", map(Any, d -> d))
 
     run_testset([
         (
-            source      = from(1:5) |> map(Int, d -> d ^ 2),
+            source      = from_iterable(1:5) |> map(OpType(Int), d -> d ^ 2),
             values      = @ts([ 1, 4, 9, 16, 25, c ]),
             source_type = Int
         ),
         (
-            source      = from(1:5) |> map(Float64, d -> convert(Float64, d)),
+            source      = from_iterable(1:5) |> map(OpType(Float64), d -> convert(Float64, d)),
             values      = @ts([ 1.0, 2.0, 3.0, 4.0, 5.0, c ]),
             source_type = Float64
         ),
         (
-            source      = completed() |> map(Int, d -> d + 1),
+            source      = completed() |> map(OpType(Int), d -> d + 1),
             values      = @ts(c),
             source_type = Int
         ),
         (
-            source      = faulted(Int, "e") |> map(String, d -> string(d)),
+            source      = faulted(Int, "e") |> map(OpType(String), d -> string(d)),
             values      = @ts(e("e")),
             source_type = String
         ),
         (
-            source      = never() |> map(Int, d -> 1),
+            source      = never() |> map(OpType(Int), d -> 1),
             values      = @ts(),
             source_type = Int
         ),
         (
-            source      = from(1:5) |> map(Int, d -> 1.0), # Invalid output: Float64 instead of Int
-            values      = @ts(),
-            source_type = Int,
-            throws      = Exception
+            source      = from_iterable(1:5) |> map(OpType(Int), d -> 1.0), # Converted to Int
+            values      = @ts([ 1, 1, 1, 1, 1, c ]),
+            source_type = Int
         ),
         (
-            source      = from(1:5) |> safe() |> map(Int, d -> 1.0), # Invalid output: Float64 instead of Int
-            values      = @ts(e),
+            source      = from_iterable(1:5) |> safe() |> map(OpType(Int), d -> 1.0), # Converted to Int
+            values      = @ts([ 1, 1, 1, 1, 1, c ]),
             source_type = Int
         )
     ])

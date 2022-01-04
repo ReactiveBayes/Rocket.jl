@@ -11,7 +11,7 @@ include("../test_helpers.jl")
 
     run_testset([
         (
-            source      = from(1:5) |> map_to('a'),
+            source      = from_iterable(1:5) |> map_to('a'),
             values      = @ts([ 'a', 'a', 'a', 'a', 'a', c ]),
             source_type = Char
         ),

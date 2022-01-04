@@ -5,33 +5,45 @@ import Base: show
 """
     safe()
 
-Creates a `SafeOperator`, which wraps `on_subscribe!` and each `next!`, `error!` and `complete!` callbacks into try-catch block.
+Creates a `SafeOperator`, which wraps `on_subscribe!` as well as `on_next!`, `on_error!`, and `complete!` callbacks into try-catch block.
 
 # Producing
 
 Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 
-See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
+See also: [`Operator`](@ref)
 """
 safe() = SafeOperator()
 
-struct SafeOperator <: InferableOperator end
+struct SafeOperator <: Operator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::SafeOperator, source) where L
-    return proxy(L, source, SafeProxy())
+operator_eltype(::SafeOperator, ::Type{L}) where L = L
+
+struct SafeSubscribable{L, S} <: Subscribable{L}
+    source :: S
 end
 
-operator_right(operator::SafeOperator, ::Type{L}) where L = L
-
-struct SafeProxy <: ActorSourceProxy end
-
-actor_proxy!(::Type{L}, proxy::SafeProxy, actor::A)   where { L, A } = SafeActor{L, A}(actor, false, voidTeardown)
-source_proxy!(::Type{L}, proxy::SafeProxy, source::S) where { L, S } = SafeSource{L, S}(source)
-
-mutable struct SafeActor{L, A} <: Actor{L}
+mutable struct SafeActor{A}
     actor        :: A
     isfailed     :: Bool
-    subscription :: Teardown
+    subscription :: Subscription
+end
+
+function on_call!(::Type{L}, ::Type{L}, operator::SafeOperator, source::S) where { L, S }
+    return SafeSubscribable{L, S}(source)
+end
+
+function on_subscribe!(source::SafeSubscribable, actor::A) where A
+    safeactor = SafeActor{A}(actor, false, noopSubscription)
+    try
+        subscription = subscribe!(source.source, safeactor)
+        setsubscription!(safeactor, subscription)
+        return subscription
+    catch exception
+        dispose!(safeactor)
+        on_error!(safeactor.actor, exception)
+        return noopSubscription
+    end
 end
 
 isfailed(actor::SafeActor)   = actor.isfailed
@@ -40,13 +52,13 @@ setfailed!(actor::SafeActor) = actor.isfailed = true
 getsubscription(actor::SafeActor)         = actor.subscription
 setsubscription!(actor::SafeActor, value) = actor.subscription = value
 
-function on_next!(actor::SafeActor{L}, data::L) where L
+function on_next!(actor::SafeActor, data) where L
     if !isfailed(actor)
         try
-            next!(actor.actor, data)
+            on_next!(actor.actor, data)
         catch exception
             dispose!(actor)
-            error!(actor.actor, exception)
+            on_error!(actor.actor, exception)
         end
     end
 end
@@ -54,10 +66,10 @@ end
 function on_error!(actor::SafeActor, err)
     if !isfailed(actor)
         try
-            error!(actor.actor, err)
+            on_error!(actor.actor, err)
         catch exception
             dispose!(actor)
-            error!(actor.actor, exception)
+            on_error!(actor.actor, exception)
         end
     end
 end
@@ -65,10 +77,10 @@ end
 function on_complete!(actor::SafeActor)
     if !isfailed(actor)
         try
-            complete!(actor.actor)
+            on_complete!(actor.actor)
         catch exception
             dispose!(actor)
-            error!(actor.actor, exception)
+            on_error!(actor.actor, exception)
         end
     end
 end
@@ -78,23 +90,6 @@ function dispose!(actor::SafeActor)
     unsubscribe!(getsubscription(actor))
 end
 
-@subscribable struct SafeSource{L, S} <: Subscribable{L}
-    source :: S
-end
-
-function on_subscribe!(source::SafeSource, actor::SafeActor)
-    try
-        subscription = subscribe!(source.source, actor)
-        setsubscription!(actor, subscription)
-        return subscription
-    catch exception
-        dispose!(actor)
-        error!(actor.actor, exception)
-        return voidTeardown
-    end
-end
-
-Base.show(io::IO, ::SafeOperator)          = print(io, "SafeOperator()")
-Base.show(io::IO, ::SafeProxy)             = print(io, "SafeProxy()")
-Base.show(io::IO, ::SafeActor{L})  where L = print(io, "SafeActor($L)")
-Base.show(io::IO, ::SafeSource{L}) where L = print(io, "SafeSource($L)")
+Base.show(io::IO, ::SafeOperator)                = print(io, "SafeOperator()")
+Base.show(io::IO, ::SafeSubscribable{L}) where L = print(io, "SafeSubscribable($L)")
+Base.show(io::IO, ::SafeActor)                   = print(io, "SafeActor()")

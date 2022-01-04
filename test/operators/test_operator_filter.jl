@@ -9,16 +9,14 @@ include("../test_helpers.jl")
 
     println("Testing: operator filter()")
 
-    run_proxyshowcheck("Filter", filter(_ -> true))
-
     run_testset([
         (
-            source      = from(1:5) |> filter(d -> d % 2 == 0),
+            source      = from_iterable(1:5) |> filter(d -> d % 2 == 0),
             values      = @ts([ 2, 4, c ]),
             source_type = Int
         ),
         (
-            source      = from(1:5) |> filter(d -> d % 2 == 1),
+            source      = from_iterable(1:5) |> filter(d -> d % 2 == 1),
             values      = @ts([ 1, 3, 5, c ]),
             source_type = Int
         ),
@@ -39,7 +37,7 @@ include("../test_helpers.jl")
             values = @ts(c)
         ),
         (
-            source = from(1:5) |> filter(d -> true),
+            source = from_iterable(1:5) |> filter(d -> true),
             values = @ts([ 1:5, c ])
         )
     ])

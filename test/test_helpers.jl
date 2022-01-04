@@ -49,7 +49,7 @@ function test(testset, check_timings)
     end
 
     if parameters[:source_type] !== Any
-        @test subscribable_extract_type(parameters[:source]) === parameters[:source_type]
+        @test eltype(parameters[:source]) === parameters[:source_type]
     end
 
     return true

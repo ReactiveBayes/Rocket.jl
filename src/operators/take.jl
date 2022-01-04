@@ -85,18 +85,18 @@ end
 function on_error!(actor::TakeActor, err)
     if !actor.isdisposed
         on_error!(actor.actor, err)
-        dispose(actor)
+        dispose!(actor)
     end
 end
 
 function on_complete!(actor::TakeActor)
     if !actor.isdisposed
         on_complete!(actor.actor)
-        dispose(actor)
+        dispose!(actor)
     end
 end
 
-function dispose(actor::TakeActor)
+function dispose!(actor::TakeActor)
     actor.isdisposed = true
     unsubscribe!(actor.subscription)
 end

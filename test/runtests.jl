@@ -52,15 +52,15 @@ doctest(Rocket)
 
     # include("./test_operator.jl")
     # include("./operators/test_operator_async.jl")
-    # include("./operators/test_operator_map.jl")
+    include("./operators/test_operator_map.jl")
     # include("./operators/test_operator_map_to.jl")
     # include("./operators/test_operator_scan.jl")
     # include("./operators/test_operator_enumerate.jl")
     # include("./operators/test_operator_uppercase.jl")
     # include("./operators/test_operator_lowercase.jl")
     # include("./operators/test_operator_to_array.jl")
-    # include("./operators/test_operator_filter.jl")
-    # include("./operators/test_operator_filter_type.jl")
+    include("./operators/test_operator_filter.jl")
+    include("./operators/test_operator_filter_type.jl")
     # include("./operators/test_operator_find.jl")
     # include("./operators/test_operator_find_index.jl")
     # include("./operators/test_operator_some.jl")
@@ -105,9 +105,9 @@ doctest(Rocket)
     # include("./operators/test_operator_substitute.jl")
     # include("./operators/test_operator_override.jl")
 
-    @testset "Detect ambiguities" begin
-        @test length(Test.detect_ambiguities(Rocket)) == 0
-    end
+    # @testset "Detect ambiguities" begin
+    #     @test length(Test.detect_ambiguities(Rocket)) == 0
+    # end
 end
 
 end

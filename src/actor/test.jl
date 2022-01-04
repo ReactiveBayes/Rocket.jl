@@ -34,7 +34,7 @@ timestamp(event::TestActorEvent)       = event.timestamp
 mark_as_checked(event::TestActorEvent) = event.is_checked = true
 is_checked(event::TestActorEvent)      = event.is_checked
 
-struct TestActor <: Actor{Any}
+struct TestActor
     allowed_type :: Type
     data         :: Vector{TestActorEvent}
     errors       :: Vector{TestActorEvent}
@@ -42,7 +42,7 @@ struct TestActor <: Actor{Any}
     created_at   :: HighResolutionTimestamp
     condition    :: Condition
 
-    TestActor(type::Type{L}) where L = begin
+    TestActor(::Type{L}) where L = begin
         return new(L, Vector{TestActorEvent}(), Vector{TestActorEvent}(), Vector{TestActorEvent}(), make_timestamp(), Condition())
     end
 end
@@ -107,7 +107,7 @@ function check_isvalid(actor::TestActor)
     # --------------------------------------------------------------------
 
     # Actor cannot receive multiple errors events
-    isfailed(actor) && length(errors(actor)) !== 1 && throw(MultipleErrorEventsException())
+    isfailed(actor) && length(errors(actor)) !== 1 && throw(MultipleErrorEventsException(errors(actor)))
 
     # Actor cannot receive multiple complete events
     iscompleted(actor) && length(completes(actor)) !== 1 && throw(MultipleCompleteEventsException())
@@ -138,7 +138,7 @@ struct DataEventIncorrectTypeException            <: Exception end
 struct ErrorEventIncorrectTypeException           <: Exception end
 struct CompleteEventIncorrectTypeException        <: Exception end
 struct DataEventIncorrectTimestampsOrderException <: Exception end
-struct MultipleErrorEventsException               <: Exception end
+struct MultipleErrorEventsException               <: Exception errors; end
 struct MultipleCompleteEventsException            <: Exception end
 struct ErrorAfterCompleteEventException           <: Exception end
 struct CompleteAfterErrorEventException           <: Exception end
@@ -151,11 +151,9 @@ struct ErrorEventEqualityFailedException          <: Exception end
 
 # Test stream values helpers
 
-test_on_source(source::S, test; maximum_wait::Float64 = 60000.0, actor = nothing, check_timings = true) where S = test_on_source(as_subscribable(S), source, test, maximum_wait, actor, check_timings)
+test_on_source(source::S, test; maximum_wait::Float64 = 60000.0, actor = nothing, check_timings = true) where S = test_on_source(eltype(S), source, test, maximum_wait, actor, check_timings)
 
-test_on_source(::InvalidSubscribableTrait,      source, test, maximum_wait, actor, check_timings)         = throw(InvalidSubscribableTraitUsageError(source))
-test_on_source(::SimpleSubscribableTrait{T},    source, test, maximum_wait, actor, check_timings) where T = _test_on_source(T, source, test, maximum_wait, actor, check_timings)
-test_on_source(::ScheduledSubscribableTrait{T}, source, test, maximum_wait, actor, check_timings) where T = _test_on_source(T, source, test, maximum_wait, actor, check_timings)
+test_on_source(::Type{T}, source, test, maximum_wait, actor, check_timings) where T = _test_on_source(T, source, test, maximum_wait, actor, check_timings)
 
 function _test_on_source(::Type{T}, source, test, maximum_wait, actor, check_timings) where T
     actor = actor === nothing ? test_actor(T) : actor
@@ -164,7 +162,7 @@ function _test_on_source(::Type{T}, source, test, maximum_wait, actor, check_tim
 
     task = @task begin
         try
-            subscribe!(source |> safe() |> catch_error((err, obs) -> begin error!(actor, err); never(subscribable_extract_type(obs)) end), actor)
+            subscribe!(source |> safe() |> catch_error((err, obs) -> begin error!(actor, err); never(eltype(obs)) end), actor)
         catch err
             error!(actor, err)
         end
