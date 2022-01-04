@@ -10,97 +10,72 @@ import Base: show, similar
 
 A variant of Subject that requires an initial value and emits its current value whenever it is subscribed to.
 
-See also: [`BehaviorSubjectFactory`](@ref), [`Subject`](@ref), [`SubjectFactory`](@ref)
+See also: [`BehaviorSubjectFactory`](@ref), [`Subject`](@ref), [`AbstractSubjectFactory`](@ref)
 """
-function BehaviorSubject end
+mutable struct BehaviorSubject{D, S} <: Subscribable{D}
+    subject :: S
+    current :: D
+end
+
+##
+
+getscheduler(subject::BehaviorSubject) = getscheduler(subject.subject)
+
+Base.show(io::IO, ::BehaviorSubject{D, S}) where { D, S } = print(io, "BehaviorSubject($D, $S)")
+
+Base.similar(subject::BehaviorSubject{D, S}) where { D, S } = BehaviorSubject(D, getcurrent(subject), similar(subject.subject))
+
+BehaviorSubject(value::D)         where D = BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
+BehaviorSubject(::Type{D}, value) where D = BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
+
+BehaviorSubject(::Type{D}, value, factory::F) where { D, F <: AbstractSubjectFactory } = BehaviorSubject(D, value, create_subject(D, factory))
+BehaviorSubject(::Type{D}, value, subject::S) where { D, S }                           = BehaviorSubject{D, S}(subject, convert(D, value))
+
+##
+
+getcurrent(subject::BehaviorSubject)         = subject.current
+setcurrent!(subject::BehaviorSubject, value) = subject.current = value
+
+##
+
+function on_next!(subject::BehaviorSubject{D}, data::D) where D
+    if isactive(subject.subject)
+        setcurrent!(subject, data)
+        on_next!(subject.subject, data)
+    end
+end
+
+on_error!(subject::BehaviorSubject, err) = on_error!(subject.subject, err)
+on_complete!(subject::BehaviorSubject)   = on_complete!(subject.subject)
+
+##
+
+function on_subscribe!(subject::BehaviorSubject, actor)
+    on_next!(actor, getcurrent(subject))
+    return on_subscribe!(subject.subject, actor)
+end
+
+##
 
 """
-    BehaviorSubjectFactory(default, factory::F) where { F <: AbstractSubjectFactory }
-    BehaviorSubjectFactory(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+    BehaviorSubjectFactory(default::D, factory::F)                     where { F <: AbstractSubjectFactory }
+    BehaviorSubjectFactory(default::D; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
 
 A variant of SubjectFactory that creates an instance of ReplaySubject.
 
 See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`BehaviorSubject`](@ref), [`Subject`](@ref)
 """
-function BehaviorSubjectFactory end
-
-##
-
-mutable struct BehaviorSubjectInstance{D, S} <: AbstractSubject{D}
-    subject :: S
-    current :: D
-end
-
-Base.show(io::IO, ::BehaviorSubjectInstance{D, S}) where { D, S } = print(io, "BehaviorSubject($D, $S)")
-
-Base.similar(subject::BehaviorSubjectInstance{D, S}) where { D, S } = BehaviorSubject(D, getcurrent(subject), similar(subject.subject))
-
-function BehaviorSubject(value::D) where D
-    return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
-end
-
-function BehaviorSubject(::Type{D}, value) where D
-    return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
-end
-
-function BehaviorSubject(::Type{D}, value, factory::F) where { D, F <: AbstractSubjectFactory }
-    return BehaviorSubject(D, value, create_subject(D, factory))
-end
-
-function BehaviorSubject(::Type{D}, value, subject::S) where { D, S }
-    return as_behavior_subject(D, as_subject(S), convert(D, value), subject)
-end
-
-as_behavior_subject(::Type{D},  ::InvalidSubjectTrait,    current,     subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_behavior_subject(::Type{D1}, ::ValidSubjectTrait{D2},  current,     subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_behavior_subject(::Type{D},  ::ValidSubjectTrait{D},   current::D,  subject::S) where { D, S }   = BehaviorSubjectInstance{D, S}(subject, current)
-
-##
-
-getcurrent(subject::BehaviorSubjectInstance)         = subject.current
-setcurrent!(subject::BehaviorSubjectInstance, value) = subject.current = value
-
-##
-
-function on_next!(subject::BehaviorSubjectInstance{D}, data::D) where D
-    if isactive(subject.subject)
-        setcurrent!(subject, data)
-        next!(subject.subject, data)
-    end
-end
-
-function on_error!(subject::BehaviorSubjectInstance, err)
-    error!(subject.subject, err)
-end
-
-function on_complete!(subject::BehaviorSubjectInstance)
-    complete!(subject.subject)
-end
-
-##
-
-function on_subscribe!(subject::BehaviorSubjectInstance, actor)
-    next!(actor, getcurrent(subject))
-    return subscribe!(subject.subject, actor)
-end
-
-##
-
-struct BehaviorSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
+struct BehaviorSubjectFactory{ D, F <: AbstractSubjectFactory } <: AbstractSubjectFactory
+    default :: D
     factory :: F
-    default
 end
 
-Base.show(io::IO, subject::BehaviorSubjectFactoryInstance{F}) where F = print(io, "BehaviorSubjectFactory($F, default = $(subject.default))")
+Base.show(io::IO, subject::BehaviorSubjectFactory{D, F}) where { D, F } = print(io, "BehaviorSubjectFactory(default = $(subject.default), $F)")
 
-create_subject(::Type{L}, factory::BehaviorSubjectFactoryInstance) where L = BehaviorSubject(L, convert(L, factory.default), factory.factory)
+create_subject(::Type{L}, factory::BehaviorSubjectFactory) where L = BehaviorSubject(L, convert(L, factory.default), factory.factory)
 
-function BehaviorSubjectFactory(default, factory::F) where { F <: AbstractSubjectFactory }
-    return BehaviorSubjectFactoryInstance(factory, default)
-end
-
-function BehaviorSubjectFactory(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
-    return BehaviorSubjectFactoryInstance(SubjectFactory{H}(scheduler), default)
+function BehaviorSubjectFactory(default::D; scheduler::H = AsapScheduler()) where { D, H }
+    return BehaviorSubjectFactory(default, SubjectFactory{H}(scheduler))
 end
 
 ##

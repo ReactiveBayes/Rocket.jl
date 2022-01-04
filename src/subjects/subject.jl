@@ -4,15 +4,6 @@ import Base: show, similar
 
 ##
 
-struct SubjectListener{I}
-    schedulerinstance :: I
-    actor
-end
-
-Base.show(io::IO, ::SubjectListener) = print(io, "SubjectListener()")
-
-##
-
 """
     Subject(::Type{D}; scheduler::H = AsapScheduler())
 
@@ -22,21 +13,21 @@ Every Subject is an Observable and an Actor. You can subscribe to a Subject, and
 Note: By convention, every actor subscribed to a Subject observable is not allowed to throw exceptions during `next!`, `error!` and `complete!` calls. 
 Doing so would lead to undefined behaviour. Use `safe()` operator to bypass this rule. 
 
-See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref), [`safe`](@ref)
+See also: [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref), [`safe`](@ref)
 """
-mutable struct Subject{D, H, I} <: AbstractSubject{D}
-    listeners   :: List{SubjectListener{I}}
+mutable struct Subject{D, H} <: Subscribable{D}
     scheduler   :: H
+    actors      :: List{Any}
     isactive    :: Bool
     iscompleted :: Bool
     isfailed    :: Bool
     lasterror   :: Any
 
-    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(List(SubjectListener{I}), scheduler, true, false, false, nothing)
+    Subject{D, H}(scheduler::H) where { D, H } = new(scheduler, List(Any), true, false, false, nothing)
 end
 
-function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler }
-    return Subject{D, H, instancetype(D, H)}(scheduler)
+function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H }
+    return Subject{D, H}(scheduler)
 end
 
 Base.show(io::IO, ::Subject{D, H}) where { D, H } = print(io, "Subject($D, $H)")
@@ -44,6 +35,8 @@ Base.show(io::IO, ::Subject{D, H}) where { D, H } = print(io, "Subject($D, $H)")
 Base.similar(subject::Subject{D, H}) where { D, H } = Subject(D; scheduler = similar(subject.scheduler))
 
 ##
+
+getscheduler(subject::Subject) = subject.scheduler
 
 isactive(subject::Subject)    = subject.isactive
 iscompleted(subject::Subject) = subject.iscompleted
@@ -57,9 +50,12 @@ setlasterror!(subject::Subject, err) = subject.lasterror   = err
 
 ##
 
-function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
-    for listener in subject.listeners
-        scheduled_next!(listener.actor, data, listener.schedulerinstance)
+on_next!(subject::Subject{D}, data::L) where { D, L } = error("$(subject) expects data of type $(D), but $(L) have been passed.")
+
+function on_next!(subject::Subject{D}, data::D) where { D }
+    scheduler = getscheduler(subject)
+    for actor in subject.actors
+        next!(scheduler, actor, data)
     end
 end
 
@@ -68,8 +64,9 @@ function on_error!(subject::Subject, err)
         setinactive!(subject)
         setfailed!(subject)
         setlasterror!(subject, err)
-        for listener in subject.listeners
-            scheduled_error!(listener.actor, err, listener.schedulerinstance)
+        scheduler = getscheduler(subject)
+        for actor in subject.actors
+            error!(scheduler, actor, err)
         end
         empty!(subject.listeners)
     end
@@ -79,8 +76,9 @@ function on_complete!(subject::Subject)
     if isactive(subject)
         setinactive!(subject)
         setcompleted!(subject)
-        for listener in subject.listeners
-            scheduled_complete!(listener.actor, listener.schedulerinstance)
+        scheduler = getscheduler(subject)
+        for actor in subject.actors
+            complete!(scheduler, actor)
         end
         empty!(subject.listeners)
     end
@@ -89,36 +87,29 @@ end
 ##
 
 function on_subscribe!(subject::Subject{D}, actor) where { D }
+    scheduler = getscheduler(subject)
     if isfailed(subject)
-        error!(actor, lasterror(subject))
+        error!(scheduler, actor, lasterror(subject))
         return SubjectSubscription(nothing)
     elseif iscompleted(subject)
-        complete!(actor)
+        complete!(scheduler, actor)
         return SubjectSubscription(nothing)
     else
-        instance = makeinstance(D, subject.scheduler)
-        return scheduled_subscription!(subject, actor, instance)
+        actor_node = pushnode!(subject.actors, actor)
+        return SubjectSubscription(actor_node)
     end
-end
-
-function on_subscribe!(subject::Subject, actor, instance)
-    listener      = SubjectListener(instance, actor)
-    listener_node = pushnode!(subject.listeners, listener)
-    return SubjectSubscription(listener_node)
 end
 
 ##
 
-mutable struct SubjectSubscription <: Teardown
-    listener_node :: Union{Nothing, ListNode}
+mutable struct SubjectSubscription <: Subscription
+    actor_node :: Union{Nothing, ListNode}
 end
 
-as_teardown(::Type{ <: SubjectSubscription }) = UnsubscribableTeardownLogic()
-
 function on_unsubscribe!(subscription::SubjectSubscription)
-    if subscription.listener_node !== nothing
-        remove(subscription.listener_node)
-        subscription.listener_node = nothing
+    if subscription.actor_node !== nothing
+        remove(subscription.actor_node)
+        subscription.actor_node = nothing
     end
     return nothing
 end
@@ -128,13 +119,13 @@ Base.show(io::IO, ::SubjectSubscription) = print(io, "SubjectSubscription()")
 ##
 
 """
-    SubjectFactory(scheduler::H) where { H <: AbstractScheduler }
+    SubjectFactory(scheduler::H) where { H }
 
 A base subject factory that creates an instance of Subject with specified scheduler.
 
 See also: [`AbstractSubjectFactory`](@ref), [`Subject`](@ref)
 """
-struct SubjectFactory{ H <: AbstractScheduler } <: AbstractSubjectFactory
+struct SubjectFactory{H} <: AbstractSubjectFactory
     scheduler :: H
 end
 

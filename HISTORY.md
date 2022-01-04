@@ -29,7 +29,10 @@
   - OpType
   - map
     - OpType
+- subject
+  - almost everything removed relating to traits/types
 
 TODOs
   - decide on names for
     - filter - type piracy
+  - document abstract subject factory

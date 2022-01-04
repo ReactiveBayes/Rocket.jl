@@ -32,25 +32,29 @@ See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObser
 """
 discontinue() = DiscontinueOperator()
 
-struct DiscontinueOperator <: InferableOperator end
+struct DiscontinueOperator <: Operator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::DiscontinueOperator, source) where L
-    return proxy(L, source, DiscontinueProxy())
+function on_call!(::Type{L}, ::Type{L}, operator::DiscontinueOperator, source::S) where { L, S }
+    return DiscontinueSubscribable{L, S}(source)
 end
 
-operator_right(::DiscontinueOperator, ::Type{L}) where L = L
+operator_eltype(::DiscontinueOperator, ::Type{L}) where L = L
 
-struct DiscontinueProxy <: ActorProxy end
+struct DiscontinueSubscribable{L, S} <: Subscribable{L} 
+    source :: S
+end
 
-actor_proxy!(::Type{L}, proxy::DiscontinueProxy, actor::A) where { L, A } = DiscontinueActor{L, A}(actor)
+function on_subscribe!(observable::DiscontinueSubscribable, actor::A) where { A }
+    return subscribe!(observable.source, DiscontinueActor{A}(actor))
+end
 
-mutable struct DiscontinueActor{L, A} <: Actor{L}
+mutable struct DiscontinueActor{A}
     actor                :: A
     isnextpropagated     :: Bool
     iserrorpropagated    :: Bool
     iscompletepropagated :: Bool
 
-    DiscontinueActor{L, A}(actor::A) where { L, A } = new(actor, false, false, false)
+    DiscontinueActor{A}(actor::A) where A = new(actor, false, false, false)
 end
 
 isnextpropagated(actor::DiscontinueActor)     = actor.isnextpropagated
@@ -61,10 +65,10 @@ setnextpropagated!(actor::DiscontinueActor, value::Bool)     = actor.isnextpropa
 seterrorpropagated!(actor::DiscontinueActor, value::Bool)    = actor.iserrorpropagated = value
 setcompletepropagated!(actor::DiscontinueActor, value::Bool) = actor.iscompletepropagated = value
 
-function on_next!(actor::DiscontinueActor{L}, data::L) where L
+function on_next!(actor::DiscontinueActor, data)
     if !isnextpropagated(actor)
         setnextpropagated!(actor, true)
-        next!(actor.actor, data)
+        on_next!(actor.actor, data)
         setnextpropagated!(actor, false)
     end
 end
@@ -72,7 +76,7 @@ end
 function on_error!(actor::DiscontinueActor, err)
     if !iserrorpropagated(actor)
         seterrorpropagated!(actor, true)
-        error!(actor.actor, err)
+        on_error!(actor.actor, err)
         seterrorpropagated!(actor, false)
     end
 end
@@ -80,11 +84,11 @@ end
 function on_complete!(actor::DiscontinueActor)
     if !iscompletepropagated(actor)
         setcompletepropagated!(actor, true)
-        complete!(actor.actor)
+        on_complete!(actor.actor)
         setcompletepropagated!(actor, false)
     end
 end
 
-Base.show(io::IO, ::DiscontinueOperator)         = print(io, "DiscontinueOperator()")
-Base.show(io::IO, ::DiscontinueProxy)            = print(io, "DiscontinueProxy()")
-Base.show(io::IO, ::DiscontinueActor{L}) where L = print(io, "DiscontinueActor($L)")
+Base.show(io::IO, ::DiscontinueOperator)                = print(io, "DiscontinueOperator()")
+Base.show(io::IO, ::DiscontinueSubscribable{L}) where L = print(io, "DiscontinueSubscribable($L)")
+Base.show(io::IO, ::DiscontinueActor)                   = print(io, "DiscontinueActor()")

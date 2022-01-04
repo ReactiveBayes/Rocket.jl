@@ -5,7 +5,7 @@ import Base: eltype
 
 """
     next!(actor, data)
-    next!(actor, data, scheduler)
+    next!(scheduler, actor, data)
 
 Delivers a "next" event to an actor. Takes optional `scheduler` object to schedule execution of data delivery.
 
@@ -15,7 +15,7 @@ function next! end
 
 """
     error!(actor, err)
-    error!(actor, err, scheduler)
+    error!(scheduler, actor, err)
 
 Delivers an "error" event to an actor. Takes optional `scheduler` object to schedule execution of error delivery.
 
@@ -25,7 +25,7 @@ function error! end
 
 """
     complete!(actor)
-    complete!(actor, scheduler)
+    complete!(scheduler, actor)
 
 Delivers a "complete" event to an actor. Takes optional `scheduler` object to schedule execution of complete event delivery.
 
@@ -35,6 +35,10 @@ function complete! end
 
 next!(_)  = throw(MissingDataArgumentInNextCall())
 error!(_) = throw(MissingErrorArgumentInErrorCall())
+
+next!(actor, data) = next!(getscheduler(actor), actor, data)
+error!(actor, err) = error(getscheduler(actor), actor, err)
+complete!(actor)   = complete!(getscheduler(actor), actor)
 
 # -------------------------------- #
 # Actor factory                    #
