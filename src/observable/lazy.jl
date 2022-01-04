@@ -16,6 +16,7 @@ end
 end
 
 getpending(lazy::LazyObservable) = lazy.pending
+pushpending!(lazy::LazyObservable, subscription::LazySubscription, actor) = push!(lazy.pending, (subscription, actor))
 
 getstream(lazy::LazyObservable)          = lazy.stream
 setstream!(lazy::LazyObservable, stream) = lazy.stream = stream
@@ -49,7 +50,9 @@ function on_subscribe!(observable::LazyObservable{D}, actor) where D
     if stream !== nothing
         return LazySubscription(subscribe!(stream, actor))
     else
-        return LazySubscription(observable)
+        subscription = LazySubscription(observable)
+        pushpending!(observable, subscription, actor)
+        return subscription
     end
 end
 
@@ -62,7 +65,7 @@ function on_unsubscribe!(subscription::LazySubscription)
 end
 
 function unsubscribe_lazy!(subscription::LazySubscription, observable::LazyObservable)
-    filter!(p -> first(p) === subscription, observable.pending)
+    filter!(p -> first(p) !== subscription, observable.pending)
     return nothing
 end
 
