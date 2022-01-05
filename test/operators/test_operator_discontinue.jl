@@ -9,8 +9,6 @@ include("../test_helpers.jl")
 
     println("Testing: operator discontinue()")
 
-    run_proxyshowcheck("Discontinue", discontinue())
-
     @testset begin
         values    = [ ]
         errors    = [ ]
@@ -28,7 +26,7 @@ include("../test_helpers.jl")
         @test errors    == [ ]
         @test completes == [ ]
 
-        subscription2 = subscribe!(subject |> map(Int, d -> d + 1) |> discontinue(), lambda(
+        subscription2 = subscribe!(subject |> map(OpType(Int), d -> d + 1) |> discontinue(), lambda(
             on_next     = (d) -> next!(subject, d),
             on_error    = (e) -> error!(subject, e),
             on_complete = ()  -> complete!(subject)
@@ -62,7 +60,7 @@ include("../test_helpers.jl")
         @test errors    == [ ]
         @test completes == [ ]
 
-        subscription2 = subscribe!(subject |> map(Int, d -> d + 1) |> discontinue(), lambda(
+        subscription2 = subscribe!(subject |> map(OpType(Int), d -> d + 1) |> discontinue(), lambda(
             on_next     = (d) -> next!(subject, d),
             on_error    = (e) -> error!(subject, e),
             on_complete = ()  -> complete!(subject)

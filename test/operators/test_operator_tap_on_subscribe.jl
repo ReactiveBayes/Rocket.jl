@@ -9,11 +9,9 @@ include("../test_helpers.jl")
 
     println("Testing: operator tap_on_subscribe()")
 
-    run_proxyshowcheck("TapOnSubscribe", tap_on_subscribe(() -> begin end))
-
     @testset begin
         values = Int[]
-        source = from(1:5) |> tap_on_subscribe(() -> push!(values, -1))
+        source = from_iterable(1:5) |> tap_on_subscribe(() -> push!(values, -1))
         actor  = keep(Int)
 
         @test values == []
@@ -31,7 +29,7 @@ include("../test_helpers.jl")
 
     @testset begin
         values = Int[]
-        source = from(1:5) |> tap_on_subscribe(() -> push!(values, -1), TapBeforeSubscription())
+        source = from_iterable(1:5) |> tap_on_subscribe(() -> push!(values, -1), TapBeforeSubscription())
 
         @test values == []
 
@@ -46,7 +44,7 @@ include("../test_helpers.jl")
 
     @testset begin
         values = Int[]
-        source = from(1:5) |> tap_on_subscribe(() -> push!(values, -1), TapAfterSubscription())
+        source = from_iterable(1:5) |> tap_on_subscribe(() -> push!(values, -1), TapAfterSubscription())
 
         @test values == []
 

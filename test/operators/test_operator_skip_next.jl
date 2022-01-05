@@ -11,7 +11,7 @@ include("../test_helpers.jl")
 
     run_testset([
         (
-            source = from(1:5) |> skip_next(),
+            source = from_iterable(1:5) |> skip_next(),
             values = @ts(c)
         ),
         (

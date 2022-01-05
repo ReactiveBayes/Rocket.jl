@@ -47,31 +47,28 @@ unsubscribe!(subscription2)
 
 See also: [`ConnectableObservable`](@ref), [`Subject`](@ref), [`share`](@ref), [`publish`](@ref)
 """
-multicast(subject::S) where S                               = as_multicast(as_subject(S), subject)
+multicast(subject::S) where S                               = MulticastOperator{S}(subject)
 multicast(factory::F) where { F <: AbstractSubjectFactory } = MulticastWithFactoryOperator{F}(factory)
 
-as_multicast(::ValidSubjectTrait{D}, subject::S) where { D, S } = MulticastOperator{S}(subject)
-as_multicast(::InvalidSubjectTrait,  subject::S) where {    S } = throw(InvalidSubjectTraitUsageError(subject))
-
-struct MulticastOperator{S} <: InferableOperator
+struct MulticastOperator{S} <: Operator
     subject :: S
 end
+
+operator_eltype(::MulticastOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::MulticastOperator, source) where L
     return connectable(operator.subject, source)
 end
 
-operator_right(operator::MulticastOperator, ::Type{L}) where L = L
-
-struct MulticastWithFactoryOperator{F} <: InferableOperator
+struct MulticastWithFactoryOperator{F} <: Operator
     subject_factory :: F
 end
+
+operator_eltype(::MulticastWithFactoryOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::MulticastWithFactoryOperator, source) where L
     return connectable(create_subject(L, operator.subject_factory), source)
 end
-
-operator_right(operator::MulticastWithFactoryOperator, ::Type{L}) where L = L
 
 Base.show(io::IO, ::MulticastOperator)            = print(io, "MulticastOperator()")
 Base.show(io::IO, ::MulticastWithFactoryOperator) = print(io, "MulticastWithFactoryOperator()")

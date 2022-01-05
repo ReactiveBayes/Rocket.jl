@@ -21,12 +21,12 @@ See also: [`tap_on_subscribe`](@ref), [`TapBeforeSubscription`](@ref)
 struct TapAfterSubscription end
 
 """
-    tap_on_subscribe(tapFn::F, strategy::S = TapBeforeSubscription()) where { F <: Function }
+    tap_on_subscribe(tap, strategy::S = TapBeforeSubscription())
 
 Creates a tap operator, which performs a side effect on the subscription on the source Observable, but return an Observable that is identical to the source.
 
 # Arguments
-- `tapFn::Function`: side-effect tap function with `() -> Nothing` signature
+- `tap`: side-effect tap callback with `() -> Nothing` signature
 - `strategy`: (optional), specifies the order of a side-effect and an actual subscription, uses `TapBeforeSubscription` by default
 
 # Producing
@@ -68,45 +68,39 @@ Someone subscribed
 
 See also: [`TapBeforeSubscription`](@ref), [`TapAfterSubscription`](@ref), [`tap`](@ref), [`tap_on_unsubscribe`](@ref), [`tap_on_complete`](@ref), [`logger`](@ref)
 """
-tap_on_subscribe(tapFn::F, strategy::S = TapBeforeSubscription()) where { F <: Function, S } = TapOnSubscribeOperator{F, S}(tapFn, strategy)
+tap_on_subscribe(tap::F, strategy::T = TapBeforeSubscription()) where { F, T } = TapOnSubscribeOperator{F, T}(tap, strategy)
 
-struct TapOnSubscribeOperator{F, S} <: InferableOperator
-    tapFn    :: F
-    strategy :: S
+struct TapOnSubscribeOperator{F, T} <: Operator
+    tap      :: F
+    strategy :: T
 end
 
-operator_right(::TapOnSubscribeOperator, ::Type{L}) where L = L
+operator_eltype(::TapOnSubscribeOperator, ::Type{L}) where L = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::TapOnSubscribeOperator{F, S}, source) where { L, F, S }
-    return proxy(L, source, TapOnSubscribeProxy{F, S}(operator.tapFn, operator.strategy))
-end
-
-struct TapOnSubscribeProxy{F, S} <: SourceProxy
-    tapFn    :: F
-    strategy :: S
-end
-
-source_proxy!(::Type{L}, proxy::TapOnSubscribeProxy{F, T}, source::S) where { L, S, F, T } = TapOnSubscribeSource{L, S, F, T}(proxy.tapFn, proxy.strategy, source)
-
-@subscribable struct TapOnSubscribeSource{L, S, F, T} <: Subscribable{L}
-    tapFn    :: F
+struct TapOnSubscribeSubscribable{L, F, T, S} <: Subscribable{L}
+    tap      :: F
     strategy :: T
     source   :: S
 end
 
-on_subscribe!(source::TapOnSubscribeSource, actor) = __on_subscribe_with_tap(source.strategy, source, actor)
+function on_call!(::Type{L}, ::Type{L}, operator::TapOnSubscribeOperator{F, T}, source::S) where { L, F, T, S }
+    return TapOnSubscribeSubscribable{L, F, T, S}(operator.tap, operator.strategy, source)
+end
 
-function __on_subscribe_with_tap(::TapBeforeSubscription, source::TapOnSubscribeSource, actor)
-    source.tapFn()
+function on_subscribe!(source::TapOnSubscribeSubscribable, actor) 
+    return __on_subscribe_with_tap(source.strategy, source, actor)
+end
+
+function __on_subscribe_with_tap(::TapBeforeSubscription, source::TapOnSubscribeSubscribable, actor)
+    source.tap()
     return subscribe!(source.source, actor)
 end
 
-function __on_subscribe_with_tap(::TapAfterSubscription, source::TapOnSubscribeSource, actor)
+function __on_subscribe_with_tap(::TapAfterSubscription, source::TapOnSubscribeSubscribable, actor)
     subscription = subscribe!(source.source, actor)
-    source.tapFn()
+    source.tap()
     return subscription
 end
 
-Base.show(io::IO, ::TapOnSubscribeOperator)          = print(io, "TapOnSubscribeOperator()")
-Base.show(io::IO, ::TapOnSubscribeProxy)             = print(io, "TapOnSubscribeProxy()")
-Base.show(io::IO, ::TapOnSubscribeSource{L}) where L = print(io, "TapOnSubscribeSource($L)")
+Base.show(io::IO, ::TapOnSubscribeOperator)                = print(io, "TapOnSubscribeOperator()")
+Base.show(io::IO, ::TapOnSubscribeSubscribable{L}) where L = print(io, "TapOnSubscribeSubscribable($L)")

@@ -9,10 +9,8 @@ include("../test_helpers.jl")
 
     println("Testing: operator ref_count()")
 
-    run_proxyshowcheck("RefCount", ref_count(), args = (custom_source = Rocket.connectable(Subject(Any), never(Any)), check_subscription = true, ))
-
     @testset begin
-        source  = from(1:5) |> multicast(Subject(Int)) |> ref_count()
+        source  = from_iterable(1:5) |> multicast(Subject(Int)) |> ref_count()
 
         actor1 = keep(Int)
         actor2 = keep(Int)

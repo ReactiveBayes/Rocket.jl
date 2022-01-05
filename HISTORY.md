@@ -38,3 +38,4 @@ TODOs
   - document abstract subject factory
   - revise subscribe! in operators
     - maybe define getscheduler and fallback to on_subscribe!
+  - check named-argument-free interface for publish/share

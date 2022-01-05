@@ -9,7 +9,7 @@ using Rocket
 
     @testset begin
         subject = Subject(Int)
-        source  = from(1:5) |> multicast(subject)
+        source  = from_iterable(1:5) |> multicast(subject)
 
         actor1 = keep(Int)
         actor2 = keep(Int)

@@ -9,15 +9,13 @@ include("../test_helpers.jl")
 
     println("Testing: operator safe()")
 
-    run_proxyshowcheck("Safe", safe())
-
     run_testset([
         (
-            source = from(1:5) |> safe(),
+            source = from_iterable(1:5) |> safe(),
             values = @ts([ 1:5, c ])
         ),
         (
-            source = from([ 0, 1, 2 ]) |> safe() |> map(Int, d -> d === 0 ? 0 : throw(d)),
+            source = from_iterable([ 0, 1, 2 ]) |> safe() |> map(OpType(Int), d -> d === 0 ? 0 : throw(d)),
             values = @ts([ 0, e(1) ])
         ),
         (
