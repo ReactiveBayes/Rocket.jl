@@ -157,20 +157,20 @@ test_on_source(::Type{T}, source, test, maximum_wait, actor, check_timings) wher
 
 function _test_on_source(::Type{T}, source, test, maximum_wait, actor, check_timings) where T
     actor = actor === nothing ? test_actor(T) : actor
-
-    is_completed = false
+    
+    is_completed = Ref(false)
 
     task = @task begin
-        try
+        try 
             subscribe!(source |> safe() |> catch_error((err, obs) -> begin error!(actor, err); never(eltype(obs)) end), actor)
-        catch err
+        catch err 
             error!(actor, err)
         end
     end
 
     wakeup = @task begin
-        timedwait(() -> is_completed, maximum_wait / MILLISECONDS_IN_SECOND; pollint = 0.5)
-        if !is_completed
+        timedwait(() -> is_completed[], maximum_wait / MILLISECONDS_IN_SECOND; pollint = 0.5)
+        if !is_completed[]
             notify(condition(actor), TestOnSourceTimedOutException(), error = true)
         end
     end
@@ -202,7 +202,7 @@ function _test_on_source(::Type{T}, source, test, maximum_wait, actor, check_tim
 
     test_against(actor, TestActorEveryStepVerificationTest(), check_timings)
 
-    is_completed = true
+    is_completed[] = true
 
     return true
 end

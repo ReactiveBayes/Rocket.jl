@@ -50,7 +50,7 @@ doctest(Rocket)
     include("./subjects/test_subject_pending.jl")
 
     # include("./test_operator.jl")
-    # include("./operators/test_operator_async.jl")
+    include("./operators/test_operator_async.jl")
     include("./operators/test_operator_map.jl")
     # include("./operators/test_operator_map_to.jl")
     # include("./operators/test_operator_scan.jl")

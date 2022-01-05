@@ -65,7 +65,7 @@ end
 function on_subscribe!(source::CatchErrorSubscribable{L, F}, actor::A) where { L, F, A }
     catchactor = CatchErrorActor{A, F}(source.selectorFn, actor, false, nothing, nothing)
     catchactor.current_source       = source.source
-    catchactor.current_subscription = on_subscribe!(source.source, catchactor)
+    catchactor.current_subscription = subscribe!(source.source, catchactor)
     return CatchErrorSubscription(catchactor)
 end
 
@@ -73,7 +73,7 @@ function on_unsubscribe!(subscription::CatchErrorSubscription)
     current_subscription = subscription.catch_error_actor.current_subscription
     subscription.catch_error_actor.current_source       = nothing
     subscription.catch_error_actor.current_subscription = nothing
-    return on_unsubscribe!(current_subscription)
+    return unsubscribe!(current_subscription)
 end
 
 function on_next!(actor::CatchErrorActor, data)
@@ -85,7 +85,7 @@ end
 function on_error!(actor::CatchErrorActor, err)
     if !actor.is_completed
         if actor.current_subscription !== nothing
-            on_unsubscribe!(actor.current_subscription)
+            unsubscribe!(actor.current_subscription)
         end
 
         fallback_source = actor.selectorFn(err, actor.current_source)
