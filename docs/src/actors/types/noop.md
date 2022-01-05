@@ -1,9 +1,9 @@
 # [Void actor](@id actor_void)
 
 ```@docs
-void
+noopActor
 ```
 
 ```@docs
-VoidActor
+NoopActor
 ```

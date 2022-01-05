@@ -2,102 +2,76 @@
 
 ## How to create a custom Actor
 
-At first custom actor should implement a custom method for the [`as_actor`](@ref) function.
-Rocket.jl also provides a number of helper actor abstract types with predefined [`as_actor`](@ref) method behavior (see [Traits API section](@ref actors_api_traits)).
+Any actor-like object should simply implement [`on_next!`](@ref), [`on_error!`](@ref) and [`on_complete!`](@ref) methods.
 
-```julia
+```@docs
+Rocket.on_next!
+Rocket.on_error!
+Rocket.on_complete!
+```
+
+```@example actors_api
 using Rocket
 
 struct MyCustomActor end
 
-as_actor(::Type{<:MyCustomActor}) = Rocket.BaseActorTrait{Int}()
+function Rocket.on_next!(actor::MyCustomActor, data::Int) 
+    println("Received data of type Int: ", data)
+end
+
+function Rocket.on_next!(actor::MyCustomActor, data::Float64) 
+    println("Received data of type Float64: ", data)
+end
+
+function Rocket.on_next!(actor::MyCustomActor, data) 
+    println("Received data of type ", typeof(data), ": ", data)
+end
+
+function Rocket.on_error!(actor::MyCustomActor, err) 
+    showerror(err)
+end
+
+function Rocket.on_complete!(actor::MyCustomActor)
+    println("Received a completion event")
+end
 
 ```
 
-or
-
-```julia
-using Rocket
-
-struct MyCustomActor <: Actor{Int} end # Automatically specifies BaseActorTrait{Int} behavior.
+```@example actors_api
+source       = from_iterable(Any[ 1.0, 1, "Hello, world!" ])
+subscription = subscribe!(source, MyCustomActor())
+nothing #hide
 ```
 
-Additionally custom actor must provide a custom methods for [`on_next!`](@ref), [`on_error!`](@ref) and/or [`on_complete!`](@ref) functions. Depending on specified actor trait behavior some methods may or may not be optional.
+Any actor can have internal state storage:
 
-```julia
-using Rocket
+```@example actors_api
+struct MyKeepIntActor
+    values :: Vector{Int}
 
-struct MyCustomActor <: Actor{Int} end
+    MyKeepIntActor() = new(Vector{Int}())
+end
 
-Rocket.on_next!(actor::MyCustomActor, data::Int)  = # custom logic here
-Rocket.on_error!(actor::MyCustomActor, err)       = # custom logic here
-Rocket.on_complete!(actor::MyCustomActor)         = # custom logic here
+Rocket.on_next!(actor::MyKeepIntActor, data::Int) = push!(actor.values, data)
+Rocket.on_error!(actor::MyKeepIntActor, err)      = error(err)
+Rocket.on_complete!(actor::MyKeepIntActor)        = begin end
+nothing #hide
 ```
 
-or
-
-```julia
-using Rocket
-
-struct MyCustomCompletionActor <: CompletionActor{Int} end
-
-Rocket.on_complete!(actor::MyCustomCompletionActor) = # custom logic here
+```@example actors_api
+actor        = MyKeepIntActor()
+source       = from_iterable(1:5)
+subscription = subscribe!(source, actor)
+nothing #hide
 ```
 
-
-## [Traits](@id actors_api_traits)
-
-```@docs
-as_actor
-ActorTrait
-BaseActorTrait
-NextActorTrait
-ErrorActorTrait
-CompletionActorTrait
-InvalidActorTrait
-```
-
-## Types
-
-```@docs
-AbstractActor
-Actor
-NextActor
-ErrorActor
-CompletionActor
-```
-
-## Events
-
-```@docs
-next!
-error!
-complete!
-```
-
-```@docs
-on_next!
-on_error!
-on_complete!
-```
-
-## Factory
-
-```@docs
-AbstractActorFactory
-create_actor
-MissingCreateActorFactoryImplementationError
+```@example actor_api
+actor.values
 ```
 
 ## Errors
 
 ```@docs
-InvalidActorTraitUsageError
-InconsistentSourceActorDataTypesError
-MissingDataArgumentInNextCall
-MissingErrorArgumentInErrorCall
-ExtraArgumentInCompleteCall
-MissingOnNextImplementationError
-MissingOnErrorImplementationError
-MissingOnCompleteImplementationError
+Rocket.MissingDataArgumentInNextCall
+Rocket.MissingErrorArgumentInErrorCall
 ```

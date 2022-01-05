@@ -1,16 +1,16 @@
-export NoopActor, noopActor
+export noopActor, NoopActor
 
 """
     NoopActor{D}() where D
 
-Void actor does nothing with input data, error and complete events, can be useful for debugging (e.g. to start side-effects with [`tap`](@ref) operator)
+`NoopActor` does nothing with input data, error and complete events, can be useful for debugging (e.g. to start side-effects with [`tap`](@ref) operator)
 
 # Examples
 
 ```jldoctest
 using Rocket
 
-source = from([ 0, 1, 2 ])
+source = from_iterable([ 0, 1, 2 ])
 actor  = NoopActor()
 
 subscribe!(source, actor)
@@ -20,7 +20,7 @@ subscribe!(source, actor)
 
 ```
 
-See also: [`noop`](@ref)
+See also: [`noopActor`](@ref), [`tap`](@ref)
 """
 struct NoopActor end
 
@@ -31,10 +31,20 @@ on_complete!(::NoopActor)   = begin end
 """
     noopActor 
 
-An instance of `NoopActor` singleton object.
+An instance of the `NoopActor` singleton object.
 
-See also: [`NoopActor`]
+# Examples
+
+```jldoctest
+using Rocket
+
+source = from_iterable([ 0, 1, 2 ])
+subscribe!(source, noopActor)
+
+# output
+
+```
+
+See also: [`NoopActor`](@ref)
 """
 const noopActor = NoopActor()
-
-noop() = noopActor

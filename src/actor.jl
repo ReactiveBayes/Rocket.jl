@@ -4,6 +4,33 @@ export AbstractActorFactory, create_actor
 import Base: eltype
 
 """
+    on_next!(actor, data)
+
+Executes an actor's "next"-event logic. Any valid actor-like object should implement a new method for this function.
+
+See also: [`on_error!`](@ref), [`on_complete!`](@ref)
+"""
+function on_next! end
+
+"""
+    on_error!(actor, err)
+
+Executes an actor's "error"-event logic. Any valid actor-like object should implement a new method for this function.
+
+See also: [`on_next!`](@ref), [`on_complete!`](@ref)
+"""
+function on_error! end
+
+"""
+    on_complete!(actor)
+
+Executes an actor's "completion"-event logic. Any valid actor-like object should implement a new method for this function.
+
+See also: [`on_next!`](@ref), [`on_error!`](@ref)
+"""
+function on_complete! end
+
+"""
     next!(actor, data)
     next!(scheduler, actor, data)
 

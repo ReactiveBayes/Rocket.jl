@@ -10,7 +10,7 @@ Should not be used explicitly because it will be created automatically when pass
 ```jldoctest
 using Rocket
 
-source = from(1:5)
+source = from_iterable(1:5)
 subscribe!(source, (t) -> println(t))
 ;
 

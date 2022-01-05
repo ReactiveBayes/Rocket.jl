@@ -10,108 +10,88 @@ The API of Rocket.jl's Actors is similar to [RxJS](https://rxjs.dev/guide/overvi
 
 ## First example
 
-The following example implements an Actor that retains each received value from an Observable.
+The following example implements an Actor that retains each received value from an Observable. First lets setup our environment by importing `Rocket.jl` package:
 
-```julia
+```@example actor_tutorial
 using Rocket
+```
 
-struct CustomKeepActor <: Actor{Int}
-    values::Vector{Int}
+We create a custom actor structure with custom logic
+In our example our actor will simply keep all incoming data in an internal storage
 
+```@example actor_tutorial
+struct CustomKeepActor
+    values :: Vector{Int} 
     CustomKeepActor() = new(Vector{Int}())
 end
+nothing #hide
+```
 
+The only one requirement for a custom actor is to implement [`on_next!`](@ref), [`on_error!`](@ref) and [`on_complete!`](@ref) methods. See also [API reference](@ref actors_api).
+
+```@example actor_tutorial
 Rocket.on_next!(actor::CustomKeepActor, data::Int) = push!(actor.values, data)
 Rocket.on_error!(actor::CustomKeepActor, err)      = error(err)
 Rocket.on_complete!(actor::CustomKeepActor)        = println("Completed!")
-
-source     = from([ 1, 2, 3 ])
-keep_actor = CustomKeepActor()
-subscribe!(source, keep_actor)
-
-# Logs
-# Completed!
-
-println(keep_actor.values)
-
-# Logs
-# [1, 2, 3]
+nothing #hide
 ```
 
-An actor may be not interested in the values itself, but merely the completion of an event. In this case, Rocket.jl provides a [`CompletionActor`](@ref) abstract type.
-See also [`NextActor`](@ref) and [`ErrorActor`](@ref).
+```@example actor_tutorial
+source       = from_iterable([ 1, 2, 3 ])
+actor        = CustomKeepActor()
+subscription = subscribe!(source, actor)
+nothing #hide
+```
 
-```julia
-using Rocket
+We can verify that our actor indeed saved all incoming data in its internal storage:
 
-struct CompletionNotificationActor <: CompletionActor{Int} end
-
-Rocket.on_complete!(::CompletionNotificationActor) = println("Completed!")
-
-source = from([ 1, 2, 3 ])
-subscribe!(source, CompletionNotificationActor());
-
-# Logs
-# Completed
+```@example actor_tutorial
+actor.values
 ```
 
 It is also possible to use Julia's multiple dispatch feature and dispatch on type of the event
 
-```julia
-using Rocket
-
-struct MyCustomActor <: NextActor{Any} end
+```@example actor_tutorial
+struct MyCustomActor end
 
 Rocket.on_next!(::MyCustomActor, data::Int)     = println("Int: $data")
 Rocket.on_next!(::MyCustomActor, data::Float64) = println("Float64: $data")
 Rocket.on_next!(::MyCustomActor, data)          = println("Something else: $data")
 
-source = from([ 1, 1.0, "string" ])
-subscribe!(source, MyCustomActor());
+Rocket.on_error!(::MyCustomActor, err) = error(err)
+Rocket.on_complete!(::MyCustomActor)   = begin end
 
-# Logs
-# Int: 1
-# Float64: 1.0
-# Something else: string
+nothing #hide
+```
 
+```@example actor_tutorial
+source       = from_iterable([ 1, 1.0, "string" ])
+actor        = MyCustomActor()
+subscription = subscribe!(source, actor)
+nothing #hide
 ```
 
 ## Lambda actor
 
-For debugging purposes it may be convenient to work with a [`LambdaActor`](@ref). This provides an interface that defines callbacks for "next", "error" and "complete" events.
-But this generic actor does not allow to dispatch on type of the event.
+For debugging purposes it may be convenient to work with the [`LambdaActor`](@ref). It provides an interface that defines callbacks for "next", "error" and "complete" events.
 
-```julia
-using Rocket
+```@example actor_tutorial
 
-source = from([1, 2, 3])
-
-subscribe!(source, lambda(
-    on_next     = (d) -> println(d),
+source       = from_iterable([1, 2, 3])
+subscription = subscribe!(source, lambda(
+    on_next     = (d) -> println("Data received: ", d),
     on_error    = (e) -> error(e),
     on_complete = ()  -> println("Completed")
 ))
-
-# Logs
-# 1
-# 2
-# 3
-# Completed
+nothing #hide
 ```
 
 ## Function actor
 
-Sometimes it is convenient to pass only `on_next` callback. Rocket.jl provides a `FunctionActor` which automatically converts any function object passed in the `subscribe!` function to a proper actor which listens only for data events, throws an exception on error event and ignores completion message.
+Sometimes it is convenient to pass only `on_next` callback. Rocket.jl provides the [`FunctionActor`](@ref) which automatically converts any function object passed in the `subscribe!` function to a proper actor which listens only for data events, throws an exception on error event and ignores completion event.
 
-```julia
-using Rocket
-
-source = from([1, 2, 3])
-
-subscribe!(source, (d) -> println(d))
-
-# Logs
-# 1
-# 2
-# 3
+```@example actor_tutorial
+source       = from_iterable([1, 2, 3])
+subscription = subscribe!(source, (d) -> println(d))
+nothing #hide
 ```
