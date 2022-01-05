@@ -1,4 +1,4 @@
-export subscribe!
+export subscribe!, Subscribable
 
 import Base: showerror
 import Base: eltype

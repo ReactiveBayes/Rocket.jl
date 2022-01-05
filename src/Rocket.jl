@@ -19,7 +19,7 @@ include("subject.jl")
 include("schedulers/asap.jl")
 # include("schedulers/async.jl")
 # include("schedulers/threads.jl")
-# include("schedulers/pending.jl")
+include("schedulers/pending.jl")
 # include("schedulers/postponed.jl")
 
 # Default scheduler for all subscribables is sync and asap
