@@ -4,18 +4,20 @@ export scheduled
 
 import Base: show
 
-struct ScheduledActor{L, H, A} <: Actor{L}
+struct ScheduledActor{H, A}
     scheduler :: H
     actor     :: A
 end
 
-on_next!(actor::ScheduledActor{L}, data::L) where L = next!(actor.actor, data, actor.scheduler)
-on_error!(actor::ScheduledActor, err)               = error!(actor.actor, err, actor.scheduler)
-on_complete!(actor::ScheduledActor)                 = complete!(actor.actor, actor.scheduler)
+getscheduler(actor::ScheduledActor) = actor.scheduler
 
-@subscribable struct ScheduledSource{L, H <: AbstractScheduler, S} <: ScheduledSubscribable{L}
-    source    :: S
+on_next!(actor::ScheduledActor, data) = next!(getscheduler(actor), actor.actor, data)
+on_error!(actor::ScheduledActor, err) = error!(getscheduler(actor), actor.actor, err)
+on_complete!(actor::ScheduledActor)   = complete!(getscheduler(actor), actor.actor)
+
+struct ScheduledSource{L, H, S} <: Subscribable{L}
     scheduler :: H
+    source    :: S
 end
 
 getscheduler(observable::ScheduledSource) = observable.scheduler
@@ -25,13 +27,9 @@ function on_subscribe!(source::ScheduledSource{L}, actor::A, scheduler::H) where
 end
 
 Base.show(io::IO, ::ScheduledSource{L, H}) where { L, H } = print(io, "ScheduledSource($L, $H)")
-Base.show(io::IO, ::ScheduledActor{L, H})  where { L, H } = print(io, "ScheduledActor($L, $H)")
+Base.show(io::IO, ::ScheduledActor{H})     where { H }    = print(io, "ScheduledActor($H)")
 
-scheduled(source::S, scheduler::H) where { S, H <: AbstractScheduler } = as_scheduled(as_subscribable(S), source, scheduler)
+scheduled(source::S, scheduler::H) where { S, H } = as_scheduled(eltype(S), source, scheduler)
 
-as_scheduled(::InvalidSubscribableTrait,      source, scheduler)                         = throw(InvalidSubscribableTraitUsageError(source))
-as_scheduled(::SimpleSubscribableTrait{L},    source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
-as_scheduled(::ScheduledSubscribableTrait{L}, source::S, scheduler::H) where { L, H, S } = ScheduledSource{L, H, S}(source, scheduler)
-
-as_scheduled(::SimpleSubscribableTrait,    source, scheduler::AsapScheduler) = source
-as_scheduled(::ScheduledSubscribableTrait, source, scheduler::AsapScheduler) = source
+as_scheduled(::Type{L}, source::S, scheduler::H)          where { L, H, S } = ScheduledSource{L, H, S}(scheduler, source)
+as_scheduled(::Type{L}, source, scheduler::AsapScheduler) where L           = source

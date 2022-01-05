@@ -4,13 +4,13 @@ import Base: show
 
 # TODO : Untested and undocumented
 
-schedule_on(scheduler::H) where { H <: AbstractScheduler } = ScheduleOnOperator{H}(scheduler)
+schedule_on(scheduler::H) where { H } = ScheduleOnOperator{H}(scheduler)
 
-struct ScheduleOnOperator{ H <: AbstractScheduler } <: InferableOperator
+struct ScheduleOnOperator{H} <: Operator
     scheduler :: H
 end
 
-operator_right(operator::ScheduleOnOperator, ::Type{L}) where L = L
+operator_eltype(::ScheduleOnOperator, ::Type{L}) where L = L
 
 function on_call!(::Type{L}, ::Type{L}, operator::ScheduleOnOperator{H}, source::S) where { L, H, S }
     return scheduled(source, operator.scheduler)
