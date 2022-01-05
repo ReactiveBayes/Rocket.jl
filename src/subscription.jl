@@ -18,8 +18,6 @@ See also: [`Subscription`](@ref)
 """
 unsubscribe!(subscription) = unsubscribe!(getscheduler(subscription), subscription)
 
-
-
 # TODO - 2.0
 # function unsubscribe!(subscriptions::Union{Tuple, AbstractVector})
 #     if !all(subscription -> subscription !== InvalidTeardownLogic(), as_teardown.(typeof.(subscriptions)))

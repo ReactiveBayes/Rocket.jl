@@ -10,14 +10,14 @@ import Base: show, similar
 
 See also: [`AsapSchedulerInstance`](@ref)
 """
-struct AsapScheduler <: Scheduler end
+struct AsapScheduler end
 
 Base.show(io::IO, ::AsapScheduler) = print(io, "AsapScheduler()")
 Base.similar(::AsapScheduler)      = AsapScheduler()
 
-@inline subscribe!(::AsapScheduler, subscribable, actor) = on_subscribe!(subscribable, actor)
-@inline unsubscribe!(::AsapScheduler, subscription)      = on_unsubscribe!(subscription)
+subscribe!(::AsapScheduler, subscribable, actor) = on_subscribe!(subscribable, actor)
+unsubscribe!(::AsapScheduler, subscription)      = on_unsubscribe!(subscription)
 
-@inline next!(::AsapScheduler, actor, value) = on_next!(actor, value)
-@inline error!(::AsapScheduler, actor, err)  = on_error!(actor, err)
-@inline complete!(::AsapScheduler, actor)    = on_complete!(actor)
+next!(::AsapScheduler, actor, value) = on_next!(actor, value)
+error!(::AsapScheduler, actor, err)  = on_error!(actor, err)
+complete!(::AsapScheduler, actor)    = on_complete!(actor)

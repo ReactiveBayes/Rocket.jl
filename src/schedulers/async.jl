@@ -1,103 +1,115 @@
 export AsyncScheduler
 
-import Base: show, similar
+import Base: size, show, similar
 
 """
     AsyncScheduler
 
-`AsyncScheduler` executes scheduled actions asynchronously and uses `Channel` object to order different actions on a single asynchronous task
+`AsyncScheduler` executes scheduled actions asynchronously and uses the `Channel` object to order different actions on a single asynchronous task. 
+Creates a new channel for each new observable execution (aka [`subscribe!`](@ref)).
+
+See also: [`Channel`]
 """
-struct AsyncScheduler{N} <: AbstractScheduler end
+struct AsyncScheduler <: AbstractSchedulerFactory
+    size :: Int
 
-Base.show(io::IO, ::AsyncScheduler) = print(io, "AsyncScheduler()")
-
-function AsyncScheduler(size::Int = typemax(Int))
-    return AsyncScheduler{size}()
+    function AsyncScheduler(size::Int = typemax(Int))
+        return new(size)
+    end
 end
 
-Base.similar(::AsyncScheduler{N}) where N = AsyncScheduler{N}()
+create_scheduler(::Type{D}, factory::AsyncScheduler) where D = AsyncSchedulerInstance(D, size(factory))
 
-makeinstance(::Type{D}, ::AsyncScheduler{N}) where { D, N } = AsyncSchedulerInstance{D}(N)
-
-instancetype(::Type{D}, ::Type{<:AsyncScheduler}) where D = AsyncSchedulerInstance{D}
+Base.size(scheduler::AsyncScheduler)    = scheduler.size
+Base.show(io::IO, ::AsyncScheduler)     = print(io, "AsyncScheduler()")
+Base.similar(scheduler::AsyncScheduler) = AsyncScheduler(size(scheduler))
 
 struct AsyncSchedulerDataMessage{D}
     data :: D
+    actor
 end
 
 struct AsyncSchedulerErrorMessage
     err
+    actor
 end
 
-struct AsyncSchedulerCompleteMessage end
+struct AsyncSchedulerCompleteMessage 
+    actor
+end
 
 const AsyncSchedulerMessage{D} = Union{AsyncSchedulerDataMessage{D}, AsyncSchedulerErrorMessage, AsyncSchedulerCompleteMessage}
 
 mutable struct AsyncSchedulerInstance{D}
     channel        :: Channel{AsyncSchedulerMessage{D}}
     isunsubscribed :: Bool
-    subscription   :: Teardown
-
-    AsyncSchedulerInstance{D}(size::Int = typemax(Int)) where D = begin
-        return new(Channel{AsyncSchedulerMessage{D}}(size), false, voidTeardown)
-    end
+    subscription   :: Subscription
 end
 
-isunsubscribed(instance::AsyncSchedulerInstance) = instance.isunsubscribed
-getchannel(instance::AsyncSchedulerInstance) = instance.channel
+Base.show(io::IO, ::AsyncSchedulerInstance{D})            where D = print(io, "AsyncSchedulerInstance($D)")
+Base.show(io::IO, ::Type{ <: AsyncSchedulerInstance{D} }) where D = print(io, "AsyncSchedulerInstance($D)")
+
+function AsyncSchedulerInstance(::Type{D}, size::Int = typemax(Int)) where D
+    return AsyncSchedulerInstance{D}(Channel{AsyncSchedulerMessage{D}}(size), false, noopSubscription)
+end
+
+isunsubscribed(instance::AsyncSchedulerInstance)   = instance.isunsubscribed
+setunsubscribed!(instance::AsyncSchedulerInstance) = instance.isunsubscribed = true
+getchannel(instance::AsyncSchedulerInstance)       = instance.channel
 
 function dispose(instance::AsyncSchedulerInstance)
     if !isunsubscribed(instance)
-        instance.isunsubscribed = true
-        close(instance.channel)
+        setunsubscribed!(instance)
+        close(getchannel(instance))
         @async begin
             unsubscribe!(instance.subscription)
         end
     end
 end
 
-function __process_channeled_message(instance::AsyncSchedulerInstance{D}, message::AsyncSchedulerDataMessage{D}, actor) where D
-    on_next!(actor, message.data)
+function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerDataMessage)
+    on_next!(message.actor, message.data)
 end
 
-function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerErrorMessage, actor)
-    on_error!(actor, message.err)
+function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerErrorMessage)
+    on_error!(message.actor, message.err)
     dispose(instance)
 end
 
-function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerCompleteMessage, actor)
-    on_complete!(actor)
+function __process_channeled_message(instance::AsyncSchedulerInstance, message::AsyncSchedulerCompleteMessage)
+    on_complete!(message.actor)
     dispose(instance)
 end
 
-struct AsyncSchedulerSubscription{ H <: AsyncSchedulerInstance } <: Teardown
+struct AsyncSchedulerSubscription{ H <: AsyncSchedulerInstance } <: Subscription
     instance :: H
 end
 
+getscheduler(subscription::AsyncSchedulerSubscription) = subscription.instance
+
 Base.show(io::IO, ::AsyncSchedulerSubscription) = print(io, "AsyncSchedulerSubscription()")
 
-as_teardown(::Type{ <: AsyncSchedulerSubscription}) = UnsubscribableTeardownLogic()
-
-function on_unsubscribe!(subscription::AsyncSchedulerSubscription)
+function unsubscribe!(instance::AsyncSchedulerInstance, subscription)
+    @assert instance === getscheduler(subscription) "Invalid async unsubscription. `unsubscribe!` should be invoked with the same async scheduler instance"
     dispose(subscription.instance)
     return nothing
 end
 
-function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance)
+function subscribe!(instance::AsyncSchedulerInstance, source, actor)
     subscription = AsyncSchedulerSubscription(instance)
 
     channeling_task = @async begin
         while !isunsubscribed(instance)
             message = take!(getchannel(instance))
             if !isunsubscribed(instance)
-                __process_channeled_message(instance, message, actor)
+                __process_channeled_message(instance, message)
             end
         end
     end
 
-    subscription_task = @async begin
+    @async begin
         if !isunsubscribed(instance)
-            tmp = on_subscribe!(source, actor, instance)
+            tmp = on_subscribe!(source, actor)
             if !isunsubscribed(instance)
                 subscription.instance.subscription = tmp
             else
@@ -111,14 +123,14 @@ function scheduled_subscription!(source, actor, instance::AsyncSchedulerInstance
     return subscription
 end
 
-function scheduled_next!(actor, value::D, instance::AsyncSchedulerInstance{D}) where { D }
-    put!(getchannel(instance), AsyncSchedulerDataMessage{D}(value))
+function next!(instance::AsyncSchedulerInstance{D}, actor, value::D) where { D }
+    put!(getchannel(instance), AsyncSchedulerDataMessage{D}(value, actor))
 end
 
-function scheduled_error!(actor, err, instance::AsyncSchedulerInstance)
-    put!(getchannel(instance), AsyncSchedulerErrorMessage(err))
+function error!(instance::AsyncSchedulerInstance, actor, err)
+    put!(getchannel(instance), AsyncSchedulerErrorMessage(err, actor))
 end
 
-function scheduled_complete!(actor, instance::AsyncSchedulerInstance)
-    put!(getchannel(instance), AsyncSchedulerCompleteMessage())
+function complete!(instance::AsyncSchedulerInstance, actor)
+    put!(getchannel(instance), AsyncSchedulerCompleteMessage(actor))
 end
