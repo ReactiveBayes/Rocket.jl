@@ -23,7 +23,7 @@ using Rocket
     end
 
     @testset begin
-        source = from([ [ 1, 2, 3 ], [ 4, 5, 6 ] ])
+        source = from_iterable([ [ 1, 2, 3 ], [ 4, 5, 6 ] ])
         actor  = buffer(Int, 3)
 
         subscribe!(source, actor)

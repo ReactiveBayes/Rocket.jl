@@ -72,7 +72,7 @@ Missing `data` argument in `next!(actor, data)` function call
 
 See also: [`next!`](@ref)
 """
-struct MissingDataArgumentInNextCall end
+struct MissingDataArgumentInNextCall <: Exception end
 
 Base.showerror(io::IO, ::MissingDataArgumentInNextCall) = print(io, "Missing `data` argument in `next!(actor, data)` function call")
 
@@ -81,6 +81,6 @@ Missing `error` argument in `error!(actor, error)` function call
 
 See also: [`error!`](@ref)
 """
-struct MissingErrorArgumentInErrorCall end
+struct MissingErrorArgumentInErrorCall <: Exception end
 
 Base.showerror(io::IO, ::MissingErrorArgumentInErrorCall) = print(io, "Missing `error` argument in `error!(actor, error)` function call")

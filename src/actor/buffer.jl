@@ -1,4 +1,4 @@
-export BufferActor, buffer, getvalues
+export buffer, BufferActor, getvalues
 
 import Base: show
 
@@ -8,21 +8,7 @@ import Base: show
 Buffer actor provides a storage actor. It copies last incoming successful `next` events in a `values` array, throws an ErrorException on `error!` event
 and does nothing on completion event. Note: Actor does not check the size of incoming data.
 
-# Examples
-```jldoctest
-using Rocket
-
-source = of([ 1, 2, 3 ])
-actor  = buffer(Int, 3)
-
-subscribe!(source, actor)
-show(getvalues(actor))
-
-# output
-[1, 2, 3]
-```
-
-See also: [`Actor`](@ref), [`buffer`](@ref)
+See also: [`buffer`](@ref)
 """
 struct BufferActor{T, R}
     values :: R
@@ -48,21 +34,23 @@ on_complete!(actor::BufferActor)                         = begin end
 - `::Type{T}`: Type of data in buffer
 - `size::Int`: size of buffer
 
-Creation operator for the `BufferActor` actor.
+Creates `BufferActor` actor.
 
 # Examples
-
 ```jldoctest
 using Rocket
 
-actor = buffer(Int, 3)
-actor isa BufferActor{Int}
+source = of([ 1, 2, 3 ])
+actor  = buffer(Int, 3)
+
+subscribe!(source, actor)
+show(getvalues(actor))
 
 # output
-true
+[1, 2, 3]
 ```
 
-See also: [`BufferActor`](@ref), [`AbstractActor`](@ref)
+See also: [`BufferActor`](@ref)
 """
 buffer(::Type{T}, size...)     where T = BufferActor(T, size)
 buffer(::Type{T}, size::Tuple) where T = BufferActor(T, size)

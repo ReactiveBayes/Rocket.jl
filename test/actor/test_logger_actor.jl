@@ -8,7 +8,7 @@ using Rocket
     println("Testing: actor LoggerActor")
 
     @testset begin
-        actor = logger(Int)
+        actor = logger()
 
         @test !isempty(actor.name)
         @test actor.io === nothing
@@ -16,7 +16,7 @@ using Rocket
 
     @testset begin
         buffer = IOBuffer()
-        actor  = logger(Int, buffer)
+        actor  = logger(buffer)
 
         next!(actor, 1)
 
@@ -40,8 +40,6 @@ using Rocket
 
         output = String(take!(buffer))
         @test occursin("Completed", output)
-
-        @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
     end
 
     @testset begin
@@ -73,8 +71,8 @@ using Rocket
     end
 
     @testset begin
-        @test logger(Int) isa LoggerActor{Int, Nothing}
-        @test logger()    isa Rocket.LoggerActorFactory{Nothing}
+        @test logger() isa LoggerActor{Nothing}
+        @test logger(IOBuffer()) isa LoggerActor{IOBuffer}
     end
 end
 

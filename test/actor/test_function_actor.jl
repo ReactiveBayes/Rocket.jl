@@ -8,7 +8,7 @@ using Rocket
     println("Testing: actor FunctionActor")
 
     @testset begin
-        source = from([ 1, 2, 3 ])
+        source = from_iterable([ 1, 2, 3 ])
         values = Int[]
         actor  = (t::Int) -> push!(values, t)
 

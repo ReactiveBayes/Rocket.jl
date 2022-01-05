@@ -1,4 +1,4 @@
-export LambdaActor, lambda
+export lambda, LambdaActor
 
 """
     LambdaActor{N, E, C}(on_next::N, on_error::E, on_complete::C)
@@ -49,9 +49,8 @@ end
 
 """
     lambda(; on_next = nothing, on_error = nothing, on_complete = nothing)
-    lambda(::Type{T}; on_next = nothing, on_error = nothing, on_complete = nothing) where T
 
-Creation operator for the 'LambdaActor' actor.
+Creates 'LambdaActor' actor.
 
 # Examples
 
@@ -66,6 +65,6 @@ next!(actor, 1)
 
 ```
 
-See also: [`LambdaActor`](@ref), [`AbstractActor`](@ref)
+See also: [`LambdaActor`](@ref)
 """
 lambda(; on_next::N = nothing, on_error::E = nothing, on_complete::C = nothing) where { N, E, C } = LambdaActor{N, E, C}(on_next, on_error, on_complete)

@@ -1,4 +1,4 @@
-export KeepActor, keep, getvalues
+export keep, KeepActor, getvalues
 
 import Base: show
 
@@ -7,20 +7,6 @@ import Base: show
 
 Keep actor provides a storage actor. It saves all incoming successful `next` events in a `values` array, throws an ErrorException on `error!` event
 and does nothing on completion event.
-
-# Examples
-```jldoctest
-using Rocket
-
-source = from_iterable(1:5)
-actor  = keep(Int)
-
-subscribe!(source, actor)
-show(getvalues(actor))
-
-# output
-[1, 2, 3, 4, 5]
-```
 
 See also: [`keep`](@ref)
 """
@@ -47,18 +33,20 @@ on_complete!(actor::KeepActor)                 = begin end
 Creates `KeepActor` actor.
 
 # Examples
-
 ```jldoctest
 using Rocket
 
-actor = keep(Int)
-actor isa KeepActor{Int}
+source = from_iterable(1:5)
+actor  = keep(Int)
+
+subscribe!(source, actor)
+show(getvalues(actor))
 
 # output
-true
+[1, 2, 3, 4, 5]
 ```
 
-See also: [`KeepActor`](@ref), [`Actor`](@ref)
+See also: [`KeepActor`](@ref)
 """
 keep(::Type{T}) where T = KeepActor{T}()
 

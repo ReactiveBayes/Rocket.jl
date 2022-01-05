@@ -1,4 +1,4 @@
-export LoggerActor, logger
+export logger, LoggerActor
 
 import Base: show
 
@@ -11,7 +11,7 @@ The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent fro
 - `name`: name of the logger. Optional. Default is `LogActor`.
 - `io`: io stream to log in, maybe nothing to write to `stdout`
 
-See also: [`Actor`](@ref), [`logger`](@ref)
+See also: [`logger`](@ref)
 """
 struct LoggerActor{O}
     name :: String
@@ -39,7 +39,7 @@ on_complete!(io::IO, actor::LoggerActor)   = println(io, "[$(actor.name)] Comple
 """
     logger([ io::IO ], name::String = "LogActor")
 
-Creation operator for the `LoggerActor` actor.
+Creates `LoggerActor` actor.
 
 # Examples
 
@@ -91,7 +91,7 @@ print(String(take!(buffer)))
 [CustomBuffer] Completed
 ```
 
-See also: [`LoggerActor`](@ref), [`Actor`](@ref)
+See also: [`LoggerActor`](@ref)
 """
 logger(name::String = "LogActor")                          = LoggerActor{Nothing}(name, nothing)
 logger(io::O, name::String = "LogActor") where { O <: IO } = LoggerActor{O}(name, io)

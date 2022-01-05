@@ -7,6 +7,8 @@
   - on_* methods for actors removed
   - most of the errors have been removed
   - less exports
+  - logger does not accept type
+  - lambda does not accept type
 - subscribable traits were removed
   - ArrayObservable and from removed - iterable instead, iterable renamed to from_iterable
   - keyword arguments `scheduler` are now just positional arguments

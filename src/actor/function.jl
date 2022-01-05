@@ -1,3 +1,4 @@
+export FunctionActor
 
 """
     FunctionActor <: Actor{Any}
@@ -21,7 +22,7 @@ subscribe!(source, (t) -> println(t))
 5
 ```
 
-See also: [`subscribe!`](@ref)
+See also: [`subscribe!`](@ref), 
 """
 struct FunctionActor{F}
     on_next :: F

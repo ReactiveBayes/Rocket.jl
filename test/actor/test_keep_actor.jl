@@ -8,7 +8,7 @@ using Rocket
     println("Testing: actor KeepActor")
 
     @testset begin
-        source = from([ 1, 2, 3 ])
+        source = from_iterable([ 1, 2, 3 ])
         actor  = KeepActor{Int}()
 
         subscribe!(source, actor)
@@ -18,7 +18,7 @@ using Rocket
     end
 
     @testset begin
-        source = from([ 1, 2, 3 ])
+        source = from_iterable([ 1, 2, 3 ])
         actor  = KeepActor{Int}()
 
         subscribe!(source, actor)
@@ -31,7 +31,7 @@ using Rocket
     end
 
     @testset begin
-        source = from([ 1, 2, 3 ])
+        source = from_iterable([ 1, 2, 3 ])
         actor  = KeepActor{Int}()
 
         subscribe!(source, actor)
@@ -44,7 +44,7 @@ using Rocket
     end
 
     @testset begin
-        source = from([ 1, 2, 3 ])
+        source = from_iterable([ 1, 2, 3 ])
         actor  = KeepActor{Int}()
 
         subscribe!(source, actor)
@@ -63,6 +63,7 @@ using Rocket
 
     @testset begin
         @test keep(Int) isa KeepActor{Int}
+        @test keep(Float64) isa KeepActor{Float64}
     end
 end
 
