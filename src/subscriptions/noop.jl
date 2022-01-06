@@ -1,6 +1,4 @@
-export VoidTeardown, voidTeardown
-
-import Base: ==
+export NoopSubscription, noopSubscription
 
 """
     NoopSubscription()
@@ -8,7 +6,7 @@ import Base: ==
 `NoopSubscription` object does nothing on unsubscription.
 It is usefull for synchronous observables and observables which cannot be cancelled after start of their execution.
 
-See also: [`AbstractSubscription`](@ref), [`unsubscribe!`](@ref)
+See also: [`Subscription`](@ref), [`unsubscribe!`](@ref)
 """
 struct NoopSubscription <: Subscription end
 

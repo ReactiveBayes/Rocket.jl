@@ -42,6 +42,7 @@ const AsyncSchedulerMessage{D} = Union{AsyncSchedulerDataMessage{D}, AsyncSchedu
 
 mutable struct AsyncSchedulerInstance{D}
     channel        :: Channel{AsyncSchedulerMessage{D}}
+    isinvoked      :: Bool
     isunsubscribed :: Bool
     subscription   :: Subscription
 end
@@ -50,11 +51,15 @@ Base.show(io::IO, ::AsyncSchedulerInstance{D})            where D = print(io, "A
 Base.show(io::IO, ::Type{ <: AsyncSchedulerInstance{D} }) where D = print(io, "AsyncSchedulerInstance($D)")
 
 function AsyncSchedulerInstance(::Type{D}, size::Int = typemax(Int)) where D
-    return AsyncSchedulerInstance{D}(Channel{AsyncSchedulerMessage{D}}(size), false, noopSubscription)
+    return AsyncSchedulerInstance{D}(Channel{AsyncSchedulerMessage{D}}(size), false, false, noopSubscription)
 end
+
+isinvoked(instance::AsyncSchedulerInstance)   = instance.isinvoked
+setinvoked!(instance::AsyncSchedulerInstance) = instance.isinvoked = true
 
 isunsubscribed(instance::AsyncSchedulerInstance)   = instance.isunsubscribed
 setunsubscribed!(instance::AsyncSchedulerInstance) = instance.isunsubscribed = true
+
 getchannel(instance::AsyncSchedulerInstance)       = instance.channel
 
 function dispose(instance::AsyncSchedulerInstance)
@@ -62,7 +67,7 @@ function dispose(instance::AsyncSchedulerInstance)
         setunsubscribed!(instance)
         close(getchannel(instance))
         @async begin
-            unsubscribe!(instance.subscription)
+            on_unsubscribe!(instance.subscription)
         end
     end
 end
@@ -91,11 +96,14 @@ Base.show(io::IO, ::AsyncSchedulerSubscription) = print(io, "AsyncSchedulerSubsc
 
 function unsubscribe!(instance::AsyncSchedulerInstance, subscription)
     @assert instance === getscheduler(subscription) "Invalid async unsubscription. `unsubscribe!` should be invoked with the same async scheduler instance"
-    dispose(subscription.instance)
+    dispose(instance)
     return nothing
 end
 
 function subscribe!(instance::AsyncSchedulerInstance, source, actor)
+    @assert !isinvoked(instance) "AsyncSchedulerInstance has been used for subscription already. It is not allowed to use the same async instance for multiple subscriptions."
+
+    sactor       = ScheduledActor(instance, actor)
     subscription = AsyncSchedulerSubscription(instance)
 
     channeling_task = @async begin
@@ -109,28 +117,21 @@ function subscribe!(instance::AsyncSchedulerInstance, source, actor)
 
     @async begin
         if !isunsubscribed(instance)
-            tmp = on_subscribe!(source, actor)
+            tmp = on_subscribe!(source, sactor)
             if !isunsubscribed(instance)
                 subscription.instance.subscription = tmp
             else
-                unsubscribe!(tmp)
+                on_unsubscribe!(tmp)
             end
         end
     end
 
     bind(getchannel(instance), channeling_task)
+    setinvoked!(instance)
 
     return subscription
 end
 
-function next!(instance::AsyncSchedulerInstance{D}, actor, value::D) where { D }
-    put!(getchannel(instance), AsyncSchedulerDataMessage{D}(value, actor))
-end
-
-function error!(instance::AsyncSchedulerInstance, actor, err)
-    put!(getchannel(instance), AsyncSchedulerErrorMessage(err, actor))
-end
-
-function complete!(instance::AsyncSchedulerInstance, actor)
-    put!(getchannel(instance), AsyncSchedulerCompleteMessage(actor))
-end
+next!(instance::AsyncSchedulerInstance{D}, actor, value::D) where { D } = put!(getchannel(instance), AsyncSchedulerDataMessage{D}(value, actor))
+error!(instance::AsyncSchedulerInstance, actor, err)                    = put!(getchannel(instance), AsyncSchedulerErrorMessage(err, actor))
+complete!(instance::AsyncSchedulerInstance, actor)                      = put!(getchannel(instance), AsyncSchedulerCompleteMessage(actor))

@@ -1,5 +1,7 @@
 export FunctionActor
 
+import Base: show
+
 """
     FunctionActor <: Actor{Any}
 
@@ -27,6 +29,9 @@ See also: [`subscribe!`](@ref),
 struct FunctionActor{F}
     on_next :: F
 end
+
+Base.show(io::IO, ::Type{ <: FunctionActor }) = print(io, "FunctionActor")
+Base.show(io::IO, ::FunctionActor)            = print(io, "FunctionActor()")
 
 on_next!(actor::FunctionActor, data) = actor.on_next(data)
 on_error!(actor::FunctionActor, err) = error(err)

@@ -8,8 +8,6 @@ include("helpers/mstorage.jl")
 include("helpers/updates.jl")
 
 include("subscription.jl")
-include("subscriptions/noop.jl")
-
 include("scheduler.jl")
 include("actor.jl")
 include("subscribable.jl")
@@ -25,10 +23,14 @@ include("schedulers/pending.jl")
 # Default scheduler for all subscribables is sync and asap
 getscheduler(any) = AsapScheduler()
 
+include("subscriptions/noop.jl")
+include("subscriptions/scheduled.jl")
+
 include("actor/function.jl")
 include("actor/lambda.jl")
 include("actor/logger.jl")
 include("actor/noop.jl")
+include("actor/scheduled.jl")
 # include("actor/sync.jl")
 include("actor/keep.jl")
 include("actor/buffer.jl")
