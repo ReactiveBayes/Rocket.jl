@@ -62,12 +62,12 @@ end
 
 function on_next!(actor::FilterActor, data)
     if actor.filter(data)
-        on_next!(actor.actor, data)
+        next!(actor.actor, data)
     end
 end
 
-on_error!(actor::FilterActor, err) = on_error!(actor.actor, err)
-on_complete!(actor::FilterActor)   = on_complete!(actor.actor)
+on_error!(actor::FilterActor, err) = error!(actor.actor, err)
+on_complete!(actor::FilterActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::FilterOperator)                = print(io, "FilterOperator()")
 Base.show(io::IO, ::FilterSubscribable{L}) where L = print(io, "FilterSubscribable($L)")

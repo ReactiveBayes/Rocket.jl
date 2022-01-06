@@ -96,14 +96,14 @@ function next_received!(wrapper::CombineLatestActorWrapper, data, index::Int)
     ustatus!(wrapper.updates, index, true)
     if all_vstatus(wrapper.updates) && !all_cstatus(wrapper.updates)
         push_update!(wrapper)
-        on_next!(wrapper.actor, snapshot(wrapper.storage))
+        next!(wrapper.actor, snapshot(wrapper.storage))
     end
 end
 
 function error_received!(wrapper::CombineLatestActorWrapper, err, index::Int)
     if !(cstatus(wrapper.updates, index))
         dispose(wrapper)
-        on_error!(wrapper.actor, err)
+        error!(wrapper.actor, err)
     end
 end
 
@@ -115,7 +115,7 @@ function complete_received!(wrapper::CombineLatestActorWrapper, index::Int)
         end
         if all_cstatus(wrapper.updates) || (!vstatus(wrapper.updates, index))
             dispose(wrapper)
-            on_complete!(wrapper.actor)
+            complete!(wrapper.actor)
         end
     end
 end

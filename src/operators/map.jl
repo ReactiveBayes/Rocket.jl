@@ -58,9 +58,9 @@ function on_subscribe!(source::MapSubscribable{R, F}, actor::A) where { R, F, A 
     return subscribe!(source.source, MapActor{R, F, A}(source.mapping, actor))
 end
 
-on_next!(actor::MapActor{R}, data) where R = on_next!(actor.actor, convert(R, actor.mapping(data)))
-on_error!(actor::MapActor, err)            = on_error!(actor.actor, err)
-on_complete!(actor::MapActor)              = on_complete!(actor.actor)
+on_next!(actor::MapActor{R}, data) where R = next!(actor.actor, convert(R, actor.mapping(data)))
+on_error!(actor::MapActor, err)            = error!(actor.actor, err)
+on_complete!(actor::MapActor)              = complete!(actor.actor)
 
 Base.show(io::IO, ::MapOperator{R})     where R   = print(io, "MapOperator( -> $R)")
 Base.show(io::IO, ::MapSubscribable{R}) where R   = print(io, "MapSubscribable( -> $R)")

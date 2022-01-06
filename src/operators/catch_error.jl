@@ -78,7 +78,7 @@ end
 
 function on_next!(actor::CatchErrorActor, data)
     if !actor.is_completed
-        on_next!(actor.actor, data)
+        next!(actor.actor, data)
     end
 end
 
@@ -98,7 +98,7 @@ end
 function on_complete!(actor::CatchErrorActor)
     if !actor.is_completed
         actor.is_completed = true
-        on_complete!(actor.actor)
+        complete!(actor.actor)
     end
 end
 

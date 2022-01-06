@@ -55,11 +55,11 @@ struct FilterTypeActor{R, A}
     actor :: A
 end
 
-on_next!(actor::FilterTypeActor{R, A}, data::R) where { R, A } = on_next!(actor.actor, data)
+on_next!(actor::FilterTypeActor{R, A}, data::R) where { R, A } = next!(actor.actor, data)
 on_next!(::FilterTypeActor, data)                              = begin end
 
-on_error!(actor::FilterTypeActor, err) = on_error!(actor.actor, err)
-on_complete!(actor::FilterTypeActor)   = on_complete!(actor.actor)
+on_error!(actor::FilterTypeActor, err) = error!(actor.actor, err)
+on_complete!(actor::FilterTypeActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::FilterTypeOperator)                = print(io, "FilterTypeOperator()")
 Base.show(io::IO, ::FilterTypeSubscribable{R}) where R = print(io, "FilterTypeSubscribable($R)")

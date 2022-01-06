@@ -63,9 +63,9 @@ function on_subscribe!(source::TapSubscribable{L, F}, actor::A) where { L, F, A 
     return subscribe!(source.source, TapActor{A, F}(source.tapFn, actor))
 end
 
-on_next!(actor::TapActor, data) = begin actor.tapFn(data); on_next!(actor.actor, data) end
-on_error!(actor::TapActor, err) = on_error!(actor.actor, err)
-on_complete!(actor::TapActor)   = on_complete!(actor.actor)
+on_next!(actor::TapActor, data) = begin actor.tapFn(data); next!(actor.actor, data) end
+on_error!(actor::TapActor, err) = error!(actor.actor, err)
+on_complete!(actor::TapActor)   = complete!(actor.actor)
 
 Base.show(io::IO, ::TapOperator)                = print(io, "TapOperator()")
 Base.show(io::IO, ::TapSubscribable{L}) where L = print(io, "TapSubscribable($L)")

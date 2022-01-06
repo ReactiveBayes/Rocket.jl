@@ -41,7 +41,7 @@ function on_subscribe!(source::SafeSubscribable, actor::A) where A
         return subscription
     catch exception
         dispose!(safeactor)
-        on_error!(safeactor.actor, exception)
+        error!(safeactor.actor, exception)
         return noopSubscription
     end
 end
@@ -55,10 +55,10 @@ setsubscription!(actor::SafeActor, value) = actor.subscription = value
 function on_next!(actor::SafeActor, data) where L
     if !isfailed(actor)
         try
-            on_next!(actor.actor, data)
+            next!(actor.actor, data)
         catch exception
             dispose!(actor)
-            on_error!(actor.actor, exception)
+            error!(actor.actor, exception)
         end
     end
 end
@@ -66,10 +66,10 @@ end
 function on_error!(actor::SafeActor, err)
     if !isfailed(actor)
         try
-            on_error!(actor.actor, err)
+            error!(actor.actor, err)
         catch exception
             dispose!(actor)
-            on_error!(actor.actor, exception)
+            error!(actor.actor, exception)
         end
     end
 end
@@ -77,10 +77,10 @@ end
 function on_complete!(actor::SafeActor)
     if !isfailed(actor)
         try
-            on_complete!(actor.actor)
+            complete!(actor.actor)
         catch exception
             dispose!(actor)
-            on_error!(actor.actor, exception)
+            error!(actor.actor, exception)
         end
     end
 end

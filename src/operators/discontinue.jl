@@ -68,7 +68,7 @@ setcompletepropagated!(actor::DiscontinueActor, value::Bool) = actor.iscompletep
 function on_next!(actor::DiscontinueActor, data)
     if !isnextpropagated(actor)
         setnextpropagated!(actor, true)
-        on_next!(actor.actor, data)
+        next!(actor.actor, data)
         setnextpropagated!(actor, false)
     end
 end
@@ -76,7 +76,7 @@ end
 function on_error!(actor::DiscontinueActor, err)
     if !iserrorpropagated(actor)
         seterrorpropagated!(actor, true)
-        on_error!(actor.actor, err)
+        error!(actor.actor, err)
         seterrorpropagated!(actor, false)
     end
 end
@@ -84,7 +84,7 @@ end
 function on_complete!(actor::DiscontinueActor)
     if !iscompletepropagated(actor)
         setcompletepropagated!(actor, true)
-        on_complete!(actor.actor)
+        complete!(actor.actor)
         setcompletepropagated!(actor, false)
     end
 end

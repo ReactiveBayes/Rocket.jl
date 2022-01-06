@@ -91,14 +91,14 @@ function next_received!(wrapper::CollectLatestObservableWrapper, data, index::Ca
     @inbounds wrapper.ustatus[index] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
         unsafe_copyto!(wrapper.vstatus, 1, wrapper.cstatus, 1, length(wrapper.vstatus))
-        on_next!(wrapper.actor, wrapper.mapping(wrapper.storage))
+        next!(wrapper.actor, wrapper.mapping(wrapper.storage))
     end
 end
 
 function error_received!(wrapper::CollectLatestObservableWrapper, err, index::CartesianIndex)
     if !(@inbounds wrapper.cstatus[index])
         dispose(wrapper)
-        on_error!(wrapper.actor, err)
+        error!(wrapper.actor, err)
     end
 end
 
@@ -110,7 +110,7 @@ function complete_received!(wrapper::CollectLatestObservableWrapper, index::Cart
         end
         if all(wrapper.cstatus) || (@inbounds wrapper.vstatus[index] === false)
             dispose(wrapper)
-            on_complete!(wrapper.actor)
+            complete!(wrapper.actor)
         end
     end
 end

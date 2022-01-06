@@ -41,7 +41,7 @@ setcurrent!(subject::BehaviorSubject, value) = subject.current = value
 function on_next!(subject::BehaviorSubject{D}, data::D) where D
     if isactive(subject.subject)
         setcurrent!(subject, data)
-        on_next!(subject.subject, data)
+        next!(subject.subject, data)
     end
 end
 

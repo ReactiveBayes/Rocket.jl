@@ -73,7 +73,7 @@ end
 function on_next!(actor::TakeActor, data)
     if !actor.isdisposed
         if actor.count < actor.maxcount
-            on_next!(actor.actor, data)
+            next!(actor.actor, data)
             actor.count += 1
             if actor.count == actor.maxcount
                 on_complete!(actor)
@@ -84,14 +84,14 @@ end
 
 function on_error!(actor::TakeActor, err)
     if !actor.isdisposed
-        on_error!(actor.actor, err)
+        error!(actor.actor, err)
         dispose!(actor)
     end
 end
 
 function on_complete!(actor::TakeActor)
     if !actor.isdisposed
-        on_complete!(actor.actor)
+        complete!(actor.actor)
         dispose!(actor)
     end
 end
