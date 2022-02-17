@@ -21,6 +21,7 @@ doctest(Rocket)
     include("./actor/test_buffer_actor.jl")
     include("./actor/test_sync_actor.jl")
     include("./actor/test_function_actor.jl")
+    include("./actor/test_storage_actor.jl")
 
     include("./test_subscribable.jl")
     include("./observable/test_observable_function.jl")

@@ -30,6 +30,7 @@ include("actor/sync.jl")
 include("actor/keep.jl")
 include("actor/buffer.jl")
 include("actor/server.jl")
+include("actor/storage.jl")
 include("actor/test.jl")
 
 include("subjects/subject.jl")

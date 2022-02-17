@@ -48,6 +48,7 @@ makedocs(
                 "Void"          => "actors/types/void.md",
                 "Function"      => "actors/types/function.md",
                 "Server"        => "actors/types/server.md",
+                "Storage"       => "actors/types/storage.md",
             ],
             "Subscriptions" => [
                 "Void"  => "teardown/types/void.md",
