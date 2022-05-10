@@ -1,7 +1,7 @@
 export PostponeScheduler
 
 import DataStructures: Queue, enqueue!, dequeue!
-import Base: show, similar, wait
+import Base: show, similar, wait, length
 
 abstract type AbstractPostponedAction end
 
@@ -15,6 +15,8 @@ end
 
 Base.show(io::IO, ::PostponeScheduler) = print(io, "PostponeScheduler()")
 Base.similar(::PostponeScheduler)      = PostponeScheduler()
+
+Base.length(scheduler::PostponeScheduler) = length(scheduler.postponed_actions)
 
 ##
 
