@@ -96,4 +96,9 @@ function scheduled_next!(actor, value::Tuple{Symbol, D}, scheduler::PrioritySche
 end
 
 scheduled_error!(actor, err, ::PriorityScheduler)  = on_error!(actor, err)
-scheduled_complete!(actor, ::PriorityScheduler)    = on_complete!(actor)
+
+function scheduled_complete!(actor, scheduler::PriorityScheduler) 
+    # We would like to receive all postponed updates before sending completion event
+    release!(scheduler)
+    on_complete!(actor)
+end

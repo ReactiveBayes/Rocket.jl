@@ -118,6 +118,9 @@ Base.eltype(::Type{ <: ScheduledSubscribable{T} }) where T = T
 
 union_type(::AbstractVector{ <: AbstractSubscribable{T} }) where T = T
 
+getrecent(observables::Tuple) = getrecent.(observables)
+getrecent(::Nothing)          = nothing
+
 """
     subscribe!(subscribable::T, actor::S)   where { T, S }
     subscribe!(subscribable::T, factory::F) where { T, F <: AbstractActorFactory }
