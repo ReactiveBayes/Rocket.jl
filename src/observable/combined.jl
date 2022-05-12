@@ -13,7 +13,7 @@ Accept optinal update strategy object.
 - `sources`: input sources
 - `strategy`: optional update strategy for batching new values together
 
-Note: `combineLatest()` completes immediatelly if `sources` are empty.
+Note: `combineLatest()` completes immediately if `sources` are empty.
 
 # Examples
 ```jldoctest

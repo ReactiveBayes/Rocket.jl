@@ -12,7 +12,7 @@ import Base: show
 - `sources`: input sources
 - `strategy`: optional update strategy for batching new values together
 
-Note: `combineLatestUpdates()` completes immediatelly if `sources` are empty.
+Note: `combineLatestUpdates()` completes immediately if `sources` are empty.
 
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
 """

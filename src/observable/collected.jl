@@ -13,7 +13,7 @@ Reemits errors from inner observables. Completes when all inner observables comp
 - `sources`: input sources
 - `mappingFn`: optional mappingFn applied to an array of emited values, `copy` by default, should return a Vector
 
-Note: `collectLatest` completes immediatelly if `sources` are empty.
+Note: `collectLatest` completes immediately if `sources` are empty.
 
 # Optional arguments
 - `::Type{T}`: optional type of emmiting values of inner observables
