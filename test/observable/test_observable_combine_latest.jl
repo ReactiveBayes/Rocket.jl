@@ -109,6 +109,16 @@ include("../test_helpers.jl")
             values = @ts(e("err1")),
             source_type = Tuple{Float64, Float64}
         ),
+        (
+            source      = combineLatest((), PushNew()),
+            values      = @ts(c),
+            source_type = Tuple{}
+        ),
+        (
+            source      = combineLatest((), PushEach()),
+            values      = @ts(c),
+            source_type = Tuple{}
+        )
     ])
 
     somenumbers    = [ [ 1 for i in 1:50 ]..., [ 1.0 for i in 1:50 ]... ]

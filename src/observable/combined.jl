@@ -13,6 +13,8 @@ Accept optinal update strategy object.
 - `sources`: input sources
 - `strategy`: optional update strategy for batching new values together
 
+Note: `combineLatest()` completes immediately if `sources` are empty.
+
 # Examples
 ```jldoctest
 using Rocket
@@ -137,6 +139,11 @@ function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) w
     end
 
     return CombineLatestSubscription(wrapper)
+end
+
+function __combine_latest_unrolled_fill_subscriptions!(::Tuple{}, wrapper::CombineLatestActorWrapper)
+    # Fallback for empty `combineLatest`
+    complete!(wrapper.actor)
 end
 
 @unroll function __combine_latest_unrolled_fill_subscriptions!(sources, wrapper::W) where { W <: CombineLatestActorWrapper }

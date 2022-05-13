@@ -64,6 +64,16 @@ include("../test_helpers.jl")
             values = @ts(e("err1")),
             source_type = Tuple{ typeof(faulted(Float64, "err1")) , typeof(faulted(Float64, "err2")) }
         ),
+        (
+            source      = combineLatestUpdates((), PushNew()),
+            values      = @ts(c),
+            source_type = Tuple{}
+        ),
+        (
+            source      = combineLatestUpdates((), PushEach()),
+            values      = @ts(c),
+            source_type = Tuple{}
+        )
     ])
 
     @testset begin

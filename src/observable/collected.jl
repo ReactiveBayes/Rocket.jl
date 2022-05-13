@@ -13,6 +13,8 @@ Reemits errors from inner observables. Completes when all inner observables comp
 - `sources`: input sources
 - `mappingFn`: optional mappingFn applied to an array of emited values, `copy` by default, should return a Vector
 
+Note: `collectLatest` completes immediately if `sources` are empty.
+
 # Optional arguments
 - `::Type{T}`: optional type of emmiting values of inner observables
 - `::Type{R}`: optional return type after applying `mappingFn` to a vector of values
@@ -129,12 +131,16 @@ function on_subscribe!(observable::CollectLatestObservable{L}, actor::A) where {
     wrapper = CollectLatestObservableWrapper(L, actor, storage, observable.mappingFn)
     W       = typeof(wrapper)
 
-    for index in CartesianIndices(axes(sources))
-        @inbounds wrapper.subscriptions[index] = subscribe!(sources[index], CollectLatestObservableInnerActor{L, typeof(index), W}(index, wrapper))
-        if cstatus(wrapper, index) === true && vstatus(wrapper, index) === false
-            dispose(wrapper)
-            break
+    if length(sources) !== 0
+        for index in CartesianIndices(axes(sources))
+            @inbounds wrapper.subscriptions[index] = subscribe!(sources[index], CollectLatestObservableInnerActor{L, typeof(index), W}(index, wrapper))
+            if cstatus(wrapper, index) === true && vstatus(wrapper, index) === false
+                dispose(wrapper)
+                break
+            end
         end
+    else
+        complete!(actor)
     end
 
     if all(wrapper.cstatus)

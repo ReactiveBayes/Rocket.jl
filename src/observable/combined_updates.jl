@@ -12,6 +12,8 @@ import Base: show
 - `sources`: input sources
 - `strategy`: optional update strategy for batching new values together
 
+Note: `combineLatestUpdates()` completes immediately if `sources` are empty.
+
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`PushEach`](@ref), [`PushEachBut`](@ref), [`PushNew`](@ref), [`PushNewBut`](@ref), [`PushStrategy`](@ref)
 """
 function combineLatestUpdates end
@@ -101,6 +103,11 @@ function on_subscribe!(observable::CombineLatestUpdatesObservable{S, G}, actor::
     end
 
     return CombineLatestUpdatesSubscription(wrapper)
+end
+
+function __combine_latest_updates_unrolled_fill_subscriptions!(::Tuple{}, wrapper::CombineLatestUpdatesActorWrapper)
+    # Fallback for empty `combineLatest`
+    complete!(wrapper.actor)
 end
 
 @unroll function __combine_latest_updates_unrolled_fill_subscriptions!(sources, wrapper::W) where { W <: CombineLatestUpdatesActorWrapper }

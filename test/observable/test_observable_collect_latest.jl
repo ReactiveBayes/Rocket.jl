@@ -80,6 +80,11 @@ include("../test_helpers.jl")
             values = @ts([ [ 1 2.0; 3.0 4 ], c ]),
             source_type = Matrix{Union{Int, Float64}}
         ),
+        (
+            source      = collectLatest([]),
+            values      = @ts(c),
+            source_type = Vector{Union{}}
+        )
     ])
 
     somenumbers    = Union{Float64, Int}[ 1, 1, 1, 1, 1.0, 1.0, 1.0, 1.0 ]
