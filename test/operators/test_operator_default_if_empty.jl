@@ -10,6 +10,7 @@ include("../test_helpers.jl")
     println("Testing: operator default_if_empty()")
 
     run_proxyshowcheck("DefaultIfEmpty", default_if_empty(0))
+    run_proxyshowcheck("DefaultIfEmpty", default_if_empty(() -> 0))
 
     run_testset([
         (
@@ -34,7 +35,52 @@ include("../test_helpers.jl")
             source      = completed(Int) |> default_if_empty("string") |> default_if_empty(0) ,
             values      = @ts([ "string", c ]),
             source_type = Union{Int, String}
-        )
+        ),
+        (
+            source = from(1:5) |> default_if_empty(() -> 0),
+            values = @ts([ 1:5, c ]),
+            source_type = Int,
+        ),
+        (
+            source = completed(Int) |> default_if_empty(() -> 0),
+            values = @ts([ 0, c ]),
+            source_type = Int,
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(() -> 0) |> default_if_empty(() -> 1),
+            values      = @ts([ 0, c ]),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(() -> 1) |> default_if_empty(() -> 0) ,
+            values      = @ts([ 1, c ]),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(0) |> default_if_empty(() -> 1),
+            values      = @ts([ 0, c ]),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(1) |> default_if_empty(() -> 0) ,
+            values      = @ts([ 1, c ]),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(() -> 0) |> default_if_empty(1),
+            values      = @ts([ 0, c ]),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(() -> 1) |> default_if_empty(0) ,
+            values      = @ts([ 1, c ]),
+            source_type = Int
+        ),
+        (
+            source      = completed(Int) |> default_if_empty(() -> error("42")) |> safe(),
+            values      = @ts(e),
+            source_type = Int
+        ),
     ])
 
 end
