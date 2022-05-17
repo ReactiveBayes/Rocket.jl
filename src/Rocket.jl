@@ -21,7 +21,6 @@ include("schedulers/async.jl")
 include("schedulers/threads.jl")
 include("schedulers/pending.jl")
 include("schedulers/postponed.jl")
-include("schedulers/priority.jl")
 
 include("actor/function.jl")
 include("actor/lambda.jl")
@@ -130,6 +129,7 @@ include("operators/pairwise.jl")
 include("operators/limit_subscribers.jl")
 include("operators/substitute.jl")
 include("operators/override.jl")
+include("operators/prioritize.jl")
 
 include("extensions/observable/single.jl")
 

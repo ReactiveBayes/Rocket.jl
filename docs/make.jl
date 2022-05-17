@@ -133,6 +133,7 @@ makedocs(
                     "skip_complete"           => "operators/utility/skip_complete.md",
                     "discontinue"             => "operators/utility/discontinue.md",
                     "limit_subscribers"       => "operators/utility/limit_subscribers.md",
+                    "prioritize"              => "operators/utility/prioritize.md"
                 ]
             ],
             "Subjects" => [

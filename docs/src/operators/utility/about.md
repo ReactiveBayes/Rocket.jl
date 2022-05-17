@@ -18,6 +18,7 @@ There are operators for different purposes, and they may be categorized as: crea
 - [skip_complete](@ref operator_skip_complete)
 - [discontinue](@ref operator_discontinue)
 - [limit_subscribers](@ref operator_limit_subscribers)
+- [prioritize](@ref operator_prioritize)
 
 # See also
 
