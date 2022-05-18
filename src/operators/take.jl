@@ -68,8 +68,8 @@ end
 function on_next!(actor::TakeActor{L}, data::L) where L
     if !actor.isdisposed
         if actor.count < actor.maxcount
-            next!(actor.actor, data)
             actor.count += 1
+            next!(actor.actor, data)
             if actor.count == actor.maxcount
                 complete!(actor)
             end

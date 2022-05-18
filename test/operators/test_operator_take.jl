@@ -42,6 +42,23 @@ include("../test_helpers.jl")
         )
     ])
 
+    @testset "Infinite reaction" begin 
+        source = Subject(Int)
+        events = []
+
+        subscription = subscribe!(source |> take(3), lambda(
+            on_next     = (state) -> begin 
+                push!(events, state)
+                next!(source, state + 1)
+            end,
+            on_complete = () -> push!(events, "c")
+        ))
+
+        next!(source, 1)
+
+        @test events == [ 1, 2, 3, "c" ]
+    end
+
 end
 
 end
