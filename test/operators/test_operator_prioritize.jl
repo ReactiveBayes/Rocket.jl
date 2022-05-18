@@ -50,7 +50,9 @@ import Rocket: priorities, postponed, release!, ispriority, setpriority!
         @test events == [ 1, 2, "c1", 3, 4, "c2" ]
 
         setpriority!(handler, :a)
+        setpriority!(handler, :a)
         @test events == [ 1, 2, "c1", 3, 4, "c2" ]
+        setpriority!(handler, :b)
         setpriority!(handler, :b)
         @test events == [ 1, 2, "c1", 3, 4, "c2" ]
 
@@ -234,7 +236,9 @@ import Rocket: priorities, postponed, release!, ispriority, setpriority!
         next!(source2, 4)
 
         setpriority!(handler, :a)
+        setpriority!(handler, :a)
         @test events == [ 1, 2, "e2" ]
+        setpriority!(handler, :b)
         setpriority!(handler, :b)
         @test events == [ 1, 2, "e2" ]
         unsubscribe!(subscription2)
@@ -339,6 +343,73 @@ import Rocket: priorities, postponed, release!, ispriority, setpriority!
         next!(source3, 5)
 
         @test events == [ 1 ]
+        release!(handler)
+        @test events == [ 1, 2, 3, 4, 5 ]
+    end
+
+    @testset begin 
+        handler = PriorityHandler((:a, :b, :c, :d))
+
+        source1 = Subject(Int) 
+        source2 = Subject(Int)
+        source3 = Subject(Int)
+        source4 = Subject(Int)
+
+        events = []
+
+        subscription1 = subscribe!(source1 |> prioritize(handler, :a), (v) -> push!(events, v))
+        subscription2 = subscribe!(source2 |> prioritize(handler, :b), (v) -> push!(events, v))
+        subscription3 = subscribe!(source3 |> prioritize(handler, :c), (v) -> push!(events, v))
+        subscription4 = subscribe!(source4 |> prioritize(handler, :d), (v) -> push!(events, v))
+
+        @test events == [ ]
+        
+        next!(source1, 1)
+        next!(source2, 2)
+        next!(source2, 3)
+        next!(source3, 4)
+        next!(source4, 5)
+
+        @test events == [ 1 ]
+        setpriority!(handler, :b)
+        @test events == [ 1, 2, 3 ]
+        setpriority!(handler, :b)
+        @test events == [ 1, 2, 3 ]
+        setpriority!(handler, :a)
+        @test events == [ 1, 2, 3 ]
+        setpriority!(handler, :d)
+        @test events == [ 1, 2, 3, 5 ]
+        setpriority!(handler, :d)
+        @test events == [ 1, 2, 3, 5 ]
+        setpriority!(handler, :c)
+        @test events == [ 1, 2, 3, 5, 4 ]
+        setpriority!(handler, :c)
+        @test events == [ 1, 2, 3, 5, 4 ]
+    end
+
+    @testset begin 
+        handler = PriorityHandler((:a, :b, :c))
+
+        source1 = Subject(Int) 
+        source2 = Subject(Int)
+        source3 = Subject(Int)
+
+        events = []
+
+        subscription1 = subscribe!(source1 |> prioritize(handler, :a), (v) -> push!(events, v))
+        subscription2 = subscribe!(source2 |> prioritize(handler, :b), (v) -> push!(events, v))
+        subscription2 = subscribe!(source3 |> prioritize(handler, :c), (v) -> push!(events, v))
+
+        @test events == [ ]
+        
+        next!(source1, 1)
+        next!(source2, 2)
+        next!(source2, 3)
+        next!(source3, 4)
+        next!(source3, 5)
+
+        @test events == [ 1 ]
+        release!(handler)
         release!(handler)
         @test events == [ 1, 2, 3, 4, 5 ]
     end

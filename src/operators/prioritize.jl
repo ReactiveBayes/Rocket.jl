@@ -44,6 +44,7 @@ function setpriority!(handler::PriorityHandler, priority::Symbol)
     foreach(postponed(handler, priority)) do (actor, data)
         next!(actor, data)
     end
+    empty!(postponed(handler, priority))
 end
 
 """
@@ -63,11 +64,11 @@ function setnextpriority!(handler::PriorityHandler)
 end
 
 function release!(handler::PriorityHandler)
-    foreach(postponed(handler)) do actions 
-        foreach(actions) do (actor, data)
-            next!(actor, data)
-        end
+    cpriority = handler.cpriority
+    foreach(priorities(handler)) do priority
+        setpriority!(handler, priority)
     end
+    handler.cpriority = cpriority
 end
 
 function Base.push!(handler::PriorityHandler, label::Symbol, actor, data)
