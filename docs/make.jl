@@ -1,14 +1,8 @@
 using Documenter, Rocket
 
-const is_strict = @static if VERSION >= v"1.6"
-    [ :doctest, :eval_block, :example_block, :meta_block, :parse_error, :setup_block ]
-else
-    false 
-end
-
 makedocs(
     modules  = [ Rocket ],
-    strict   = is_strict,
+    strict   = [ :doctest, :eval_block, :example_block, :meta_block, :parse_error, :setup_block ],
     clean    = true,
     sitename = "Rocket.jl",
     pages    = [
