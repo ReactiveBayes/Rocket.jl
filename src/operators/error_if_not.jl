@@ -28,6 +28,7 @@ subscription = subscribe!(source, lambda(
     on_complete = () -> println("Completed")
 ));
 
+# output
 Next: 1
 Error: CustomError
 ```
