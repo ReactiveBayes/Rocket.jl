@@ -26,7 +26,8 @@ subscription = subscribe!(source, lambda(
     on_next  = (d) -> println("Next: ", d),
     on_error = (e) -> println("Error: ", e),
     on_complete = () -> println("Completed")
-));
+))
+;
 
 # output
 Next: 1
