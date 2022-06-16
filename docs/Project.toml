@@ -3,4 +3,4 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 Rocket = "df971d30-c9d6-4b37-b8ff-e965b2cb3a40"
 
 [compat]
-Documenter = "0.25"
+Documenter = "0.27"

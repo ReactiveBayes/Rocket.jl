@@ -4,6 +4,8 @@ There are operators for different purposes, and they may be categorized as: crea
 
 - [catch_error](@ref operator_catch_error)
 - [rerun](@ref operator_rerun)
+- [error_if](@ref operator_error_if)
+- [`error_if_not`](@ref operator_error_if_not)
 
 # See also
 
