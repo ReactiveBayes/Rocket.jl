@@ -2,6 +2,7 @@ using Documenter, Rocket
 
 makedocs(
     modules  = [ Rocket ],
+    strict   = [ :doctest, :eval_block, :example_block, :meta_block, :parse_error, :setup_block ],
     clean    = true,
     sitename = "Rocket.jl",
     pages    = [
@@ -101,7 +102,9 @@ makedocs(
                 "Error handling" => [
                     "About error handling operators" => "operators/errors/about.md",
                     "catch_error"                    => "operators/errors/catch_error.md",
-                    "rerun"                          => "operators/errors/rerun.md"
+                    "rerun"                          => "operators/errors/rerun.md",
+                    "error_if"                       => "operators/errors/error_if.md",
+                    "`error_if_not`"                 => "operators/errors/error_if_not.md",
                 ],
                 "Join" => [
                     "with_latest" => "operators/join/with_latest.md"
