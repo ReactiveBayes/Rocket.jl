@@ -19,6 +19,17 @@ using DataStructures
     end
 
     @testset begin
+        source = from(1:100)
+        actor  = CircularKeepActor{Int}(2)
+
+        subscribe!(source, actor)
+
+        @test actor.values == [ 99, 100 ]
+        @test getvalues(actor) == [ 99, 100 ]
+        @test length(getvalues(actor)) == 2
+    end
+
+    @testset begin
         source = from([ 1, 2, 3 ])
         actor  = CircularKeepActor{Int}(2)
 
