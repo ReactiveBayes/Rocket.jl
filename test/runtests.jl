@@ -26,6 +26,7 @@ doctest(Rocket)
 
     include("./test_subscribable.jl")
     include("./observable/test_observable_function.jl")
+    include("./observable/test_observable_labeled.jl")
     include("./observable/test_observable_single.jl")
     include("./observable/test_observable_array.jl")
     include("./observable/test_observable_iterable.jl")
