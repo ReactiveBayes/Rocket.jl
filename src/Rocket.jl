@@ -46,6 +46,7 @@ include("subjects/recent.jl")
 @generate_subscribe! RecentSubjectInstance AbstractSubject
 
 include("observable/generate.jl")
+include("observable/labeled.jl")
 include("observable/single.jl")
 include("observable/array.jl")
 include("observable/iterable.jl")
