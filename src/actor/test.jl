@@ -419,7 +419,13 @@ macro ts(expr)
         elseif arg.head === :vect
             push!(values, collect(arg.args))
         elseif arg.head === :tuple
-            push!(values, (arg.args..., ))
+            if all(expr -> expr isa Expr && expr.head == :(=), arg.args) # NamedTuple case 
+                names = map(d -> d.args[1], arg.args)
+                items = map(d -> d.args[2], arg.args)
+                push!(values, NamedTuple{tuple(names...)}(items))
+            else # regular tuple case
+                push!(values, (arg.args..., ))
+            end
         elseif arg.head === :call
             if arg.args[1] === :e
                 push!(tests, TestActorErrorTest(length(arg.args) === 2 ? arg.args[2] : nothing))
