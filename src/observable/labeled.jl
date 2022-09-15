@@ -33,6 +33,13 @@ See also: [`ScheduledSubscribable`](@ref), [`subscribe!`](@ref), [`from`](@ref)
 labeled(::Val{Names}, stream::S) where { Names, S }               = labeled(eltype(S), Val(Names), stream)
 labeled(::Type{D}, ::Val{Names}, stream::S) where { D, Names, S } = LabeledObservable{NamedTuple{Names, D}, S}(stream)
 
+"""
+    LabeledObservable{D, S}()
+
+An Observable that emits `NamesTuple` items from a source `Observable` that emits `Tuple` items.
+
+See also: [`Subscribable`](@ref), [`labeled`](@ref)
+"""
 @subscribable struct LabeledObservable{D, S} <: Subscribable{D}
     stream :: S
 end
