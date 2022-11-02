@@ -93,6 +93,8 @@ end
     strategy :: G
 end
 
+getrecent(observable::CombineLatestUpdatesObservable) = getrecent(observable.sources)
+
 function on_subscribe!(observable::CombineLatestUpdatesObservable{S, G}, actor::A) where { S, G, A }
     wrapper = CombineLatestUpdatesActorWrapper(observable.sources, actor, observable.strategy)
 

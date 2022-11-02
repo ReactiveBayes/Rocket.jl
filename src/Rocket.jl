@@ -136,4 +136,8 @@ include("operators/override.jl")
 
 include("extensions/observable/single.jl")
 
+# Extensions to the `getrecent` method
+getrecent(observables::Tuple) = Rocket.getrecent.(observables)
+getrecent(::Nothing)          = nothing
+
 end # module
