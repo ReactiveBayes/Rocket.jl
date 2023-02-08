@@ -144,11 +144,11 @@ subscribe!(squared_int_values, lambda(
 
 ## Rocket.jl is fast
 
-Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.7 (see `versioninfo` below). 
+Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.8.5 (see `versioninfo` below). 
 
 We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo).
 
-Rocket.jl outperforms Reactive.jl and Signals.jl significantly in terms of execution times and memory consumption both in synchronous and asynchronous modes. Observables.jl has similar performance in synchronous mode, but allocates more. 
+Rocket.jl outperforms Observables.jl, Reactive.jl and Signals.jl significantly in terms of execution times and memory consumption both in synchronous and asynchronous modes. 
 
 ![Rocket.jl vs Reactive.jl](demo/pics/reactive-rocket.svg?raw=true&sanitize=true "Rocket.jl vs Reactive.jl")
 
@@ -161,12 +161,24 @@ versioninfo()
 ```
 
 ```
-Julia Version 1.7.3
-Commit 742b9abb4d (2022-05-06 12:58 UTC)
+Julia Version 1.8.5
+Commit 17cfb8e65ea (2023-01-08 06:45 UTC)
 Platform Info:
-  OS: macOS (x86_64-apple-darwin21.4.0)
-  CPU: Intel(R) Core(TM) i7-8850H CPU @ 2.60GHz
+  OS: macOS (arm64-apple-darwin21.5.0)
+  CPU: 10 × Apple M2 Pro
   WORD_SIZE: 64
   LIBM: libopenlibm
-  LLVM: libLLVM-12.0.1 (ORCJIT, skylake)
+  LLVM: libLLVM-13.0.1 (ORCJIT, apple-m1)
+  Threads: 1 on 6 virtual cores
+```
+
+```julia
+] status
+```
+
+```
+  [510215fc] Observables v0.5.4
+  [a223df75] Reactive v0.8.3
+  [df971d30] Rocket v1.6.0 
+  [6303bc30] Signals v1.2.0
 ```
