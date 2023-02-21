@@ -7,7 +7,7 @@ import Base: show
     combineLatest(sources::S, strategy::G = PushEach()) where { S <: Tuple, U }
 
 Combines multiple Observables to create an Observable whose values are calculated from the latest values of each of its input Observables.
-Accept optinal update strategy object.
+Accept optimal update strategy object.
 
 # Arguments
 - `sources`: input sources
@@ -128,6 +128,8 @@ end
     sources  :: S
     strategy :: G
 end
+
+getrecent(observable::CombineLatestObservable) = getrecent(observable.sources)
 
 function on_subscribe!(observable::CombineLatestObservable{T, S, G}, actor::A) where { T, S, G, A }
     wrapper = CombineLatestActorWrapper(T, actor, observable.strategy)
