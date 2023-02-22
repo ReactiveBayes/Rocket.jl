@@ -57,6 +57,8 @@ struct MapActor{L, A, F} <: Actor{L}
     actor      :: A
 end
 
+getrecent(source, proxy::MapProxy) = proxy.mappingFn(getrecent(source))
+
 on_next!(actor::MapActor{L},  data::L) where L = next!(actor.actor, actor.mappingFn(data))
 on_error!(actor::MapActor, err)                = error!(actor.actor, err)
 on_complete!(actor::MapActor)                  = complete!(actor.actor)
