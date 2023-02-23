@@ -63,6 +63,8 @@ source_proxy!(::Type{L}, proxy::RefCountProxy, source::S) where { L, S } = RefCo
     RefCountSource{L, S}(csource::S) where { L, S } = new(csource, 0, voidTeardown)
 end
 
+getrecent(source::RefCountSource, ::RefCountProxy) = getrecent(source.csource)
+
 function on_subscribe!(refcount_source::RefCountSource, actor)
     subscription = subscribe!(refcount_source.csource, actor)
     refcount_source.refcount += 1

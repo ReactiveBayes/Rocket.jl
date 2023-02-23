@@ -94,6 +94,11 @@ See also: [`proxy`](@ref)
     proxy          :: P
 end
 
+# TODO Rocket 2.0: Some operators implement custom `getrecent` logic, but in general it is not possible 
+# The `getrecent` is a hidden feature, that is not documented neither exported. It is not a part of the public API and may (read will) change 
+# in the future. We should consider `getrecent` seriously and we depend on this functionlity currently in the `ReactiveMP.jl` package
+getrecent(proxy::ProxyObservable) = getrecent(proxy.proxied_source, proxy.proxy)
+
 function on_subscribe!(observable::ProxyObservable{L}, actor) where L
     return subscribe!(observable.proxied_source, call_actor_proxy!(L, observable.proxy, actor))
 end

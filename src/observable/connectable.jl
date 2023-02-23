@@ -16,6 +16,8 @@ See also: [`connect`](@ref), [`Subscribable`](@ref)
     source  :: S
 end
 
+getrecent(source::ConnectableObservable) = getrecent(source.subject)
+
 function on_subscribe!(observable::ConnectableObservable, actor)
     return subscribe!(observable.subject, actor)
 end
