@@ -10,4 +10,66 @@ subscribe!(source |&gt; map(Int, (d) -&gt; d ^ 2), logger())
 [LogActor] Data: 1
 [LogActor] Data: 4
 [LogActor] Data: 9
-[LogActor] Completed</code></pre><p>See also: <a href="../../../api/operators/#Rocket.AbstractOperator"><code>AbstractOperator</code></a>, <a href="../../../api/operators/#Rocket.RightTypedOperator"><code>RightTypedOperator</code></a>, <a href="../../../observables/types/proxy/#Rocket.ProxyObservable"><code>ProxyObservable</code></a>, <a href="../../../actors/types/logger/#Rocket.logger"><code>logger</code></a></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/biaslab/Rocket.jl/blob/b3454652345443b460159d77e5584942ec5be558/src/operators/map.jl#L6-L38">source</a></section></article><h2 id="Description"><a class="docs-heading-anchor" href="#Description">Description</a><a id="Description-1"></a><a class="docs-heading-anchor-permalink" href="#Description" title="Permalink"></a></h2><p>Like <code>map(f, array)</code>, the <code>map</code> operator applies a function to each source value.</p><h2 id="See-also"><a class="docs-heading-anchor" href="#See-also">See also</a><a id="See-also-1"></a><a class="docs-heading-anchor-permalink" href="#See-also" title="Permalink"></a></h2><p><a href="../../about/#what_are_operators">Operators</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../about/">« About transformation operators</a><a class="docs-footer-nextpage" href="../map_to/">map_to »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 16 August 2023 09:55">Wednesday 16 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+[LogActor] Completed</code></pre><p>See also: <a href="../../../api/operators/#Rocket.AbstractOperator"><code>AbstractOperator</code></a>, <a href="../../../api/operators/#Rocket.RightTypedOperator"><code>RightTypedOperator</code></a>, <a href="../../../observables/types/proxy/#Rocket.ProxyObservable"><code>ProxyObservable</code></a>, <a href="../../../actors/types/logger/#Rocket.logger"><code>logger</code></a></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/biaslab/Rocket.jl/blob/7ce37ac82842400aa60021abda1b503142978d88/src/operators/map.jl#L6-L38">source</a></section></article><h2 id="Description"><a class="docs-heading-anchor" href="#Description">Description</a><a id="Description-1"></a><a class="docs-heading-anchor-permalink" href="#Description" title="Permalink"></a></h2><p>The map operator, similar to <code>map(f, array)</code>, applies a function to each value from the source. It&#39;s important to note that the function <code>f</code> is expected to be pure and without any side effects. The <code>map</code> operator is designed to create a copy of the original observable for each new subscriber. It independently executes the <code>f</code> function for each subscriber and doesn&#39;t share the resulting value. This might be inconvenient when <code>f</code> involves complex calculations or side effects.</p><pre><code class="language-julia hljs">using Rocket
+
+function f(x)
+    println(&quot;Function `f` called&quot;) # Assume heavy calculations or side-effects
+    return x + 1
+end
+
+subject = Subject(Int)
+
+mapped = subject |&gt; map(Int, f)
+
+subscription1 = subscribe!(mapped, logger())
+subscription2 = subscribe!(mapped, logger())
+
+next!(subject, 1)
+
+unsubscribe!(subscription1)
+unsubscribe!(subscription2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Function `f` called
+[LogActor] Data: 2
+Function `f` called
+[LogActor] Data: 2</code></pre><p>In the example, you&#39;ll observe that &quot;Function <code>f</code> called&quot; is displayed twice. This happens because each subscriber receives their individual, distinct version of the modified data. To alter this behavior, one can utilize the <code>share()</code> operator. This operator creates only a single copy of the modified observable and shares the computed results.</p><pre><code class="language-julia hljs">mapped_and_shared = mapped |&gt; share()
+
+subscription1 = subscribe!(mapped_and_shared, logger())
+subscription2 = subscribe!(mapped_and_shared, logger())
+
+next!(subject, 1)
+
+unsubscribe!(subscription1)
+unsubscribe!(subscription2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Function `f` called
+[LogActor] Data: 2
+[LogActor] Data: 2</code></pre><p>In this example, &quot;Function <code>f</code> called&quot; appears only once, and the computed value is shared between the two subscribers. Note, however, that this behaviour might be confusing in cases where the first subscribers completes the observable till its completion stage. For example:</p><pre><code class="language-julia hljs">mapped_and_shared = from([ 0, 1, 2 ]) |&gt; map(Int, f) |&gt; share()
+
+subscription1 = subscribe!(mapped_and_shared, logger())
+subscription2 = subscribe!(mapped_and_shared, logger())
+
+unsubscribe!(subscription1)
+unsubscribe!(subscription2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Function `f` called
+[LogActor] Data: 1
+Function `f` called
+[LogActor] Data: 2
+Function `f` called
+[LogActor] Data: 3
+[LogActor] Completed
+[LogActor] Completed</code></pre><p>In this scenario, the second subscriber doesn&#39;t receive any values because the first subscriber exhausts the single shared observable. Once the shared observable is used up, it doesn&#39;t produce any further values. This doesn&#39;t occur without the <code>share()</code> operator.</p><pre><code class="language-julia hljs">mapped = from([ 0, 1, 2 ]) |&gt; map(Int, f)
+
+subscription1 = subscribe!(mapped, logger())
+subscription2 = subscribe!(mapped, logger())
+
+unsubscribe!(subscription1)
+unsubscribe!(subscription2)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Function `f` called
+[LogActor] Data: 1
+Function `f` called
+[LogActor] Data: 2
+Function `f` called
+[LogActor] Data: 3
+[LogActor] Completed
+Function `f` called
+[LogActor] Data: 1
+Function `f` called
+[LogActor] Data: 2
+Function `f` called
+[LogActor] Data: 3
+[LogActor] Completed</code></pre><h2 id="See-also"><a class="docs-heading-anchor" href="#See-also">See also</a><a id="See-also-1"></a><a class="docs-heading-anchor-permalink" href="#See-also" title="Permalink"></a></h2><p><a href="../../about/#what_are_operators">Operators</a></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../about/">« About transformation operators</a><a class="docs-footer-nextpage" href="../map_to/">map_to »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 28 August 2023 09:27">Monday 28 August 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
