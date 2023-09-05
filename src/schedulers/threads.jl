@@ -38,10 +38,13 @@ macro schedule_onthread(expr)
     output = quote
         @static if VERSION >= v"1.3"
             if !isunsubscribed(instance)
-                Threads.@spawn begin
+                t = Threads.@spawn begin
                     if !isunsubscribed(instance)
                         $(expr)
                     end
+                end
+                @static if VERSION >= v"1.7"
+                    Base.errormonitor(t)
                 end
             end
         else
@@ -87,7 +90,7 @@ end
 function scheduled_subscription!(source, actor, instance::ThreadsSchedulerInstance)
     @static if VERSION >= v"1.3"
         subscription = ThreadsSchedulerSubscription(instance)
-        Threads.@spawn begin
+        t = Threads.@spawn begin
             if !isunsubscribed(instance)
                 tmp = on_subscribe!(source, actor, instance)
                 if !isunsubscribed(instance)
@@ -96,6 +99,9 @@ function scheduled_subscription!(source, actor, instance::ThreadsSchedulerInstan
                     unsubscribe!(tmp)
                 end
             end
+        end
+        @static if VERSION >= v"1.7"
+            Base.errormonitor(t)
         end
         return subscription
     else
