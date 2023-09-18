@@ -2,7 +2,7 @@ using Documenter, Rocket
 
 makedocs(
     modules  = [ Rocket ],
-    strict   = [ :doctest, :eval_block, :example_block, :meta_block, :parse_error, :setup_block ],
+    warnonly = Documenter.except(:doctest, :eval_block, :example_block, :meta_block, :parse_error, :setup_block),
     clean    = true,
     sitename = "Rocket.jl",
     pages    = [

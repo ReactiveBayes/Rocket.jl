@@ -5,14 +5,14 @@ import Base: show
 """
     FunctionObservable{D}(f::F)
 
-    FunctionObservable wraps a callback `f`, which is called when the Observable is initially subscribed to.
-    This function is given an Actor, to which new values can be nexted (with `next!(actor, data)`),
-    or an `error!` method can be called to raise an error, or `complete!` can be called to notify of a successful completion.
+FunctionObservable wraps a callback `f`, which is called when the Observable is initially subscribed to.
+This function is given an Actor, to which new values can be nexted (with `next!(actor, data)`),
+or an `error!` method can be called to raise an error, or `complete!` can be called to notify of a successful completion.
 
-    # Arguments
-    - `f::F`: function to be invoked on subscription
+# Arguments
+- `f::F`: function to be invoked on subscription
 
-    See also: [`Subscribable`](@ref), [`make`](@ref)
+See also: [`Subscribable`](@ref), [`make`](@ref)
 """
 @subscribable struct FunctionObservable{D, F} <: Subscribable{D}
     f :: F
