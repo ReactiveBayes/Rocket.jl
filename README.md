@@ -144,7 +144,7 @@ subscribe!(squared_int_values, lambda(
 
 ## Rocket.jl is fast
 
-Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.8.5 (see `versioninfo` below). 
+Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.9.3 (see `versioninfo` below). 
 
 We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo).
 
@@ -161,15 +161,19 @@ versioninfo()
 ```
 
 ```
-Julia Version 1.8.5
-Commit 17cfb8e65ea (2023-01-08 06:45 UTC)
+Julia Version 1.9.3
+Commit bed2cd540a1 (2023-08-24 14:43 UTC)
+Build Info:
+  Official https://julialang.org/ release
 Platform Info:
-  OS: macOS (arm64-apple-darwin21.5.0)
+  OS: macOS (arm64-apple-darwin22.4.0)
   CPU: 10 × Apple M2 Pro
   WORD_SIZE: 64
   LIBM: libopenlibm
-  LLVM: libLLVM-13.0.1 (ORCJIT, apple-m1)
+  LLVM: libLLVM-14.0.6 (ORCJIT, apple-m1)
   Threads: 1 on 6 virtual cores
+Environment:
+  JULIA_NUM_THREADS = 
 ```
 
 ```julia
@@ -177,8 +181,9 @@ Platform Info:
 ```
 
 ```
+  [6e4b80f9] BenchmarkTools v1.3.2
   [510215fc] Observables v0.5.4
   [a223df75] Reactive v0.8.3
-  [df971d30] Rocket v1.6.0 
+  [df971d30] Rocket v1.7.2
   [6303bc30] Signals v1.2.0
 ```
