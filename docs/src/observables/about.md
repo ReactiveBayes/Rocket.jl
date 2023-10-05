@@ -2,7 +2,7 @@
 
 Observables are lazy Push collections of multiple values. They fill the missing spot in the following table:
 
- Type | Single   | Mutliple   |
+ Type | Single   | Multiple   |
  :--- | :------- | :--------- |
  Pull | Function | Iterator   |
  Push | Promise  | __Observable__ |
