@@ -187,3 +187,7 @@ Environment:
   [df971d30] Rocket v1.7.2
   [6303bc30] Signals v1.2.0
 ```
+
+# License
+
+[MIT License](LICENSE) Copyright (c) 2021-2023 BIASlab
