@@ -1,6 +1,6 @@
 # [Operators](@id section_operators)
 
-Even though the Observable is the foundation, reactive extensions is mostly useful because of its __operators__. Operators are the essential pieces that allow complex asynchronous code to be easily composed in a declarative manner.
+Even though the Observable is the foundation, reactive extensions are mostly useful because of their __operators__. Operators are the essential pieces that allow complex asynchronous code to be easily composed in a declarative manner.
 
 ## [What are operators?](@id what_are_operators)
 

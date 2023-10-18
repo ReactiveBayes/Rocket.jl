@@ -79,7 +79,7 @@ subscribe!(source, MyCustomActor());
 ## Lambda actor
 
 For debugging purposes it may be convenient to work with a [`LambdaActor`](@ref). This provides an interface that defines callbacks for "next", "error" and "complete" events.
-But this generic actor does not allow to dispatch on type of the event.
+But this generic actor does not allow to dispatch on the type of the event.
 
 ```julia
 using Rocket
