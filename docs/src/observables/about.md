@@ -163,7 +163,7 @@ This example shows how subscribe calls are not shared among multiple Actors of t
     Subscribing to an Observable is like calling a function, providing callbacks where the data will be delivered to.
 
 
-`subscribe!` function also supports multiple subscriptions at once. If the input argument to the `subscribe!` function is a tuple or a vector, it will first check that all of the arguments are valid source objects and actors and if its true will subscribe from each of them individually.
+The `subscribe!` function also supports multiple subscriptions at once. If the input argument to the `subscribe!` function is a tuple or a vector, it will first check that all of the arguments are valid source objects and actors and if its true will subscribe from each of them individually.
 
 ```julia
 
