@@ -1,6 +1,6 @@
 # [About subjects](@id section_subjects)
 
-An Rocket.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
+A Rocket.jl Subject is a special type of Observable that allows values to be multicasted to many Actors. While plain Observables are unicast (each subscribed Actor owns an independent execution of the Observable), Subjects are multicast.
 
 !!! note
     A Subject is like an Observable, but can multicast to many Actors. Subjects are like event emitters: they maintain a registry of many listeners.
@@ -8,7 +8,7 @@ An Rocket.jl Subject is a special type of Observable that allows values to be mu
 
 Every Subject is an Observable. Given a Subject, you can subscribe to it, providing an Actor, which will start receiving values normally. From the perspective of the Actor, it cannot tell whether the Observable execution is coming from a plain unicast Observable or a Subject.
 
-Internally to the Subject, subscribe does not invoke a new execution that delivers values. Instead, it simply registers the given Actor in a list of Actors.
+Internally to the Subject, `subscribe!` does not invoke a new execution that delivers values. Instead, it simply registers the given Actor in a list of Actors.
 
 Every Subject is an Actor itself. It is an object with the methods `next!`, `error!`, and `complete!`. Call `next!(subject, theValue)` to feed a new value to the Subject, and it will be multicasted to the Actors that listen to the Subject.
 
@@ -69,7 +69,7 @@ Here, we essentially convert a unicast Observable execution to multicast, throug
 
 ## Schedulers
 
-Subject (and some other observables) uses scheduler objects to schedule message delivery to their listeners.
+A Subject (and some other observables) uses scheduler objects to schedule message delivery to their listeners.
 
 ## Synchronous scheduler
 
