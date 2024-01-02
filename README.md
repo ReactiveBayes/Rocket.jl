@@ -190,4 +190,4 @@ Environment:
 
 # License
 
-[MIT License](LICENSE) Copyright (c) 2021-2023 BIASlab
+[MIT License](LICENSE) Copyright (c) 2021-2024 BIASlab
