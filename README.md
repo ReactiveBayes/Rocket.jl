@@ -5,16 +5,16 @@
 | [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][ci-img]][ci-url] [![][codecov-img]][codecov-url] |
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-dev-url]: https://biaslab.github.io/Rocket.jl/dev
+[docs-dev-url]: https://reactivebayes.github.io/Rocket.jl/dev
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://biaslab.github.io/Rocket.jl/stable
+[docs-stable-url]: https://reactivebayes.github.io/Rocket.jl/stable
 
-[ci-img]: https://github.com/biaslab/Rocket.jl/actions/workflows/ci.yml/badge.svg?branch=master
-[ci-url]: https://github.com/biaslab/Rocket.jl/actions
+[ci-img]: https://github.com/reactivebayes/Rocket.jl/actions/workflows/ci.yml/badge.svg?branch=master
+[ci-url]: https://github.com/reactivebayes/Rocket.jl/actions
 
-[codecov-img]: https://codecov.io/gh/biaslab/Rocket.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/biaslab/Rocket.jl?branch=master
+[codecov-img]: https://codecov.io/gh/reactivebayes/Rocket.jl/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/reactivebayes/Rocket.jl?branch=master
 
 Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
 
@@ -34,7 +34,7 @@ The essential concepts in Rocket.jl are:
 
 ## Quick start
 
-For a quick start and basic introduction take a look at the [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo) and [Quick Start notebook](https://github.com/biaslab/Rocket.jl/blob/master/demo/00_quick_start.ipynb).
+For a quick start and basic introduction take a look at the [demo folder](https://github.com/reactivebayes/Rocket.jl/tree/master/demo) and [Quick Start notebook](https://github.com/reactivebayes/Rocket.jl/blob/master/demo/00_quick_start.ipynb).
 
 ```Julia
 using Rocket, Compose, IJulia ; set_default_graphic_size(35cm, 2cm)
@@ -65,7 +65,7 @@ IJulia.clear_output(false);
 
 ## Documentation
 
-Full documentation is available at [BIASlab website](https://biaslab.github.io/Rocket.jl/stable).
+Full documentation is available at [reactivebayes website](https://reactivebayes.github.io/Rocket.jl/stable).
 
 It is also possible to build a documentation locally. Just execute
 
@@ -133,7 +133,7 @@ For debugging purposes you can use a general `LambdaActor` actor or just pass a 
 
 What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
 
-List of all available operators can be found in the documentation ([link](https://biaslab.github.io/Rocket.jl/stable/operators/all/)).
+List of all available operators can be found in the documentation ([link](https://reactivebayes.github.io/Rocket.jl/stable/operators/all/)).
 
 ```Julia
 squared_int_values = source_of_int_values |> map(Int, (d) -> d ^ 2)
@@ -146,7 +146,7 @@ subscribe!(squared_int_values, lambda(
 
 Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.9.3 (see `versioninfo` below). 
 
-We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/biaslab/Rocket.jl/tree/master/demo).
+We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/reactivebayes/Rocket.jl/tree/master/demo).
 
 Rocket.jl outperforms Observables.jl, Reactive.jl and Signals.jl significantly in terms of execution times and memory consumption both in synchronous and asynchronous modes. 
 
@@ -190,4 +190,4 @@ Environment:
 
 # License
 
-[MIT License](LICENSE) Copyright (c) 2021-2024 BIASlab
+[MIT License](LICENSE) Copyright (c) 2021-2024 BIASlab, 2024-present ReactiveBayes

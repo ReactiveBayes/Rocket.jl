@@ -166,6 +166,6 @@ makedocs(
 
 if get(ENV, "CI", nothing) == "true"
     deploydocs(
-        repo = "github.com/biaslab/Rocket.jl.git"
+        repo = "github.com/reactivebayes/Rocket.jl.git"
     )
 end

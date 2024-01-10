@@ -4,7 +4,7 @@ We welcome all possible contributors. This page details the some of the guidelin
 
 ## Reporting bugs
 
-We track bugs using [GitHub issues](https://github.com/biaslab/Rocket.jl/issues). We encourage you to write complete, specific, reproducible bug reports. Mention the versions of Julia and Rocket.jl for which you observe unexpected behavior. Please provide a concise description of the problem and complement it with code snippets, test cases, screenshots, tracebacks or any other information that you consider relevant. This will help us to replicate the problem and narrow the search space for solutions.
+We track bugs using [GitHub issues](https://github.com/reactivebayes/Rocket.jl/issues). We encourage you to write complete, specific, reproducible bug reports. Mention the versions of Julia and Rocket.jl for which you observe unexpected behavior. Please provide a concise description of the problem and complement it with code snippets, test cases, screenshots, tracebacks or any other information that you consider relevant. This will help us to replicate the problem and narrow the search space for solutions.
 
 ## Suggesting features
 
