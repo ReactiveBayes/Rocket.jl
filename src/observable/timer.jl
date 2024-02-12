@@ -12,7 +12,7 @@ Creation operator for the `TimerObservable`. Its like `interval`(@ref), but you 
 with a constant interval of time, period of your choosing between those emissions.
 The first emission happens after the specified `delay`.
 If `period` is not specified, the output Observable emits only one value, 0.
-Otherwise, it emits an infinite sequence.
+Otherwise, it emits an infinite sequence. The timer closes automatically when the unsubscription happens.
 
 # Arguments
 - `delay`: the initial delay time specified as an integer denoting milliseconds to wait before emitting the first value of 0.
@@ -29,7 +29,6 @@ subscription = subscribe!(source, logger())
 sleep(0.105)
 unsubscribe!(subscription)
 
-close(source)
 ;
 
 # output
