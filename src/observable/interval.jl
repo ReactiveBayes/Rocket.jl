@@ -41,4 +41,4 @@ close(source)
 
 See also: [`timer`](@ref), [`TimerObservable`](@ref), [`Subscribable`](@ref)
 """
-interval(period::Int) = timer(period, period)
+interval(period::Real) = timer(period, period)

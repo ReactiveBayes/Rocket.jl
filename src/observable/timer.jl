@@ -40,12 +40,12 @@ unsubscribe!(subscription)
 
 See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-function timer(delay::Int)
+function timer(delay::Real)
     @assert delay >= 0 "'delay' argument should be positive"
     return TimerObservable(delay, 0)
 end
 
-function timer(delay::Int, period::Int)
+function timer(delay::T, period::T) where {T<:Real}
     @assert delay >= 0 "'delay' argument should be positive"
     @assert period >= 0 "'period' argument should be positive"
     return TimerObservable(delay, period)
@@ -63,30 +63,30 @@ ever increasing numbers after each `period` of time thereafter.
 
 See also: [`timer`](@ref), [`Subscribable`](@ref)
 """
-struct TimerObservable <: Subscribable{Int} 
-    delay  :: Int
-    period :: Int
+struct TimerObservable <: Subscribable{Int}
+    delay::Float64
+    period::Float64
 end
 
-getdelay_ms(observable::TimerObservable)  = observable.delay
+getdelay_ms(observable::TimerObservable) = observable.delay
 getperiod_ms(observable::TimerObservable) = observable.period
 
-getdelay_sec(observable::TimerObservable)  = getdelay_ms(observable) / MILLISECONDS_IN_SECOND
+getdelay_sec(observable::TimerObservable) = getdelay_ms(observable) / MILLISECONDS_IN_SECOND
 getperiod_sec(observable::TimerObservable) = getperiod_ms(observable) / MILLISECONDS_IN_SECOND
 
 struct TimerSubscription <: Teardown
-    timer  :: Timer
+    timer::Timer
 end
 
-as_teardown(::Type{ <: TimerSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<:TimerSubscription}) = UnsubscribableTeardownLogic()
 
-mutable struct TimerActor{A} <: Actor{ Nothing }
-    actor   :: A
-    once    :: Bool
-    counter :: Int
+mutable struct TimerActor{A} <: Actor{Nothing}
+    actor::A
+    once::Bool
+    counter::Int
 end
 
-TimerActor(actor::A, once::Bool) where A = TimerActor{A}(actor, once, 0)
+TimerActor(actor::A, once::Bool) where {A} = TimerActor{A}(actor, once, 0)
 
 getcounter(actor::TimerActor) = actor.counter
 itcounter!(actor::TimerActor) = actor.counter = actor.counter + 1
@@ -97,21 +97,21 @@ function on_next!(actor::TimerActor, ::Nothing)
     next!(actor.actor, getcounter(actor))
     if isonce(actor)
         complete!(actor)
-    else 
+    else
         itcounter!(actor)
     end
 end
 
 on_error!(actor::TimerActor, err) = error!(actor.actor, err)
-on_complete!(actor::TimerActor)   = complete!(actor.actor)
+on_complete!(actor::TimerActor) = complete!(actor.actor)
 
 function on_subscribe!(observable::TimerObservable, actor)
 
-    tactor   = TimerActor(actor, getperiod_ms(observable) === 0)
+    tactor = TimerActor(actor, getperiod_ms(observable) == 0.0)
 
     callback = let tactor = tactor
-        (timer) -> begin 
-            try 
+        (timer) -> begin
+            try
                 next!(tactor, nothing)
             catch err
                 error!(tactor, err)
@@ -120,7 +120,7 @@ function on_subscribe!(observable::TimerObservable, actor)
         end
     end
 
-    timer = Timer(callback, getdelay_sec(observable), interval = getperiod_sec(observable))
+    timer = Timer(callback, getdelay_sec(observable), interval=getperiod_sec(observable))
 
     return TimerSubscription(timer)
 end
@@ -133,5 +133,5 @@ end
 
 Base.:(==)(t1::TimerObservable, t2::TimerObservable) = getdelay_ms(t1) === getdelay_ms(t1) && getperiod_ms(t1) === getperiod_ms(t2)
 
-Base.show(io::IO, observable::TimerObservable)   = print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
-Base.show(io::IO, ::TimerSubscription)           = print(io, "TimerSubscription()")
+Base.show(io::IO, observable::TimerObservable) = print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
+Base.show(io::IO, ::TimerSubscription) = print(io, "TimerSubscription()")
