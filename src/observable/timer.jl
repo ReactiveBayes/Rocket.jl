@@ -107,7 +107,7 @@ on_complete!(actor::TimerActor) = complete!(actor.actor)
 
 function on_subscribe!(observable::TimerObservable, actor)
 
-    tactor = TimerActor(actor, getperiod_ms(observable) == 0.0)
+    tactor = TimerActor(actor, iszero(getperiod_ms(observable)))
 
     callback = let tactor = tactor
         (timer) -> begin
