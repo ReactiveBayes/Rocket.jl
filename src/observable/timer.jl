@@ -42,7 +42,7 @@ See also: [`interval`](@ref), [`TimerObservable`](@ref), [`subscribe!`](@ref), [
 """
 function timer(delay::Real)
     @assert delay >= 0 "'delay' argument should be positive"
-    return TimerObservable(delay, 0)
+    return TimerObservable(delay, zero(delay))
 end
 
 function timer(delay::T, period::T) where {T<:Real}
@@ -63,9 +63,9 @@ ever increasing numbers after each `period` of time thereafter.
 
 See also: [`timer`](@ref), [`Subscribable`](@ref)
 """
-struct TimerObservable <: Subscribable{Int}
-    delay::Float64
-    period::Float64
+struct TimerObservable{T<:Real} <: Subscribable{Int}
+    delay::T
+    period::T
 end
 
 getdelay_ms(observable::TimerObservable) = observable.delay
@@ -131,7 +131,7 @@ function on_unsubscribe!(subscription::TimerSubscription)
 end
 
 
-Base.:(==)(t1::TimerObservable, t2::TimerObservable) = getdelay_ms(t1) === getdelay_ms(t1) && getperiod_ms(t1) === getperiod_ms(t2)
+Base.:(==)(t1::TimerObservable, t2::TimerObservable) = getdelay_ms(t1) == getdelay_ms(t1) && getperiod_ms(t1) == getperiod_ms(t2)
 
 Base.show(io::IO, observable::TimerObservable) = print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
 Base.show(io::IO, ::TimerSubscription) = print(io, "TimerSubscription()")
