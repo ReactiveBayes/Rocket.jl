@@ -346,6 +346,52 @@ include("../test_helpers.jl")
         unsubscribe!(subscription)
     end
 
+    @testset begin 
+        source1 = RecentSubject(Int)
+        source2 = RecentSubject(Int)
+
+        callbackCalled = []
+        callbackFn = (wrapper, value) -> begin 
+            # We reset the state of the `vstatus`
+            if isequal(value, "2")
+                Rocket.fill_vstatus!(wrapper, true)
+                push!(callbackCalled, true)
+            else
+                push!(callbackCalled, false)
+            end
+        end
+
+        combined = combineLatestUpdates((source1, source2), PushNew(), String, (sources) -> string(sum(Rocket.getrecent.(sources))), callbackFn)
+        values = []
+        subscription = subscribe!(combined, (value) -> push!(values, value))
+
+        @test values == []
+        @test callbackCalled == []
+        next!(source1, 0)
+        @test values == []
+        @test callbackCalled == []
+        next!(source2, 0)
+        @test values == ["0"]
+        @test callbackCalled == [false]
+
+        next!(source1, 1)
+        @test values == ["0"]
+        @test callbackCalled == [false]
+        next!(source2, 1)
+        @test values == ["0", "2"]
+        @test callbackCalled == [false, true]
+
+        next!(source1, 2)
+        @test values == ["0", "2", "3"] # this is hapenning because the callback should have been called
+        @test callbackCalled == [false, true, false]
+        next!(source1, 2)
+        @test values == ["0", "2", "3"]
+        @test callbackCalled == [false, true, false]
+        next!(source2, 2)
+        @test values == ["0", "2", "3", "4"]
+        @test callbackCalled == [false, true, false, false]
+    end
+
 end
 
 end

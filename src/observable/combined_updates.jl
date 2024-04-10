@@ -18,9 +18,9 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`PushEach`](@ref), [`Pu
 """
 function combineLatestUpdates end
 
-combineLatestUpdates(; strategy = PushEach())                                       = error("combineLatestUpdates operator expects at least one inner observable on input")
-combineLatestUpdates(args...; strategy = PushEach())                                = combineLatestUpdates(args, strategy)
-combineLatestUpdates(sources::S, strategy::G = PushEach()) where { S <: Tuple, G }  = CombineLatestUpdatesObservable{S, G}(sources, strategy)
+combineLatestUpdates(; strategy = PushEach()) = error("combineLatestUpdates operator expects at least one inner observable on input")
+combineLatestUpdates(args...; strategy = PushEach()) = combineLatestUpdates(args, strategy)
+combineLatestUpdates(sources::S, strategy::G = PushEach(), ::Type{R} = S, mappingFn::F = identity, callbackFn::C = nothing) where { S <: Tuple, R, G, F, C }  = CombineLatestUpdatesObservable{R, S, G, F, C}(sources, strategy, mappingFn, callbackFn)
 
 ##
 
@@ -37,32 +37,42 @@ on_complete!(actor::CombineLatestUpdatesInnerActor{L, W})      where { L, W } = 
 
 ##
 
-struct CombineLatestUpdatesActorWrapper{S, A, G, U}
+struct CombineLatestUpdatesActorWrapper{S, A, G, U, F, C}
     sources       :: S
     actor         :: A
     nsize         :: Int
     strategy      :: G # Push update strategy
     updates       :: U # Updates
     subscriptions :: Vector{Teardown}
+    mappingFn     :: F
+    callbackFn    :: C
 end
 
-function CombineLatestUpdatesActorWrapper(sources::S, actor::A, strategy::G) where { S, A, G } 
+function CombineLatestUpdatesActorWrapper(sources::S, actor::A, strategy::G, mappingFn::F, callbackFn::C) where { S, A, G, F, C } 
     updates       = getustorage(S)
     nsize         = length(sources)
     subscriptions = fill!(Vector{Teardown}(undef, nsize), voidTeardown)
-    return CombineLatestUpdatesActorWrapper(sources, actor, nsize, strategy, updates, subscriptions)
+    return CombineLatestUpdatesActorWrapper(sources, actor, nsize, strategy, updates, subscriptions, mappingFn, callbackFn)
 end
 
 push_update!(wrapper::CombineLatestUpdatesActorWrapper) = push_update!(wrapper.nsize, wrapper.updates, wrapper.strategy)
 
 dispose(wrapper::CombineLatestUpdatesActorWrapper) = begin fill_cstatus!(wrapper.updates, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
+fill_cstatus!(wrapper::CombineLatestUpdatesActorWrapper, value) = fill_cstatus!(wrapper.updates, value)
+fill_vstatus!(wrapper::CombineLatestUpdatesActorWrapper, value) = fill_vstatus!(wrapper.updates, value)
+fill_ustatus!(wrapper::CombineLatestUpdatesActorWrapper, value) = fill_ustatus!(wrapper.updates, value)
+
 function next_received!(wrapper::CombineLatestUpdatesActorWrapper, data, index::Int)
     vstatus!(wrapper.updates, index, true)
     ustatus!(wrapper.updates, index, true)
     if all_vstatus(wrapper.updates) && !all_cstatus(wrapper.updates)
         push_update!(wrapper)
-        next!(wrapper.actor, wrapper.sources)
+        value = wrapper.mappingFn(wrapper.sources)
+        next!(wrapper.actor, value)
+        if !isnothing(wrapper.callbackFn)
+            wrapper.callbackFn(wrapper, value)
+        end
     end
 end
 
@@ -88,15 +98,17 @@ end
 
 ##
 
-@subscribable struct CombineLatestUpdatesObservable{S, G} <: Subscribable{S}
-    sources  :: S
-    strategy :: G
+@subscribable struct CombineLatestUpdatesObservable{R, S, G, F, C} <: Subscribable{R}
+    sources    :: S
+    strategy   :: G
+    mappingFn  :: F
+    callbackFn :: C
 end
 
 getrecent(observable::CombineLatestUpdatesObservable) = getrecent(observable.sources)
 
-function on_subscribe!(observable::CombineLatestUpdatesObservable{S, G}, actor::A) where { S, G, A }
-    wrapper = CombineLatestUpdatesActorWrapper(observable.sources, actor, observable.strategy)
+function on_subscribe!(observable::CombineLatestUpdatesObservable, actor)
+    wrapper = CombineLatestUpdatesActorWrapper(observable.sources, actor, observable.strategy, observable.mappingFn, observable.callbackFn)
 
     __combine_latest_updates_unrolled_fill_subscriptions!(observable.sources, wrapper)
 
