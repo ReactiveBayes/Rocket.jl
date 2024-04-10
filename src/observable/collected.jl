@@ -3,8 +3,8 @@ export collectLatest
 import Base: show
 
 """
-    collectLatest(sources::S, mappingFn::F = copy) where { S, F }
-    collectLatest(::Type{T}, ::Type{R}, sources::S, mappingFn::F = copy)
+    collectLatest(sources::S, mappingFn::F = copy, callbackFn::C = nothing)
+    collectLatest(::Type{T}, ::Type{R}, sources::S, mappingFn::F = copy, callbackFn::C = nothing)
 
 Collects values from multible Observables and emits it in one single array every time each inner Observable has a new value.
 Reemits errors from inner observables. Completes when all inner observables completes.
@@ -12,6 +12,7 @@ Reemits errors from inner observables. Completes when all inner observables comp
 # Arguments
 - `sources`: input sources
 - `mappingFn`: optional mappingFn applied to an array of emited values, `copy` by default, should return a Vector
+- `callbackFn`: optional callback function, which is called right after `mappingFn` has been evaluated, accepts the state of the inner actor and the computed value, `nothing` by default
 
 Note: `collectLatest` completes immediately if `sources` are empty.
 
@@ -37,17 +38,17 @@ subscribe!(collected, logger())
 
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`combineLatest`](@ref)
 """
-function collectLatest(sources::S, mappingFn::F = copy) where { S, F } 
+function collectLatest(sources::S, mappingFn::F = copy, callbackFn::C = nothing) where { S, F, C } 
     T = union_type(sources)
     R = similar_typeof(sources, T)
-    return CollectLatestObservable{T, S, R, F}(sources, mappingFn)
+    return CollectLatestObservable{T, S, R, F, C}(sources, mappingFn, callbackFn)
 end
 
-collectLatest(::Type{T}, ::Type{R}, sources::S, mappingFn::F = copy) where { T, R, S, F } = CollectLatestObservable{T, S, R, F}(sources, mappingFn)
+collectLatest(::Type{T}, ::Type{R}, sources::S, mappingFn::F = copy, callbackFn::C = nothing) where { T, R, S, F, C } = CollectLatestObservable{T, S, R, F, C}(sources, mappingFn, callbackFn)
 
 ## 
 
-struct CollectLatestObservableWrapper{L, A, S, B, T, F}
+struct CollectLatestObservableWrapper{L, A, S, B, T, F, C}
     actor   :: A
     storage :: S
 
@@ -56,24 +57,29 @@ struct CollectLatestObservableWrapper{L, A, S, B, T, F}
     ustatus       :: B # Updates status
     subscriptions :: T
     mappingFn     :: F
+    callbackFn    :: C
 
-    CollectLatestObservableWrapper{L, A, S, B, T, F}(actor::A, storage::S, cstatus::B, vstatus::B, ustatus::B, subscriptions::T, mappingFn::F) where {L, A, S, B, T, F} = begin
-        return new(actor, storage, cstatus, vstatus, ustatus, subscriptions, mappingFn)
+    CollectLatestObservableWrapper{L, A, S, B, T, F, C}(actor::A, storage::S, cstatus::B, vstatus::B, ustatus::B, subscriptions::T, mappingFn::F, callbackFn::C) where {L, A, S, B, T, F, C} = begin
+        return new(actor, storage, cstatus, vstatus, ustatus, subscriptions, mappingFn, callbackFn)
     end
 end
 
-function CollectLatestObservableWrapper(::Type{L}, actor::A, storage::S, mappingFn::F) where { L, A, S, F } 
+function CollectLatestObservableWrapper(::Type{L}, actor::A, storage::S, mappingFn::F, callbackFn::C) where { L, A, S, F, C } 
     nsize         = size(storage)
     cstatus       = falses(nsize)
     vstatus       = falses(nsize)
     ustatus       = falses(nsize)
     subscriptions = fill!(similar(storage, Teardown), voidTeardown)
-    return CollectLatestObservableWrapper{L, A, S, typeof(cstatus), typeof(subscriptions), F}(actor, storage, cstatus, vstatus, ustatus, subscriptions, mappingFn)
+    return CollectLatestObservableWrapper{L, A, S, typeof(cstatus), typeof(subscriptions), F, C}(actor, storage, cstatus, vstatus, ustatus, subscriptions, mappingFn, callbackFn)
 end
 
 cstatus(wrapper::CollectLatestObservableWrapper, index::CartesianIndex) = @inbounds wrapper.cstatus[index]
 vstatus(wrapper::CollectLatestObservableWrapper, index::CartesianIndex) = @inbounds wrapper.vstatus[index]
 ustatus(wrapper::CollectLatestObservableWrapper, index::CartesianIndex) = @inbounds wrapper.ustatus[index]
+
+fill_cstatus!(wrapper::CollectLatestObservableWrapper, value) = fill!(wrapper.cstatus, value)
+fill_vstatus!(wrapper::CollectLatestObservableWrapper, value) = fill!(wrapper.vstatus, value)
+fill_ustatus!(wrapper::CollectLatestObservableWrapper, value) = fill!(wrapper.ustatus, value)
 
 dispose(wrapper::CollectLatestObservableWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
 
@@ -94,7 +100,11 @@ function next_received!(wrapper::CollectLatestObservableWrapper, data, index::Ca
     @inbounds wrapper.ustatus[index] = true
     if all(wrapper.vstatus) && !all(wrapper.cstatus)
         unsafe_copyto!(wrapper.vstatus, 1, wrapper.cstatus, 1, length(wrapper.vstatus))
-        next!(wrapper.actor, wrapper.mappingFn(wrapper.storage))
+        value = wrapper.mappingFn(wrapper.storage)
+        next!(wrapper.actor, value)
+        if !isnothing(wrapper.callbackFn)
+            wrapper.callbackFn(wrapper, value)
+        end
     end
 end
 
@@ -120,15 +130,16 @@ end
 
 ## 
 
-@subscribable struct CollectLatestObservable{T, S, R, F} <: Subscribable{R}
-    sources   :: S
-    mappingFn :: F
+@subscribable struct CollectLatestObservable{T, S, R, F, C} <: Subscribable{R}
+    sources    :: S
+    mappingFn  :: F
+    callbackFn :: C
 end
 
 function on_subscribe!(observable::CollectLatestObservable{L}, actor::A) where { L, A }
     sources = observable.sources
     storage = similar(sources, L)
-    wrapper = CollectLatestObservableWrapper(L, actor, storage, observable.mappingFn)
+    wrapper = CollectLatestObservableWrapper(L, actor, storage, observable.mappingFn, observable.callbackFn)
     W       = typeof(wrapper)
 
     if length(sources) !== 0
