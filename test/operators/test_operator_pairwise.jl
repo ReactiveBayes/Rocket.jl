@@ -18,6 +18,11 @@ include("../test_helpers.jl")
             source_type = Tuple{Int, Int}
         ),
         (
+            source      = from(1:5) |> async() |> pairwise(),
+            values      = @ts([ (1, 2), (2, 3), (3, 4), (4, 5), c ]),
+            source_type = Tuple{Int, Int}
+        ),
+        (
             source      = of(1) |> pairwise(),
             values      = @ts(c),
             source_type = Tuple{Int, Int}
@@ -68,6 +73,17 @@ include("../test_helpers.jl")
         )
     ])
 
+end
+
+@testset "Issue #43" begin 
+    subject = Subject(Int)
+    paired = subject |> pairwise()
+    values = []
+    subscribe!(paired, (v) -> push!(values, v))
+    @sync for i = 1:10
+        @async next!(subject, i)
+    end
+    @test values == [(1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9), (9, 10)]
 end
 
 end
