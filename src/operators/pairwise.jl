@@ -66,10 +66,11 @@ mutable struct PairwiseActor{L, A} <: Actor{L}
 end
 
 function on_next!(actor::PairwiseActor{L}, data::L) where L 
-    if actor.previous !== nothing
-        next!(actor.actor, (actor.previous, data))
-    end
+    previous = actor.previous
     actor.previous = data
+    if !isnothing(previous)
+        next!(actor.actor, (previous, data))
+    end
 end
 
 on_error!(actor::PairwiseActor, err) = error!(actor.actor, err)
