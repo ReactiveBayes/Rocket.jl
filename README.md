@@ -16,6 +16,8 @@
 [codecov-img]: https://codecov.io/gh/reactivebayes/Rocket.jl/branch/main/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/reactivebayes/Rocket.jl?branch=main
 
+![](docs/src/assets/logo-big.png)
+
 Welcome to Rocket.jl - a fast, powerful, and intuitive reactive programming package for Julia! Rocket.jl makes it easy to work with asynchronous data streams and handle real-time events with style.
 
 Built for both performance and developer happiness, Rocket.jl combines the elegance of [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), the power of [Actor model](https://en.wikipedia.org/wiki/Actor_model), and the expressiveness of [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).

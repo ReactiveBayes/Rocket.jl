@@ -2,6 +2,8 @@
 
 Welcome to Rocket.jl, a powerful reactive programming framework for Julia! 🚀
 
+![Rocket.jl Logo](assets/logo-big.png)
+
 Rocket.jl brings reactive programming paradigms to Julia, making it easy to work with asynchronous data streams, event-based programming, and reactive patterns. Whether you're building interactive applications, handling real-time data, or managing complex event-driven systems, Rocket.jl provides the tools you need.
 
 ## Why Rocket.jl?
