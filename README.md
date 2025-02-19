@@ -10,11 +10,11 @@
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://reactivebayes.github.io/Rocket.jl/stable
 
-[ci-img]: https://github.com/reactivebayes/Rocket.jl/actions/workflows/ci.yml/badge.svg?branch=master
+[ci-img]: https://github.com/reactivebayes/Rocket.jl/actions/workflows/ci.yml/badge.svg?branch=main
 [ci-url]: https://github.com/reactivebayes/Rocket.jl/actions
 
-[codecov-img]: https://codecov.io/gh/reactivebayes/Rocket.jl/branch/master/graph/badge.svg
-[codecov-url]: https://codecov.io/gh/reactivebayes/Rocket.jl?branch=master
+[codecov-img]: https://codecov.io/gh/reactivebayes/Rocket.jl/branch/main/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/reactivebayes/Rocket.jl?branch=main
 
 Welcome to Rocket.jl - a fast, powerful, and intuitive reactive programming package for Julia! Rocket.jl makes it easy to work with asynchronous data streams and handle real-time events with style.
 
