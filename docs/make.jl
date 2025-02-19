@@ -160,6 +160,7 @@ makedocs(
         "Utils"        => "utils.md"
     ],
     format   = Documenter.HTML(
+        analytics = "G-TB3PCZLJ0R",
         prettyurls = get(ENV, "CI", nothing) == "true"
     )
 )
