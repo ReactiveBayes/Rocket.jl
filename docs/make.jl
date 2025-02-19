@@ -164,6 +164,56 @@ makedocs(
     )
 )
 
+# Generate sitemap.xml and inject meta tags
+function post_process_docs()
+    base_url = "https://reactivebayes.github.io/Rocket.jl/stable"
+    keywords = "Rocket.jl, Julia, Reactive Programming, Observables, Operators, Subjects, Actors, Event Streams, Reactive Extensions, RxJava, ReactiveX"
+    
+    # Initialize sitemap content
+    sitemap_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+"""
+    
+    for (root, _, files) in walkdir("docs/build")
+        for file in files
+            if endswith(file, ".html")
+                path = joinpath(root, file)
+                content = read(path, String)
+                
+                # Generate relative URL for sitemap
+                rel_path = replace(path, "docs/build/" => "")
+                url = joinpath(base_url, rel_path)
+                
+                # Add URL to sitemap
+                sitemap_content *= """    <url>
+        <loc>$url</loc>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+"""
+                
+                # Insert meta tags before </head>
+                content = replace(content, 
+                    "</head>" => """    <meta name="keywords" content="$keywords">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/Rocket.jl/sitemap.xml">
+</head>"""
+                )
+                
+                write(path, content)
+            end
+        end
+    end
+    
+    # Close sitemap XML
+    sitemap_content *= "</urlset>"
+    
+    # Write sitemap.xml
+    write("docs/build/sitemap.xml", sitemap_content)
+end
+
+# Call the post-processing function after docs generation
+post_process_docs()
+
 if get(ENV, "CI", nothing) == "true"
     deploydocs(
         repo = "github.com/ReactiveBayes/Rocket.jl.git",

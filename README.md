@@ -1,4 +1,4 @@
-# Reactive extensions library for Julia
+# Rocket.jl 🚀 - Reactive Programming in Julia
 
 | **Documentation**                                                               | **Build Status**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
@@ -16,15 +16,22 @@
 [codecov-img]: https://codecov.io/gh/reactivebayes/Rocket.jl/branch/master/graph/badge.svg
 [codecov-url]: https://codecov.io/gh/reactivebayes/Rocket.jl?branch=master
 
-Rocket.jl is a Julia package for reactive programming using Observables, to make it easier to work with asynchronous data.
+Welcome to Rocket.jl - a fast, powerful, and intuitive reactive programming package for Julia! Rocket.jl makes it easy to work with asynchronous data streams and handle real-time events with style.
 
-In order to achieve best performance and convenient API Rocket.jl combines [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), [Actor model](https://en.wikipedia.org/wiki/Actor_model) and [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
+Built for both performance and developer happiness, Rocket.jl combines the elegance of [Observer pattern](https://en.wikipedia.org/wiki/Observer_pattern), the power of [Actor model](https://en.wikipedia.org/wiki/Actor_model), and the expressiveness of [Functional programming](https://en.wikipedia.org/wiki/Functional_programming).
 
 Inspired by [RxJS](https://github.com/ReactiveX/rxjs) and [ReactiveX](https://github.com/ReactiveX) communities.
 
-Rocket.jl has been designed with a focus on performance and modularity.
+## Why Rocket.jl?
 
-The essential concepts in Rocket.jl are:
+- 🏃 **High Performance**: Designed from the ground up for speed and efficiency
+- 🎯 **Type Safety**: Leverage Julia's type system for robust applications
+- 🔧 **Modular Design**: Build complex reactive systems from simple components
+- 🎨 **Expressive API**: Write clean, readable code that's a joy to maintain
+
+## Essential Concepts
+
+Rocket.jl is built on five powerful concepts:
 
 - __Observable__: represents a collection of future messages (data or/and events).
 - __Actor__: is an object that knows how to react on incoming messages delivered by the __Observable__.
@@ -32,15 +39,15 @@ The essential concepts in Rocket.jl are:
 - __Operators__: are objects that enable a functional programming style to dealing with collections with operations like `map`, `filter`, `reduce`, etc.
 - __Subject__: the way of multicasting a message to multiple Observers.
 
-## Quick start
+## See It In Action! 
 
-For a quick start and basic introduction take a look at the [demo folder](https://github.com/reactivebayes/Rocket.jl/tree/master/demo) and [Quick Start notebook](https://github.com/reactivebayes/Rocket.jl/blob/master/demo/00_quick_start.ipynb).
+Let's create a fun bouncing ball animation to demonstrate Rocket.jl's reactive capabilities:
 
-```Julia
+```julia
 using Rocket, Compose, IJulia ; set_default_graphic_size(35cm, 2cm)
 ```
 
-```Julia
+```julia
 function draw_ball(t)
     IJulia.clear_output(true)
     x = -exp(-0.01t) + 1                     # x coordinate
@@ -49,7 +56,7 @@ function draw_ball(t)
 end
 ```
 
-```Julia
+```julia
 source = interval(20) |> take(200) # Take only first 200 emissions
 
 subscription = subscribe!(source, draw_ball)
@@ -57,15 +64,14 @@ subscription = subscribe!(source, draw_ball)
 
 ![Alt Text](demo/pics/bouncing-ball.gif)
 
-```Julia
+```julia
 unsubscribe!(subscription) # It is possible to unsubscribe before the stream ends    
 IJulia.clear_output(false);
 ```
 
-
 ## Documentation
 
-Full documentation is available at [reactivebayes website](https://reactivebayes.github.io/Rocket.jl/stable).
+Want to learn more? Check out our [documentation website](https://reactivebayes.github.io/Rocket.jl/stable).
 
 It is also possible to build a documentation locally. Just execute
 
@@ -144,7 +150,7 @@ subscribe!(squared_int_values, lambda(
 
 ## Rocket.jl is fast
 
-Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.9.3 (see `versioninfo` below). 
+Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.11.3 (see `versioninfo` below). 
 
 We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/reactivebayes/Rocket.jl/tree/master/demo).
 
@@ -161,19 +167,16 @@ versioninfo()
 ```
 
 ```
-Julia Version 1.9.3
-Commit bed2cd540a1 (2023-08-24 14:43 UTC)
+Julia Version 1.11.3
+Commit d63adeda50d (2025-01-21 19:42 UTC)
 Build Info:
   Official https://julialang.org/ release
 Platform Info:
-  OS: macOS (arm64-apple-darwin22.4.0)
-  CPU: 10 × Apple M2 Pro
+  OS: macOS (arm64-apple-darwin24.0.0)
+  CPU: 11 × Apple M3 Pro
   WORD_SIZE: 64
-  LIBM: libopenlibm
-  LLVM: libLLVM-14.0.6 (ORCJIT, apple-m1)
-  Threads: 1 on 6 virtual cores
-Environment:
-  JULIA_NUM_THREADS = 
+  LLVM: libLLVM-16.0.6 (ORCJIT, apple-m2)
+Threads: 1 default, 0 interactive, 1 GC (on 5 virtual cores)
 ```
 
 ```julia
@@ -181,10 +184,9 @@ Environment:
 ```
 
 ```
-  [6e4b80f9] BenchmarkTools v1.3.2
-  [510215fc] Observables v0.5.4
+  [510215fc] Observables v0.5.5
   [a223df75] Reactive v0.8.3
-  [df971d30] Rocket v1.7.2
+  [df971d30] Rocket v1.8.1
   [6303bc30] Signals v1.2.0
 ```
 
