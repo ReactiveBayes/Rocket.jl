@@ -1,0 +1,57 @@
+name: Test dependent packages
+
+# Based on https://github.com/SciML/SciMLBase.jl/blob/master/.github/workflows/Downstream.yml
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+    test:
+        name: ${{ matrix.package.repo }}
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                julia-version: ['1']
+                os: [ubuntu-latest]
+                package:
+                    # Add downstream packages that depend on Rocket here
+                    # Each entry runs as a separate parallel job
+                    - { user: ReactiveBayes, repo: RxInfer.jl }
+                    - { user: ReactiveBayes, repo: ReactiveMP.jl }
+
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: julia-actions/setup-julia@v2
+              with:
+                  version: ${{ matrix.julia-version }}
+                  arch: x64
+
+            - uses: julia-actions/julia-buildpkg@v1
+
+            - name: Clone Downstream
+              uses: actions/checkout@v5
+              with:
+                  repository: ${{ matrix.package.user }}/${{ matrix.package.repo }}
+                  path: downstream
+
+            - name: Load this and run the downstream tests
+              shell: julia --project=downstream {0}
+              run: |
+                  using Pkg
+                  try
+                      # Force downstream to use this PR version of Rocket
+                      Pkg.develop(PackageSpec(path="."))  # add this version
+                      Pkg.update()
+                      Pkg.test()  # run downstream tests
+                  catch err
+                      err isa Pkg.Resolve.ResolverError || rethrow()
+                      # If resolver fails, assume intentional breaking change (SemVer)
+                      @info "Not compatible with this release. No problem." exception=err
+                      exit(0)  # Treat as success
+                  end
