@@ -42,34 +42,34 @@ noop() = NoopOperator()
 
 struct NoopOperator <: InferableOperator end
 
-operator_right(operator::NoopOperator, ::Type{L}) where L = L
+operator_right(operator::NoopOperator, ::Type{L}) where {L} = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::NoopOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::NoopOperator, source) where {L}
     return proxy(L, source, NoopProxy())
 end
 
 struct NoopProxy <: ActorSourceProxy end
 
-actor_proxy!(::Type{L}, proxy::NoopProxy, actor)   where L = NoopActor{L}(actor)
-source_proxy!(::Type{L}, proxy::NoopProxy, source) where L = NoopSource{L}(source)
+actor_proxy!(::Type{L}, proxy::NoopProxy, actor) where {L} = NoopActor{L}(actor)
+source_proxy!(::Type{L}, proxy::NoopProxy, source) where {L} = NoopSource{L}(source)
 
 struct NoopActor{L} <: Actor{L}
-    actor
+    actor::Any
 end
 
-on_next!(actor::NoopActor{L}, data::L) where L = next!(actor.actor, data)
-on_error!(actor::NoopActor, err)               = error!(actor.actor, err)
-on_complete!(actor::NoopActor)                 = complete!(actor.actor)
+on_next!(actor::NoopActor{L}, data::L) where {L} = next!(actor.actor, data)
+on_error!(actor::NoopActor, err) = error!(actor.actor, err)
+on_complete!(actor::NoopActor) = complete!(actor.actor)
 
 struct NoopSource{L} <: Subscribable{L}
-    source
+    source::Any
 end
 
 function on_subscribe!(source::NoopSource, actor)
     return subscribe!(source.source, actor)
 end
 
-Base.show(io::IO, ::NoopOperator)          = print(io, "NoopOperator()")
-Base.show(io::IO, ::NoopProxy)             = print(io, "NoopProxy()")
-Base.show(io::IO, ::NoopActor{L})  where L = print(io, "NoopActor($L)")
-Base.show(io::IO, ::NoopSource{L}) where L = print(io, "NoopSource($L)")
+Base.show(io::IO, ::NoopOperator) = print(io, "NoopOperator()")
+Base.show(io::IO, ::NoopProxy) = print(io, "NoopProxy()")
+Base.show(io::IO, ::NoopActor{L}) where {L} = print(io, "NoopActor($L)")
+Base.show(io::IO, ::NoopSource{L}) where {L} = print(io, "NoopSource($L)")

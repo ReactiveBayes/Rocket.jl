@@ -50,33 +50,43 @@ subscribe!(source |> sum(from = 97), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
-sum(; from::D = nothing) where D = SumOperator{D}(from)
+sum(; from::D = nothing) where {D} = SumOperator{D}(from)
 
 struct SumOperator{D} <: InferableOperator
-    from :: D
+    from::D
 end
 
-function on_call!(::Type{L}, ::Type{Union{L, Nothing}}, operator::SumOperator, source) where L
-    return proxy(Union{L, Nothing}, source, SumProxy(operator.from !== nothing ? convert(L, operator.from) : nothing))
+function on_call!(
+    ::Type{L},
+    ::Type{Union{L,Nothing}},
+    operator::SumOperator,
+    source,
+) where {L}
+    return proxy(
+        Union{L,Nothing},
+        source,
+        SumProxy(operator.from !== nothing ? convert(L, operator.from) : nothing),
+    )
 end
 
-operator_right(operator::SumOperator, ::Type{L}) where L = Union{L, Nothing}
+operator_right(operator::SumOperator, ::Type{L}) where {L} = Union{L,Nothing}
 
 struct SumProxy{D} <: ActorProxy
-    from :: D
+    from::D
 end
 
-actor_proxy!(::Type{Union{L, Nothing}}, proxy::SumProxy, actor::A) where { L, A } = SumActor{L, A}(actor, proxy.from)
+actor_proxy!(::Type{Union{L,Nothing}}, proxy::SumProxy, actor::A) where {L,A} =
+    SumActor{L,A}(actor, proxy.from)
 
-mutable struct SumActor{L, A} <: Actor{L}
-    actor   :: A
-    current :: Union{L, Nothing}
+mutable struct SumActor{L,A} <: Actor{L}
+    actor::A
+    current::Union{L,Nothing}
 end
 
-getcurrent(actor::SumActor)         = actor.current
+getcurrent(actor::SumActor) = actor.current
 setcurrent!(actor::SumActor, value) = actor.current = value
 
-function on_next!(actor::SumActor{L}, data::L) where L
+function on_next!(actor::SumActor{L}, data::L) where {L}
     current = getcurrent(actor)
     if current === nothing
         setcurrent!(actor, data)
@@ -94,6 +104,6 @@ function on_complete!(actor::SumActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, ::SumOperator)         = print(io, "SumOperator()")
-Base.show(io::IO, ::SumProxy)            = print(io, "SumProxy()")
-Base.show(io::IO, ::SumActor{L}) where L = print(io, "SumActor($L)")
+Base.show(io::IO, ::SumOperator) = print(io, "SumOperator()")
+Base.show(io::IO, ::SumProxy) = print(io, "SumProxy()")
+Base.show(io::IO, ::SumActor{L}) where {L} = print(io, "SumActor($L)")

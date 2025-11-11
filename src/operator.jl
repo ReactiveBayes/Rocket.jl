@@ -1,5 +1,11 @@
-export OperatorTrait, TypedOperatorTrait, LeftTypedOperatorTrait, RightTypedOperatorTrait, InferableOperatorTrait, InvalidOperatorTrait
-export AbstractOperator, TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
+export OperatorTrait,
+    TypedOperatorTrait,
+    LeftTypedOperatorTrait,
+    RightTypedOperatorTrait,
+    InferableOperatorTrait,
+    InvalidOperatorTrait
+export AbstractOperator,
+    TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator
 export as_operator, call_operator!, on_call!, operator_right
 export OperatorsComposition, call_operator_composition!
 
@@ -63,7 +69,7 @@ subscribe!(source |> MyTypedOperator(), logger())
 
 See also: [`OperatorTrait`](@ref), [`TypedOperator`](@ref), [`OperatorTrait`](@ref), [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`logger`](@ref)
 """
-struct TypedOperatorTrait{L, R} <: OperatorTrait end
+struct TypedOperatorTrait{L,R} <: OperatorTrait end
 
 """
 Left typed operator trait specifies operator to be statically typed with input data type.
@@ -253,7 +259,7 @@ true
 
 See also: [`AbstractOperator`](@ref), [`TypedOperatorTrait`](@ref)
 """
-abstract type TypedOperator{L, R} <: AbstractOperator end
+abstract type TypedOperator{L,R} <: AbstractOperator end
 
 """
 Can be used as a supertype for any operator. Automatically specifies LeftTypedOperatorTrait behavior.
@@ -272,7 +278,7 @@ true
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperatorTrait`](@ref), [`operator_right`](@ref)
 """
-abstract type LeftTypedOperator{L}  <: AbstractOperator end
+abstract type LeftTypedOperator{L} <: AbstractOperator end
 
 """
 Can be used as a supertype for any operator. Automatically specifies RightTypedOperatorTrait behavior.
@@ -319,45 +325,119 @@ This function checks operator trait behavior. May be used explicitly to specify 
 
 See also: [`OperatorTrait`](@ref), [`AbstractOperator`](@ref)
 """
-as_operator(::Type)                                            = InvalidOperatorTrait()
-as_operator(::Type{ <: TypedOperator{L, R} })   where { L, R } = TypedOperatorTrait{L, R}()
-as_operator(::Type{ <: LeftTypedOperator{L} })  where L        = LeftTypedOperatorTrait{L}()
-as_operator(::Type{ <: RightTypedOperator{R} }) where R        = RightTypedOperatorTrait{R}()
-as_operator(::Type{ <: InferableOperator })                    = InferableOperatorTrait()
-as_operator(::O)                                where O        = as_operator(O)
+as_operator(::Type) = InvalidOperatorTrait()
+as_operator(::Type{<: TypedOperator{L,R}}) where {L,R} = TypedOperatorTrait{L,R}()
+as_operator(::Type{<: LeftTypedOperator{L}}) where {L} = LeftTypedOperatorTrait{L}()
+as_operator(::Type{<: RightTypedOperator{R}}) where {R} = RightTypedOperatorTrait{R}()
+as_operator(::Type{<: InferableOperator}) = InferableOperatorTrait()
+as_operator(::O) where {O} = as_operator(O)
 
-call_operator!(operator::O, source::S) where { O, S } = check_call_operator!(as_operator(O), as_subscribable(S), operator, source)
+call_operator!(operator::O, source::S) where {O,S} =
+    check_call_operator!(as_operator(O), as_subscribable(S), operator, source)
 
-call_operator!(operator::TypedOperator{L, R},        source::Subscribable{L}) where { L, R } = on_call!(L, R, operator, source)
-call_operator!(operator::LeftTypedOperator{L},       source::Subscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
-call_operator!(operator::RightTypedOperatorTrait{R}, source::Subscribable{L}) where { L, R } = on_call!(L, R, operator, source)
-call_operator!(operator::InferableOperator,          source::Subscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
+call_operator!(operator::TypedOperator{L,R}, source::Subscribable{L}) where {L,R} =
+    on_call!(L, R, operator, source)
+call_operator!(operator::LeftTypedOperator{L}, source::Subscribable{L}) where {L} =
+    on_call!(L, operator_right(operator, L), operator, source)
+call_operator!(operator::RightTypedOperatorTrait{R}, source::Subscribable{L}) where {L,R} =
+    on_call!(L, R, operator, source)
+call_operator!(operator::InferableOperator, source::Subscribable{L}) where {L} =
+    on_call!(L, operator_right(operator, L), operator, source)
 
-call_operator!(operator::TypedOperator{L, R},        source::ScheduledSubscribable{L}) where { L, R } = on_call!(L, R, operator, source)
-call_operator!(operator::LeftTypedOperator{L},       source::ScheduledSubscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
-call_operator!(operator::RightTypedOperatorTrait{R}, source::ScheduledSubscribable{L}) where { L, R } = on_call!(L, R, operator, source)
-call_operator!(operator::InferableOperator,          source::ScheduledSubscribable{L}) where { L    } = on_call!(L, operator_right(operator, L), operator, source)
+call_operator!(operator::TypedOperator{L,R}, source::ScheduledSubscribable{L}) where {L,R} =
+    on_call!(L, R, operator, source)
+call_operator!(operator::LeftTypedOperator{L}, source::ScheduledSubscribable{L}) where {L} =
+    on_call!(L, operator_right(operator, L), operator, source)
+call_operator!(
+    operator::RightTypedOperatorTrait{R},
+    source::ScheduledSubscribable{L},
+) where {L,R} = on_call!(L, R, operator, source)
+call_operator!(operator::InferableOperator, source::ScheduledSubscribable{L}) where {L} =
+    on_call!(L, operator_right(operator, L), operator, source)
 
-check_call_operator!(::InvalidOperatorTrait, _,                          operator, source) = throw(InvalidOperatorTraitUsageError(operator))
-check_call_operator!(::InvalidOperatorTrait, ::InvalidSubscribableTrait, operator, source) = throw(InvalidOperatorTraitUsageError(operator))
-check_call_operator!(_,                      ::InvalidSubscribableTrait, operator, source) = throw(InvalidSubscribableTraitUsageError(source))
+check_call_operator!(::InvalidOperatorTrait, _, operator, source) =
+    throw(InvalidOperatorTraitUsageError(operator))
+check_call_operator!(::InvalidOperatorTrait, ::InvalidSubscribableTrait, operator, source) =
+    throw(InvalidOperatorTraitUsageError(operator))
+check_call_operator!(_, ::InvalidSubscribableTrait, operator, source) =
+    throw(InvalidSubscribableTraitUsageError(source))
 
-check_call_operator!(::TypedOperatorTrait{L},      ::SimpleSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
-check_call_operator!(::LeftTypedOperatorTrait{L},  ::SimpleSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
-check_call_operator!(::TypedOperatorTrait{L, R},   ::SimpleSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
-check_call_operator!(::LeftTypedOperatorTrait{L},  ::SimpleSubscribableTrait{L}, operator, source)    where L           = on_call!(L, operator_right(operator, L), operator, source)
-check_call_operator!(::RightTypedOperatorTrait{R}, ::SimpleSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
-check_call_operator!(::InferableOperatorTrait,     ::SimpleSubscribableTrait{L},  operator, source)   where L           = on_call!(L, operator_right(operator, L), operator, source)
+check_call_operator!(
+    ::TypedOperatorTrait{L},
+    ::SimpleSubscribableTrait{NotL},
+    operator,
+    source,
+) where {L,NotL} = throw(InconsistentSourceOperatorDataTypesError{L,NotL}(operator))
+check_call_operator!(
+    ::LeftTypedOperatorTrait{L},
+    ::SimpleSubscribableTrait{NotL},
+    operator,
+    source,
+) where {L,NotL} = throw(InconsistentSourceOperatorDataTypesError{L,NotL}(operator))
+check_call_operator!(
+    ::TypedOperatorTrait{L,R},
+    ::SimpleSubscribableTrait{L},
+    operator,
+    source,
+) where {L,R} = on_call!(L, R, operator, source)
+check_call_operator!(
+    ::LeftTypedOperatorTrait{L},
+    ::SimpleSubscribableTrait{L},
+    operator,
+    source,
+) where {L} = on_call!(L, operator_right(operator, L), operator, source)
+check_call_operator!(
+    ::RightTypedOperatorTrait{R},
+    ::SimpleSubscribableTrait{L},
+    operator,
+    source,
+) where {L,R} = on_call!(L, R, operator, source)
+check_call_operator!(
+    ::InferableOperatorTrait,
+    ::SimpleSubscribableTrait{L},
+    operator,
+    source,
+) where {L} = on_call!(L, operator_right(operator, L), operator, source)
 
-check_call_operator!(::TypedOperatorTrait{L},      ::ScheduledSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
-check_call_operator!(::LeftTypedOperatorTrait{L},  ::ScheduledSubscribableTrait{NotL}, operator, source) where { L, NotL } = throw(InconsistentSourceOperatorDataTypesError{L, NotL}(operator))
-check_call_operator!(::TypedOperatorTrait{L, R},   ::ScheduledSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
-check_call_operator!(::LeftTypedOperatorTrait{L},  ::ScheduledSubscribableTrait{L}, operator, source)    where L           = on_call!(L, operator_right(operator, L), operator, source)
-check_call_operator!(::RightTypedOperatorTrait{R}, ::ScheduledSubscribableTrait{L}, operator, source)    where { L, R }    = on_call!(L, R, operator, source)
-check_call_operator!(::InferableOperatorTrait,     ::ScheduledSubscribableTrait{L},  operator, source)   where L           = on_call!(L, operator_right(operator, L), operator, source)
+check_call_operator!(
+    ::TypedOperatorTrait{L},
+    ::ScheduledSubscribableTrait{NotL},
+    operator,
+    source,
+) where {L,NotL} = throw(InconsistentSourceOperatorDataTypesError{L,NotL}(operator))
+check_call_operator!(
+    ::LeftTypedOperatorTrait{L},
+    ::ScheduledSubscribableTrait{NotL},
+    operator,
+    source,
+) where {L,NotL} = throw(InconsistentSourceOperatorDataTypesError{L,NotL}(operator))
+check_call_operator!(
+    ::TypedOperatorTrait{L,R},
+    ::ScheduledSubscribableTrait{L},
+    operator,
+    source,
+) where {L,R} = on_call!(L, R, operator, source)
+check_call_operator!(
+    ::LeftTypedOperatorTrait{L},
+    ::ScheduledSubscribableTrait{L},
+    operator,
+    source,
+) where {L} = on_call!(L, operator_right(operator, L), operator, source)
+check_call_operator!(
+    ::RightTypedOperatorTrait{R},
+    ::ScheduledSubscribableTrait{L},
+    operator,
+    source,
+) where {L,R} = on_call!(L, R, operator, source)
+check_call_operator!(
+    ::InferableOperatorTrait,
+    ::ScheduledSubscribableTrait{L},
+    operator,
+    source,
+) where {L} = on_call!(L, operator_right(operator, L), operator, source)
 
 
-Base.:|>(source, operator::O) where { O <: AbstractOperator } = call_operator!(operator, source)
+Base.:|>(source, operator::O) where {O<:AbstractOperator} = call_operator!(operator, source)
 
 """
     on_call!(::Type, ::Type, operator, source)
@@ -367,7 +447,8 @@ and to produce another Observable with new logic (operator specific).
 
 See also: [`AbstractOperator`](@ref)
 """
-on_call!(::Type, ::Type, operator, source) = throw(MissingOnCallImplementationError(operator))
+on_call!(::Type, ::Type, operator, source) =
+    throw(MissingOnCallImplementationError(operator))
 
 """
     operator_right(operator, L)
@@ -377,8 +458,8 @@ type of data of output Observable given the type of data of input Observable.
 
 See also: [`AbstractOperator`](@ref), [`LeftTypedOperator`](@ref), [`InferableOperator`](@ref)
 """
-operator_right(::TypedOperator{L, R},   ::Type{L}) where { L, R } = R
-operator_right(::RightTypedOperator{R}, ::Type{L}) where { L, R } = R
+operator_right(::TypedOperator{L,R}, ::Type{L}) where {L,R} = R
+operator_right(::RightTypedOperator{R}, ::Type{L}) where {L,R} = R
 operator_right(operator, _) = throw(MissingOperatorRightImplementationError(operator))
 
 # -------------------------------- #
@@ -426,23 +507,31 @@ subscribe!(source, logger())
 ```
 """
 struct OperatorsComposition{O}
-    operators :: O
+    operators::O
 end
 
-call_operator_composition!(composition::OperatorsComposition, source) = reduce(|>, composition.operators, init = source)
+call_operator_composition!(composition::OperatorsComposition, source) =
+    reduce(|>, composition.operators, init = source)
 
-Base.:|>(source, composition::OperatorsComposition) = call_operator_composition!(composition, source)
+Base.:|>(source, composition::OperatorsComposition) =
+    call_operator_composition!(composition, source)
 
 # Backward compatibility
-Base.:+(o1::AbstractOperator, o2::AbstractOperator)         = OperatorsComposition((o1, o2))
-Base.:+(o1::AbstractOperator, c::OperatorsComposition)      = OperatorsComposition((o1, c.operators...))
-Base.:+(c::OperatorsComposition, o2::AbstractOperator)      = OperatorsComposition((c.operators..., o2))
-Base.:+(c1::OperatorsComposition, c2::OperatorsComposition) = OperatorsComposition((c1.operators..., c2.operators...))
+Base.:+(o1::AbstractOperator, o2::AbstractOperator) = OperatorsComposition((o1, o2))
+Base.:+(o1::AbstractOperator, c::OperatorsComposition) =
+    OperatorsComposition((o1, c.operators...))
+Base.:+(c::OperatorsComposition, o2::AbstractOperator) =
+    OperatorsComposition((c.operators..., o2))
+Base.:+(c1::OperatorsComposition, c2::OperatorsComposition) =
+    OperatorsComposition((c1.operators..., c2.operators...))
 
-Base.:|>(o1::AbstractOperator, o2::AbstractOperator)         = OperatorsComposition((o1, o2))
-Base.:|>(o1::AbstractOperator, c::OperatorsComposition)      = OperatorsComposition((o1, c.operators...))
-Base.:|>(c::OperatorsComposition, o2::AbstractOperator)      = OperatorsComposition((c.operators..., o2))
-Base.:|>(c1::OperatorsComposition, c2::OperatorsComposition) = OperatorsComposition((c1.operators..., c2.operators...))
+Base.:|>(o1::AbstractOperator, o2::AbstractOperator) = OperatorsComposition((o1, o2))
+Base.:|>(o1::AbstractOperator, c::OperatorsComposition) =
+    OperatorsComposition((o1, c.operators...))
+Base.:|>(c::OperatorsComposition, o2::AbstractOperator) =
+    OperatorsComposition((c.operators..., o2))
+Base.:|>(c1::OperatorsComposition, c2::OperatorsComposition) =
+    OperatorsComposition((c1.operators..., c2.operators...))
 
 # -------------------------------- #
 # Errors                           #
@@ -454,11 +543,14 @@ This error will be thrown if `|>` pipe operator is called with invalid operator 
 See also: [`on_call!`](@ref)
 """
 struct InvalidOperatorTraitUsageError
-    operator
+    operator::Any
 end
 
 function Base.showerror(io::IO, err::InvalidOperatorTraitUsageError)
-    print(io, "Type $(typeof(err.operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rocket.as_operator(::Type{<:$(typeof(err.operator))}).")
+    print(
+        io,
+        "Type $(typeof(err.operator)) is not a valid operator type. \nConsider extending your type with one of the base Operator abstract types: TypedOperator, LeftTypedOperator, RightTypedOperator, InferableOperator or implement Rocket.as_operator(::Type{<:$(typeof(err.operator))}).",
+    )
 end
 
 """
@@ -466,12 +558,18 @@ This error will be thrown if `|>` pipe operator is called with inconsistent data
 
 See also: [`on_call!`](@ref)
 """
-struct InconsistentSourceOperatorDataTypesError{L, NotL}
-    operator
+struct InconsistentSourceOperatorDataTypesError{L,NotL}
+    operator::Any
 end
 
-function Base.showerror(io::IO, err::InconsistentSourceOperatorDataTypesError{L, NotL}) where L where NotL
-    print(io, "Operator of type $(typeof(err.operator)) expects source data to be of type $(L), but $(NotL) found.")
+function Base.showerror(
+    io::IO,
+    err::InconsistentSourceOperatorDataTypesError{L,NotL},
+) where {L} where {NotL}
+    print(
+        io,
+        "Operator of type $(typeof(err.operator)) expects source data to be of type $(L), but $(NotL) found.",
+    )
 end
 
 """
@@ -480,11 +578,14 @@ This error will be thrown if Julia cannot find specific method of `on_call!` fun
 See also: [`on_call!`](@ref)
 """
 struct MissingOnCallImplementationError
-    operator
+    operator::Any
 end
 
 function Base.showerror(io::IO, err::MissingOnCallImplementationError)
-    print(io, "You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(err.operator)), source).")
+    print(
+        io,
+        "You probably forgot to implement on_call!(::Type, ::Type, operator::$(typeof(err.operator)), source).",
+    )
 end
 
 """
@@ -493,9 +594,12 @@ This error will be thrown if Julia cannot find specific method of `operator_righ
 See also: [`operator_right`](@ref)
 """
 struct MissingOperatorRightImplementationError
-    operator
+    operator::Any
 end
 
 function Base.showerror(io::IO, err::MissingOperatorRightImplementationError)
-    print(io, "You probably forgot to implement operator_right(operator::$(typeof(err.operator)), L).")
+    print(
+        io,
+        "You probably forgot to implement operator_right(operator::$(typeof(err.operator)), L).",
+    )
 end

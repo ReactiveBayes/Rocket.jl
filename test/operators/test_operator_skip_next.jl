@@ -10,22 +10,10 @@ include("../test_helpers.jl")
     println("Testing: operator skip_next()")
 
     run_testset([
-        (
-            source = from(1:5) |> skip_next(),
-            values = @ts(c)
-        ),
-        (
-            source = completed() |> skip_next(),
-            values = @ts(c)
-        ),
-        (
-            source = faulted(1) |> skip_next(),
-            values = @ts(e(1))
-        ),
-        (
-            source = never() |> skip_next(),
-            values = @ts()
-        )
+        (source = from(1:5) |> skip_next(), values = @ts(c)),
+        (source = completed() |> skip_next(), values = @ts(c)),
+        (source = faulted(1) |> skip_next(), values = @ts(e(1))),
+        (source = never() |> skip_next(), values = @ts()),
     ])
 
 end

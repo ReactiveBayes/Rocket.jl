@@ -37,8 +37,11 @@ subscribe!(source |> switch_map_to(from([ 1, 2, 3 ])), logger())
 
 See also: [`switch_map`](@ref), [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-switch_map_to(source::S) where S = as_switch_map_to(as_subscribable(S), source)
+switch_map_to(source::S) where {S} = as_switch_map_to(as_subscribable(S), source)
 
-as_switch_map_to(::InvalidSubscribableTrait,  source)             = throw(InvalidSubscribableTraitUsageError(source))
-as_switch_map_to(::SimpleSubscribableTrait{R}, source)    where R = switch_map(R, (_) -> source)
-as_switch_map_to(::ScheduledSubscribableTrait{R}, source) where R = switch_map(R, (_) -> source)
+as_switch_map_to(::InvalidSubscribableTrait, source) =
+    throw(InvalidSubscribableTraitUsageError(source))
+as_switch_map_to(::SimpleSubscribableTrait{R}, source) where {R} =
+    switch_map(R, (_) -> source)
+as_switch_map_to(::ScheduledSubscribableTrait{R}, source) where {R} =
+    switch_map(R, (_) -> source)

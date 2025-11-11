@@ -17,30 +17,31 @@ safe() = SafeOperator()
 
 struct SafeOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::SafeOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::SafeOperator, source) where {L}
     return proxy(L, source, SafeProxy())
 end
 
-operator_right(operator::SafeOperator, ::Type{L}) where L = L
+operator_right(operator::SafeOperator, ::Type{L}) where {L} = L
 
 struct SafeProxy <: ActorSourceProxy end
 
-actor_proxy!(::Type{L}, proxy::SafeProxy, actor::A)   where { L, A } = SafeActor{L, A}(actor, false, voidTeardown)
-source_proxy!(::Type{L}, proxy::SafeProxy, source::S) where { L, S } = SafeSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::SafeProxy, actor::A) where {L,A} =
+    SafeActor{L,A}(actor, false, voidTeardown)
+source_proxy!(::Type{L}, proxy::SafeProxy, source::S) where {L,S} = SafeSource{L,S}(source)
 
-mutable struct SafeActor{L, A} <: Actor{L}
-    actor        :: A
-    isfailed     :: Bool
-    subscription :: Teardown
+mutable struct SafeActor{L,A} <: Actor{L}
+    actor::A
+    isfailed::Bool
+    subscription::Teardown
 end
 
-isfailed(actor::SafeActor)   = actor.isfailed
+isfailed(actor::SafeActor) = actor.isfailed
 setfailed!(actor::SafeActor) = actor.isfailed = true
 
-getsubscription(actor::SafeActor)         = actor.subscription
+getsubscription(actor::SafeActor) = actor.subscription
 setsubscription!(actor::SafeActor, value) = actor.subscription = value
 
-function on_next!(actor::SafeActor{L}, data::L) where L
+function on_next!(actor::SafeActor{L}, data::L) where {L}
     if !isfailed(actor)
         try
             next!(actor.actor, data)
@@ -78,8 +79,8 @@ function dispose!(actor::SafeActor)
     unsubscribe!(getsubscription(actor))
 end
 
-@subscribable struct SafeSource{L, S} <: Subscribable{L}
-    source :: S
+@subscribable struct SafeSource{L,S} <: Subscribable{L}
+    source::S
 end
 
 function on_subscribe!(source::SafeSource, actor::SafeActor)
@@ -94,7 +95,7 @@ function on_subscribe!(source::SafeSource, actor::SafeActor)
     end
 end
 
-Base.show(io::IO, ::SafeOperator)          = print(io, "SafeOperator()")
-Base.show(io::IO, ::SafeProxy)             = print(io, "SafeProxy()")
-Base.show(io::IO, ::SafeActor{L})  where L = print(io, "SafeActor($L)")
-Base.show(io::IO, ::SafeSource{L}) where L = print(io, "SafeSource($L)")
+Base.show(io::IO, ::SafeOperator) = print(io, "SafeOperator()")
+Base.show(io::IO, ::SafeProxy) = print(io, "SafeProxy()")
+Base.show(io::IO, ::SafeActor{L}) where {L} = print(io, "SafeActor($L)")
+Base.show(io::IO, ::SafeSource{L}) where {L} = print(io, "SafeSource($L)")

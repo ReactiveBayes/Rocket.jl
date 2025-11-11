@@ -25,16 +25,16 @@ show(getvalues(actor))
 See also: [`Actor`](@ref), [`keep`](@ref), [`circularkeep`](@ref)
 """
 struct CircularKeepActor{T} <: Actor{T}
-    values :: CircularBuffer{T}
+    values::CircularBuffer{T}
 
-    CircularKeepActor{T}(capacity::Int) where T = new{T}(CircularBuffer{T}(capacity))
+    CircularKeepActor{T}(capacity::Int) where {T} = new{T}(CircularBuffer{T}(capacity))
 end
 
 getvalues(actor::CircularKeepActor) = actor.values
 
-on_next!(actor::CircularKeepActor{T}, data::T) where T = push!(actor.values, data)
-on_error!(actor::CircularKeepActor, err)               = error(err)
-on_complete!(actor::CircularKeepActor)                 = begin end
+on_next!(actor::CircularKeepActor{T}, data::T) where {T} = push!(actor.values, data)
+on_error!(actor::CircularKeepActor, err) = error(err)
+on_complete!(actor::CircularKeepActor) = begin end
 
 """
     circularkeep(::Type{T}, capacity::Int) where T
@@ -59,25 +59,26 @@ true
 
 See also: [`CircularKeepActor`](@ref), [`AbstractActor`](@ref)
 """
-circularkeep(::Type{T}, capacity::Int) where T = CircularKeepActor{T}(capacity)
+circularkeep(::Type{T}, capacity::Int) where {T} = CircularKeepActor{T}(capacity)
 
 # Julia iterable interface
 
-Base.IteratorSize(::Type{ <: CircularKeepActor })   = Base.HasLength()
-Base.IteratorEltype(::Type{ <: CircularKeepActor }) = Base.HasEltype()
+Base.IteratorSize(::Type{<: CircularKeepActor}) = Base.HasLength()
+Base.IteratorEltype(::Type{<: CircularKeepActor}) = Base.HasEltype()
 
-Base.IndexStyle(::Type{ <: CircularKeepActor }) = Base.IndexLinear()
+Base.IndexStyle(::Type{<: CircularKeepActor}) = Base.IndexLinear()
 
-Base.eltype(::Type{ <: CircularKeepActor{T} }) where T = T
+Base.eltype(::Type{<: CircularKeepActor{T}}) where {T} = T
 
-Base.iterate(actor::CircularKeepActor)        = iterate(actor.values)
+Base.iterate(actor::CircularKeepActor) = iterate(actor.values)
 Base.iterate(actor::CircularKeepActor, state) = iterate(actor.values, state)
 
-Base.size(actor::CircularKeepActor)        = (length(actor.values), )
-Base.length(actor::CircularKeepActor)      = length(actor.values)
+Base.size(actor::CircularKeepActor) = (length(actor.values),)
+Base.length(actor::CircularKeepActor) = length(actor.values)
 Base.getindex(actor::CircularKeepActor, I) = Base.getindex(actor.values, I)
 
-Base.getindex(actor::CircularKeepActor, ::Unrolled.FixedRange{A, B}) where { A, B } = getindex(actor, A:B)
+Base.getindex(actor::CircularKeepActor, ::Unrolled.FixedRange{A,B}) where {A,B} =
+    getindex(actor, A:B)
 
 Base.firstindex(actor::CircularKeepActor) = firstindex(actor.values)
-Base.lastindex(actor::CircularKeepActor)  = lastindex(actor.values)
+Base.lastindex(actor::CircularKeepActor) = lastindex(actor.values)

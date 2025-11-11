@@ -13,13 +13,13 @@ Should not be used explicitly, use [`lambda`](@ref) creation operator instead.
 
 See also: [`Actor`](@ref), [`lambda`](@ref)
 """
-struct LambdaActor{D, NextCallback, ErrorCallback, CompleteCallback} <: Actor{D}
-    on_next     :: NextCallback
-    on_error    :: ErrorCallback
-    on_complete :: CompleteCallback
+struct LambdaActor{D,NextCallback,ErrorCallback,CompleteCallback} <: Actor{D}
+    on_next::NextCallback
+    on_error::ErrorCallback
+    on_complete::CompleteCallback
 end
 
-function on_next!(actor::LambdaActor{D}, data::D) where D
+function on_next!(actor::LambdaActor{D}, data::D) where {D}
     if actor.on_next !== nothing
         actor.on_next(data)
     end
@@ -37,14 +37,15 @@ function on_complete!(actor::LambdaActor)
     end
 end
 
-struct LambdaActorFactory{NextCallback, ErrorCallback, CompleteCallback} <: AbstractActorFactory
-    on_next     :: NextCallback
-    on_error    :: ErrorCallback
-    on_complete :: CompleteCallback
+struct LambdaActorFactory{NextCallback,ErrorCallback,CompleteCallback} <:
+       AbstractActorFactory
+    on_next::NextCallback
+    on_error::ErrorCallback
+    on_complete::CompleteCallback
 end
 
-function create_actor(::Type{L}, factory::LambdaActorFactory{N, E, C}) where { L, N, E, C }
-    return LambdaActor{L, N, E, C}(factory.on_next, factory.on_error, factory.on_complete)
+function create_actor(::Type{L}, factory::LambdaActorFactory{N,E,C}) where {L,N,E,C}
+    return LambdaActor{L,N,E,C}(factory.on_next, factory.on_error, factory.on_complete)
 end
 
 """
@@ -67,5 +68,20 @@ true
 
 See also: [`LambdaActor`](@ref), [`AbstractActor`](@ref)
 """
-lambda(; on_next::N = nothing, on_error::E = nothing, on_complete::C = nothing)          where { N <: Union{Nothing, Function}, E <: Union{Nothing, Function}, C <: Union{Nothing, Function} }    = LambdaActorFactory{N, E, C}(on_next, on_error, on_complete)
-lambda(::Type{T}; on_next::N = nothing, on_error::E = nothing, on_complete::C = nothing) where { T, N <: Union{Nothing, Function}, E <: Union{Nothing, Function}, C <: Union{Nothing, Function} } = LambdaActor{T, N, E, C}(on_next, on_error, on_complete)
+lambda(;
+    on_next::N = nothing,
+    on_error::E = nothing,
+    on_complete::C = nothing,
+) where {N<:Union{Nothing,Function},E<:Union{Nothing,Function},C<:Union{Nothing,Function}} =
+    LambdaActorFactory{N,E,C}(on_next, on_error, on_complete)
+lambda(
+    ::Type{T};
+    on_next::N = nothing,
+    on_error::E = nothing,
+    on_complete::C = nothing,
+) where {
+    T,
+    N<:Union{Nothing,Function},
+    E<:Union{Nothing,Function},
+    C<:Union{Nothing,Function},
+} = LambdaActor{T,N,E,C}(on_next, on_error, on_complete)

@@ -44,18 +44,18 @@ subscribe!(concat(source1, source2), logger())
 ```
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
-concat()                                = error("concat operator expects at least one inner observable on input")
-concat(args...)                         = concat(args)
-concat(sources::S) where { S <: Tuple } = ConcatObservable{union_type(sources), S}(sources)
+concat() = error("concat operator expects at least one inner observable on input")
+concat(args...) = concat(args)
+concat(sources::S) where {S<:Tuple} = ConcatObservable{union_type(sources),S}(sources)
 
 ##
 
-@subscribable struct ConcatObservable{D, S} <: Subscribable{D}
-    sources :: S
+@subscribable struct ConcatObservable{D,S} <: Subscribable{D}
+    sources::S
 end
 
-function on_subscribe!(observable::ConcatObservable{D, S}, actor::A) where { D, S, A }
-    inner = ConcatInnerActor{D, S, A}(observable.sources, actor)
+function on_subscribe!(observable::ConcatObservable{D,S}, actor::A) where {D,S,A}
+    inner = ConcatInnerActor{D,S,A}(observable.sources, actor)
     subscription = subscribe!(observable.sources[1], inner)
     if get_current_index(inner) === 1
         set_subscription!(inner, subscription)
@@ -65,24 +65,24 @@ end
 
 ##
 
-mutable struct ConcatInnerActor{D, S, A} <: Actor{D}
-    sources       :: S
-    actor         :: A
-    current_index :: Int
-    subscription  :: Teardown
+mutable struct ConcatInnerActor{D,S,A} <: Actor{D}
+    sources::S
+    actor::A
+    current_index::Int
+    subscription::Teardown
 
-    ConcatInnerActor{D, S, A}(sources::S, actor::A) where { D, S, A } = begin
+    ConcatInnerActor{D,S,A}(sources::S, actor::A) where {D,S,A} = begin
         return new(sources, actor, 1, voidTeardown)
     end
 end
 
-get_current_index(actor::ConcatInnerActor)         = actor.current_index
+get_current_index(actor::ConcatInnerActor) = actor.current_index
 set_current_index!(actor::ConcatInnerActor, index) = actor.current_index = index
 
-get_subscription(actor::ConcatInnerActor)                = actor.subscription
+get_subscription(actor::ConcatInnerActor) = actor.subscription
 set_subscription!(actor::ConcatInnerActor, subscription) = actor.subscription = subscription
 
-function on_next!(actor::ConcatInnerActor{D}, data::D) where D
+function on_next!(actor::ConcatInnerActor{D}, data::D) where {D}
     next!(actor.actor, data)
 end
 
@@ -96,7 +96,7 @@ function on_complete!(actor::ConcatInnerActor)
         complete!(actor.actor)
     else
         set_current_index!(actor, cindex + 1)
-        subscription = subscribe!(actor.sources[cindex + 1], actor)
+        subscription = subscribe!(actor.sources[cindex+1], actor)
         if get_current_index(actor) === cindex
             set_subscription!(actor, subscription)
         end
@@ -106,14 +106,14 @@ end
 ##
 
 struct ConcatSubscription{A} <: Teardown
-    inner :: A
+    inner::A
 end
 
-as_teardown(::Type{ <: ConcatSubscription}) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: ConcatSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::ConcatSubscription)
     return unsubscribe!(get_subscription(subscription.inner))
 end
 
-Base.show(io::IO, ::ConcatObservable{D}) where D  = print(io, "ConcatObservable($D)")
-Base.show(io::IO, ::ConcatSubscription)           = print(io, "ConcatSubscription()")
+Base.show(io::IO, ::ConcatObservable{D}) where {D} = print(io, "ConcatObservable($D)")
+Base.show(io::IO, ::ConcatSubscription) = print(io, "ConcatSubscription()")

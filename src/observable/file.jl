@@ -11,7 +11,7 @@ File observable, which synchronously emits content of the file line by line as a
 See also: [`file`](@ref), [`Subscribable`](@ref)
 """
 struct SyncFileObservable <: Subscribable{String}
-    path :: String
+    path::String
 end
 
 function on_subscribe!(observable::SyncFileObservable, actor)

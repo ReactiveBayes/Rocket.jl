@@ -25,39 +25,44 @@ function RecentSubjectFactory end
 
 ##
 
-mutable struct RecentSubjectInstance{D, S} <: AbstractSubject{D}
-    subject :: S
-    recent  :: Union{D, Nothing}
+mutable struct RecentSubjectInstance{D,S} <: AbstractSubject{D}
+    subject::S
+    recent::Union{D,Nothing}
 end
 
-Base.show(io::IO, ::RecentSubjectInstance{D, S}) where { D, S } = print(io, "RecentSubject($D, $S)")
+Base.show(io::IO, ::RecentSubjectInstance{D,S}) where {D,S} =
+    print(io, "RecentSubject($D, $S)")
 
-Base.similar(subject::RecentSubjectInstance{D, S}) where { D, S } = RecentSubject(D, similar(subject.subject))
+Base.similar(subject::RecentSubjectInstance{D,S}) where {D,S} =
+    RecentSubject(D, similar(subject.subject))
 
-function RecentSubject(::Type{D}) where D
+function RecentSubject(::Type{D}) where {D}
     return RecentSubject(D, SubjectFactory(AsapScheduler()))
 end
 
-function RecentSubject(::Type{D}, factory::F) where { D, F <: AbstractSubjectFactory }
+function RecentSubject(::Type{D}, factory::F) where {D,F<:AbstractSubjectFactory}
     return RecentSubject(D, create_subject(D, factory))
 end
 
-function RecentSubject(::Type{D}, subject::S) where { D, S }
+function RecentSubject(::Type{D}, subject::S) where {D,S}
     return as_recent_subject(D, as_subject(S), subject)
 end
 
-as_recent_subject(::Type{D},  ::InvalidSubjectTrait,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_recent_subject(::Type{D1}, ::ValidSubjectTrait{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_recent_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = RecentSubjectInstance{D, S}(subject, nothing)
+as_recent_subject(::Type{D}, ::InvalidSubjectTrait, subject) where {D} =
+    throw(InvalidSubjectTraitUsageError(subject))
+as_recent_subject(::Type{D1}, ::ValidSubjectTrait{D2}, subject) where {D1,D2} =
+    throw(InconsistentSubjectDataTypesError{D1,D2}(subject))
+as_recent_subject(::Type{D}, ::ValidSubjectTrait{D}, subject::S) where {D,S} =
+    RecentSubjectInstance{D,S}(subject, nothing)
 
 ##
 
-getrecent(subject::RecentSubjectInstance)         = subject.recent
+getrecent(subject::RecentSubjectInstance) = subject.recent
 setrecent!(subject::RecentSubjectInstance, value) = subject.recent = value
 
 ##
 
-function on_next!(subject::RecentSubjectInstance{D}, data::D) where D
+function on_next!(subject::RecentSubjectInstance{D}, data::D) where {D}
     setrecent!(subject, data)
     next!(subject.subject, data)
 end
@@ -82,19 +87,21 @@ end
 
 ##
 
-struct RecentSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
-    factory :: F
+struct RecentSubjectFactoryInstance{F<:AbstractSubjectFactory} <: AbstractSubjectFactory
+    factory::F
 end
 
-Base.show(io::IO, ::RecentSubjectFactoryInstance{F}) where F = print(io, "RecentSubjectFactory($F)")
+Base.show(io::IO, ::RecentSubjectFactoryInstance{F}) where {F} =
+    print(io, "RecentSubjectFactory($F)")
 
-create_subject(::Type{L}, factory::RecentSubjectFactoryInstance) where L = RecentSubject(L, factory.factory)
+create_subject(::Type{L}, factory::RecentSubjectFactoryInstance) where {L} =
+    RecentSubject(L, factory.factory)
 
-function RecentSubjectFactory(factory::F) where { F <: AbstractSubjectFactory }
+function RecentSubjectFactory(factory::F) where {F<:AbstractSubjectFactory}
     return RecentSubjectFactoryInstance(factory)
 end
 
-function RecentSubjectFactory(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+function RecentSubjectFactory(; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler}
     return RecentSubjectFactoryInstance(SubjectFactory{H}(scheduler))
 end
 

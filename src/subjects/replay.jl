@@ -26,34 +26,39 @@ See also: [`SubjectFactory`](@ref), [`AbstractSubjectFactory`](@ref), [`ReplaySu
 """
 function ReplaySubjectFactory end
 
-struct ReplaySubjectInstance{D, S} <: AbstractSubject{D}
-    subject :: S
-    buffer  :: CircularBuffer{D}
+struct ReplaySubjectInstance{D,S} <: AbstractSubject{D}
+    subject::S
+    buffer::CircularBuffer{D}
 end
 
-Base.show(io::IO, ::ReplaySubjectInstance{D, S}) where { D, S } = print(io, "ReplaySubjectInstance($D, $S)")
+Base.show(io::IO, ::ReplaySubjectInstance{D,S}) where {D,S} =
+    print(io, "ReplaySubjectInstance($D, $S)")
 
-Base.similar(subject::ReplaySubjectInstance{D, S}) where { D, S } = ReplaySubject(D, capacity(subject.buffer), similar(subject.subject))
+Base.similar(subject::ReplaySubjectInstance{D,S}) where {D,S} =
+    ReplaySubject(D, capacity(subject.buffer), similar(subject.subject))
 
-function ReplaySubject(::Type{D}, size::Int) where D
+function ReplaySubject(::Type{D}, size::Int) where {D}
     return ReplaySubject(D, size, SubjectFactory(AsapScheduler()))
 end
 
-function ReplaySubject(::Type{D}, size::Int, factory::F) where { D, F <: AbstractSubjectFactory }
+function ReplaySubject(::Type{D}, size::Int, factory::F) where {D,F<:AbstractSubjectFactory}
     return ReplaySubject(D, size, create_subject(D, factory))
 end
 
-function ReplaySubject(::Type{D}, size::Int, subject::S) where { D, S }
+function ReplaySubject(::Type{D}, size::Int, subject::S) where {D,S}
     return as_replay_subject(D, as_subject(S), size, subject)
 end
 
-as_replay_subject(::Type{D},  ::InvalidSubjectTrait,    size::Int, subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_replay_subject(::Type{D1}, ::ValidSubjectTrait{D2},  size::Int, subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_replay_subject(::Type{D},  ::ValidSubjectTrait{D},   size::Int, subject::S) where { D, S }   = ReplaySubjectInstance{D, S}(subject, CircularBuffer{D}(size))
+as_replay_subject(::Type{D}, ::InvalidSubjectTrait, size::Int, subject) where {D} =
+    throw(InvalidSubjectTraitUsageError(subject))
+as_replay_subject(::Type{D1}, ::ValidSubjectTrait{D2}, size::Int, subject) where {D1,D2} =
+    throw(InconsistentSubjectDataTypesError{D1,D2}(subject))
+as_replay_subject(::Type{D}, ::ValidSubjectTrait{D}, size::Int, subject::S) where {D,S} =
+    ReplaySubjectInstance{D,S}(subject, CircularBuffer{D}(size))
 
 ##
 
-function on_next!(subject::ReplaySubjectInstance{D}, data::D) where D
+function on_next!(subject::ReplaySubjectInstance{D}, data::D) where {D}
     if isactive(subject.subject)
         push!(subject.buffer, data)
         next!(subject.subject, data)
@@ -79,20 +84,25 @@ end
 
 ##
 
-struct ReplaySubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
-    factory :: F
-    size    :: Int
+struct ReplaySubjectFactoryInstance{F<:AbstractSubjectFactory} <: AbstractSubjectFactory
+    factory::F
+    size::Int
 end
 
-Base.show(io::IO, subject::ReplaySubjectFactoryInstance{F}) where F = print(io, "ReplaySubjectFactoryInstance($F, size = $(subject.size))")
+Base.show(io::IO, subject::ReplaySubjectFactoryInstance{F}) where {F} =
+    print(io, "ReplaySubjectFactoryInstance($F, size = $(subject.size))")
 
-create_subject(::Type{L}, factory::ReplaySubjectFactoryInstance) where L = ReplaySubject(L, factory.size, factory.factory)
+create_subject(::Type{L}, factory::ReplaySubjectFactoryInstance) where {L} =
+    ReplaySubject(L, factory.size, factory.factory)
 
-function ReplaySubjectFactory(size::Int, factory::F) where { F <: AbstractSubjectFactory }
+function ReplaySubjectFactory(size::Int, factory::F) where {F<:AbstractSubjectFactory}
     return ReplaySubjectFactoryInstance(factory, size)
 end
 
-function ReplaySubjectFactory(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+function ReplaySubjectFactory(
+    size::Int;
+    scheduler::H = AsapScheduler(),
+) where {H<:AbstractScheduler}
     return ReplaySubjectFactoryInstance(SubjectFactory{H}(scheduler), size)
 end
 

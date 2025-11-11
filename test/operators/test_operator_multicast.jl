@@ -9,7 +9,7 @@ using Rocket
 
     @testset begin
         subject = Subject(Int)
-        source  = from(1:5) |> multicast(subject)
+        source = from(1:5) |> multicast(subject)
 
         actor1 = keep(Int)
         actor2 = keep(Int)
@@ -22,8 +22,8 @@ using Rocket
 
         connect(source)
 
-        @test actor1.values == [ 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 1, 2, 3, 4, 5 ]
+        @test actor1.values == [1, 2, 3, 4, 5]
+        @test actor2.values == [1, 2, 3, 4, 5]
     end
 
 end

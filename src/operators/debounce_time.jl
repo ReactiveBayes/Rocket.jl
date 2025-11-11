@@ -9,34 +9,36 @@ import Base: show
 debounce_time(due_time::Int) = DebounceTimeOperator(due_time)
 
 struct DebounceTimeOperator <: InferableOperator
-    due_time :: Int
+    due_time::Int
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::DebounceTimeOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::DebounceTimeOperator, source) where {L}
     return proxy(L, source, DebounceTimeProxy(operator.due_time))
 end
 
-operator_right(operator::DebounceTimeOperator, ::Type{L}) where L = L
+operator_right(operator::DebounceTimeOperator, ::Type{L}) where {L} = L
 
 struct DebounceTimeProxy <: ActorSourceProxy
-    due_time :: Int
+    due_time::Int
 end
 
-actor_proxy!(::Type{L}, proxy::DebounceTimeProxy, actor::A)   where { L, A } = DebounceTimeActor{L, A}(proxy.due_time, actor)
-source_proxy!(::Type{L}, proxy::DebounceTimeProxy, source::S) where { L, S } = DebounceTimeObservable{L, S}(source)
+actor_proxy!(::Type{L}, proxy::DebounceTimeProxy, actor::A) where {L,A} =
+    DebounceTimeActor{L,A}(proxy.due_time, actor)
+source_proxy!(::Type{L}, proxy::DebounceTimeProxy, source::S) where {L,S} =
+    DebounceTimeObservable{L,S}(source)
 
 struct DebounceTimeCompletionException <: Exception end
 struct DebounceTimeCancellationException <: Exception end
 
-mutable struct DebounceTimeActor{L, A} <: Actor{L}
-    is_cancelled  :: Bool
-    is_completed  :: Bool
-    due_time      :: Int
-    actor         :: A
-    last_received :: Union{Nothing, L}
-    condition     :: Condition
+mutable struct DebounceTimeActor{L,A} <: Actor{L}
+    is_cancelled::Bool
+    is_completed::Bool
+    due_time::Int
+    actor::A
+    last_received::Union{Nothing,L}
+    condition::Condition
 
-    DebounceTimeActor{L, A}(due_time::Int, actor::A) where { L, A } = begin
+    DebounceTimeActor{L,A}(due_time::Int, actor::A) where {L,A} = begin
         self = new(false, false, due_time, actor, nothing, Condition())
 
         @async begin
@@ -68,7 +70,7 @@ mutable struct DebounceTimeActor{L, A} <: Actor{L}
     end
 end
 
-function on_next!(actor::DebounceTimeActor{L}, data::L) where L
+function on_next!(actor::DebounceTimeActor{L}, data::L) where {L}
     actor.last_received = data
     notify(actor.condition)
 end
@@ -85,10 +87,11 @@ function on_complete!(actor::DebounceTimeActor)
     close(actor)
 end
 
-Base.close(actor::DebounceTimeActor, excp = DebounceTimeCompletionException()) = notify(actor.condition, excp; error = true)
+Base.close(actor::DebounceTimeActor, excp = DebounceTimeCompletionException()) =
+    notify(actor.condition, excp; error = true)
 
-@subscribable struct DebounceTimeObservable{L, S} <: Subscribable{L}
-    source :: S
+@subscribable struct DebounceTimeObservable{L,S} <: Subscribable{L}
+    source::S
 end
 
 function on_subscribe!(observable::DebounceTimeObservable, actor::DebounceTimeActor)
@@ -96,8 +99,8 @@ function on_subscribe!(observable::DebounceTimeObservable, actor::DebounceTimeAc
 end
 
 struct DebounceTimeSubscription <: Teardown
-    actor
-    subscription
+    actor::Any
+    subscription::Any
 end
 
 as_teardown(::Type{<:DebounceTimeSubscription}) = UnsubscribableTeardownLogic()
@@ -111,8 +114,9 @@ function on_unsubscribe!(subscription::DebounceTimeSubscription)
     return nothing
 end
 
-Base.show(io::IO, ::DebounceTimeOperator)              = print(io, "DebounceTimeOperator()")
-Base.show(io::IO, ::DebounceTimeProxy)                 = print(io, "DebounceTimeProxy()")
-Base.show(io::IO, ::DebounceTimeActor{L})      where L = print(io, "DebounceTimeActor($L)")
-Base.show(io::IO, ::DebounceTimeObservable{L}) where L = print(io, "DebounceTimeObservable($L)")
-Base.show(io::IO, ::DebounceTimeSubscription)          = print(io, "DebounceTimeSubscription()")
+Base.show(io::IO, ::DebounceTimeOperator) = print(io, "DebounceTimeOperator()")
+Base.show(io::IO, ::DebounceTimeProxy) = print(io, "DebounceTimeProxy()")
+Base.show(io::IO, ::DebounceTimeActor{L}) where {L} = print(io, "DebounceTimeActor($L)")
+Base.show(io::IO, ::DebounceTimeObservable{L}) where {L} =
+    print(io, "DebounceTimeObservable($L)")
+Base.show(io::IO, ::DebounceTimeSubscription) = print(io, "DebounceTimeSubscription()")

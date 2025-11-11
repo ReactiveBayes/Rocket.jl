@@ -40,8 +40,8 @@ using Rocket
 
         unsubscribe!(subscription2)
 
-        @test actor1.values == [ 0, 1, 3, 4 ]
-        @test actor2.values == [ 3, 4, 5, 6 ]
+        @test actor1.values == [0, 1, 3, 4]
+        @test actor2.values == [3, 4, 5, 6]
     end
 
     @testset begin
@@ -60,9 +60,9 @@ using Rocket
 
         complete!(subject)
 
-        @test values        == [ 1, 2, 3, 4, 5 ]
-        @test actor1.values == [ 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 1, 2, 3, 4, 5 ]
+        @test values == [1, 2, 3, 4, 5]
+        @test actor1.values == [1, 2, 3, 4, 5]
+        @test actor2.values == [1, 2, 3, 4, 5]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
@@ -71,33 +71,33 @@ using Rocket
     @testset begin
         subject = Subject(Int)
 
-        values      = []
-        errors      = []
+        values = []
+        errors = []
         completions = []
 
         actor = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
+            on_next = (d) -> push!(values, d),
+            on_error = (e) -> push!(errors, e),
+            on_complete = () -> push!(completions, 0),
         )
 
         subscribe!(subject, actor)
 
-        @test values      == [ ]
-        @test errors      == [ ]
-        @test completions == [ ]
+        @test values == []
+        @test errors == []
+        @test completions == []
 
         error!(subject, "err")
 
-        @test values      == [ ]
-        @test errors      == [ "err" ]
-        @test completions == [ ]
+        @test values == []
+        @test errors == ["err"]
+        @test completions == []
 
         subscribe!(subject, actor)
 
-        @test values      == [ ]
-        @test errors      == [ "err", "err" ]
-        @test completions == [ ]
+        @test values == []
+        @test errors == ["err", "err"]
+        @test completions == []
 
     end
 
@@ -118,9 +118,9 @@ using Rocket
 
         complete!(subject)
 
-        @test values        == [ 1, 2, 3, 4, 5 ]
-        @test actor1.values == [ 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 1, 2, 3, 4, 5 ]
+        @test values == [1, 2, 3, 4, 5]
+        @test actor1.values == [1, 2, 3, 4, 5]
+        @test actor2.values == [1, 2, 3, 4, 5]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
@@ -144,13 +144,13 @@ using Rocket
 
         next!(subject1, 1)
 
-        @test actor1.values == [ 1 ]
-        @test actor2.values == [  ]
+        @test actor1.values == [1]
+        @test actor2.values == []
 
         next!(subject2, 2)
 
-        @test actor1.values == [ 1 ]
-        @test actor2.values == [ 2 ]
+        @test actor1.values == [1]
+        @test actor2.values == [2]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
@@ -169,13 +169,13 @@ using Rocket
 
         next!(subject, 1)
 
-        @test actor1.values == [ 1 ]
-        @test actor2.values == [ 1 ]
+        @test actor1.values == [1]
+        @test actor2.values == [1]
 
         next!(subject, 2)
 
-        @test actor1.values == [ 1 ]
-        @test actor2.values == [ 1, 2 ]
+        @test actor1.values == [1]
+        @test actor2.values == [1, 2]
     end
 
     @testset begin
@@ -200,33 +200,33 @@ using Rocket
 
         next!(main, 1)
 
-        @test keep1.values == [ 1 ]
-        @test keep2.values == [ 1 ]
-        @test keep3.values == [ 1 ]
+        @test keep1.values == [1]
+        @test keep2.values == [1]
+        @test keep3.values == [1]
 
         unsubscribe!(sub2)
 
         next!(main, 2)
 
-        @test keep1.values == [ 1, 2 ]
-        @test keep2.values == [ 1 ]
-        @test keep3.values == [ 1, 2 ]
+        @test keep1.values == [1, 2]
+        @test keep2.values == [1]
+        @test keep3.values == [1, 2]
 
         unsubscribe!(sub3)
 
         next!(main, 3)
 
-        @test keep1.values == [ 1, 2, 3 ]
-        @test keep2.values == [ 1 ]
-        @test keep3.values == [ 1, 2 ]
+        @test keep1.values == [1, 2, 3]
+        @test keep2.values == [1]
+        @test keep3.values == [1, 2]
 
         unsubscribe!(sub2) # sub2 here is intentional
 
         next!(main, 4)
 
-        @test keep1.values == [ 1, 2, 3, 4 ]
-        @test keep2.values == [ 1 ]
-        @test keep3.values == [ 1, 2 ]
+        @test keep1.values == [1, 2, 3, 4]
+        @test keep2.values == [1]
+        @test keep3.values == [1, 2]
     end
 
 end

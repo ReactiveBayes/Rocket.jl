@@ -3,7 +3,14 @@ module RocketTestActorTest
 using Test
 using Rocket
 
-import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, check_data_equals, check_error_equals
+import Rocket:
+    test_actor,
+    check_isvalid,
+    isreceived,
+    iscompleted,
+    isfailed,
+    check_data_equals,
+    check_error_equals
 
 @testset "TestActor" begin
 
@@ -134,7 +141,7 @@ import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, che
         @test isreceived(actor1)
         @test iscompleted(actor1)
         @test !isfailed(actor1)
-        @test check_data_equals(actor1, [ 0, 1, 2 ])
+        @test check_data_equals(actor1, [0, 1, 2])
 
         actor2 = test_actor(String)
 
@@ -147,10 +154,10 @@ import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, che
         @test isreceived(actor2)
         @test !iscompleted(actor2)
         @test isfailed(actor2)
-        @test check_data_equals(actor2, [ "0", "1", "2" ])
+        @test check_data_equals(actor2, ["0", "1", "2"])
         @test check_error_equals(actor2, "error")
 
-        actor3 = test_actor(Union{Int, String})
+        actor3 = test_actor(Union{Int,String})
 
         next!(actor3, 0)
         next!(actor3, "1")
@@ -161,7 +168,7 @@ import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, che
         @test isreceived(actor3)
         @test !iscompleted(actor3)
         @test !isfailed(actor3)
-        @test check_data_equals(actor3, [ 0, "1", "2", 3 ])
+        @test check_data_equals(actor3, [0, "1", "2", 3])
 
         actor4 = test_actor(Any)
 
@@ -169,24 +176,30 @@ import Rocket: test_actor, check_isvalid, isreceived, iscompleted, isfailed, che
         @test !isreceived(actor4)
         @test !iscompleted(actor4)
         @test !isfailed(actor4)
-        @test check_data_equals(actor4, [ ])
+        @test check_data_equals(actor4, [])
 
         actor5 = test_actor(Any)
 
         next!(actor5, rand())
 
-        @test_throws Rocket.DataEventsEqualityFailedException check_data_equals(actor5, [ rand() ])
+        @test_throws Rocket.DataEventsEqualityFailedException check_data_equals(
+            actor5,
+            [rand()],
+        )
 
         actor6 = test_actor(Any)
 
         error!(actor6, rand())
 
-        @test_throws Rocket.ErrorEventEqualityFailedException check_error_equals(actor6, rand())
+        @test_throws Rocket.ErrorEventEqualityFailedException check_error_equals(
+            actor6,
+            rand(),
+        )
     end
 
     @testset begin
         @test test_actor(Int) isa Rocket.TestActor
-        @test test_actor()    isa Rocket.TestActorFactory
+        @test test_actor() isa Rocket.TestActorFactory
     end
 end
 

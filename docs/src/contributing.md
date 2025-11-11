@@ -32,7 +32,7 @@ changes to Rocket code will be reflected in imported code.
 
 ### Committing code
 
-We use the standard [GitHub Flow](https://guides.github.com/introduction/flow/) workflow where all contributions are added through pull requests. In order to contribute, first [fork](https://guides.github.com/activities/forking/) the repository, then commit your contributions to your fork, and then create a pull request on the `master` branch of the Rocket.jl repository.
+We use the standard [GitHub Flow](https://guides.github.com/introduction/flow/) workflow where all contributions are added through pull requests. In order to contribute, first [fork](https://guides.github.com/activities/forking/) the repository, then commit your contributions to your fork, and then create a pull request on the `main` branch of the Rocket.jl repository.
 
 Before opening a pull request, please make sure that all tests pass without
 failing! All demos (can be found in `/demo/` directory) have to run without errors as well.

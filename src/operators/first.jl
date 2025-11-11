@@ -34,4 +34,6 @@ subscription = subscribe!(source |> first(), logger())
 
 See also: [`take`](@ref), [`logger`](@ref)
 """
-first(; default = nothing) = default === nothing ? take(1) + error_if_empty(FirstNotFoundException()) : take(1) + default_if_empty(default)
+first(; default = nothing) =
+    default === nothing ? take(1) + error_if_empty(FirstNotFoundException()) :
+    take(1) + default_if_empty(default)

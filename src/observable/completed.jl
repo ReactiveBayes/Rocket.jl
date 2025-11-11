@@ -13,8 +13,8 @@ Observable that emits no items to the Actor and just sends a complete notificati
 
 See also: [`Subscribable`](@ref), [`completed`](@ref)
 """
-@subscribable struct CompletedObservable{D, H} <: ScheduledSubscribable{D}
-    scheduler :: H
+@subscribable struct CompletedObservable{D,H} <: ScheduledSubscribable{D}
+    scheduler::H
 end
 
 getscheduler(observable::CompletedObservable) = observable.scheduler
@@ -50,9 +50,11 @@ subscribe!(source, logger())
 
 See also: [`CompletedObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-completed(::Type{T} = Any; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = CompletedObservable{T, H}(scheduler)
+completed(::Type{T} = Any; scheduler::H = AsapScheduler()) where {T,H<:AbstractScheduler} =
+    CompletedObservable{T,H}(scheduler)
 
-Base.:(==)(::CompletedObservable{T, H}, ::CompletedObservable{T, H}) where { T, H } = true
-Base.:(==)(::CompletedObservable,       ::CompletedObservable)                      = false
+Base.:(==)(::CompletedObservable{T,H}, ::CompletedObservable{T,H}) where {T,H} = true
+Base.:(==)(::CompletedObservable, ::CompletedObservable) = false
 
-Base.show(io::IO, ::CompletedObservable{T, H}) where { T, H } = print(io, "CompletedObservable($T, $H)")
+Base.show(io::IO, ::CompletedObservable{T,H}) where {T,H} =
+    print(io, "CompletedObservable($T, $H)")

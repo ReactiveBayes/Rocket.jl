@@ -45,22 +45,23 @@ ref_count() = RefCountOperator()
 
 struct RefCountOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::RefCountOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::RefCountOperator, source) where {L}
     return proxy(L, source, RefCountProxy())
 end
 
-operator_right(operator::RefCountOperator, ::Type{L}) where L = L
+operator_right(operator::RefCountOperator, ::Type{L}) where {L} = L
 
 struct RefCountProxy <: SourceProxy end
 
-source_proxy!(::Type{L}, proxy::RefCountProxy, source::S) where { L, S } = RefCountSource{L, S}(source)
+source_proxy!(::Type{L}, proxy::RefCountProxy, source::S) where {L,S} =
+    RefCountSource{L,S}(source)
 
-@subscribable mutable struct RefCountSource{L, S} <: Subscribable{L}
-    csource       :: S
-    refcount      :: Int
-    csubscription :: Teardown
+@subscribable mutable struct RefCountSource{L,S} <: Subscribable{L}
+    csource::S
+    refcount::Int
+    csubscription::Teardown
 
-    RefCountSource{L, S}(csource::S) where { L, S } = new(csource, 0, voidTeardown)
+    RefCountSource{L,S}(csource::S) where {L,S} = new(csource, 0, voidTeardown)
 end
 
 getrecent(source::RefCountSource, ::RefCountProxy) = getrecent(source.csource)
@@ -74,9 +75,9 @@ function on_subscribe!(refcount_source::RefCountSource, actor)
     return RefCountSourceSubscription(refcount_source, subscription)
 end
 
-mutable struct RefCountSourceSubscription{S, T} <: Teardown
-    refcount_source :: Union{Nothing, S}
-    subscription    :: T
+mutable struct RefCountSourceSubscription{S,T} <: Teardown
+    refcount_source::Union{Nothing,S}
+    subscription::T
 end
 
 as_teardown(::Type{<:RefCountSourceSubscription}) = UnsubscribableTeardownLogic()
@@ -95,7 +96,7 @@ function on_unsubscribe!(subscription::RefCountSourceSubscription)
     end
 end
 
-Base.show(io::IO, ::RefCountOperator)           = print(io, "RefCountOperator()")
-Base.show(io::IO, ::RefCountProxy)              = print(io, "RefCountProxy()")
-Base.show(io::IO, ::RefCountSource{L})  where L = print(io, "RefCountSource($L)")
+Base.show(io::IO, ::RefCountOperator) = print(io, "RefCountOperator()")
+Base.show(io::IO, ::RefCountProxy) = print(io, "RefCountProxy()")
+Base.show(io::IO, ::RefCountSource{L}) where {L} = print(io, "RefCountSource($L)")
 Base.show(io::IO, ::RefCountSourceSubscription) = print(io, "RefCountSubscription()")

@@ -42,38 +42,43 @@ subscribe!(race(source1, source2), logger())
 ```
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
-race()                                 = error("race operator expects at least one inner observable on input")
-race(args...)                          = race(args)
-race(sources::S) where { S <: Tuple }  = RaceObservable{union_type(sources), S}(sources)
-race(sources::V) where { V <: Vector } = RaceObservable{union_type(sources), V}(sources)
+race() = error("race operator expects at least one inner observable on input")
+race(args...) = race(args)
+race(sources::S) where {S<:Tuple} = RaceObservable{union_type(sources),S}(sources)
+race(sources::V) where {V<:Vector} = RaceObservable{union_type(sources),V}(sources)
 
 ##
 
-struct RaceInnerActor{L, W, I} <: Actor{L}
-    wrapper :: W
+struct RaceInnerActor{L,W,I} <: Actor{L}
+    wrapper::W
 end
 
-Base.show(io::IO, inner::RaceInnerActor{L, W, I}) where { L, W, I } = print(io, "RaceInnerActor($L, $I)")
+Base.show(io::IO, inner::RaceInnerActor{L,W,I}) where {L,W,I} =
+    print(io, "RaceInnerActor($L, $I)")
 
-on_next!(actor::RaceInnerActor{L, W, I}, data::L) where { L, W, I } = next_received!(actor.wrapper, data, Val{I}())
-on_error!(actor::RaceInnerActor{L, W, I}, err)    where { L, W, I } = error_received!(actor.wrapper, err, Val{I}())
-on_complete!(actor::RaceInnerActor{L, W, I})      where { L, W, I } = complete_received!(actor.wrapper, Val{I}())
+on_next!(actor::RaceInnerActor{L,W,I}, data::L) where {L,W,I} =
+    next_received!(actor.wrapper, data, Val{I}())
+on_error!(actor::RaceInnerActor{L,W,I}, err) where {L,W,I} =
+    error_received!(actor.wrapper, err, Val{I}())
+on_complete!(actor::RaceInnerActor{L,W,I}) where {L,W,I} =
+    complete_received!(actor.wrapper, Val{I}())
 
 ##
 
 mutable struct RaceActorWrapper{A}
-    actor               :: A
-    subscriptions       :: Vector{Teardown}
-    first_emmited_index :: Union{Nothing, Int}
+    actor::A
+    subscriptions::Vector{Teardown}
+    first_emmited_index::Union{Nothing,Int}
 
-    RaceActorWrapper{A}(actor::A) where A = new(actor, Vector{Teardown}(), nothing)
+    RaceActorWrapper{A}(actor::A) where {A} = new(actor, Vector{Teardown}(), nothing)
 end
 
-has_emmited(wrapper::RaceActorWrapper)                     = get_first_emmited_index(wrapper) !== nothing
-get_first_emmited_index(wrapper::RaceActorWrapper)         = wrapper.first_emmited_index
-set_first_emmited_index!(wrapper::RaceActorWrapper, index) = wrapper.first_emmited_index = index
+has_emmited(wrapper::RaceActorWrapper) = get_first_emmited_index(wrapper) !== nothing
+get_first_emmited_index(wrapper::RaceActorWrapper) = wrapper.first_emmited_index
+set_first_emmited_index!(wrapper::RaceActorWrapper, index) =
+    wrapper.first_emmited_index = index
 
-function next_received!(wrapper::RaceActorWrapper, data, index::Val{I}) where I
+function next_received!(wrapper::RaceActorWrapper, data, index::Val{I}) where {I}
     first = get_first_emmited_index(wrapper)
     if first === nothing
         set_first_emmited_index!(wrapper, I)
@@ -84,7 +89,7 @@ function next_received!(wrapper::RaceActorWrapper, data, index::Val{I}) where I
     end
 end
 
-function error_received!(wrapper::RaceActorWrapper, err, index::Val{I}) where I
+function error_received!(wrapper::RaceActorWrapper, err, index::Val{I}) where {I}
     first = get_first_emmited_index(wrapper)
     if first === nothing
         set_first_emmited_index!(wrapper, I)
@@ -95,7 +100,7 @@ function error_received!(wrapper::RaceActorWrapper, err, index::Val{I}) where I
     end
 end
 
-function complete_received!(wrapper::RaceActorWrapper, index::Val{I}) where I
+function complete_received!(wrapper::RaceActorWrapper, index::Val{I}) where {I}
     first = get_first_emmited_index(wrapper)
     if first === nothing
         set_first_emmited_index!(wrapper, I)
@@ -108,7 +113,7 @@ end
 
 dispose(wrapper::RaceActorWrapper) = foreach(s -> unsubscribe!(s), wrapper.subscriptions)
 
-function dispose_except(wrapper::RaceActorWrapper, index::Val{I}) where I
+function dispose_except(wrapper::RaceActorWrapper, index::Val{I}) where {I}
     for (i, subscription) in enumerate(wrapper.subscriptions)
         if i !== I
             unsubscribe!(subscription)
@@ -118,14 +123,20 @@ end
 
 ##
 
-@subscribable struct RaceObservable{T, S} <: Subscribable{T}
-    sources :: S
+@subscribable struct RaceObservable{T,S} <: Subscribable{T}
+    sources::S
 end
 
-function on_subscribe!(observable::RaceObservable, actor::A) where { A }
+function on_subscribe!(observable::RaceObservable, actor::A) where {A}
     wrapper = RaceActorWrapper{A}(actor)
     for (index, source) in enumerate(observable.sources)
-        push!(wrapper.subscriptions, subscribe!(source, RaceInnerActor{eltype(source), typeof(wrapper), index}(wrapper)))
+        push!(
+            wrapper.subscriptions,
+            subscribe!(
+                source,
+                RaceInnerActor{eltype(source),typeof(wrapper),index}(wrapper),
+            ),
+        )
         if has_emmited(wrapper)
             break
         end
@@ -136,15 +147,15 @@ end
 ##
 
 struct RaceSubscription{W} <: Teardown
-    wrapper :: W
+    wrapper::W
 end
 
-as_teardown(::Type{ <: RaceSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: RaceSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::RaceSubscription)
     dispose(subscription.wrapper)
     return nothing
 end
 
-Base.show(io::IO, ::RaceObservable{D}) where D  = print(io, "RaceObservable($D)")
-Base.show(io::IO, ::RaceSubscription)           = print(io, "RaceSubscription()")
+Base.show(io::IO, ::RaceObservable{D}) where {D} = print(io, "RaceObservable($D)")
+Base.show(io::IO, ::RaceSubscription) = print(io, "RaceSubscription()")

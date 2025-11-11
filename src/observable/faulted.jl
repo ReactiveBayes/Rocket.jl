@@ -14,9 +14,9 @@ Observable that emits no items to the Actor and just sends an error notification
 
 See also: [`faulted`](@ref)
 """
-@subscribable struct FaultedObservable{D, H} <: ScheduledSubscribable{D}
-    err
-    scheduler :: H
+@subscribable struct FaultedObservable{D,H} <: ScheduledSubscribable{D}
+    err::Any
+    scheduler::H
 end
 
 getscheduler(observable::FaultedObservable) = observable.scheduler
@@ -56,14 +56,19 @@ See also: [`FaultedObservable`](@ref), [`subscribe!`](@ref)
 """
 function faulted end
 
-faulted(::Type{T}; scheduler::H = AsapScheduler())      where { T, H <: AbstractScheduler } = error("Missing error value in faulted() constructor.")
-faulted(err; scheduler::H = AsapScheduler())            where { H <: AbstractScheduler }    = FaultedObservable{Any, H}(err, scheduler)
-faulted(::Type{T}, err; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = FaultedObservable{T, H}(err, scheduler)
+faulted(::Type{T}; scheduler::H = AsapScheduler()) where {T,H<:AbstractScheduler} =
+    error("Missing error value in faulted() constructor.")
+faulted(err; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler} =
+    FaultedObservable{Any,H}(err, scheduler)
+faulted(::Type{T}, err; scheduler::H = AsapScheduler()) where {T,H<:AbstractScheduler} =
+    FaultedObservable{T,H}(err, scheduler)
 
-Base.:(==)(e1::FaultedObservable{D, H},  e2::FaultedObservable{D, H}) where { D, H } = e1.err == e2.err
-Base.:(==)(e1::FaultedObservable,     e2::FaultedObservable)                         = false
+Base.:(==)(e1::FaultedObservable{D,H}, e2::FaultedObservable{D,H}) where {D,H} =
+    e1.err == e2.err
+Base.:(==)(e1::FaultedObservable, e2::FaultedObservable) = false
 
-Base.show(io::IO, ::FaultedObservable{D, H}) where { D, H } = print(io, "FaultedObservable($D, $H)")
+Base.show(io::IO, ::FaultedObservable{D,H}) where {D,H} =
+    print(io, "FaultedObservable($D, $H)")
 
-@deprecate throwError(T)    faulted(T)
+@deprecate throwError(T) faulted(T)
 @deprecate throwError(T, e) faulted(T, e)

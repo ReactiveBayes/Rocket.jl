@@ -31,24 +31,25 @@ skip_next() = SkipNextOperator()
 
 struct SkipNextOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::SkipNextOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::SkipNextOperator, source) where {L}
     return proxy(L, source, SkipNextProxy())
 end
 
-operator_right(operator::SkipNextOperator, ::Type{L}) where L = L
+operator_right(operator::SkipNextOperator, ::Type{L}) where {L} = L
 
 struct SkipNextProxy <: ActorProxy end
 
-actor_proxy!(::Type{L}, proxy::SkipNextProxy, actor::A) where { L, A } = SkipNextActor{L, A}(actor)
+actor_proxy!(::Type{L}, proxy::SkipNextProxy, actor::A) where {L,A} =
+    SkipNextActor{L,A}(actor)
 
-struct SkipNextActor{L, A} <: Actor{L}
-    actor :: A
+struct SkipNextActor{L,A} <: Actor{L}
+    actor::A
 end
 
-on_next!(actor::SkipNextActor{L}, data::L) where L = begin end
-on_error!(actor::SkipNextActor, err)               = error!(actor.actor, err)
-on_complete!(actor::SkipNextActor)                 = complete!(actor.actor)
+on_next!(actor::SkipNextActor{L}, data::L) where {L} = begin end
+on_error!(actor::SkipNextActor, err) = error!(actor.actor, err)
+on_complete!(actor::SkipNextActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::SkipNextOperator)         = print(io, "SkipNextOperator()")
-Base.show(io::IO, ::SkipNextProxy)            = print(io, "SkipNextProxy($L)")
-Base.show(io::IO, ::SkipNextActor{L}) where L = print(io, "SkipNextActor($L)")
+Base.show(io::IO, ::SkipNextOperator) = print(io, "SkipNextOperator()")
+Base.show(io::IO, ::SkipNextProxy) = print(io, "SkipNextProxy($L)")
+Base.show(io::IO, ::SkipNextActor{L}) where {L} = print(io, "SkipNextActor($L)")

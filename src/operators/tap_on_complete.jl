@@ -35,33 +35,42 @@ Complete event received
 
 See also: [`tap_on_subscribe`](@ref), [`tap`](@ref), [`logger`](@ref)
 """
-tap_on_complete(tapFn::F) where { F <: Function } = TapOnCompleteOperator{F}(tapFn)
+tap_on_complete(tapFn::F) where {F<:Function} = TapOnCompleteOperator{F}(tapFn)
 
 struct TapOnCompleteOperator{F} <: InferableOperator
-    tapFn :: F
+    tapFn::F
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::TapOnCompleteOperator{F}, source) where { L, F }
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::TapOnCompleteOperator{F},
+    source,
+) where {L,F}
     return proxy(L, source, TapOnCompleteProxy{F}(operator.tapFn))
 end
 
-operator_right(operator::TapOnCompleteOperator, ::Type{L}) where L = L
+operator_right(operator::TapOnCompleteOperator, ::Type{L}) where {L} = L
 
 struct TapOnCompleteProxy{F} <: ActorProxy
-    tapFn :: F
+    tapFn::F
 end
 
-actor_proxy!(::Type{L}, proxy::TapOnCompleteProxy{F}, actor::A) where { L, A, F } = TapOnCompleteActor{L, A, F}(proxy.tapFn, actor)
+actor_proxy!(::Type{L}, proxy::TapOnCompleteProxy{F}, actor::A) where {L,A,F} =
+    TapOnCompleteActor{L,A,F}(proxy.tapFn, actor)
 
-struct TapOnCompleteActor{L, A, F} <: Actor{L}
-    tapFn :: F
-    actor :: A
+struct TapOnCompleteActor{L,A,F} <: Actor{L}
+    tapFn::F
+    actor::A
 end
 
-on_next!(actor::TapOnCompleteActor{L}, data::L) where L = next!(actor.actor, data)
-on_error!(actor::TapOnCompleteActor, err)               = error!(actor.actor, err)
-on_complete!(actor::TapOnCompleteActor)                 = begin complete!(actor.actor); actor.tapFn(); end
+on_next!(actor::TapOnCompleteActor{L}, data::L) where {L} = next!(actor.actor, data)
+on_error!(actor::TapOnCompleteActor, err) = error!(actor.actor, err)
+on_complete!(actor::TapOnCompleteActor) = begin
+    complete!(actor.actor);
+    actor.tapFn();
+end
 
-Base.show(io::IO, ::TapOnCompleteOperator)         = print(io, "TapOnCompleteOperator()")
-Base.show(io::IO, ::TapOnCompleteProxy)            = print(io, "TapOnCompleteProxy()")
-Base.show(io::IO, ::TapOnCompleteActor{L}) where L = print(io, "TapOnCompleteActor($L)")
+Base.show(io::IO, ::TapOnCompleteOperator) = print(io, "TapOnCompleteOperator()")
+Base.show(io::IO, ::TapOnCompleteProxy) = print(io, "TapOnCompleteProxy()")
+Base.show(io::IO, ::TapOnCompleteActor{L}) where {L} = print(io, "TapOnCompleteActor($L)")

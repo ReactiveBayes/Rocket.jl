@@ -32,31 +32,32 @@ to_array() = ToArrayOperator()
 
 struct ToArrayOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{Vector{L}}, operator::ToArrayOperator, source) where L
+function on_call!(::Type{L}, ::Type{Vector{L}}, operator::ToArrayOperator, source) where {L}
     return proxy(Vector{L}, source, ToArrayProxy())
 end
 
-operator_right(operator::ToArrayOperator, ::Type{L}) where L = Vector{L}
+operator_right(operator::ToArrayOperator, ::Type{L}) where {L} = Vector{L}
 
 struct ToArrayProxy <: ActorProxy end
 
-actor_proxy!(::Type{Vector{L}}, proxy::ToArrayProxy, actor::A) where { L, A } = ToArrayActor{L, A}(actor)
+actor_proxy!(::Type{Vector{L}}, proxy::ToArrayProxy, actor::A) where {L,A} =
+    ToArrayActor{L,A}(actor)
 
-struct ToArrayActor{L, A} <: Actor{L}
-    values :: Vector{L}
-    actor  :: A
+struct ToArrayActor{L,A} <: Actor{L}
+    values::Vector{L}
+    actor::A
 
-    ToArrayActor{L, A}(actor::A) where { L, A } = new(Vector{L}(), actor)
+    ToArrayActor{L,A}(actor::A) where {L,A} = new(Vector{L}(), actor)
 end
 
-on_next!(actor::ToArrayActor, data::L) where L = push!(actor.values, data)
-on_error!(actor::ToArrayActor, err)            = error!(actor.actor, err)
+on_next!(actor::ToArrayActor, data::L) where {L} = push!(actor.values, data)
+on_error!(actor::ToArrayActor, err) = error!(actor.actor, err)
 
 function on_complete!(actor::ToArrayActor)
     next!(actor.actor, actor.values)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, ::ToArrayOperator)         = print(io, "ToArrayOperator()")
-Base.show(io::IO, ::ToArrayProxy)            = print(io, "ToArrayProxy()")
-Base.show(io::IO, ::ToArrayActor{L}) where L = print(io, "ToArrayActor($L)")
+Base.show(io::IO, ::ToArrayOperator) = print(io, "ToArrayOperator()")
+Base.show(io::IO, ::ToArrayProxy) = print(io, "ToArrayProxy()")
+Base.show(io::IO, ::ToArrayActor{L}) where {L} = print(io, "ToArrayActor($L)")

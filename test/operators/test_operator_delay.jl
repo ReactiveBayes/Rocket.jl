@@ -9,25 +9,13 @@ include("../test_helpers.jl")
 
     println("Testing: operator delay()")
 
-    run_proxyshowcheck("Delay", delay(0), args = (check_subscription = true, ))
+    run_proxyshowcheck("Delay", delay(0), args = (check_subscription = true,))
 
     run_testset([
-        (
-            source = of(2) |> delay(50),
-            values = @ts(50 ~ [ 2 ] ~ c)
-        ),
-        (
-            source = completed(Int) |> delay(50),
-            values = @ts(50 ~ c)
-        ),
-        (
-            source = faulted("e") |> delay(50),
-            values = @ts(50 ~ e("e"))
-        ),
-        (
-            source = never() |> delay(50),
-            values = @ts()
-        )
+        (source = of(2) |> delay(50), values = @ts(50 ~ [2] ~ c)),
+        (source = completed(Int) |> delay(50), values = @ts(50 ~ c)),
+        (source = faulted("e") |> delay(50), values = @ts(50 ~ e("e"))),
+        (source = never() |> delay(50), values = @ts()),
     ])
 
 end

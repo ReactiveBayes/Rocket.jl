@@ -12,38 +12,25 @@ include("../test_helpers.jl")
     run_proxyshowcheck("Last", last())
 
     run_testset([
-
+        (source = from(1:42) |> last(), values = @ts([42, c])),
+        (source = timer(50, 10) |> take(10) |> last(), values = @ts(150 ~ [9, c])),
+        (source = completed() |> last(), values = @ts(e(LastNotFoundException()))),
         (
-            source = from(1:42) |> last(),
-            values = @ts([ 42, c ])
+            source = completed(Int) |> last(default = "String"),
+            values = @ts(["String", c]),
+            source_type = Union{Int,String},
         ),
         (
-            source = timer(50, 10) |> take(10) |> last(),
-            values = @ts(150 ~ [ 9, c ])
+            source = faulted(Int, "e") |> last(),
+            values = @ts(e("e")),
+            source_type = Union{Int},
         ),
         (
-            source = completed() |> last(),
-            values = @ts(e(LastNotFoundException()))
+            source = faulted(Int, "e") |> last(default = "String"),
+            values = @ts(e("e")),
+            source_type = Union{Int,String},
         ),
-        (
-            source      = completed(Int) |> last(default = "String"),
-            values      = @ts([ "String", c ]),
-            source_type = Union{Int, String}
-        ),
-        (
-            source      = faulted(Int, "e") |> last(),
-            values      = @ts(e("e")),
-            source_type = Union{Int}
-        ),
-        (
-            source      = faulted(Int, "e") |> last(default = "String"),
-            values      = @ts(e("e")),
-            source_type = Union{Int, String}
-        ),
-        (
-            source = never() |> last(),
-            values = @ts()
-        )
+        (source = never() |> last(), values = @ts()),
     ])
 
 end

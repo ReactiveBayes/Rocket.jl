@@ -21,33 +21,31 @@ include("../test_helpers.jl")
         @test occursin(string(eltype(source)), printed)
     end
 
-    run_testset([
-        (
-            source = defer(Int, () -> of(1)),
-            values = @ts([ 1, c ])
-        )
-    ])
+    run_testset([(source = defer(Int, () -> of(1)), values = @ts([1, c]))])
 
     @testset begin
         value = 1
-        source = defer(Int, () -> begin value += 1; return of(value) end)
+        source = defer(Int, () -> begin
+            value += 1;
+            return of(value)
+        end)
         values = Vector{Any}()
 
         actor = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(values, e),
-            on_complete = ()  -> push!(values, "completed")
+            on_next = (d) -> push!(values, d),
+            on_error = (e) -> push!(values, e),
+            on_complete = () -> push!(values, "completed"),
         )
 
         @test values == []
 
         subscribe!(source, actor)
 
-        @test values == [ 2, "completed" ]
+        @test values == [2, "completed"]
 
         subscribe!(source, actor)
 
-        @test values == [ 2, "completed", 3, "completed" ]
+        @test values == [2, "completed", 3, "completed"]
 
     end
 

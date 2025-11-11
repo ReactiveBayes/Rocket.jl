@@ -5,22 +5,24 @@ import Base: show
 
 abstract type Scalarness end
 
-struct Scalar              <: Scalarness end
-struct NonScalar           <: Scalarness end
+struct Scalar <: Scalarness end
+struct NonScalar <: Scalarness end
 struct UndefinedScalarness <: Scalarness end
 
-scalarness(::Type)                   = UndefinedScalarness()
-scalarness(::Type{<:Number})         = Scalar()
-scalarness(::Type{<:Char})           = Scalar()
-scalarness(::Type{<:AbstractArray})  = NonScalar()
-scalarness(::Type{<:Tuple})          = NonScalar()
+scalarness(::Type) = UndefinedScalarness()
+scalarness(::Type{<:Number}) = Scalar()
+scalarness(::Type{<:Char}) = Scalar()
+scalarness(::Type{<:AbstractArray}) = NonScalar()
+scalarness(::Type{<:Tuple}) = NonScalar()
 scalarness(::Type{<:AbstractString}) = NonScalar()
 
-as_array(x::T) where T = as_array(scalarness(T), x)
+as_array(x::T) where {T} = as_array(scalarness(T), x)
 
-as_array(::Scalar, x)              = [ x ]
-as_array(::NonScalar, x)           = collect(x)
-as_array(::UndefinedScalarness, x) = error("Value of type $(typeof(x)) has undefined scalarness type. \nConsider implement scalarness(::Type{<:$(typeof(x))}).")
+as_array(::Scalar, x) = [x]
+as_array(::NonScalar, x) = collect(x)
+as_array(::UndefinedScalarness, x) = error(
+    "Value of type $(typeof(x)) has undefined scalarness type. \nConsider implement scalarness(::Type{<:$(typeof(x))}).",
+)
 
 """
     ArrayObservable{D, H}(values::Vector{D}, scheduler::H) where { D, H }
@@ -33,9 +35,9 @@ ArrayObservable wraps a regular Julia array into an observable. Uses scheduler o
 
 See also: [`Subscribable`](@ref), [`from`](@ref)
 """
-@subscribable struct ArrayObservable{D, H} <: ScheduledSubscribable{D}
-    values    :: Vector{D}
-    scheduler :: H
+@subscribable struct ArrayObservable{D,H} <: ScheduledSubscribable{D}
+    values::Vector{D}
+    scheduler::H
 end
 
 getscheduler(observable::ArrayObservable) = observable.scheduler
@@ -146,10 +148,13 @@ subscribe!(source, logger())
 
 See also: [`ArrayObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref), [`iterable`](@ref)
 """
-from(x; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }               = from(as_array(x); scheduler = scheduler)
-from(a::Vector{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler } = ArrayObservable{D, H}(copy(a), scheduler)
+from(x; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler} =
+    from(as_array(x); scheduler = scheduler)
+from(a::Vector{D}; scheduler::H = AsapScheduler()) where {D,H<:AbstractScheduler} =
+    ArrayObservable{D,H}(copy(a), scheduler)
 
-Base.:(==)(left::ArrayObservable{D, H},  right::ArrayObservable{D, H}) where { D, H } = left.values == right.values
-Base.:(==)(left::ArrayObservable,        right::ArrayObservable)                      = false
+Base.:(==)(left::ArrayObservable{D,H}, right::ArrayObservable{D,H}) where {D,H} =
+    left.values == right.values
+Base.:(==)(left::ArrayObservable, right::ArrayObservable) = false
 
-Base.show(io::IO, ::ArrayObservable{D, H}) where { D, H } = print(io, "ArrayObservable($D, $H)")
+Base.show(io::IO, ::ArrayObservable{D,H}) where {D,H} = print(io, "ArrayObservable($D, $H)")

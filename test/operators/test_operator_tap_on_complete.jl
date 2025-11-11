@@ -19,20 +19,19 @@ include("../test_helpers.jl")
     run_testset([
         (
             source = from(1:5) |> tap_on_complete(() -> completed1 = true),
-            values = @ts([ 1:5, c ])
+            values = @ts([1:5, c])
         ),
         (
-            source = from(1:5) |> skip_complete() |> tap_on_complete(() -> completed2 = true),
-            values = @ts([ 1:5 ])
+            source = from(1:5) |>
+                     skip_complete() |>
+                     tap_on_complete(() -> completed2 = true),
+            values = @ts([1:5])
         ),
         (
             source = faulted(1) |> tap_on_complete(() -> completed3 = true),
             values = @ts(e(1))
         ),
-        (
-            source = never() |> tap_on_complete(() -> completed4 = true),
-            values = @ts()
-        )
+        (source = never() |> tap_on_complete(() -> completed4 = true), values = @ts()),
     ])
 
     @test completed1 === true

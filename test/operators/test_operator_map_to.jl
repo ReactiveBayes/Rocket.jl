@@ -11,28 +11,21 @@ include("../test_helpers.jl")
 
     run_testset([
         (
-            source      = from(1:5) |> map_to('a'),
-            values      = @ts([ 'a', 'a', 'a', 'a', 'a', c ]),
-            source_type = Char
+            source = from(1:5) |> map_to('a'),
+            values = @ts(['a', 'a', 'a', 'a', 'a', c]),
+            source_type = Char,
         ),
         (
             source = timer(0, 10) |> take(3) |> map_to(1),
-            values = @ts([ 1 ] ~ 10 ~ [ 1 ] ~ 10 ~ [ 1, c ])
+            values = @ts([1] ~ 10 ~ [1] ~ 10 ~ [1, c])
         ),
+        (source = completed() |> map_to(1), values = @ts(c), source_type = Int),
         (
-            source      = completed() |> map_to(1),
-            values      = @ts(c),
-            source_type = Int
+            source = faulted(String, "e") |> map_to(1),
+            values = @ts(e("e")),
+            source_type = Int,
         ),
-        (
-            source      = faulted(String, "e") |> map_to(1),
-            values      = @ts(e("e")),
-            source_type = Int
-        ),
-        (
-            source = never() |> map_to(1),
-            values = @ts()
-        )
+        (source = never() |> map_to(1), values = @ts()),
     ])
 
 end

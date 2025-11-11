@@ -13,28 +13,19 @@ include("../test_helpers.jl")
 
     source = from(1:5)
 
-    for i in 1:1000
+    for i = 1:1000
         source = source |> map(Int, d -> d + 1) |> noop()
     end
 
-    run_testset([
-        (
-            source = source,
-            values = @ts([ 1001, 1002, 1003, 1004, 1005, c ])
-        ),
-        (
-            source = completed() |> noop(),
-            values = @ts(c)
-        ),
-        (
-            source = faulted(1) |> noop(),
-            values = @ts(e(1))
-        ),
-        (
-            source = never() |> noop(),
-            values = @ts()
-        )
-    ], check_timings = false)
+    run_testset(
+        [
+            (source = source, values = @ts([1001, 1002, 1003, 1004, 1005, c])),
+            (source = completed() |> noop(), values = @ts(c)),
+            (source = faulted(1) |> noop(), values = @ts(e(1))),
+            (source = never() |> noop(), values = @ts()),
+        ],
+        check_timings = false,
+    )
 
 end
 

@@ -1,8 +1,8 @@
 export MILLISECONDS_IN_SECOND, NANOSECONDS_IN_SECOND, NANOSECONDS_IN_MILLISECOND
 export setTimeout
 
-const MILLISECONDS_IN_SECOND     = 1_000.0::Float64
-const NANOSECONDS_IN_SECOND      = 1_000_000_000.0::Float64
+const MILLISECONDS_IN_SECOND = 1_000.0::Float64
+const NANOSECONDS_IN_SECOND = 1_000_000_000.0::Float64
 const NANOSECONDS_IN_MILLISECOND = 1_000_000.0::Float64
 
 """
@@ -45,14 +45,14 @@ end
 
 Returns a Tuple el-type of observable el-types in `sources` argument in the same order
 """
-combined_type(sources) = Tuple{ map(source -> subscribable_extract_type(source), sources)... }
+combined_type(sources) = Tuple{map(source -> subscribable_extract_type(source), sources)...}
 
 """
     union_type(sources)
 
 Returns a Union el-type of observable el-types in `sources` argument
 """
-union_type(sources) = Union{ map(source -> subscribable_extract_type(source), sources)... }
+union_type(sources) = Union{map(source -> subscribable_extract_type(source), sources)...}
 
 
 """
@@ -60,11 +60,11 @@ union_type(sources) = Union{ map(source -> subscribable_extract_type(source), so
 
 Returns a result of `typeof(similar(something, L))`. Provides and optimised, allocation-free method for built-in AbstractArray.
 """
-similar_typeof(::AbstractArray{T, N}, ::Type{L}) where { T, N, L } = Array{L, N}
-similar_typeof(something, ::Type{L})             where { L }       = typeof(similar(something, L))
+similar_typeof(::AbstractArray{T,N}, ::Type{L}) where {T,N,L} = Array{L,N}
+similar_typeof(something, ::Type{L}) where {L} = typeof(similar(something, L))
 
 __extract_structure_name(expr::Symbol) = expr
-__extract_structure_name(expr::Expr)   = expr.args[1]
+__extract_structure_name(expr::Expr) = expr.args[1]
 
 # There is an annoying bug in Julia multiple dispatch which prevents proper traits recursion optimisation
 # Until this bug is fixed we mark all observables and subject structures in Rocket with @subscribable macro to hotfix this bug
@@ -74,11 +74,12 @@ __extract_structure_name(expr::Expr)   = expr.args[1]
 macro subscribable(structure)
     @assert structure.head === :struct "@subscribable macro accepts structure definitions only"
     @assert structure.args[2].head === :(<:) "@subscribable macro accepts structure with Subscribable, ScheduledSubscribable or Subject definitions only"
-    
+
     name = __extract_structure_name(structure.args[2].args[1])
 
     @assert structure.args[2].args[2].head === :curly
-    @assert structure.args[2].args[2].args[1] ∈ (:Subscribable, :ScheduledSubscribable, :AbstractSubject)
+    @assert structure.args[2].args[2].args[1] ∈
+            (:Subscribable, :ScheduledSubscribable, :AbstractSubject)
 
     type = structure.args[2].args[2].args[1]
 
@@ -101,17 +102,37 @@ macro generate_subscribe!(name::Symbol, type::Symbol)
         :(Rocket.BehaviorSubjectInstance),
         :(Rocket.PendingSubjectInstance),
         :(Rocket.RecentSubjectInstance),
-        :(Rocket.ReplaySubjectInstance)
+        :(Rocket.ReplaySubjectInstance),
     )
 
     generated = if type === :Subscribable || type === :AbstractSubject
-        map(actor_type -> :(Rocket.subscribe!(observable::$(name){D}, actor::$(actor_type){D}) where D = Rocket.on_subscribe!(observable, actor)), actor_types)
+        map(
+            actor_type -> :(
+                Rocket.subscribe!(
+                    observable::$(name){D},
+                    actor::$(actor_type){D},
+                ) where {D} = Rocket.on_subscribe!(observable, actor)
+            ),
+            actor_types,
+        )
     elseif type === :ScheduledSubscribable
-        map(actor_type -> :(Rocket.subscribe!(observable::$(name){D}, actor::$(actor_type){D}) where D = Rocket.scheduled_subscription!(observable, actor, Rocket.makeinstance(D, Rocket.getscheduler(observable)))), actor_types)
+        map(
+            actor_type -> :(
+                Rocket.subscribe!(
+                    observable::$(name){D},
+                    actor::$(actor_type){D},
+                ) where {D} = Rocket.scheduled_subscription!(
+                    observable,
+                    actor,
+                    Rocket.makeinstance(D, Rocket.getscheduler(observable)),
+                )
+            ),
+            actor_types,
+        )
     else
         error("Unreacheable in @subscribable macro")
     end
-    return quote 
+    return quote
         $(generated...)
     end
 end

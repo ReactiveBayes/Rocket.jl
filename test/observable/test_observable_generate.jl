@@ -23,25 +23,25 @@ include("../test_helpers.jl")
 
     run_testset([
         (
-            source      = generate(1, x -> x < 3, x -> x + 1),
-            values      = @ts([ 1, 2, c ]),
+            source = generate(1, x -> x < 3, x -> x + 1),
+            values = @ts([1, 2, c]),
             source_type = Int,
         ),
         (
-            source      = generate(1.0, x -> x < 0.5, x -> x + 1.0),
-            values      = @ts(c),
+            source = generate(1.0, x -> x < 0.5, x -> x + 1.0),
+            values = @ts(c),
             source_type = Float64,
         ),
         (
-            source      = generate(1.0, x -> false, x -> x),
-            values      = @ts(c),
+            source = generate(1.0, x -> false, x -> x),
+            values = @ts(c),
             source_type = Float64,
         ),
         (
-            source      = generate(1, x -> x < 2, x -> x + 1, scheduler = AsyncScheduler(0)),
-            values      = @ts([ 1 ] ~ c),
-            source_type = Int
-        )
+            source = generate(1, x -> x < 2, x -> x + 1, scheduler = AsyncScheduler(0)),
+            values = @ts([1] ~ c),
+            source_type = Int,
+        ),
     ])
 
 end

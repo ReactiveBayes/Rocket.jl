@@ -38,35 +38,36 @@ See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`catch_error
 rerun(count::Int = -1) = RerunOperator(count)
 
 struct RerunOperator <: InferableOperator
-    count :: Int
+    count::Int
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::RerunOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::RerunOperator, source) where {L}
     return proxy(L, source, RerunProxy(operator.count))
 end
 
-operator_right(operator::RerunOperator, ::Type{L}) where L = L
+operator_right(operator::RerunOperator, ::Type{L}) where {L} = L
 
 struct RerunProxy <: SourceProxy
-    count :: Int
+    count::Int
 end
 
-source_proxy!(::Type{L}, proxy::RerunProxy, source::S) where { L, S } = RerunSource{L, S}(proxy.count, source)
+source_proxy!(::Type{L}, proxy::RerunProxy, source::S) where {L,S} =
+    RerunSource{L,S}(proxy.count, source)
 
-mutable struct RerunInnerActor{L, S, A} <: Actor{L}
-    source       :: S
-    actor        :: A
-    count        :: Int
-    subscription :: Teardown
+mutable struct RerunInnerActor{L,S,A} <: Actor{L}
+    source::S
+    actor::A
+    count::Int
+    subscription::Teardown
 end
 
-getsubscription(actor::RerunInnerActor)         = actor.subscription
+getsubscription(actor::RerunInnerActor) = actor.subscription
 setsubscription!(actor::RerunInnerActor, value) = actor.subscription = value
 
-getcount(actor::RerunInnerActor)         = actor.count
+getcount(actor::RerunInnerActor) = actor.count
 setcount!(actor::RerunInnerActor, value) = actor.count = max(-1, value)
 
-function on_next!(actor::RerunInnerActor{L}, data::L) where L
+function on_next!(actor::RerunInnerActor{L}, data::L) where {L}
     next!(actor.actor, data)
 end
 
@@ -86,13 +87,13 @@ function on_complete!(actor::RerunInnerActor)
     complete!(actor.actor)
 end
 
-@subscribable struct RerunSource{L, S} <: Subscribable{L}
-    count  :: Int
-    source :: S
+@subscribable struct RerunSource{L,S} <: Subscribable{L}
+    count::Int
+    source::S
 end
 
-function on_subscribe!(source::RerunSource{L, S}, actor::A) where { L, S, A }
-    inner = RerunInnerActor{L, S, A}(source.source, actor, source.count, voidTeardown)
+function on_subscribe!(source::RerunSource{L,S}, actor::A) where {L,S,A}
+    inner = RerunInnerActor{L,S,A}(source.source, actor, source.count, voidTeardown)
 
     setsubscription!(inner, subscribe!(source.source, inner))
 
@@ -100,7 +101,7 @@ function on_subscribe!(source::RerunSource{L, S}, actor::A) where { L, S, A }
 end
 
 struct RerunSubscription{I} <: Teardown
-    inner :: I
+    inner::I
 end
 
 as_teardown(::Type{<:RerunSubscription}) = UnsubscribableTeardownLogic()
@@ -109,7 +110,7 @@ function on_unsubscribe!(subscription::RerunSubscription)
     return unsubscribe!(getsubscription(subscription.inner))
 end
 
-Base.show(io::IO, ::RerunOperator)             = print(io, "RerunOperator()")
-Base.show(io::IO, ::RerunProxy)                = print(io, "RerunProxy()")
-Base.show(io::IO, ::RerunSource{L})    where L = print(io, "RerunSource($L)")
-Base.show(io::IO, ::RerunSubscription)         = print(io, "RerunSubscription()")
+Base.show(io::IO, ::RerunOperator) = print(io, "RerunOperator()")
+Base.show(io::IO, ::RerunProxy) = print(io, "RerunProxy()")
+Base.show(io::IO, ::RerunSource{L}) where {L} = print(io, "RerunSource($L)")
+Base.show(io::IO, ::RerunSubscription) = print(io, "RerunSubscription()")

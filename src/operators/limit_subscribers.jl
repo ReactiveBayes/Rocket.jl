@@ -28,17 +28,19 @@ subscription = subscribe!(some_stream |> limit_subscribers(guard), logger())
 
 See also: [`limit_subscribers`](@ref), [`subscribe!`](@ref)
 """
-struct LimitSubscribersGuard 
-    limit     :: Int
-    exclusive :: Bool
-    handlers  :: CircularBuffer{Tuple{Teardown, Any}}
+struct LimitSubscribersGuard
+    limit::Int
+    exclusive::Bool
+    handlers::CircularBuffer{Tuple{Teardown,Any}}
 end
 
-LimitSubscribersGuard(limit::Int = 1, exclusive::Bool = true) = LimitSubscribersGuard(limit, exclusive, CircularBuffer{Tuple{Teardown, Any}}(limit))
+LimitSubscribersGuard(limit::Int = 1, exclusive::Bool = true) =
+    LimitSubscribersGuard(limit, exclusive, CircularBuffer{Tuple{Teardown,Any}}(limit))
 
-Base.show(io::IO, guard::LimitSubscribersGuard) = print(io, "LimitSubscribersGuard($(getlimit(guard)), $(isexclusive(guard)))")
+Base.show(io::IO, guard::LimitSubscribersGuard) =
+    print(io, "LimitSubscribersGuard($(getlimit(guard)), $(isexclusive(guard)))")
 
-getlimit(guard::LimitSubscribersGuard)    = guard.limit
+getlimit(guard::LimitSubscribersGuard) = guard.limit
 isexclusive(guard::LimitSubscribersGuard) = guard.exclusive
 gethandlers(guard::LimitSubscribersGuard) = guard.handlers
 
@@ -104,34 +106,41 @@ subscription = subscribe!(some_stream |> limit_subscribers(guard), logger())
 
 See also: [`LimitSubscribersGuard`](@ref)
 """
-limit_subscribers(limit::Int = 1, exclusive::Bool = true) = limit_subscribers(LimitSubscribersGuard(limit, exclusive))
-limit_subscribers(guard::LimitSubscribersGuard)           = LimitSubscribersOperator(guard)
+limit_subscribers(limit::Int = 1, exclusive::Bool = true) =
+    limit_subscribers(LimitSubscribersGuard(limit, exclusive))
+limit_subscribers(guard::LimitSubscribersGuard) = LimitSubscribersOperator(guard)
 
-struct LimitSubscribersOperator <: InferableOperator 
-    guard :: LimitSubscribersGuard
+struct LimitSubscribersOperator <: InferableOperator
+    guard::LimitSubscribersGuard
 end
 
-operator_right(::LimitSubscribersOperator, ::Type{L}) where L = L
+operator_right(::LimitSubscribersOperator, ::Type{L}) where {L} = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::LimitSubscribersOperator, source) where L
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::LimitSubscribersOperator,
+    source,
+) where {L}
     if isexclusive(operator.guard)
         release!(operator.guard)
     end
     return proxy(L, source, LimitSubscribersProxy(operator.guard))
 end
 
-struct LimitSubscribersProxy <: SourceProxy 
-    guard :: LimitSubscribersGuard
+struct LimitSubscribersProxy <: SourceProxy
+    guard::LimitSubscribersGuard
 end
 
-source_proxy!(::Type{L}, proxy::LimitSubscribersProxy, source::S) where { L, S } = LimitSubscribersSource{L, S}(source, proxy.guard)
+source_proxy!(::Type{L}, proxy::LimitSubscribersProxy, source::S) where {L,S} =
+    LimitSubscribersSource{L,S}(source, proxy.guard)
 
 struct LimitSubscribersSubscription{S} <: Teardown
-    subscription :: S
-    guard        :: LimitSubscribersGuard
+    subscription::S
+    guard::LimitSubscribersGuard
 end
 
-as_teardown(::Type{ <: LimitSubscribersSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: LimitSubscribersSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::LimitSubscribersSubscription)
     remove_handler!(subscription.guard, subscription.subscription)
@@ -139,9 +148,9 @@ function on_unsubscribe!(subscription::LimitSubscribersSubscription)
     return nothing
 end
 
-struct LimitSubscribersSource{L, S} <: Subscribable{L}
-    source :: S
-    guard  :: LimitSubscribersGuard
+struct LimitSubscribersSource{L,S} <: Subscribable{L}
+    source::S
+    guard::LimitSubscribersGuard
 end
 
 function on_subscribe!(source::LimitSubscribersSource, actor)
@@ -149,10 +158,15 @@ function on_subscribe!(source::LimitSubscribersSource, actor)
     if isfull(gethandlers(guard))
         unsubscribe_last!(guard)
     end
-    return LimitSubscribersSubscription(add_subscription!(guard, subscribe!(source.source, actor), actor), guard)
+    return LimitSubscribersSubscription(
+        add_subscription!(guard, subscribe!(source.source, actor), actor),
+        guard,
+    )
 end
 
-Base.show(io::IO, ::LimitSubscribersOperator)          = print(io, "LimitSubscribersOperator()")
-Base.show(io::IO, ::LimitSubscribersProxy)             = print(io, "LimitSubscribersProxy()")
-Base.show(io::IO, ::LimitSubscribersSource{L}) where L = print(io, "LimitSubscribersSource($L)")
-Base.show(io::IO, ::LimitSubscribersSubscription)      = print(io, "LimitSubscribersSubscription()")
+Base.show(io::IO, ::LimitSubscribersOperator) = print(io, "LimitSubscribersOperator()")
+Base.show(io::IO, ::LimitSubscribersProxy) = print(io, "LimitSubscribersProxy()")
+Base.show(io::IO, ::LimitSubscribersSource{L}) where {L} =
+    print(io, "LimitSubscribersSource($L)")
+Base.show(io::IO, ::LimitSubscribersSubscription) =
+    print(io, "LimitSubscribersSubscription()")

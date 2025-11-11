@@ -24,13 +24,13 @@ See also: [`Actor`](@ref), [`void`](@ref), [`tap`](@ref)
 """
 struct VoidActor{T} <: Actor{T} end
 
-on_next!(actor::VoidActor{T}, data::T) where T = begin end
-on_error!(actor::VoidActor, err)               = begin end
-on_complete!(actor::VoidActor)                 = begin end
+on_next!(actor::VoidActor{T}, data::T) where {T} = begin end
+on_error!(actor::VoidActor, err) = begin end
+on_complete!(actor::VoidActor) = begin end
 
 struct VoidActorFactory <: AbstractActorFactory end
 
-create_actor(::Type{L}, factory::VoidActorFactory) where L = VoidActor{L}()
+create_actor(::Type{L}, factory::VoidActorFactory) where {L} = VoidActor{L}()
 
 """
     void()
@@ -53,5 +53,5 @@ true
 
 See also: [`VoidActor`](@ref), [`AbstractActor`](@ref)
 """
-void()                  = VoidActorFactory()
-void(::Type{T}) where T = VoidActor{T}()
+void() = VoidActorFactory()
+void(::Type{T}) where {T} = VoidActor{T}()

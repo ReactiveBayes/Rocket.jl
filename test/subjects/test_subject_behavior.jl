@@ -38,8 +38,8 @@ using Rocket
 
         unsubscribe!(subscription2);
 
-        @test actor1.values == [ 0, 0, 1, 3, 4 ]
-        @test actor2.values == [ 1, 3, 4, 5, 6 ]
+        @test actor1.values == [0, 0, 1, 3, 4]
+        @test actor2.values == [1, 3, 4, 5, 6]
     end
 
     @testset begin
@@ -56,9 +56,9 @@ using Rocket
 
         subscribe!(source, subject)
 
-        @test values        == [ 1, 2, 3, 4, 5 ]
-        @test actor1.values == [ 0, 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 0, 1, 2, 3, 4, 5 ]
+        @test values == [1, 2, 3, 4, 5]
+        @test actor1.values == [0, 1, 2, 3, 4, 5]
+        @test actor2.values == [0, 1, 2, 3, 4, 5]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
@@ -67,33 +67,33 @@ using Rocket
     @testset begin
         subject = BehaviorSubject(Int, 0)
 
-        values      = []
-        errors      = []
+        values = []
+        errors = []
         completions = []
 
         actor = lambda(
-            on_next     = (d) -> push!(values, d),
-            on_error    = (e) -> push!(errors, e),
-            on_complete = ()  -> push!(completions, 0)
+            on_next = (d) -> push!(values, d),
+            on_error = (e) -> push!(errors, e),
+            on_complete = () -> push!(completions, 0),
         )
 
         subscribe!(subject, actor)
 
-        @test values      == [ 0 ]
-        @test errors      == [ ]
-        @test completions == [ ]
+        @test values == [0]
+        @test errors == []
+        @test completions == []
 
         error!(subject, "err")
 
-        @test values      == [ 0 ]
-        @test errors      == [ "err" ]
-        @test completions == [ ]
+        @test values == [0]
+        @test errors == ["err"]
+        @test completions == []
 
         subscribe!(subject, actor)
 
-        @test values      == [ 0, 0 ]
-        @test errors      == [ "err", "err" ]
-        @test completions == [ ]
+        @test values == [0, 0]
+        @test errors == ["err", "err"]
+        @test completions == []
 
     end
 
@@ -112,9 +112,9 @@ using Rocket
 
         subscribe!(source, subject)
 
-        @test values        == [ 1, 2, 3, 4, 5 ]
-        @test actor1.values == [ 0, 1, 2, 3, 4, 5 ]
-        @test actor2.values == [ 0, 1, 2, 3, 4, 5 ]
+        @test values == [1, 2, 3, 4, 5]
+        @test actor1.values == [0, 1, 2, 3, 4, 5]
+        @test actor2.values == [0, 1, 2, 3, 4, 5]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
@@ -134,20 +134,20 @@ using Rocket
         subscription1 = subscribe!(subject1, actor1)
         subscription2 = subscribe!(subject2, actor2)
 
-        @test actor1.values == [ 0 ]
-        @test actor2.values == [ 0 ]
+        @test actor1.values == [0]
+        @test actor2.values == [0]
 
         @test subscription1 !== subscription2
 
         next!(subject1, 1)
 
-        @test actor1.values == [ 0, 1 ]
-        @test actor2.values == [ 0 ]
+        @test actor1.values == [0, 1]
+        @test actor2.values == [0]
 
         next!(subject2, 2)
 
-        @test actor1.values == [ 0, 1 ]
-        @test actor2.values == [ 0, 2 ]
+        @test actor1.values == [0, 1]
+        @test actor2.values == [0, 2]
 
         unsubscribe!(subscription1)
         unsubscribe!(subscription2)
@@ -162,7 +162,7 @@ using Rocket
 
         subscription3 = subscribe!(subject3, actor3)
 
-        @test actor3.values == [ 2 ]
+        @test actor3.values == [2]
 
         unsubscribe!(subscription3)
     end

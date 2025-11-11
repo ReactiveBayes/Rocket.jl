@@ -53,59 +53,79 @@ Someone unsubscribed
 
 See also: [`TapBeforeUnsubscription`](@ref), [`TapAfterUnsubscription`](@ref), [`tap`](@ref), [`tap_on_subscribe`](@ref), [`tap_on_complete`](@ref), [`logger`](@ref)
 """
-tap_on_unsubscribe(tapFn::F, strategy::S = TapBeforeUnsubscription()) where { F <: Function, S } = TapOnUnsubscribeOperator{F, S}(tapFn, strategy)
+tap_on_unsubscribe(
+    tapFn::F,
+    strategy::S = TapBeforeUnsubscription(),
+) where {F<:Function,S} = TapOnUnsubscribeOperator{F,S}(tapFn, strategy)
 
-struct TapOnUnsubscribeOperator{F, S} <: InferableOperator
-    tapFn    :: F
-    strategy :: S
+struct TapOnUnsubscribeOperator{F,S} <: InferableOperator
+    tapFn::F
+    strategy::S
 end
 
-operator_right(::TapOnUnsubscribeOperator, ::Type{L}) where L = L
+operator_right(::TapOnUnsubscribeOperator, ::Type{L}) where {L} = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::TapOnUnsubscribeOperator{F, S}, source) where { L, F, S }
-    return proxy(L, source, TapOnUnsubscribeProxy{F, S}(operator.tapFn, operator.strategy))
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::TapOnUnsubscribeOperator{F,S},
+    source,
+) where {L,F,S}
+    return proxy(L, source, TapOnUnsubscribeProxy{F,S}(operator.tapFn, operator.strategy))
 end
 
-struct TapOnUnsubscribeProxy{F, S} <: SourceProxy
-    tapFn    :: F
-    strategy :: S
+struct TapOnUnsubscribeProxy{F,S} <: SourceProxy
+    tapFn::F
+    strategy::S
 end
 
-source_proxy!(::Type{L}, proxy::TapOnUnsubscribeProxy{F, T}, source::S) where { L, S, F, T } = TapOnUnsubscribeSource{L, S, F, T}(proxy.tapFn, proxy.strategy, source)
+source_proxy!(::Type{L}, proxy::TapOnUnsubscribeProxy{F,T}, source::S) where {L,S,F,T} =
+    TapOnUnsubscribeSource{L,S,F,T}(proxy.tapFn, proxy.strategy, source)
 
-@subscribable struct TapOnUnsubscribeSource{L, S, F, T} <: Subscribable{L}
-    tapFn    :: F
-    strategy :: T
-    source   :: S
+@subscribable struct TapOnUnsubscribeSource{L,S,F,T} <: Subscribable{L}
+    tapFn::F
+    strategy::T
+    source::S
 end
 
-mutable struct TapOnUnsubscribeSubscription{S, F, T} <: Teardown
-    is_unsubscribed :: Bool
-    tapFn           :: F
-    strategy        :: T
-    subscription    :: S
+mutable struct TapOnUnsubscribeSubscription{S,F,T} <: Teardown
+    is_unsubscribed::Bool
+    tapFn::F
+    strategy::T
+    subscription::S
 end
 
-as_teardown(::Type{ <: TapOnUnsubscribeSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: TapOnUnsubscribeSubscription}) = UnsubscribableTeardownLogic()
 
-function on_subscribe!(source::TapOnUnsubscribeSource{L, S, F, T}, actor) where { L, S, F, T }
-    return TapOnUnsubscribeSubscription(false, source.tapFn, source.strategy, subscribe!(source.source, actor))
+function on_subscribe!(source::TapOnUnsubscribeSource{L,S,F,T}, actor) where {L,S,F,T}
+    return TapOnUnsubscribeSubscription(
+        false,
+        source.tapFn,
+        source.strategy,
+        subscribe!(source.source, actor),
+    )
 end
 
-function on_unsubscribe!(subscription::TapOnUnsubscribeSubscription) 
+function on_unsubscribe!(subscription::TapOnUnsubscribeSubscription)
     result = __on_unsubscribe_with_tap(subscription.strategy, subscription)
     subscription.is_unsubscribed = true
     return result
 end
 
-function __on_unsubscribe_with_tap(::TapBeforeUnsubscription, subscription::TapOnUnsubscribeSubscription)
+function __on_unsubscribe_with_tap(
+    ::TapBeforeUnsubscription,
+    subscription::TapOnUnsubscribeSubscription,
+)
     if !subscription.is_unsubscribed
         subscription.tapFn()
     end
     return unsubscribe!(subscription.subscription)
 end
 
-function __on_unsubscribe_with_tap(::TapAfterUnsubscription, subscription::TapOnUnsubscribeSubscription)
+function __on_unsubscribe_with_tap(
+    ::TapAfterUnsubscription,
+    subscription::TapOnUnsubscribeSubscription,
+)
     result = unsubscribe!(subscription.subscription)
     if !subscription.is_unsubscribed
         subscription.tapFn()
@@ -113,7 +133,9 @@ function __on_unsubscribe_with_tap(::TapAfterUnsubscription, subscription::TapOn
     return result
 end
 
-Base.show(io::IO, ::TapOnUnsubscribeOperator)          = print(io, "TapOnUnsubscribeOperator()")
-Base.show(io::IO, ::TapOnUnsubscribeProxy)             = print(io, "TapOnUnsubscribeProxy()")
-Base.show(io::IO, ::TapOnUnsubscribeSource{L}) where L = print(io, "TapOnUnsubscribeSource($L)")
-Base.show(io::IO, ::TapOnUnsubscribeSubscription)      = print(io, "TapOnUnsubscribeSubscription()")
+Base.show(io::IO, ::TapOnUnsubscribeOperator) = print(io, "TapOnUnsubscribeOperator()")
+Base.show(io::IO, ::TapOnUnsubscribeProxy) = print(io, "TapOnUnsubscribeProxy()")
+Base.show(io::IO, ::TapOnUnsubscribeSource{L}) where {L} =
+    print(io, "TapOnUnsubscribeSource($L)")
+Base.show(io::IO, ::TapOnUnsubscribeSubscription) =
+    print(io, "TapOnUnsubscribeSubscription()")

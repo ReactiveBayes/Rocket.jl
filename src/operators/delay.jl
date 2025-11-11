@@ -21,56 +21,62 @@ See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObserv
 delay(delay::Int) = DelayOperator(delay)
 
 struct DelayOperator <: InferableOperator
-    delay :: Int
+    delay::Int
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::DelayOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::DelayOperator, source) where {L}
     return proxy(L, source, DelayProxy(operator.delay))
 end
 
-operator_right(operator::DelayOperator, ::Type{L}) where L = L
+operator_right(operator::DelayOperator, ::Type{L}) where {L} = L
 
 struct DelayProxy <: ActorSourceProxy
-    delay :: Int
+    delay::Int
 end
 
-actor_proxy!(::Type{L}, proxy::DelayProxy, actor::A)   where { L, A } = DelayActor{L, A}(proxy.delay, actor)
-source_proxy!(::Type{L}, proxy::DelayProxy, source::S) where { L, S } = DelayObservable{L, S}(source)
+actor_proxy!(::Type{L}, proxy::DelayProxy, actor::A) where {L,A} =
+    DelayActor{L,A}(proxy.delay, actor)
+source_proxy!(::Type{L}, proxy::DelayProxy, source::S) where {L,S} =
+    DelayObservable{L,S}(source)
 
 struct DelayDataMessage{L}
-    data :: L
+    data::L
 end
 
 struct DelayErrorMessage
-    err
+    err::Any
 end
 
 struct DelayCompleteMessage end
 
-const DelayMessage{L} = Union{DelayDataMessage{L}, DelayErrorMessage, DelayCompleteMessage}
+const DelayMessage{L} = Union{DelayDataMessage{L},DelayErrorMessage,DelayCompleteMessage}
 
 struct DelayQueueItem{L}
-    message    :: DelayMessage{L}
-    emmited_at :: Float64
+    message::DelayMessage{L}
+    emmited_at::Float64
 end
 
 struct DelayCompletionException <: Exception end
 
-mutable struct DelayActor{L, A} <: Actor{L}
-    is_cancelled :: Bool
-    delay        :: Int
-    actor        :: A
-    channel      :: Channel{DelayQueueItem{L}}
+mutable struct DelayActor{L,A} <: Actor{L}
+    is_cancelled::Bool
+    delay::Int
+    actor::A
+    channel::Channel{DelayQueueItem{L}}
 
-    DelayActor{L, A}(delay::Int, actor::A) where { L, A } = begin
+    DelayActor{L,A}(delay::Int, actor::A) where {L,A} = begin
         channel = Channel{DelayQueueItem{L}}(Inf)
-        self    = new(false, delay, actor, channel)
+        self = new(false, delay, actor, channel)
 
         task = @async begin
             try
                 while !self.is_cancelled
                     item = take!(channel)::DelayQueueItem{L}
-                    sleepfor = (item.emmited_at + convert(Float64, self.delay / MILLISECONDS_IN_SECOND)) - time()
+                    sleepfor =
+                        (
+                            item.emmited_at +
+                            convert(Float64, self.delay / MILLISECONDS_IN_SECOND)
+                        ) - time()
                     if sleepfor > 0.0
                         sleep(sleepfor)
                     else
@@ -93,18 +99,28 @@ mutable struct DelayActor{L, A} <: Actor{L}
     end
 end
 
-__process_delayed_message(actor::DelayActor{L}, message::DelayDataMessage{L}) where L = next!(actor.actor, message.data)
-__process_delayed_message(actor::DelayActor,    message::DelayErrorMessage)           = begin error!(actor.actor, message.err); close(actor); end
-__process_delayed_message(actor::DelayActor,    message::DelayCompleteMessage)        = begin complete!(actor.actor); close(actor); end
+__process_delayed_message(actor::DelayActor{L}, message::DelayDataMessage{L}) where {L} =
+    next!(actor.actor, message.data)
+__process_delayed_message(actor::DelayActor, message::DelayErrorMessage) = begin
+    error!(actor.actor, message.err);
+    close(actor);
+end
+__process_delayed_message(actor::DelayActor, message::DelayCompleteMessage) = begin
+    complete!(actor.actor);
+    close(actor);
+end
 
-on_next!(actor::DelayActor{L}, data::L) where L = put!(actor.channel, DelayQueueItem{L}(DelayDataMessage{L}(data), time()))
-on_error!(actor::DelayActor{L}, err)    where L = put!(actor.channel, DelayQueueItem{L}(DelayErrorMessage(err), time()))
-on_complete!(actor::DelayActor{L})      where L = put!(actor.channel, DelayQueueItem{L}(DelayCompleteMessage(), time()))
+on_next!(actor::DelayActor{L}, data::L) where {L} =
+    put!(actor.channel, DelayQueueItem{L}(DelayDataMessage{L}(data), time()))
+on_error!(actor::DelayActor{L}, err) where {L} =
+    put!(actor.channel, DelayQueueItem{L}(DelayErrorMessage(err), time()))
+on_complete!(actor::DelayActor{L}) where {L} =
+    put!(actor.channel, DelayQueueItem{L}(DelayCompleteMessage(), time()))
 
 Base.close(actor::DelayActor) = close(actor.channel, DelayCompletionException())
 
-@subscribable struct DelayObservable{L, S} <: Subscribable{L}
-    source :: S
+@subscribable struct DelayObservable{L,S} <: Subscribable{L}
+    source::S
 end
 
 function on_subscribe!(observable::DelayObservable, actor::DelayActor)
@@ -112,8 +128,8 @@ function on_subscribe!(observable::DelayObservable, actor::DelayActor)
 end
 
 struct DelaySubscription <: Teardown
-    actor
-    subscription
+    actor::Any
+    subscription::Any
 end
 
 as_teardown(::Type{<:DelaySubscription}) = UnsubscribableTeardownLogic()
@@ -127,8 +143,8 @@ function on_unsubscribe!(subscription::DelaySubscription)
     return nothing
 end
 
-Base.show(io::IO, ::DelayOperator)              = print(io, "DelayOperator()")
-Base.show(io::IO, ::DelayProxy)                 = print(io, "DelayProxy()")
-Base.show(io::IO, ::DelayActor{L})      where L = print(io, "DelayActor($L)")
-Base.show(io::IO, ::DelayObservable{L}) where L = print(io, "DelayObservable($L)")
-Base.show(io::IO, ::DelaySubscription)          = print(io, "DelaySubscription()")
+Base.show(io::IO, ::DelayOperator) = print(io, "DelayOperator()")
+Base.show(io::IO, ::DelayProxy) = print(io, "DelayProxy()")
+Base.show(io::IO, ::DelayActor{L}) where {L} = print(io, "DelayActor($L)")
+Base.show(io::IO, ::DelayObservable{L}) where {L} = print(io, "DelayObservable($L)")
+Base.show(io::IO, ::DelaySubscription) = print(io, "DelaySubscription()")

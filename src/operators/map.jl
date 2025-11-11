@@ -36,33 +36,34 @@ subscribe!(source |> map(Int, (d) -> d ^ 2), logger())
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-map(::Type{R}, mappingFn::F) where { R, F <: Function } = MapOperator{R, F}(mappingFn)
+map(::Type{R}, mappingFn::F) where {R,F<:Function} = MapOperator{R,F}(mappingFn)
 
-struct MapOperator{R, F} <: RightTypedOperator{R}
+struct MapOperator{R,F} <: RightTypedOperator{R}
     mappingFn::F
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, MapProxy{L, F}(operator.mappingFn))
+function on_call!(::Type{L}, ::Type{R}, operator::MapOperator{R,F}, source) where {L,R,F}
+    return proxy(R, source, MapProxy{L,F}(operator.mappingFn))
 end
 
-struct MapProxy{L, F} <: ActorProxy
+struct MapProxy{L,F} <: ActorProxy
     mappingFn::F
 end
 
-actor_proxy!(::Type, proxy::MapProxy{L, F}, actor::A) where { L, A, F } = MapActor{L, A, F}(proxy.mappingFn, actor)
+actor_proxy!(::Type, proxy::MapProxy{L,F}, actor::A) where {L,A,F} =
+    MapActor{L,A,F}(proxy.mappingFn, actor)
 
-struct MapActor{L, A, F} <: Actor{L}
-    mappingFn  :: F
-    actor      :: A
+struct MapActor{L,A,F} <: Actor{L}
+    mappingFn::F
+    actor::A
 end
 
 getrecent(source, proxy::MapProxy) = proxy.mappingFn(getrecent(source))
 
-on_next!(actor::MapActor{L},  data::L) where L = next!(actor.actor, actor.mappingFn(data))
-on_error!(actor::MapActor, err)                = error!(actor.actor, err)
-on_complete!(actor::MapActor)                  = complete!(actor.actor)
+on_next!(actor::MapActor{L}, data::L) where {L} = next!(actor.actor, actor.mappingFn(data))
+on_error!(actor::MapActor, err) = error!(actor.actor, err)
+on_complete!(actor::MapActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::MapOperator{R}) where R   = print(io, "MapOperator( -> $R)")
-Base.show(io::IO, ::MapProxy{L})    where L   = print(io, "MapProxy($L)")
-Base.show(io::IO, ::MapActor{L})    where L   = print(io, "MapActor($L)")
+Base.show(io::IO, ::MapOperator{R}) where {R} = print(io, "MapOperator( -> $R)")
+Base.show(io::IO, ::MapProxy{L}) where {L} = print(io, "MapProxy($L)")
+Base.show(io::IO, ::MapActor{L}) where {L} = print(io, "MapActor($L)")

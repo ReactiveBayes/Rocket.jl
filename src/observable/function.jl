@@ -14,23 +14,23 @@ or an `error!` method can be called to raise an error, or `complete!` can be cal
 
 See also: [`Subscribable`](@ref), [`make`](@ref)
 """
-@subscribable struct FunctionObservable{D, F} <: Subscribable{D}
-    f :: F
+@subscribable struct FunctionObservable{D,F} <: Subscribable{D}
+    f::F
 end
 
-function on_subscribe!(observable::FunctionObservable{D}, actor::A) where { D, A }
-    wrapper = FunctionObservableActorWrapper{D, A}(false, actor)
-    subscription = FunctionObservableSubscription{D, A}(wrapper)
+function on_subscribe!(observable::FunctionObservable{D}, actor::A) where {D,A}
+    wrapper = FunctionObservableActorWrapper{D,A}(false, actor)
+    subscription = FunctionObservableSubscription{D,A}(wrapper)
     observable.f(wrapper)
     return subscription
 end
 
-mutable struct FunctionObservableActorWrapper{D, A} <: Actor{D}
-    is_unsubscribed :: Bool
-    actor           :: A
+mutable struct FunctionObservableActorWrapper{D,A} <: Actor{D}
+    is_unsubscribed::Bool
+    actor::A
 end
 
-function on_next!(wrapper::FunctionObservableActorWrapper{D}, data::D) where D
+function on_next!(wrapper::FunctionObservableActorWrapper{D}, data::D) where {D}
     if !wrapper.is_unsubscribed
         next!(wrapper.actor, data)
     end
@@ -48,8 +48,8 @@ function on_complete!(wrapper::FunctionObservableActorWrapper)
     end
 end
 
-struct FunctionObservableSubscription{D, A} <: Teardown
-    wrapper :: FunctionObservableActorWrapper{D, A}
+struct FunctionObservableSubscription{D,A} <: Teardown
+    wrapper::FunctionObservableActorWrapper{D,A}
 end
 
 as_teardown(::Type{<:FunctionObservableSubscription}) = UnsubscribableTeardownLogic()
@@ -110,7 +110,8 @@ unsubscribe!(subscription)
 
 See also: [`FunctionObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-make(f::F, type::Type{D}) where { D, F } = FunctionObservable{D, F}(f)
+make(f::F, type::Type{D}) where {D,F} = FunctionObservable{D,F}(f)
 
-Base.show(io::IO, ::FunctionObservable{D}) where D  = print(io, "FunctionObservable($D)")
-Base.show(io::IO, ::FunctionObservableSubscription) = print(io, "FunctionObservableSubscription()")
+Base.show(io::IO, ::FunctionObservable{D}) where {D} = print(io, "FunctionObservable($D)")
+Base.show(io::IO, ::FunctionObservableSubscription) =
+    print(io, "FunctionObservableSubscription()")

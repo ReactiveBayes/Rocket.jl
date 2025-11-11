@@ -24,16 +24,16 @@ show(getvalues(actor))
 See also: [`Actor`](@ref), [`storage`](@ref)
 """
 mutable struct StorageActor{T} <: Actor{T}
-    value :: Union{Nothing, T}
+    value::Union{Nothing,T}
 
-    StorageActor{T}() where T = new(nothing)
+    StorageActor{T}() where {T} = new(nothing)
 end
 
 getvalues(actor::StorageActor) = actor.value
 
-on_next!(actor::StorageActor{T}, data::T) where T = actor.value = data
-on_error!(actor::StorageActor, err)               = error(err)
-on_complete!(actor::StorageActor)                 = begin end
+on_next!(actor::StorageActor{T}, data::T) where {T} = actor.value = data
+on_error!(actor::StorageActor, err) = error(err)
+on_complete!(actor::StorageActor) = begin end
 
 """
     storage(::Type{T}) where T
@@ -57,19 +57,19 @@ true
 
 See also: [`StorageActor`](@ref), [`AbstractActor`](@ref)
 """
-storage(::Type{T}) where T = StorageActor{T}()
+storage(::Type{T}) where {T} = StorageActor{T}()
 
 # Julia iterable interface
 
-Base.IteratorSize(::Type{ <: StorageActor })   = Base.HasLength()
-Base.IteratorEltype(::Type{ <: StorageActor }) = Base.HasEltype()
+Base.IteratorSize(::Type{<: StorageActor}) = Base.HasLength()
+Base.IteratorEltype(::Type{<: StorageActor}) = Base.HasEltype()
 
-Base.IndexStyle(::Type{ <: StorageActor }) = Base.IndexLinear()
+Base.IndexStyle(::Type{<: StorageActor}) = Base.IndexLinear()
 
-Base.eltype(::Type{ <: StorageActor{T} }) where T = T
+Base.eltype(::Type{<: StorageActor{T}}) where {T} = T
 
-Base.iterate(actor::StorageActor{T}) where T        = iterate(actor.value::T)
-Base.iterate(actor::StorageActor{T}, state) where T = iterate(actor.value::T, state)
+Base.iterate(actor::StorageActor{T}) where {T} = iterate(actor.value::T)
+Base.iterate(actor::StorageActor{T}, state) where {T} = iterate(actor.value::T, state)
 
-Base.size(actor::StorageActor)        = (length(actor.values), )
-Base.length(actor::StorageActor)      = 1
+Base.size(actor::StorageActor) = (length(actor.values),)
+Base.length(actor::StorageActor) = 1

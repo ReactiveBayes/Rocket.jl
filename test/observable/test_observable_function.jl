@@ -69,31 +69,11 @@ include("../test_helpers.jl")
     end
 
     run_testset([
-        (
-            source = source1,
-            values = @ts(c),
-            source_type = Int
-        ),
-        (
-            source = source2,
-            values = @ts(100 ~ c),
-            source_type = Float64
-        ),
-        (
-            source = source3,
-            values = @ts([ 1 ] ~ 100 ~ c),
-            source_type = Int
-        ),
-        (
-            source = source4,
-            values = @ts([ 1 ] ~ 100 ~ [ 2, c ]),
-            source_type = Int
-        ),
-        (
-            source = source5,
-            values = @ts([ 1 ] ~ 100 ~ [ 2, e("Error") ]),
-            source_type = Int
-        )
+        (source = source1, values = @ts(c), source_type = Int),
+        (source = source2, values = @ts(100 ~ c), source_type = Float64),
+        (source = source3, values = @ts([1] ~ 100 ~ c), source_type = Int),
+        (source = source4, values = @ts([1] ~ 100 ~ [2, c]), source_type = Int),
+        (source = source5, values = @ts([1] ~ 100 ~ [2, e("Error")]), source_type = Int),
     ])
 
 end

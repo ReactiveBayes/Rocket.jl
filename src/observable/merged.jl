@@ -6,12 +6,12 @@ import Base: show
 # Merge observable     #
 # -------------------- #
 
-@subscribable struct MergeObservable{D, S} <: Subscribable{D}
-    sources :: S
+@subscribable struct MergeObservable{D,S} <: Subscribable{D}
+    sources::S
 end
 
-function on_subscribe!(observable::MergeObservable{D}, actor) where D
-    merge_main    = __make_merge_main_actor(D, actor, length(observable.sources))
+function on_subscribe!(observable::MergeObservable{D}, actor) where {D}
+    merge_main = __make_merge_main_actor(D, actor, length(observable.sources))
 
     subscriptions = map(enumerate(observable.sources)) do (index, source)
         return subscribe!(source, __make_merge_child_actor_factory(index, merge_main))
@@ -24,16 +24,17 @@ end
 # Merge main actor     #
 # -------------------- #
 
-struct MergeMainActor{D, A} <: Actor{D}
-    actor             :: A
-    completion_status :: BitArray{1}
+struct MergeMainActor{D,A} <: Actor{D}
+    actor::A
+    completion_status::BitArray{1}
 end
 
-__make_merge_main_actor(::Type{D}, actor::A, length::Int) where { D, A } = MergeMainActor{D, A}(actor, falses(length))
+__make_merge_main_actor(::Type{D}, actor::A, length::Int) where {D,A} =
+    MergeMainActor{D,A}(actor, falses(length))
 
-on_next!(actor::MergeMainActor{D}, data::L) where { D, L <: D } = next!(actor.actor, data)
-on_error!(actor::MergeMainActor, err)                           = error!(actor.actor, err)
-on_complete!(actor::MergeMainActor)                             = begin
+on_next!(actor::MergeMainActor{D}, data::L) where {D,L<:D} = next!(actor.actor, data)
+on_error!(actor::MergeMainActor, err) = error!(actor.actor, err)
+on_complete!(actor::MergeMainActor) = begin
     if all(actor.completion_status)
         complete!(actor.actor)
     end
@@ -43,36 +44,39 @@ end
 # Merge child actor    #
 # -------------------- #
 
-struct MergeChildActor{D, I, A} <: Actor{D}
-    main :: A
+struct MergeChildActor{D,I,A} <: Actor{D}
+    main::A
 end
 
-on_next!(actor::MergeChildActor{D}, data::D) where D     = next!(actor.main, data)
-on_error!(actor::MergeChildActor, err)                   = error!(actor.main, err)
-on_complete!(actor::MergeChildActor{D, I}) where { D, I } = begin
+on_next!(actor::MergeChildActor{D}, data::D) where {D} = next!(actor.main, data)
+on_error!(actor::MergeChildActor, err) = error!(actor.main, err)
+on_complete!(actor::MergeChildActor{D,I}) where {D,I} = begin
     actor.main.completion_status[I] = true
     complete!(actor.main)
 end
 
-struct MergeChildActorFactory{I, A} <: AbstractActorFactory
-    main :: A
+struct MergeChildActorFactory{I,A} <: AbstractActorFactory
+    main::A
 end
 
-__make_merge_child_actor_factory(index::Int, main::A) where A = MergeChildActorFactory{index, A}(main)
+__make_merge_child_actor_factory(index::Int, main::A) where {A} =
+    MergeChildActorFactory{index,A}(main)
 
-create_actor(::Type{L}, factory::MergeChildActorFactory{I, A}) where { L, I, A } = MergeChildActor{L, I, A}(factory.main)
+create_actor(::Type{L}, factory::MergeChildActorFactory{I,A}) where {L,I,A} =
+    MergeChildActor{L,I,A}(factory.main)
 
 # -------------------- #
 # Merge subscription   #
 # -------------------- #
 
 struct MergeSubscription{S} <: Teardown
-    subscriptions :: S
+    subscriptions::S
 end
 
 as_teardown(::Type{<:MergeSubscription}) = UnsubscribableTeardownLogic()
 
-on_unsubscribe!(subscription::MergeSubscription) = foreach(s -> unsubscribe!(s), subscription.subscriptions)
+on_unsubscribe!(subscription::MergeSubscription) =
+    foreach(s -> unsubscribe!(s), subscription.subscriptions)
 
 """
     merged(sources::T) where { T <: Tuple }
@@ -138,8 +142,10 @@ wait(actor)
 
 See also: [`Subscribable`](@ref)
 """
-merged(sources::T) where { T <: Tuple }         = MergeObservable{ Union{ subscribable_extract_type.(sources)... }, T }(sources)
-merged(sources::T) where { T <: AbstractArray } = error("Rocket.merge takes a tuple of sources as an argument, not an array")
+merged(sources::T) where {T<:Tuple} =
+    MergeObservable{Union{subscribable_extract_type.(sources)...},T}(sources)
+merged(sources::T) where {T<:AbstractArray} =
+    error("Rocket.merge takes a tuple of sources as an argument, not an array")
 
-Base.show(io::IO, ::MergeObservable{D}) where D = print(io, "MergeObservable($D)")
-Base.show(io::IO, ::MergeSubscription)          = print(io, "MergeSubscription()")
+Base.show(io::IO, ::MergeObservable{D}) where {D} = print(io, "MergeObservable($D)")
+Base.show(io::IO, ::MergeSubscription) = print(io, "MergeSubscription()")
