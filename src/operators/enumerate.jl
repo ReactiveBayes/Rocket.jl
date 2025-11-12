@@ -38,33 +38,39 @@ enumerate() = EnumerateOperator()
 
 struct EnumerateOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{Tuple{Int, L}}, operator::EnumerateOperator, source) where L
-    return proxy(Tuple{Int, L}, source, EnumerateProxy())
+function on_call!(
+    ::Type{L},
+    ::Type{Tuple{Int,L}},
+    operator::EnumerateOperator,
+    source,
+) where {L}
+    return proxy(Tuple{Int,L}, source, EnumerateProxy())
 end
 
-operator_right(operator::EnumerateOperator, ::Type{L}) where L = Tuple{Int, L}
+operator_right(operator::EnumerateOperator, ::Type{L}) where {L} = Tuple{Int,L}
 
 struct EnumerateProxy <: ActorProxy end
 
-actor_proxy!(::Type{Tuple{Int, L}}, proxy::EnumerateProxy, actor::A) where { L, A } = EnumerateActor{L, A}(actor, 1)
+actor_proxy!(::Type{Tuple{Int,L}}, proxy::EnumerateProxy, actor::A) where {L,A} =
+    EnumerateActor{L,A}(actor, 1)
 
-mutable struct EnumerateActor{L, A} <: Actor{L}
-    actor   :: A
-    current :: Int
+mutable struct EnumerateActor{L,A} <: Actor{L}
+    actor::A
+    current::Int
 end
 
-getcurrent(actor::EnumerateActor)           = actor.current
+getcurrent(actor::EnumerateActor) = actor.current
 setcurrent!(actor::EnumerateActor, current) = actor.current = current
 
-function on_next!(actor::EnumerateActor{L}, data::L) where L
+function on_next!(actor::EnumerateActor{L}, data::L) where {L}
     current = getcurrent(actor)
     setcurrent!(actor, current + 1)
     next!(actor.actor, (current, data))
 end
 
 on_error!(actor::EnumerateActor, err) = error!(actor.actor, err)
-on_complete!(actor::EnumerateActor)   = complete!(actor.actor)
+on_complete!(actor::EnumerateActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::EnumerateOperator)         = print(io, "EnumerateOperator()")
-Base.show(io::IO, ::EnumerateProxy)            = print(io, "EnumerateProxy()")
-Base.show(io::IO, ::EnumerateActor{L}) where L = print(io, "EnumerateActor($L)")
+Base.show(io::IO, ::EnumerateOperator) = print(io, "EnumerateOperator()")
+Base.show(io::IO, ::EnumerateProxy) = print(io, "EnumerateProxy()")
+Base.show(io::IO, ::EnumerateActor{L}) where {L} = print(io, "EnumerateActor($L)")

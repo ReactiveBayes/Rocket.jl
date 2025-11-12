@@ -30,8 +30,9 @@ subscribe!(source, logger())
 
 See also: [`ScheduledSubscribable`](@ref), [`subscribe!`](@ref), [`from`](@ref)
 """
-labeled(::Val{Names}, stream::S) where { Names, S }               = labeled(eltype(S), Val(Names), stream)
-labeled(::Type{D}, ::Val{Names}, stream::S) where { D, Names, S } = LabeledObservable{NamedTuple{Names, D}, S}(stream)
+labeled(::Val{Names}, stream::S) where {Names,S} = labeled(eltype(S), Val(Names), stream)
+labeled(::Type{D}, ::Val{Names}, stream::S) where {D,Names,S} =
+    LabeledObservable{NamedTuple{Names,D},S}(stream)
 
 """
     LabeledObservable{D, S}()
@@ -40,20 +41,25 @@ An Observable that emits `NamesTuple` items from a source `Observable` that emit
 
 See also: [`Subscribable`](@ref), [`labeled`](@ref)
 """
-@subscribable struct LabeledObservable{D, S} <: Subscribable{D}
-    stream :: S
+@subscribable struct LabeledObservable{D,S} <: Subscribable{D}
+    stream::S
 end
 
-struct LabeledActor{T, N, A} <: Actor{T} 
-    actor :: A
+struct LabeledActor{T,N,A} <: Actor{T}
+    actor::A
 end
 
-@inline on_next!(actor::LabeledActor{T, N}, data::T) where { T, N } = next!(actor.actor, NamedTuple{N, T}(data))
-@inline on_error!(actor::LabeledActor, err)                         = error!(actor.actor, err)
-@inline on_complete!(actor::LabeledActor)                           = complete!(actor.actor)
+@inline on_next!(actor::LabeledActor{T,N}, data::T) where {T,N} =
+    next!(actor.actor, NamedTuple{N,T}(data))
+@inline on_error!(actor::LabeledActor, err) = error!(actor.actor, err)
+@inline on_complete!(actor::LabeledActor) = complete!(actor.actor)
 
-function on_subscribe!(observable::LabeledObservable{R}, actor::A) where { N, T, R <: NamedTuple{N, T}, A }
-    return subscribe!(observable.stream, LabeledActor{T, N, A}(actor))
+function on_subscribe!(
+    observable::LabeledObservable{R},
+    actor::A,
+) where {N,T,R<:NamedTuple{N,T},A}
+    return subscribe!(observable.stream, LabeledActor{T,N,A}(actor))
 end
 
-Base.show(io::IO, ::LabeledObservable{D, S}) where { D, S } = print(io, "LabeledObservable($D, $S)")
+Base.show(io::IO, ::LabeledObservable{D,S}) where {D,S} =
+    print(io, "LabeledObservable($D, $S)")

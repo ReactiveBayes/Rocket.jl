@@ -53,13 +53,16 @@ subscribe!(source, logger())
 
 See also: [`ScheduledSubscribable`](@ref), [`subscribe!`](@ref), [`from`](@ref)
 """
-function iterable(iterator::I; scheduler::H = AsapScheduler()) where { I, H <: AbstractScheduler }
-    return IterableObservable{eltype(I), I, H}(iterator, scheduler)
+function iterable(
+    iterator::I;
+    scheduler::H = AsapScheduler(),
+) where {I,H<:AbstractScheduler}
+    return IterableObservable{eltype(I),I,H}(iterator, scheduler)
 end
 
-@subscribable struct IterableObservable{D, I, H} <: ScheduledSubscribable{D}
-    iterator  :: I
-    scheduler :: H
+@subscribable struct IterableObservable{D,I,H} <: ScheduledSubscribable{D}
+    iterator::I
+    scheduler::H
 end
 
 getscheduler(observable::IterableObservable) = observable.scheduler
@@ -74,4 +77,5 @@ function on_subscribe!(observable::IterableObservable, actor, scheduler)
     return voidTeardown
 end
 
-Base.show(io::IO, ::IterableObservable{D, I, H}) where { D, I, H } = print(io, "IterableObservable($D, $I, $H)")
+Base.show(io::IO, ::IterableObservable{D,I,H}) where {D,I,H} =
+    print(io, "IterableObservable($D, $I, $H)")

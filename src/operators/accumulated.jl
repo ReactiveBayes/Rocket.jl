@@ -46,25 +46,34 @@ accumulated() = AccumulatedOperator()
 
 struct AccumulatedOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{ Vector{L} }, operator::AccumulatedOperator, source) where { L }
+function on_call!(
+    ::Type{L},
+    ::Type{Vector{L}},
+    operator::AccumulatedOperator,
+    source,
+) where {L}
     return proxy(Vector{L}, source, AccumulatedProxy())
 end
 
-operator_right(::AccumulatedOperator, ::Type{L}) where L = Vector{L}
+operator_right(::AccumulatedOperator, ::Type{L}) where {L} = Vector{L}
 
 struct AccumulatedProxy <: ActorProxy end
 
-actor_proxy!(::Type{ Vector{L} }, proxy::AccumulatedProxy, actor::A) where { L, A } = AccumulatedActor{L, A}(Vector{L}(), actor)
+actor_proxy!(::Type{Vector{L}}, proxy::AccumulatedProxy, actor::A) where {L,A} =
+    AccumulatedActor{L,A}(Vector{L}(), actor)
 
-struct AccumulatedActor{L, A} <: Actor{L}
-    values :: Vector{L}
-    actor  :: A
+struct AccumulatedActor{L,A} <: Actor{L}
+    values::Vector{L}
+    actor::A
 end
 
-on_next!(actor::AccumulatedActor{L}, data::L) where L = begin push!(actor.values, data); next!(actor.actor, actor.values) end
-on_error!(actor::AccumulatedActor, err)               = error!(actor.actor, err)
-on_complete!(actor::AccumulatedActor)                 = complete!(actor.actor)
+on_next!(actor::AccumulatedActor{L}, data::L) where {L} = begin
+    push!(actor.values, data);
+    next!(actor.actor, actor.values)
+end
+on_error!(actor::AccumulatedActor, err) = error!(actor.actor, err)
+on_complete!(actor::AccumulatedActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::AccumulatedOperator)         = print(io, "AccumulatedOperator()")
-Base.show(io::IO, ::AccumulatedProxy)            = print(io, "AccumulatedProxy()")
-Base.show(io::IO, ::AccumulatedActor{L}) where L = print(io, "AccumulatedActor($L)")
+Base.show(io::IO, ::AccumulatedOperator) = print(io, "AccumulatedOperator()")
+Base.show(io::IO, ::AccumulatedProxy) = print(io, "AccumulatedProxy()")
+Base.show(io::IO, ::AccumulatedActor{L}) where {L} = print(io, "AccumulatedActor($L)")

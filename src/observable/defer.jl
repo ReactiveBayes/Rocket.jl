@@ -30,10 +30,10 @@ subscribe!(source, logger())
 
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-defer(::Type{D}, factoryFn::F) where { D, F <: Function } = DeferObservable{D, F}(factoryFn)
+defer(::Type{D}, factoryFn::F) where {D,F<:Function} = DeferObservable{D,F}(factoryFn)
 
-@subscribable struct DeferObservable{D, F} <: Subscribable{D}
-    factoryFn :: F
+@subscribable struct DeferObservable{D,F} <: Subscribable{D}
+    factoryFn::F
 end
 
 function on_subscribe!(observable::DeferObservable, actor)
@@ -41,4 +41,5 @@ function on_subscribe!(observable::DeferObservable, actor)
     return subscribe!(source, actor)
 end
 
-Base.show(io::IO, observable::DeferObservable{D}) where D = print(io, "DeferObservable($D)")
+Base.show(io::IO, observable::DeferObservable{D}) where {D} =
+    print(io, "DeferObservable($D)")

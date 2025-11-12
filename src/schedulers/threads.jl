@@ -15,8 +15,8 @@ struct ThreadsScheduler <: AbstractScheduler end
 Base.show(io::IO, ::ThreadsScheduler) = print(io, "ThreadsScheduler()")
 
 mutable struct ThreadsSchedulerInstance
-    isunsubscribed :: Bool
-    subscription   :: Teardown
+    isunsubscribed::Bool
+    subscription::Teardown
 end
 
 Base.similar(::ThreadsScheduler) = ThreadsScheduler()
@@ -74,13 +74,14 @@ function scheduled_complete!(actor, instance::ThreadsSchedulerInstance)
     end
 end
 
-struct ThreadsSchedulerSubscription{ H <: ThreadsSchedulerInstance } <: Teardown
-    instance :: H
+struct ThreadsSchedulerSubscription{H<:ThreadsSchedulerInstance} <: Teardown
+    instance::H
 end
 
-as_teardown(::Type{ <: ThreadsSchedulerSubscription}) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: ThreadsSchedulerSubscription}) = UnsubscribableTeardownLogic()
 
-Base.show(io::IO, ::ThreadsSchedulerSubscription) = print(io, "ThreadsSchedulerSubscription()")
+Base.show(io::IO, ::ThreadsSchedulerSubscription) =
+    print(io, "ThreadsSchedulerSubscription()")
 
 function on_unsubscribe!(subscription::ThreadsSchedulerSubscription)
     dispose(subscription.instance)

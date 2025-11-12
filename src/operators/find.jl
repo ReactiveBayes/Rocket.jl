@@ -30,4 +30,4 @@ subscribe!(source |> find((d) -> d % 2 == 0), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-find(conditionFn::F) where { F <: Function } = filter(conditionFn) + take(1)
+find(conditionFn::F) where {F<:Function} = filter(conditionFn) + take(1)

@@ -12,26 +12,14 @@ include("../test_helpers.jl")
     run_proxyshowcheck("Safe", safe())
 
     run_testset([
+        (source = from(1:5) |> safe(), values = @ts([1:5, c])),
         (
-            source = from(1:5) |> safe(),
-            values = @ts([ 1:5, c ])
+            source = from([0, 1, 2]) |> safe() |> map(Int, d -> d === 0 ? 0 : throw(d)),
+            values = @ts([0, e(1)])
         ),
-        (
-            source = from([ 0, 1, 2 ]) |> safe() |> map(Int, d -> d === 0 ? 0 : throw(d)),
-            values = @ts([ 0, e(1) ])
-        ),
-        (
-            source = completed() |> safe(),
-            values = @ts(c)
-        ),
-        (
-            source = faulted("e") |> safe(),
-            values = @ts(e("e"))
-        ),
-        (
-            source = never() |> safe(),
-            values = @ts()
-        )
+        (source = completed() |> safe(), values = @ts(c)),
+        (source = faulted("e") |> safe(), values = @ts(e("e"))),
+        (source = never() |> safe(), values = @ts()),
     ])
 
 end

@@ -39,33 +39,35 @@ See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObserv
 take(maxcount::Int) = TakeOperator(maxcount)
 
 struct TakeOperator <: InferableOperator
-    maxcount :: Int
+    maxcount::Int
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::TakeOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::TakeOperator, source) where {L}
     return proxy(L, source, TakeProxy(operator.maxcount))
 end
 
-operator_right(operator::TakeOperator, ::Type{L}) where L = L
+operator_right(operator::TakeOperator, ::Type{L}) where {L} = L
 
 struct TakeProxy <: ActorSourceProxy
-    maxcount :: Int
+    maxcount::Int
 end
 
-actor_proxy!(::Type{L}, proxy::TakeProxy,  actor::A)  where { L, A } = TakeActor{L, A}(proxy.maxcount, actor)
-source_proxy!(::Type{L}, proxy::TakeProxy, source::S) where { L, S } = TakeSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::TakeProxy, actor::A) where {L,A} =
+    TakeActor{L,A}(proxy.maxcount, actor)
+source_proxy!(::Type{L}, proxy::TakeProxy, source::S) where {L,S} = TakeSource{L,S}(source)
 
-mutable struct TakeActor{L, A} <: Actor{L}
-    maxcount     :: Int
-    actor        :: A
-    isdisposed   :: Bool
-    count        :: Int
-    subscription :: Teardown
+mutable struct TakeActor{L,A} <: Actor{L}
+    maxcount::Int
+    actor::A
+    isdisposed::Bool
+    count::Int
+    subscription::Teardown
 
-    TakeActor{L, A}(maxcount::Int, actor::A) where { L, A } = new(maxcount, actor, false, 0, voidTeardown)
+    TakeActor{L,A}(maxcount::Int, actor::A) where {L,A} =
+        new(maxcount, actor, false, 0, voidTeardown)
 end
 
-function on_next!(actor::TakeActor{L}, data::L) where L
+function on_next!(actor::TakeActor{L}, data::L) where {L}
     if !actor.isdisposed
         if actor.count < actor.maxcount
             actor.count += 1
@@ -96,8 +98,8 @@ function __dispose(actor::TakeActor)
     unsubscribe!(actor.subscription)
 end
 
-@subscribable struct TakeSource{L, S} <: Subscribable{L}
-    source :: S
+@subscribable struct TakeSource{L,S} <: Subscribable{L}
+    source::S
 end
 
 function on_subscribe!(observable::TakeSource, actor::TakeActor)
@@ -106,7 +108,7 @@ function on_subscribe!(observable::TakeSource, actor::TakeActor)
     return subscription
 end
 
-Base.show(io::IO, ::TakeOperator)          = print(io, "TakeOperator()")
-Base.show(io::IO, ::TakeProxy)             = print(io, "TakeProxy()")
-Base.show(io::IO, ::TakeActor{L})  where L = print(io, "TakeActor($L)")
-Base.show(io::IO, ::TakeSource{L}) where L = print(io, "TakeSource($L)")
+Base.show(io::IO, ::TakeOperator) = print(io, "TakeOperator()")
+Base.show(io::IO, ::TakeProxy) = print(io, "TakeProxy()")
+Base.show(io::IO, ::TakeActor{L}) where {L} = print(io, "TakeActor($L)")
+Base.show(io::IO, ::TakeSource{L}) where {L} = print(io, "TakeSource($L)")

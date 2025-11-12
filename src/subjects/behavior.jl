@@ -26,43 +26,48 @@ function BehaviorSubjectFactory end
 
 ##
 
-mutable struct BehaviorSubjectInstance{D, S} <: AbstractSubject{D}
-    subject :: S
-    current :: D
+mutable struct BehaviorSubjectInstance{D,S} <: AbstractSubject{D}
+    subject::S
+    current::D
 end
 
-Base.show(io::IO, ::BehaviorSubjectInstance{D, S}) where { D, S } = print(io, "BehaviorSubject($D, $S)")
+Base.show(io::IO, ::BehaviorSubjectInstance{D,S}) where {D,S} =
+    print(io, "BehaviorSubject($D, $S)")
 
-Base.similar(subject::BehaviorSubjectInstance{D, S}) where { D, S } = BehaviorSubject(D, getcurrent(subject), similar(subject.subject))
+Base.similar(subject::BehaviorSubjectInstance{D,S}) where {D,S} =
+    BehaviorSubject(D, getcurrent(subject), similar(subject.subject))
 
-function BehaviorSubject(value::D) where D
+function BehaviorSubject(value::D) where {D}
     return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
 end
 
-function BehaviorSubject(::Type{D}, value) where D
+function BehaviorSubject(::Type{D}, value) where {D}
     return BehaviorSubject(D, value, SubjectFactory(AsapScheduler()))
 end
 
-function BehaviorSubject(::Type{D}, value, factory::F) where { D, F <: AbstractSubjectFactory }
+function BehaviorSubject(::Type{D}, value, factory::F) where {D,F<:AbstractSubjectFactory}
     return BehaviorSubject(D, value, create_subject(D, factory))
 end
 
-function BehaviorSubject(::Type{D}, value, subject::S) where { D, S }
+function BehaviorSubject(::Type{D}, value, subject::S) where {D,S}
     return as_behavior_subject(D, as_subject(S), convert(D, value), subject)
 end
 
-as_behavior_subject(::Type{D},  ::InvalidSubjectTrait,    current,     subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_behavior_subject(::Type{D1}, ::ValidSubjectTrait{D2},  current,     subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_behavior_subject(::Type{D},  ::ValidSubjectTrait{D},   current::D,  subject::S) where { D, S }   = BehaviorSubjectInstance{D, S}(subject, current)
+as_behavior_subject(::Type{D}, ::InvalidSubjectTrait, current, subject) where {D} =
+    throw(InvalidSubjectTraitUsageError(subject))
+as_behavior_subject(::Type{D1}, ::ValidSubjectTrait{D2}, current, subject) where {D1,D2} =
+    throw(InconsistentSubjectDataTypesError{D1,D2}(subject))
+as_behavior_subject(::Type{D}, ::ValidSubjectTrait{D}, current::D, subject::S) where {D,S} =
+    BehaviorSubjectInstance{D,S}(subject, current)
 
 ##
 
-getcurrent(subject::BehaviorSubjectInstance)         = subject.current
+getcurrent(subject::BehaviorSubjectInstance) = subject.current
 setcurrent!(subject::BehaviorSubjectInstance, value) = subject.current = value
 
 ##
 
-function on_next!(subject::BehaviorSubjectInstance{D}, data::D) where D
+function on_next!(subject::BehaviorSubjectInstance{D}, data::D) where {D}
     if isactive(subject.subject)
         setcurrent!(subject, data)
         next!(subject.subject, data)
@@ -86,20 +91,25 @@ end
 
 ##
 
-struct BehaviorSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
-    factory :: F
-    default
+struct BehaviorSubjectFactoryInstance{F<:AbstractSubjectFactory} <: AbstractSubjectFactory
+    factory::F
+    default::Any
 end
 
-Base.show(io::IO, subject::BehaviorSubjectFactoryInstance{F}) where F = print(io, "BehaviorSubjectFactory($F, default = $(subject.default))")
+Base.show(io::IO, subject::BehaviorSubjectFactoryInstance{F}) where {F} =
+    print(io, "BehaviorSubjectFactory($F, default = $(subject.default))")
 
-create_subject(::Type{L}, factory::BehaviorSubjectFactoryInstance) where L = BehaviorSubject(L, convert(L, factory.default), factory.factory)
+create_subject(::Type{L}, factory::BehaviorSubjectFactoryInstance) where {L} =
+    BehaviorSubject(L, convert(L, factory.default), factory.factory)
 
-function BehaviorSubjectFactory(default, factory::F) where { F <: AbstractSubjectFactory }
+function BehaviorSubjectFactory(default, factory::F) where {F<:AbstractSubjectFactory}
     return BehaviorSubjectFactoryInstance(factory, default)
 end
 
-function BehaviorSubjectFactory(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+function BehaviorSubjectFactory(
+    default;
+    scheduler::H = AsapScheduler(),
+) where {H<:AbstractScheduler}
     return BehaviorSubjectFactoryInstance(SubjectFactory{H}(scheduler), default)
 end
 

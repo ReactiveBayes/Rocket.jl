@@ -31,24 +31,30 @@ See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObserv
 start_with(object) = StartWithOperator(object)
 
 struct StartWithOperator{V} <: InferableOperator
-    value :: V
+    value::V
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::StartWithOperator{V}, source) where { L, V, R }
+function on_call!(
+    ::Type{L},
+    ::Type{R},
+    operator::StartWithOperator{V},
+    source,
+) where {L,V,R}
     return proxy(R, source, StartWithProxy{V}(operator.value))
 end
 
-operator_right(::StartWithOperator{V}, ::Type{L}) where { V, L } = Union{L, V}
+operator_right(::StartWithOperator{V}, ::Type{L}) where {V,L} = Union{L,V}
 
 struct StartWithProxy{V} <: SourceProxy
-    value :: V
+    value::V
 end
 
-source_proxy!(::Type{L}, proxy::StartWithProxy{V}, source::S) where { L, V, S } = StartWithSource{L, V, S}(proxy.value, source)
+source_proxy!(::Type{L}, proxy::StartWithProxy{V}, source::S) where {L,V,S} =
+    StartWithSource{L,V,S}(proxy.value, source)
 
-@subscribable struct StartWithSource{L, V, S} <: Subscribable{L}
-    value  :: V
-    source :: S
+@subscribable struct StartWithSource{L,V,S} <: Subscribable{L}
+    value::V
+    source::S
 end
 
 function on_subscribe!(source::StartWithSource, actor)
@@ -56,6 +62,6 @@ function on_subscribe!(source::StartWithSource, actor)
     return subscribe!(source.source, actor)
 end
 
-Base.show(io::IO, ::StartWithOperator)              = print(io, "StartWithOperator()")
-Base.show(io::IO, ::StartWithProxy)                 = print(io, "StartWithProxy()")
-Base.show(io::IO, ::StartWithSource{L}) where { L } = print(io, "StartWithSource($L)")
+Base.show(io::IO, ::StartWithOperator) = print(io, "StartWithOperator()")
+Base.show(io::IO, ::StartWithProxy) = print(io, "StartWithProxy()")
+Base.show(io::IO, ::StartWithSource{L}) where {L} = print(io, "StartWithSource($L)")

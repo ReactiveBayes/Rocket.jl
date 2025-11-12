@@ -11,25 +11,29 @@ The `LoggerActor` logs all `next!`/`error!`/`complete!` events that are sent fro
 
 See also: [`Actor`](@ref), [`logger`](@ref)
 """
-struct LoggerActor{D, O} <: Actor{D}
-    name :: String
-    io   :: O
+struct LoggerActor{D,O} <: Actor{D}
+    name::String
+    io::O
 
-    LoggerActor{D, O}(name::String, io::O) where { D, O } = new(name, io)
+    LoggerActor{D,O}(name::String, io::O) where {D,O} = new(name, io)
 end
 
 # Remark: Here nothing for `io` is a workaround for https://github.com/JuliaDocs/Documenter.jl/issues/1245 where println(actor.io, ...) fails on doctest even if actor.io === stdout
 
-on_next!(actor::LoggerActor{D}, data::D) where D = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Data: $data")
-on_error!(actor::LoggerActor, err)               = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Error: $err")
-on_complete!(actor::LoggerActor)                 = println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Completed")
+on_next!(actor::LoggerActor{D}, data::D) where {D} =
+    println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Data: $data")
+on_error!(actor::LoggerActor, err) =
+    println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Error: $err")
+on_complete!(actor::LoggerActor) =
+    println(actor.io !== nothing ? actor.io : stdout, "[$(actor.name)] Completed")
 
 struct LoggerActorFactory{O} <: AbstractActorFactory
-    name :: String
-    io   :: O
+    name::String
+    io::O
 end
 
-create_actor(::Type{L}, factory::LoggerActorFactory{O}) where { L, O } = LoggerActor{L, O}(factory.name, factory.io)
+create_actor(::Type{L}, factory::LoggerActorFactory{O}) where {L,O} =
+    LoggerActor{L,O}(factory.name, factory.io)
 
 """
     logger([ io::IO ], name::String = "LogActor")
@@ -89,8 +93,10 @@ print(String(take!(buffer)))
 
 See also: [`LoggerActor`](@ref), [`AbstractActor`](@ref)
 """
-logger(name::String = "LogActor")                          = LoggerActorFactory(name, nothing)
-logger(io::O, name::String = "LogActor") where { O <: IO } = LoggerActorFactory(name, io)
+logger(name::String = "LogActor") = LoggerActorFactory(name, nothing)
+logger(io::O, name::String = "LogActor") where {O<:IO} = LoggerActorFactory(name, io)
 
-logger(::Type{T}, name::String = "LogActor")        where { T          } = LoggerActor{T, Nothing}(name, nothing)
-logger(::Type{T}, io::O, name::String = "LogActor") where { T, O <: IO } = LoggerActor{T, O}(name, io)
+logger(::Type{T}, name::String = "LogActor") where {T} =
+    LoggerActor{T,Nothing}(name, nothing)
+logger(::Type{T}, io::O, name::String = "LogActor") where {T,O<:IO} =
+    LoggerActor{T,O}(name, io)

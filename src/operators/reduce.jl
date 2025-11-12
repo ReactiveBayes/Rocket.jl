@@ -52,38 +52,40 @@ subscribe!(source |> reduce(+), logger())
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-reduce(::Type{R}, reduceFn::F, seed::R) where { R, F <: Function } = ReduceOperator{R, F}(reduceFn, seed)
+reduce(::Type{R}, reduceFn::F, seed::R) where {R,F<:Function} =
+    ReduceOperator{R,F}(reduceFn, seed)
 
 # ------------------------------------------------------------------------------------------------ #
 # Seed version of reduce operator (typed with R also)
 # ------------------------------------------------------------------------------------------------ #
 
-struct ReduceOperator{R, F} <: RightTypedOperator{R}
-    reduceFn :: F
-    seed     :: R
+struct ReduceOperator{R,F} <: RightTypedOperator{R}
+    reduceFn::F
+    seed::R
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::ReduceOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, ReduceProxy{L, R, F}(operator.reduceFn, operator.seed))
+function on_call!(::Type{L}, ::Type{R}, operator::ReduceOperator{R,F}, source) where {L,R,F}
+    return proxy(R, source, ReduceProxy{L,R,F}(operator.reduceFn, operator.seed))
 end
 
-struct ReduceProxy{L, R, F} <: ActorProxy
-    reduceFn :: F
-    seed     :: R
+struct ReduceProxy{L,R,F} <: ActorProxy
+    reduceFn::F
+    seed::R
 end
 
-actor_proxy!(::Type{R}, proxy::ReduceProxy{L, R, F}, actor::A) where { L, R, A, F } = ReduceActor{L, R, A, F}(proxy.reduceFn, actor, proxy.seed)
+actor_proxy!(::Type{R}, proxy::ReduceProxy{L,R,F}, actor::A) where {L,R,A,F} =
+    ReduceActor{L,R,A,F}(proxy.reduceFn, actor, proxy.seed)
 
-mutable struct ReduceActor{L, R, A, F} <: Actor{L}
-    reduceFn :: F
-    actor    :: A
-    current  :: R
+mutable struct ReduceActor{L,R,A,F} <: Actor{L}
+    reduceFn::F
+    actor::A
+    current::R
 end
 
-getcurrent(actor::ReduceActor)         = actor.current
+getcurrent(actor::ReduceActor) = actor.current
 setcurrent!(actor::ReduceActor, value) = actor.current = value
 
-function on_next!(actor::ReduceActor{L, R}, data::L) where { L, R }
+function on_next!(actor::ReduceActor{L,R}, data::L) where {L,R}
     setcurrent!(actor, actor.reduceFn(data, getcurrent(actor)))
 end
 
@@ -96,42 +98,48 @@ function on_complete!(actor::ReduceActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, ::ReduceOperator{R}) where R = print(io, "ReduceOperator( -> $R)")
-Base.show(io::IO, ::ReduceProxy{L})    where L = print(io, "ReduceProxy($L)")
-Base.show(io::IO, ::ReduceActor{L})    where L = print(io, "ReduceActor($L)")
+Base.show(io::IO, ::ReduceOperator{R}) where {R} = print(io, "ReduceOperator( -> $R)")
+Base.show(io::IO, ::ReduceProxy{L}) where {L} = print(io, "ReduceProxy($L)")
+Base.show(io::IO, ::ReduceActor{L}) where {L} = print(io, "ReduceActor($L)")
 
 # ------------------------------------------------------------------------------------------------ #
 # No seed version of reduce operator (output data stream type is inferred from input)
 # ------------------------------------------------------------------------------------------------ #
 
-reduce(reduceFn::F) where { F <: Function } = ReduceNoSeedOperator{F}(reduceFn)
+reduce(reduceFn::F) where {F<:Function} = ReduceNoSeedOperator{F}(reduceFn)
 
 struct ReduceNoSeedOperator{F} <: InferableOperator
-    reduceFn :: F
+    reduceFn::F
 end
 
-operator_right(operator::ReduceNoSeedOperator, ::Type{L}) where L = L
+operator_right(operator::ReduceNoSeedOperator, ::Type{L}) where {L} = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::ReduceNoSeedOperator{F}, source) where { L, F }
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::ReduceNoSeedOperator{F},
+    source,
+) where {L,F}
     return proxy(L, source, ReduceNoSeedProxy{F}(operator.reduceFn))
 end
 
 struct ReduceNoSeedProxy{F} <: ActorProxy
-    reduceFn :: F
+    reduceFn::F
 end
 
-actor_proxy!(::Type{L}, proxy::ReduceNoSeedProxy{F}, actor::A) where { L, A, F } = ReduceNoSeedActor{L, A, F}(proxy.reduceFn, actor, nothing)
+actor_proxy!(::Type{L}, proxy::ReduceNoSeedProxy{F}, actor::A) where {L,A,F} =
+    ReduceNoSeedActor{L,A,F}(proxy.reduceFn, actor, nothing)
 
-mutable struct ReduceNoSeedActor{L, A, F} <: Actor{L}
-    reduceFn :: F
-    actor    :: A
-    current  :: Union{L, Nothing}
+mutable struct ReduceNoSeedActor{L,A,F} <: Actor{L}
+    reduceFn::F
+    actor::A
+    current::Union{L,Nothing}
 end
 
-getcurrent(actor::ReduceNoSeedActor)         = actor.current
+getcurrent(actor::ReduceNoSeedActor) = actor.current
 setcurrent!(actor::ReduceNoSeedActor, value) = actor.current = value
 
-function on_next!(actor::ReduceNoSeedActor{L}, data::L) where L
+function on_next!(actor::ReduceNoSeedActor{L}, data::L) where {L}
     current = getcurrent(actor)
     if current === nothing
         setcurrent!(actor, data)
@@ -152,6 +160,6 @@ function on_complete!(actor::ReduceNoSeedActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, ::ReduceNoSeedOperator)         = print(io, "ReduceNoSeedOperator(L -> L)")
-Base.show(io::IO, ::ReduceNoSeedProxy)            = print(io, "ReduceNoSeedProxy()")
-Base.show(io::IO, ::ReduceNoSeedActor{L}) where L = print(io, "ReduceNoSeedActor($L)")
+Base.show(io::IO, ::ReduceNoSeedOperator) = print(io, "ReduceNoSeedOperator(L -> L)")
+Base.show(io::IO, ::ReduceNoSeedProxy) = print(io, "ReduceNoSeedProxy()")
+Base.show(io::IO, ::ReduceNoSeedActor{L}) where {L} = print(io, "ReduceNoSeedActor($L)")

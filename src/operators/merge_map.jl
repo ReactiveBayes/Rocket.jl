@@ -40,49 +40,69 @@ subscribe!(source, logger())
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-merge_map(::Type{R}, mappingFn::F = identity; concurrent::Int = typemax(Int)) where { R, F <: Function } = MergeMapOperator{R, F}(mappingFn, concurrent)
+merge_map(
+    ::Type{R},
+    mappingFn::F = identity;
+    concurrent::Int = typemax(Int),
+) where {R,F<:Function} = MergeMapOperator{R,F}(mappingFn, concurrent)
 
-struct MergeMapOperator{R, F} <: RightTypedOperator{R}
-    mappingFn  :: F
-    concurrent :: Int
+struct MergeMapOperator{R,F} <: RightTypedOperator{R}
+    mappingFn::F
+    concurrent::Int
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::MergeMapOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, MergeMapProxy{L, R, F}(operator.mappingFn, operator.concurrent))
+function on_call!(
+    ::Type{L},
+    ::Type{R},
+    operator::MergeMapOperator{R,F},
+    source,
+) where {L,R,F}
+    return proxy(R, source, MergeMapProxy{L,R,F}(operator.mappingFn, operator.concurrent))
 end
 
-struct MergeMapProxy{L, R, F} <: ActorSourceProxy
-    mappingFn  :: F
-    concurrent :: Int
+struct MergeMapProxy{L,R,F} <: ActorSourceProxy
+    mappingFn::F
+    concurrent::Int
 end
 
-actor_proxy!(::Type{R}, proxy::MergeMapProxy{L, R, F}, actor::A) where { L, R, F, A } = MergeMapActor{L, R, F, A}(proxy.mappingFn, proxy.concurrent, actor)
+actor_proxy!(::Type{R}, proxy::MergeMapProxy{L,R,F}, actor::A) where {L,R,F,A} =
+    MergeMapActor{L,R,F,A}(proxy.mappingFn, proxy.concurrent, actor)
 
-mutable struct MergeMapActor{L, R, F, A} <: Actor{L}
-    mappingFn     :: F
-    concurrent    :: Int
-    actor         :: A
-    msubscription :: Teardown
-    ismcompleted  :: Bool
-    isdisposed    :: Bool
+mutable struct MergeMapActor{L,R,F,A} <: Actor{L}
+    mappingFn::F
+    concurrent::Int
+    actor::A
+    msubscription::Teardown
+    ismcompleted::Bool
+    isdisposed::Bool
 
-    active_listeners :: Vector{Any}
-    pending_data     :: Deque{L}
+    active_listeners::Vector{Any}
+    pending_data::Deque{L}
 
-    MergeMapActor{L, R, F, A}(mappingFn::F, concurrent::Int, actor::A) where { L, R, F, A } = begin
-        return new(mappingFn, concurrent, actor, voidTeardown, false, false, Vector{Any}(), Deque{L}())
+    MergeMapActor{L,R,F,A}(mappingFn::F, concurrent::Int, actor::A) where {L,R,F,A} = begin
+        return new(
+            mappingFn,
+            concurrent,
+            actor,
+            voidTeardown,
+            false,
+            false,
+            Vector{Any}(),
+            Deque{L}(),
+        )
     end
 end
 
-getactive(actor::MergeMapActor)  = actor.active_listeners
+getactive(actor::MergeMapActor) = actor.active_listeners
 getpending(actor::MergeMapActor) = actor.pending_data
 
-pushactive!(actor::MergeMapActor, active)   = push!(getactive(actor), active)
+pushactive!(actor::MergeMapActor, active) = push!(getactive(actor), active)
 pushpending!(actor::MergeMapActor, pending) = push!(getpending(actor), pending)
 
-isdisposed(actor::MergeMapActor)   = actor.isdisposed
+isdisposed(actor::MergeMapActor) = actor.isdisposed
 ismcompleted(actor::MergeMapActor) = actor.ismcompleted
-isicompleted(actor::MergeMapActor) = length(getactive(actor)) + length(getpending(actor)) === 0
+isicompleted(actor::MergeMapActor) =
+    length(getactive(actor)) + length(getpending(actor)) === 0
 
 setmcompleted!(actor::MergeMapActor, value::Bool) = actor.ismcompleted = value
 
@@ -95,9 +115,9 @@ function seticompleted!(actor::MergeMapActor, inner)
     end
 end
 
-function attach_source_with_map!(actor::M, data::L) where { L, R, M <: MergeMapActor{L, R} }
+function attach_source_with_map!(actor::M, data::L) where {L,R,M<:MergeMapActor{L,R}}
     if length(getactive(actor)) < actor.concurrent
-        inner = MergeMapInnerActor{R, M}(actor, voidTeardown)
+        inner = MergeMapInnerActor{R,M}(actor, voidTeardown)
         pushactive!(actor, inner)
         setsubscription!(inner, subscribe!(actor.mappingFn(data), inner))
     else
@@ -105,21 +125,22 @@ function attach_source_with_map!(actor::M, data::L) where { L, R, M <: MergeMapA
     end
 end
 
-mutable struct MergeMapInnerActor{R, M} <: Actor{R}
-    main         :: M
-    subscription :: Teardown
+mutable struct MergeMapInnerActor{R,M} <: Actor{R}
+    main::M
+    subscription::Teardown
 end
 
-getsubscription(actor::MergeMapInnerActor)                = actor.subscription
-setsubscription!(actor::MergeMapInnerActor, subscription) = actor.subscription = subscription
+getsubscription(actor::MergeMapInnerActor) = actor.subscription
+setsubscription!(actor::MergeMapInnerActor, subscription) =
+    actor.subscription = subscription
 
-on_next!(actor::MergeMapInnerActor{R}, data::R) where R = next!(actor.main.actor, data)
-on_error!(actor::MergeMapInnerActor, err)               = error!(actor.main, err)
-on_complete!(actor::MergeMapInnerActor)                 = begin
+on_next!(actor::MergeMapInnerActor{R}, data::R) where {R} = next!(actor.main.actor, data)
+on_error!(actor::MergeMapInnerActor, err) = error!(actor.main, err)
+on_complete!(actor::MergeMapInnerActor) = begin
     seticompleted!(actor.main, actor)
 end
 
-function on_next!(actor::M, data::L) where { L, R, M <: MergeMapActor{L, R} }
+function on_next!(actor::M, data::L) where {L,R,M<:MergeMapActor{L,R}}
     if !isdisposed(actor)
         attach_source_with_map!(actor, data)
     end
@@ -150,11 +171,12 @@ function dispose!(actor::MergeMapActor)
     empty!(getpending(actor))
 end
 
-@subscribable struct MergeMapSource{L, S} <: Subscribable{L}
-    source :: S
+@subscribable struct MergeMapSource{L,S} <: Subscribable{L}
+    source::S
 end
 
-source_proxy!(::Type{R}, proxy::MergeMapProxy{L, R, F}, source::S) where { L, R, F, S } = MergeMapSource{L, S}(source)
+source_proxy!(::Type{R}, proxy::MergeMapProxy{L,R,F}, source::S) where {L,R,F,S} =
+    MergeMapSource{L,S}(source)
 
 function on_subscribe!(source::MergeMapSource, actor::MergeMapActor)
     actor.msubscription = subscribe!(source.source, actor)
@@ -162,19 +184,19 @@ function on_subscribe!(source::MergeMapSource, actor::MergeMapActor)
 end
 
 struct MergeMapSubscription{A} <: Teardown
-    actor :: A
+    actor::A
 end
 
-as_teardown(::Type{ <: MergeMapSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: MergeMapSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::MergeMapSubscription)
     dispose!(subscription.actor)
     return nothing
 end
 
-Base.show(io::IO, ::MergeMapOperator{R})   where {    R } = print(io, "MergeMapOperator($R)")
-Base.show(io::IO, ::MergeMapProxy{L, R})   where { L, R } = print(io, "MergeMapProxy($L, $R)")
-Base.show(io::IO, ::MergeMapActor{L, R})   where { L, R } = print(io, "MergeMapActor($L -> $R)")
-Base.show(io::IO, ::MergeMapInnerActor{R}) where {    R } = print(io, "MergeMapInnerActor($R)")
-Base.show(io::IO, ::MergeMapSource{S})     where S        = print(io, "MergeMapSource($S)")
-Base.show(io::IO, ::MergeMapSubscription)                 = print(io, "MergeMapSubscription()")
+Base.show(io::IO, ::MergeMapOperator{R}) where {R} = print(io, "MergeMapOperator($R)")
+Base.show(io::IO, ::MergeMapProxy{L,R}) where {L,R} = print(io, "MergeMapProxy($L, $R)")
+Base.show(io::IO, ::MergeMapActor{L,R}) where {L,R} = print(io, "MergeMapActor($L -> $R)")
+Base.show(io::IO, ::MergeMapInnerActor{R}) where {R} = print(io, "MergeMapInnerActor($R)")
+Base.show(io::IO, ::MergeMapSource{S}) where {S} = print(io, "MergeMapSource($S)")
+Base.show(io::IO, ::MergeMapSubscription) = print(io, "MergeMapSubscription()")

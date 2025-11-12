@@ -55,82 +55,84 @@ subscribe!(source |> scan(Vector{Int}, (d, c) -> [ c..., d ], Int[]), logger())
 
 See also: [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`reduce`](@ref), [`logger`](@ref)
 """
-scan(::Type{R}, scanFn::F, seed::R) where { R, F <: Function } = ScanOperator{R, F}(scanFn, seed)
+scan(::Type{R}, scanFn::F, seed::R) where {R,F<:Function} = ScanOperator{R,F}(scanFn, seed)
 
 # ------------------------------------------------------------------------------------------------ #
 # Seed version of scan operator (typed with R also)
 # ------------------------------------------------------------------------------------------------ #
 
-struct ScanOperator{R, F} <: RightTypedOperator{R}
-    scanFn  :: F
-    seed    :: R
+struct ScanOperator{R,F} <: RightTypedOperator{R}
+    scanFn::F
+    seed::R
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::ScanOperator{R, F}, source) where { L, R, F }
-    return proxy(R, source, ScanProxy{L, R, F}(operator.scanFn, operator.seed))
+function on_call!(::Type{L}, ::Type{R}, operator::ScanOperator{R,F}, source) where {L,R,F}
+    return proxy(R, source, ScanProxy{L,R,F}(operator.scanFn, operator.seed))
 end
 
-struct ScanProxy{L, R, F} <: ActorProxy
-    scanFn  :: F
-    seed    :: R
+struct ScanProxy{L,R,F} <: ActorProxy
+    scanFn::F
+    seed::R
 end
 
-actor_proxy!(::Type{R}, proxy::ScanProxy{L, R, F}, actor::A) where { L, R, A, F } = ScanActor{L, R, A, F}(proxy.scanFn, actor, proxy.seed)
+actor_proxy!(::Type{R}, proxy::ScanProxy{L,R,F}, actor::A) where {L,R,A,F} =
+    ScanActor{L,R,A,F}(proxy.scanFn, actor, proxy.seed)
 
-mutable struct ScanActor{L, R, A, F} <: Actor{L}
-    scanFn  :: F
-    actor   :: A
-    current :: R
+mutable struct ScanActor{L,R,A,F} <: Actor{L}
+    scanFn::F
+    actor::A
+    current::R
 end
 
-getcurrent(actor::ScanActor)         = actor.current
+getcurrent(actor::ScanActor) = actor.current
 setcurrent!(actor::ScanActor, value) = actor.current = value
 
-function on_next!(actor::ScanActor{L, R}, data::L) where { L, R }
+function on_next!(actor::ScanActor{L,R}, data::L) where {L,R}
     update = actor.scanFn(data, getcurrent(actor))
     setcurrent!(actor, update)
     next!(actor.actor, update)
 end
 
 on_error!(actor::ScanActor, err) = error!(actor.actor, err)
-on_complete!(actor::ScanActor)   = complete!(actor.actor)
+on_complete!(actor::ScanActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::ScanOperator{R}) where R = print(io, "ScanOperator( -> $R)")
-Base.show(io::IO, ::ScanProxy{L})    where L = print(io, "ScanProxy($L)")
-Base.show(io::IO, ::ScanActor{L})    where L = print(io, "ScanActor($L)")
+Base.show(io::IO, ::ScanOperator{R}) where {R} = print(io, "ScanOperator( -> $R)")
+Base.show(io::IO, ::ScanProxy{L}) where {L} = print(io, "ScanProxy($L)")
+Base.show(io::IO, ::ScanActor{L}) where {L} = print(io, "ScanActor($L)")
 
 # ------------------------------------------------------------------------------------------------ #
 # No seed version of scan operator (output data stream type is inferred from input)
 # ------------------------------------------------------------------------------------------------ #
 
-scan(scanFn::F) where { F <: Function } = ScanNoSeedOperator{F}(scanFn)
+scan(scanFn::F) where {F<:Function} = ScanNoSeedOperator{F}(scanFn)
 
 struct ScanNoSeedOperator{F} <: InferableOperator
-    scanFn  :: F
+    scanFn::F
 end
 
-operator_right(operator::ScanNoSeedOperator, ::Type{L}) where L = L
+operator_right(operator::ScanNoSeedOperator, ::Type{L}) where {L} = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::ScanNoSeedOperator{F}, source) where { L, F }
+function on_call!(::Type{L}, ::Type{L}, operator::ScanNoSeedOperator{F}, source) where {L,F}
     return proxy(L, source, ScanNoSeedProxy{F}(operator.scanFn))
 end
 
 struct ScanNoSeedProxy{F} <: ActorProxy
-    scanFn :: F
+    scanFn::F
 end
 
-actor_proxy!(::Type{L}, proxy::ScanNoSeedProxy{F}, actor::A) where { L, A, F } = ScanNoSeedActor{L, A, F}(proxy.scanFn, actor, nothing)
+actor_proxy!(::Type{L}, proxy::ScanNoSeedProxy{F}, actor::A) where {L,A,F} =
+    ScanNoSeedActor{L,A,F}(proxy.scanFn, actor, nothing)
 
-mutable struct ScanNoSeedActor{L, A, F} <: Actor{L}
-    scanFn  :: F
-    actor   :: A
-    current :: Union{L, Nothing}
+mutable struct ScanNoSeedActor{L,A,F} <: Actor{L}
+    scanFn::F
+    actor::A
+    current::Union{L,Nothing}
 end
 
-getcurrent(actor::ScanNoSeedActor)         = actor.current
+getcurrent(actor::ScanNoSeedActor) = actor.current
 setcurrent!(actor::ScanNoSeedActor, value) = actor.current = value
 
-function on_next!(actor::ScanNoSeedActor{L}, data::L) where L
+function on_next!(actor::ScanNoSeedActor{L}, data::L) where {L}
     current = getcurrent(actor)
     if current === nothing
         setcurrent!(actor, data)
@@ -141,8 +143,8 @@ function on_next!(actor::ScanNoSeedActor{L}, data::L) where L
 end
 
 on_error!(actor::ScanNoSeedActor, err) = error!(actor.actor, err)
-on_complete!(actor::ScanNoSeedActor)   = complete!(actor.actor)
+on_complete!(actor::ScanNoSeedActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::ScanNoSeedOperator)         = print(io, "ScanNoSeedOperator(L -> L)")
-Base.show(io::IO, ::ScanNoSeedProxy)            = print(io, "ScanNoSeedProxy()")
-Base.show(io::IO, ::ScanNoSeedActor{L}) where L = print(io, "ScanNoSeedActor($L)")
+Base.show(io::IO, ::ScanNoSeedOperator) = print(io, "ScanNoSeedOperator(L -> L)")
+Base.show(io::IO, ::ScanNoSeedProxy) = print(io, "ScanNoSeedProxy()")
+Base.show(io::IO, ::ScanNoSeedActor{L}) where {L} = print(io, "ScanNoSeedActor($L)")

@@ -45,27 +45,28 @@ subscribe!(source, logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`logger`](@ref)
 """
-pairwise()        = PairwiseOperator()
+pairwise() = PairwiseOperator()
 pairwise(initial) = start_with(initial) + pairwise()
 
 struct PairwiseOperator <: InferableOperator end
 
-operator_right(::PairwiseOperator, ::Type{L}) where L = Tuple{L, L}
+operator_right(::PairwiseOperator, ::Type{L}) where {L} = Tuple{L,L}
 
-function on_call!(::Type{L}, ::Type{ Tuple{L, L} }, ::PairwiseOperator, source) where L
-    return proxy(Tuple{L, L}, source, PairwiseProxy{L}())
+function on_call!(::Type{L}, ::Type{Tuple{L,L}}, ::PairwiseOperator, source) where {L}
+    return proxy(Tuple{L,L}, source, PairwiseProxy{L}())
 end
 
 struct PairwiseProxy{L} <: ActorProxy end
 
-actor_proxy!(::Type{ Tuple{L, L} }, ::PairwiseProxy{L}, actor::A) where { L, A } = PairwiseActor{L, A}(actor, nothing)
+actor_proxy!(::Type{Tuple{L,L}}, ::PairwiseProxy{L}, actor::A) where {L,A} =
+    PairwiseActor{L,A}(actor, nothing)
 
-mutable struct PairwiseActor{L, A} <: Actor{L}
-    actor    :: A
-    previous :: Union{Nothing, L}
+mutable struct PairwiseActor{L,A} <: Actor{L}
+    actor::A
+    previous::Union{Nothing,L}
 end
 
-function on_next!(actor::PairwiseActor{L}, data::L) where L 
+function on_next!(actor::PairwiseActor{L}, data::L) where {L}
     previous = actor.previous
     actor.previous = data
     if !isnothing(previous)
@@ -74,8 +75,8 @@ function on_next!(actor::PairwiseActor{L}, data::L) where L
 end
 
 on_error!(actor::PairwiseActor, err) = error!(actor.actor, err)
-on_complete!(actor::PairwiseActor)   = complete!(actor.actor)
+on_complete!(actor::PairwiseActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::PairwiseOperator)          = print(io, "PairwiseOperator()")
-Base.show(io::IO, ::PairwiseProxy)             = print(io, "PairwiseProxy()")
-Base.show(io::IO, ::PairwiseActor{L})  where L = print(io, "PairwiseActor($L)")
+Base.show(io::IO, ::PairwiseOperator) = print(io, "PairwiseOperator()")
+Base.show(io::IO, ::PairwiseProxy) = print(io, "PairwiseProxy()")
+Base.show(io::IO, ::PairwiseActor{L}) where {L} = print(io, "PairwiseActor($L)")

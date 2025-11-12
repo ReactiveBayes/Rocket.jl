@@ -12,7 +12,7 @@ its own method for `actor_proxy!(::Type, proxy, actor)` function which have to r
 
 See also: [`proxy`](@ref), [`actor_proxy!`](@ref)
 """
-abstract type ActorProxy       end
+abstract type ActorProxy end
 
 """
     SourceProxy
@@ -22,7 +22,7 @@ its own method for `source_proxy!(::Type, proxy, source)` function which have to
 
 See also: [`proxy`](@ref), [`source_proxy!`](@ref)
 """
-abstract type SourceProxy      end
+abstract type SourceProxy end
 
 """
     ActorSourceProxy
@@ -36,51 +36,174 @@ abstract type ActorSourceProxy end
 
 abstract type ProxyTrait end
 
-struct ValidActorProxy        <: ProxyTrait end
-struct ValidSourceProxy       <: ProxyTrait end
-struct ValidActorSourceProxy  <: ProxyTrait end
-struct InvalidProxy           <: ProxyTrait end
+struct ValidActorProxy <: ProxyTrait end
+struct ValidSourceProxy <: ProxyTrait end
+struct ValidActorSourceProxy <: ProxyTrait end
+struct InvalidProxy <: ProxyTrait end
 
-as_proxy(::Type)                        = InvalidProxy()
-as_proxy(::Type{ <: ActorProxy })       = ValidActorProxy()
-as_proxy(::Type{ <: SourceProxy })      = ValidSourceProxy()
-as_proxy(::Type{ <: ActorSourceProxy }) = ValidActorSourceProxy()
-as_proxy(::O) where O                   = as_proxy(O)
+as_proxy(::Type) = InvalidProxy()
+as_proxy(::Type{<: ActorProxy}) = ValidActorProxy()
+as_proxy(::Type{<: SourceProxy}) = ValidSourceProxy()
+as_proxy(::Type{<: ActorSourceProxy}) = ValidActorSourceProxy()
+as_proxy(::O) where {O} = as_proxy(O)
 
-call_actor_proxy!(::Type{L}, proxy::T,  actor::A)  where { L, T, A } = call_actor_proxy!(L, as_proxy(T), as_actor(A), proxy, actor)
-call_source_proxy!(::Type{L}, proxy::T, source::S) where { L, T, S } = call_source_proxy!(L, as_proxy(T), as_subscribable(S), proxy, source)
+call_actor_proxy!(::Type{L}, proxy::T, actor::A) where {L,T,A} =
+    call_actor_proxy!(L, as_proxy(T), as_actor(A), proxy, actor)
+call_source_proxy!(::Type{L}, proxy::T, source::S) where {L,T,S} =
+    call_source_proxy!(L, as_proxy(T), as_subscribable(S), proxy, source)
 
 # Check for invalid actor trait usages
-call_actor_proxy!(::Type, ::InvalidProxy, ::InvalidActorTrait,   proxy, actor) = error("Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).")
-call_actor_proxy!(::Type, ::InvalidProxy, _,                     proxy, actor) = error("Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).")
-call_actor_proxy!(::Type, _,              ::InvalidActorTrait,   proxy, actor) = error("Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).")
+call_actor_proxy!(::Type, ::InvalidProxy, ::InvalidActorTrait, proxy, actor) = error(
+    "Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).",
+)
+call_actor_proxy!(::Type, ::InvalidProxy, _, proxy, actor) = error(
+    "Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).",
+)
+call_actor_proxy!(::Type, _, ::InvalidActorTrait, proxy, actor) = error(
+    "Type $(typeof(actor)) is not a valid actor type. \nConsider extending your actor with one of the abstract actor types <: (Actor{T}, NextActor{T}, ErrorActor{T}, CompletionActor{T}) or implement as_actor(::Type{<:$(typeof(actor))}).",
+)
 
 # Invoke valid proxy and actor
-call_actor_proxy!(::Type{L}, ::ValidActorProxy,       ::BaseActorTrait{D},       proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidActorProxy,       ::ErrorActorTrait{D},      proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidActorProxy,       ::NextActorTrait{D},       proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidActorProxy,       ::CompletionActorTrait{D}, proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidSourceProxy,      ::BaseActorTrait{D},       proxy, actor) where { L, D } = actor
-call_actor_proxy!(::Type{L}, ::ValidSourceProxy,      ::NextActorTrait{D},       proxy, actor) where { L, D } = actor
-call_actor_proxy!(::Type{L}, ::ValidSourceProxy,      ::ErrorActorTrait{D},      proxy, actor) where { L, D } = actor
-call_actor_proxy!(::Type{L}, ::ValidSourceProxy,      ::CompletionActorTrait{D}, proxy, actor) where { L, D } = actor
-call_actor_proxy!(::Type{L}, ::ValidActorSourceProxy, ::BaseActorTrait{D},       proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidActorSourceProxy, ::NextActorTrait{D},       proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidActorSourceProxy, ::ErrorActorTrait{D},      proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
-call_actor_proxy!(::Type{L}, ::ValidActorSourceProxy, ::CompletionActorTrait{D}, proxy, actor) where { L, D } = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorProxy,
+    ::BaseActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorProxy,
+    ::ErrorActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorProxy,
+    ::NextActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorProxy,
+    ::CompletionActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidSourceProxy,
+    ::BaseActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidSourceProxy,
+    ::NextActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidSourceProxy,
+    ::ErrorActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidSourceProxy,
+    ::CompletionActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorSourceProxy,
+    ::BaseActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorSourceProxy,
+    ::NextActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorSourceProxy,
+    ::ErrorActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
+call_actor_proxy!(
+    ::Type{L},
+    ::ValidActorSourceProxy,
+    ::CompletionActorTrait{D},
+    proxy,
+    actor,
+) where {L,D} = actor_proxy!(L, proxy, actor)
 
 # Check for invalid subscribable trait usages
-call_source_proxy!(::Type, ::InvalidProxy, ::InvalidSubscribableTrait, proxy, source) = error("Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).")
-call_source_proxy!(::Type, ::InvalidProxy, _,                          proxy, source) = error("Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).")
-call_source_proxy!(::Type, _,              ::InvalidSubscribableTrait, proxy, source) = error("Type $(typeof(source)) is not a valid subscribable type. \nConsider extending your subscribable with Subscribable{T} abstract type or implement as_subscribable(::Type{<:$(typeof(source))}).")
+call_source_proxy!(::Type, ::InvalidProxy, ::InvalidSubscribableTrait, proxy, source) =
+    error(
+        "Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).",
+    )
+call_source_proxy!(::Type, ::InvalidProxy, _, proxy, source) = error(
+    "Type $(typeof(proxy)) is not a valid proxy type. \nConsider extending your type with one of the ActorProxy, SourceProxy or ActorSourceProxy abstract types or implement as_proxy(::Type{<:$(typeof(proxy))}).",
+)
+call_source_proxy!(::Type, _, ::InvalidSubscribableTrait, proxy, source) = error(
+    "Type $(typeof(source)) is not a valid subscribable type. \nConsider extending your subscribable with Subscribable{T} abstract type or implement as_subscribable(::Type{<:$(typeof(source))}).",
+)
 
 # Invoke valid proxy and source
-call_source_proxy!(::Type{L}, ::ValidActorProxy,       ::SimpleSubscribableTrait{D},    proxy, source) where { L, D } = source
-call_source_proxy!(::Type{L}, ::ValidActorProxy,       ::ScheduledSubscribableTrait{D}, proxy, source) where { L, D } = source
-call_source_proxy!(::Type{L}, ::ValidSourceProxy,      ::SimpleSubscribableTrait{D},    proxy, source) where { L, D } = source_proxy!(L, proxy, source)
-call_source_proxy!(::Type{L}, ::ValidSourceProxy,      ::ScheduledSubscribableTrait{D}, proxy, source) where { L, D } = source_proxy!(L, proxy, source)
-call_source_proxy!(::Type{L}, ::ValidActorSourceProxy, ::SimpleSubscribableTrait{D},    proxy, source) where { L, D } = source_proxy!(L, proxy, source)
-call_source_proxy!(::Type{L}, ::ValidActorSourceProxy, ::ScheduledSubscribableTrait{D}, proxy, source) where { L, D } = source_proxy!(L, proxy, source)
+call_source_proxy!(
+    ::Type{L},
+    ::ValidActorProxy,
+    ::SimpleSubscribableTrait{D},
+    proxy,
+    source,
+) where {L,D} = source
+call_source_proxy!(
+    ::Type{L},
+    ::ValidActorProxy,
+    ::ScheduledSubscribableTrait{D},
+    proxy,
+    source,
+) where {L,D} = source
+call_source_proxy!(
+    ::Type{L},
+    ::ValidSourceProxy,
+    ::SimpleSubscribableTrait{D},
+    proxy,
+    source,
+) where {L,D} = source_proxy!(L, proxy, source)
+call_source_proxy!(
+    ::Type{L},
+    ::ValidSourceProxy,
+    ::ScheduledSubscribableTrait{D},
+    proxy,
+    source,
+) where {L,D} = source_proxy!(L, proxy, source)
+call_source_proxy!(
+    ::Type{L},
+    ::ValidActorSourceProxy,
+    ::SimpleSubscribableTrait{D},
+    proxy,
+    source,
+) where {L,D} = source_proxy!(L, proxy, source)
+call_source_proxy!(
+    ::Type{L},
+    ::ValidActorSourceProxy,
+    ::ScheduledSubscribableTrait{D},
+    proxy,
+    source,
+) where {L,D} = source_proxy!(L, proxy, source)
 
 """
     ProxyObservable{L, S, P}(proxied_source::S, proxy::P)
@@ -89,9 +212,9 @@ An interface for proxied Observables.
 
 See also: [`proxy`](@ref)
 """
-@subscribable struct ProxyObservable{L, S, P} <: Subscribable{L}
-    proxied_source :: S
-    proxy          :: P
+@subscribable struct ProxyObservable{L,S,P} <: Subscribable{L}
+    proxied_source::S
+    proxy::P
 end
 
 # TODO Rocket 2.0: Some operators implement custom `getrecent` logic, but in general it is not possible 
@@ -99,8 +222,11 @@ end
 # in the future. We should consider `getrecent` seriously and we depend on this functionlity currently in the `ReactiveMP.jl` package
 getrecent(proxy::ProxyObservable) = getrecent(proxy.proxied_source, proxy.proxy)
 
-function on_subscribe!(observable::ProxyObservable{L}, actor) where L
-    return subscribe!(observable.proxied_source, call_actor_proxy!(L, observable.proxy, actor))
+function on_subscribe!(observable::ProxyObservable{L}, actor) where {L}
+    return subscribe!(
+        observable.proxied_source,
+        call_actor_proxy!(L, observable.proxy, actor),
+    )
 end
 
 """
@@ -112,7 +238,9 @@ the type of data of the connected proxy observable.
 
 See also: [`proxy`](@ref), [`ActorProxy`](@ref), [`ActorSourceProxy`](@ref)
 """
-actor_proxy!(L, proxy, actor) = error("You probably forgot to implement actor_proxy!(::Type, proxy::$(typeof(proxy)), actor::$(typeof(actor)))")
+actor_proxy!(L, proxy, actor) = error(
+    "You probably forgot to implement actor_proxy!(::Type, proxy::$(typeof(proxy)), actor::$(typeof(actor)))",
+)
 
 """
     source_proxy!(::Type, proxy, source)
@@ -123,9 +251,12 @@ the type of data of the connected proxy observable.
 
 See also: [`proxy`](@ref), [`SourceProxy`](@ref), [`ActorSourceProxy`](@ref)
 """
-source_proxy!(L, proxy, source) = error("You probably forgot to implement source_proxy!(::Type, proxy::$(typeof(proxy)), source::$(typeof(source)))")
+source_proxy!(L, proxy, source) = error(
+    "You probably forgot to implement source_proxy!(::Type, proxy::$(typeof(proxy)), source::$(typeof(source)))",
+)
 
-Base.show(io::IO, observable::ProxyObservable{L}) where L = print(io, "ProxyObservable($L, $(observable.proxy))")
+Base.show(io::IO, observable::ProxyObservable{L}) where {L} =
+    print(io, "ProxyObservable($L, $(observable.proxy))")
 
 # -------------------------------- #
 # Helpers                          #
@@ -172,10 +303,23 @@ subscribe!(proxied, logger())
 
 See also: [`ProxyObservable`](@ref), [`ActorProxy`](@ref), [`SourceProxy`](@ref), [`ActorSourceProxy`](@ref)
 """
-proxy(::Type{L}, source, proxy) where L = as_proxy_observable(L, call_source_proxy!(L, proxy, source), proxy)
+proxy(::Type{L}, source, proxy) where {L} =
+    as_proxy_observable(L, call_source_proxy!(L, proxy, source), proxy)
 
-as_proxy_observable(::Type{L}, proxied_source::S, proxy) where { L, S } = as_proxy_observable(L, as_subscribable(S), proxied_source, proxy)
+as_proxy_observable(::Type{L}, proxied_source::S, proxy) where {L,S} =
+    as_proxy_observable(L, as_subscribable(S), proxied_source, proxy)
 
-as_proxy_observable(::Type{L}, ::InvalidSubscribableTrait,   proxied_source,    _)        where L           = throw(InvalidSubscribableTraitUsageError(proxied_source))
-as_proxy_observable(::Type{L}, ::SimpleSubscribableTrait,    proxied_source::S, proxy::P) where { L, S, P } = ProxyObservable{L, S, P}(proxied_source, proxy)
-as_proxy_observable(::Type{L}, ::ScheduledSubscribableTrait, proxied_source::S, proxy::P) where { L, S, P } = ProxyObservable{L, S, P}(proxied_source, proxy)
+as_proxy_observable(::Type{L}, ::InvalidSubscribableTrait, proxied_source, _) where {L} =
+    throw(InvalidSubscribableTraitUsageError(proxied_source))
+as_proxy_observable(
+    ::Type{L},
+    ::SimpleSubscribableTrait,
+    proxied_source::S,
+    proxy::P,
+) where {L,S,P} = ProxyObservable{L,S,P}(proxied_source, proxy)
+as_proxy_observable(
+    ::Type{L},
+    ::ScheduledSubscribableTrait,
+    proxied_source::S,
+    proxy::P,
+) where {L,S,P} = ProxyObservable{L,S,P}(proxied_source, proxy)

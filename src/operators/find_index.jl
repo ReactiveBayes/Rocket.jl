@@ -31,4 +31,5 @@ subscribe!(source |> find_index((d) -> d !== 0 && d % 2 == 0), logger())
 
 See also: [`find`](@ref), [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-find_index(conditionFn::F) where { F <: Function } = enumerate() + find(d -> conditionFn(d[2])) + map(Int, d -> d[1])
+find_index(conditionFn::F) where {F<:Function} =
+    enumerate() + find(d -> conditionFn(d[2])) + map(Int, d -> d[1])

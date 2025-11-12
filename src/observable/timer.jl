@@ -72,7 +72,8 @@ getdelay_ms(observable::TimerObservable) = observable.delay
 getperiod_ms(observable::TimerObservable) = observable.period
 
 getdelay_sec(observable::TimerObservable) = getdelay_ms(observable) / MILLISECONDS_IN_SECOND
-getperiod_sec(observable::TimerObservable) = getperiod_ms(observable) / MILLISECONDS_IN_SECOND
+getperiod_sec(observable::TimerObservable) =
+    getperiod_ms(observable) / MILLISECONDS_IN_SECOND
 
 struct TimerSubscription <: Teardown
     timer::Timer
@@ -120,7 +121,7 @@ function on_subscribe!(observable::TimerObservable, actor)
         end
     end
 
-    timer = Timer(callback, getdelay_sec(observable), interval=getperiod_sec(observable))
+    timer = Timer(callback, getdelay_sec(observable), interval = getperiod_sec(observable))
 
     return TimerSubscription(timer)
 end
@@ -131,7 +132,9 @@ function on_unsubscribe!(subscription::TimerSubscription)
 end
 
 
-Base.:(==)(t1::TimerObservable, t2::TimerObservable) = getdelay_ms(t1) == getdelay_ms(t1) && getperiod_ms(t1) == getperiod_ms(t2)
+Base.:(==)(t1::TimerObservable, t2::TimerObservable) =
+    getdelay_ms(t1) == getdelay_ms(t1) && getperiod_ms(t1) == getperiod_ms(t2)
 
-Base.show(io::IO, observable::TimerObservable) = print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
+Base.show(io::IO, observable::TimerObservable) =
+    print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
 Base.show(io::IO, ::TimerSubscription) = print(io, "TimerSubscription()")

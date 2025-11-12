@@ -47,4 +47,4 @@ See also: [`NeverObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
 never(T = Any) = NeverObservable{T}()
 
-Base.show(io::IO, ::NeverObservable{D}) where D = print(io, "NeverObservable($D)")
+Base.show(io::IO, ::NeverObservable{D}) where {D} = print(io, "NeverObservable($D)")

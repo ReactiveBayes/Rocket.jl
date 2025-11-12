@@ -10,7 +10,10 @@ using Rocket
     @testset begin
         actor = VoidActor{Int}()
 
-        @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(actor, "string")
+        @test_throws InconsistentSourceActorDataTypesError{Int64,String} next!(
+            actor,
+            "string",
+        )
     end
 
     @testset begin
@@ -21,7 +24,7 @@ using Rocket
 
     @testset begin
         @test void(Int) isa VoidActor{Int}
-        @test void()    isa Rocket.VoidActorFactory
+        @test void() isa Rocket.VoidActorFactory
     end
 end
 

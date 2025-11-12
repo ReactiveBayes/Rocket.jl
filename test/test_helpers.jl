@@ -14,13 +14,13 @@ const TESTSET_MAXIMUM_COMPILATION_TIMEOUT = 5000 # 5 sec
 # Helpers for running custom testsets for operators
 # ------------------------------------------------- #
 
-function testset_parameters(testset::NamedTuple{V, T}) where { V, T <: Tuple }
+function testset_parameters(testset::NamedTuple{V,T}) where {V,T<:Tuple}
     parameters = Dict([
         (:source, nothing),
         (:values, nothing),
         (:wait_for, TESTSET_MAXIMUM_TIMEOUT),
         (:throws, nothing),
-        (:source_type, Any)
+        (:source_type, Any),
     ])
 
     for key in V
@@ -36,16 +36,31 @@ function test(testset, check_timings)
     # Force JIT compilation of all statements before actual test execution
     # Iffy approach, TODO
     try
-        test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, TESTSET_MAXIMUM_COMPILATION_TIMEOUT), check_timings = false)
+        test_on_source(
+            parameters[:source],
+            parameters[:values];
+            maximum_wait = convert(Float64, TESTSET_MAXIMUM_COMPILATION_TIMEOUT),
+            check_timings = false,
+        )
     catch _
     end
 
     if parameters[:source] === nothing
         error("Missing :source field in the testset")
     elseif parameters[:throws] !== nothing
-        @test_throws parameters[:throws] test_on_source(parameters[:source], parameters[:values]; maximum_wait = parameters[:wait_for], check_timings = check_timings)
+        @test_throws parameters[:throws] test_on_source(
+            parameters[:source],
+            parameters[:values];
+            maximum_wait = parameters[:wait_for],
+            check_timings = check_timings,
+        )
     else
-        @test test_on_source(parameters[:source], parameters[:values]; maximum_wait = convert(Float64, parameters[:wait_for]), check_timings = check_timings)
+        @test test_on_source(
+            parameters[:source],
+            parameters[:values];
+            maximum_wait = convert(Float64, parameters[:wait_for]),
+            check_timings = check_timings,
+        )
     end
 
     if parameters[:source_type] !== Any
@@ -67,16 +82,20 @@ end
 # Helpers for checking Base.show methods for operators
 # --------------------------------------------------- #
 
-function run_proxyshowcheck(name::String, operator; args::Union{NamedTuple{V, T}, Nothing} = nothing) where { V, T <: Tuple }
+function run_proxyshowcheck(
+    name::String,
+    operator;
+    args::Union{NamedTuple{V,T},Nothing} = nothing,
+) where {V,T<:Tuple}
 
     parameters = Dict([
         (:custom_source, never(Any)),
-        (:custom_actor,  void(Any)),
+        (:custom_actor, void(Any)),
         (:check_operator, true),
         (:check_proxy, true),
         (:check_actor, :auto),
         (:check_observable, :auto),
-        (:check_subscription, false)
+        (:check_subscription, false),
     ])
 
     if args !== nothing
@@ -108,11 +127,18 @@ function run_proxyshowcheck(name::String, operator; args::Union{NamedTuple{V, T}
             show(io, withoperator.proxy)
             printed = String(take!(io))
             if !occursin("$(name)Proxy", printed)
-                error("Check for Base.show(io, proxy::$(typeof(withoperator.proxy)) has failed")
+                error(
+                    "Check for Base.show(io, proxy::$(typeof(withoperator.proxy)) has failed",
+                )
             end
         end
 
-        if parameters[:check_actor] === true || (parameters[:check_actor] === :auto && (proxytrait isa Rocket.ValidActorProxy || proxytrait isa Rocket.ValidActorSourceProxy))
+        if parameters[:check_actor] === true || (
+            parameters[:check_actor] === :auto && (
+                proxytrait isa Rocket.ValidActorProxy ||
+                proxytrait isa Rocket.ValidActorSourceProxy
+            )
+        )
             actor = Rocket.actor_proxy!(withoperator.proxy, parameters[:custom_actor])
             show(io, actor)
             printed = String(take!(io))
@@ -121,7 +147,12 @@ function run_proxyshowcheck(name::String, operator; args::Union{NamedTuple{V, T}
             end
         end
 
-        if parameters[:check_observable] === true || (parameters[:check_observable] === :auto && (proxytrait isa Rocket.ValidSourceProxy || proxytrait isa Rocket.ValidActorSourceProxy))
+        if parameters[:check_observable] === true || (
+            parameters[:check_observable] === :auto && (
+                proxytrait isa Rocket.ValidSourceProxy ||
+                proxytrait isa Rocket.ValidActorSourceProxy
+            )
+        )
             source = Rocket.source_proxy!(withoperator.proxy, parameters[:custom_source])
             show(io, source)
             printed = String(take!(io))
@@ -135,7 +166,9 @@ function run_proxyshowcheck(name::String, operator; args::Union{NamedTuple{V, T}
             show(io, subscription)
             printed = String(take!(io))
             if !occursin("$(name)Subscription", printed)
-                error("Check for Base.show(io, subscription::$(typeof(subscription)) has failed")
+                error(
+                    "Check for Base.show(io, subscription::$(typeof(subscription)) has failed",
+                )
             end
             unsubscribe!(subscription)
         else
@@ -143,7 +176,9 @@ function run_proxyshowcheck(name::String, operator; args::Union{NamedTuple{V, T}
             show(io, subscription)
             printed = String(take!(io))
             if occursin("$(name)", printed)
-                error("Check for Base.show(io, subscription::$(typeof(subscription)) has failed")
+                error(
+                    "Check for Base.show(io, subscription::$(typeof(subscription)) has failed",
+                )
             end
             unsubscribe!(subscription)
         end

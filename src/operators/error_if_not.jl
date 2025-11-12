@@ -36,4 +36,5 @@ Error: CustomError
 
 See also: [`error_if`](@ref), [`error_if_empty`](@ref), [`default_if_empty`](@ref), [`logger`](@ref)
 """
-error_if_not(checkFn::F, errorFn::E = nothing) where { F, E } = error_if((d) -> !checkFn(d), errorFn)
+error_if_not(checkFn::F, errorFn::E = nothing) where {F,E} =
+    error_if((d) -> !checkFn(d), errorFn)

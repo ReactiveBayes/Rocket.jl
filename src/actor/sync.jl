@@ -3,8 +3,8 @@ export SyncActor, sync, SyncActorTimedOutException
 import Base: show, showerror, wait, lock, unlock, notify
 
 mutable struct SyncActorProps
-    iscompleted :: Bool
-    isfailed    :: Bool
+    iscompleted::Bool
+    isfailed::Bool
 end
 
 """
@@ -15,36 +15,43 @@ By default creates a re-entrant lock for synchronizing `next!`, `error!` and `co
 
 See also: [`Actor`](@ref), [`sync`](@ref)
 """
-struct SyncActor{T, A} <: Actor{T}
-    lock      :: ReentrantLock
-    condition :: Condition
-    actor     :: A
-    props     :: SyncActorProps
-    withlock  :: Bool
-    timeout   :: Int
+struct SyncActor{T,A} <: Actor{T}
+    lock::ReentrantLock
+    condition::Condition
+    actor::A
+    props::SyncActorProps
+    withlock::Bool
+    timeout::Int
 
-    SyncActor{T, A}(actor::A; withlock::Bool = true, timeout::Int = -1) where { T, A } = begin
-        return new(ReentrantLock(), Condition(), actor, SyncActorProps(false, false), withlock, timeout)
+    SyncActor{T,A}(actor::A; withlock::Bool = true, timeout::Int = -1) where {T,A} = begin
+        return new(
+            ReentrantLock(),
+            Condition(),
+            actor,
+            SyncActorProps(false, false),
+            withlock,
+            timeout,
+        )
     end
 end
 
-Base.show(io::IO, actor::SyncActor{T, A}) where { T, A } = print(io, "SyncActor($A)")
+Base.show(io::IO, actor::SyncActor{T,A}) where {T,A} = print(io, "SyncActor($A)")
 
 iswithlock(actor::SyncActor) = actor.withlock
 
-Base.lock(actor::SyncActor)   = lock(actor.lock)
+Base.lock(actor::SyncActor) = lock(actor.lock)
 Base.unlock(actor::SyncActor) = unlock(actor.lock)
 
 iscompleted(actor::SyncActor) = actor.props.iscompleted
-isfailed(actor::SyncActor)    = actor.props.isfailed
+isfailed(actor::SyncActor) = actor.props.isfailed
 
 setcompleted!(actor::SyncActor) = actor.props.iscompleted = true
-setfailed!(actor::SyncActor)    = actor.props.isfailed = true
+setfailed!(actor::SyncActor) = actor.props.isfailed = true
 
 Base.notify(actor::SyncActor) = notify(getcondition(actor))
 
 getcondition(actor::SyncActor) = actor.condition
-gettimeout(actor::SyncActor)   = actor.timeout
+gettimeout(actor::SyncActor) = actor.timeout
 
 macro check_lock(expr)
     output = quote
@@ -59,7 +66,7 @@ macro check_lock(expr)
     return esc(output)
 end
 
-function on_next!(actor::SyncActor{T}, data::T) where T
+function on_next!(actor::SyncActor{T}, data::T) where {T}
     @check_lock begin
         next!(actor.actor, data)
     end
@@ -89,7 +96,11 @@ function Base.wait(actor::SyncActor)
                 try
                     sleep(timeout)
                     if !isfailed(actor) && !iscompleted(actor)
-                        notify(getcondition(actor), SyncActorTimedOutException(), error = true)
+                        notify(
+                            getcondition(actor),
+                            SyncActorTimedOutException(),
+                            error = true,
+                        )
                     end
                 catch exception
                     @warn "Exception in Base.wait(actor::SyncActor): $exception"
@@ -103,22 +114,30 @@ end
 struct SyncActorTimedOutException <: Exception end
 
 mutable struct SyncActorFactoryProps
-    actors :: Vector{SyncActor}
+    actors::Vector{SyncActor}
 end
 
 struct SyncActorFactory{F} <: AbstractActorFactory
-    factory  :: F
-    withlock :: Bool
-    timeout  :: Int
-    props    :: SyncActorFactoryProps
+    factory::F
+    withlock::Bool
+    timeout::Int
+    props::SyncActorFactoryProps
 
-    SyncActorFactory{F}(factory::F; withlock::Bool = true, timeout::Int = -1) where { F <: AbstractActorFactory } = begin
+    SyncActorFactory{F}(
+        factory::F;
+        withlock::Bool = true,
+        timeout::Int = -1,
+    ) where {F<:AbstractActorFactory} = begin
         return new(factory, withlock, timeout, SyncActorFactoryProps(Vector{SyncActor}()))
     end
 end
 
-function create_actor(::Type{L}, factory::SyncActorFactory{F}) where { L, F }
-    actor = sync(create_actor(L, factory.factory), withlock = factory.withlock, timeout = factory.timeout)
+function create_actor(::Type{L}, factory::SyncActorFactory{F}) where {L,F}
+    actor = sync(
+        create_actor(L, factory.factory),
+        withlock = factory.withlock,
+        timeout = factory.timeout,
+    )
     push!(factory.props.actors, actor)
     return actor
 end
@@ -178,11 +197,18 @@ show(values)
 
 See also: [`SyncActor`](@ref), [`AbstractActor`](@ref)
 """
-sync(actor::A; withlock::Bool = true, timeout::Int = -1)   where A                             = as_sync(as_actor(A), actor, withlock, timeout)
-sync(factory::F; withlock::Bool = true, timeout::Int = -1) where { F <: AbstractActorFactory } = SyncActorFactory{F}(factory; withlock = withlock, timeout = timeout)
+sync(actor::A; withlock::Bool = true, timeout::Int = -1) where {A} =
+    as_sync(as_actor(A), actor, withlock, timeout)
+sync(factory::F; withlock::Bool = true, timeout::Int = -1) where {F<:AbstractActorFactory} =
+    SyncActorFactory{F}(factory; withlock = withlock, timeout = timeout)
 
-as_sync(::InvalidActorTrait,       actor::A, withlock::Bool, timeout::Int) where { A }    = throw(InvalidActorTraitUsageError(actor))
-as_sync(::BaseActorTrait{D},       actor::A, withlock::Bool, timeout::Int) where { D, A } = SyncActor{D, A}(actor; withlock = withlock, timeout = timeout)
-as_sync(::NextActorTrait{D},       actor::A, withlock::Bool, timeout::Int) where { D, A } = SyncActor{D, A}(actor; withlock = withlock, timeout = timeout)
-as_sync(::ErrorActorTrait{D},      actor::A, withlock::Bool, timeout::Int) where { D, A } = SyncActor{D, A}(actor; withlock = withlock, timeout = timeout)
-as_sync(::CompletionActorTrait{D}, actor::A, withlock::Bool, timeout::Int) where { D, A } = SyncActor{D, A}(actor; withlock = withlock, timeout = timeout)
+as_sync(::InvalidActorTrait, actor::A, withlock::Bool, timeout::Int) where {A} =
+    throw(InvalidActorTraitUsageError(actor))
+as_sync(::BaseActorTrait{D}, actor::A, withlock::Bool, timeout::Int) where {D,A} =
+    SyncActor{D,A}(actor; withlock = withlock, timeout = timeout)
+as_sync(::NextActorTrait{D}, actor::A, withlock::Bool, timeout::Int) where {D,A} =
+    SyncActor{D,A}(actor; withlock = withlock, timeout = timeout)
+as_sync(::ErrorActorTrait{D}, actor::A, withlock::Bool, timeout::Int) where {D,A} =
+    SyncActor{D,A}(actor; withlock = withlock, timeout = timeout)
+as_sync(::CompletionActorTrait{D}, actor::A, withlock::Bool, timeout::Int) where {D,A} =
+    SyncActor{D,A}(actor; withlock = withlock, timeout = timeout)

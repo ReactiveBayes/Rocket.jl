@@ -12,9 +12,12 @@ NetworkObservable listens for the messages of type `D` from remote server with s
 
 # See also: [`network`](@ref), [`Subscribable`](@ref)
 """
-@subscribable struct NetworkObservable{D, A, P, S} <: Subscribable{D} end
+@subscribable struct NetworkObservable{D,A,P,S} <: Subscribable{D} end
 
-function on_subscribe!(observable::NetworkObservable{D, Address, Port, S}, actor) where { D, Address, Port, S }
+function on_subscribe!(
+    observable::NetworkObservable{D,Address,Port,S},
+    actor,
+) where {D,Address,Port,S}
     clientside = Sockets.connect(Address, Port)
     @async begin
         try
@@ -39,7 +42,10 @@ function on_subscribe!(observable::NetworkObservable{D, Address, Port, S}, actor
     return NetworkObservableSubscritpion(clientside)
 end
 
-function on_subscribe!(observable::NetworkObservable{Vector{D}, Address, Port, S}, actor) where { D, Address, Port, S }
+function on_subscribe!(
+    observable::NetworkObservable{Vector{D},Address,Port,S},
+    actor,
+) where {D,Address,Port,S}
     clientside = Sockets.connect(Address, Port)
     @async begin
         try
@@ -67,7 +73,7 @@ function on_subscribe!(observable::NetworkObservable{Vector{D}, Address, Port, S
 end
 
 struct NetworkObservableSubscritpion <: Teardown
-    clientside :: TCPSocket
+    clientside::TCPSocket
 end
 
 as_teardown(::Type{<:NetworkObservableSubscritpion}) = UnsubscribableTeardownLogic()
@@ -87,15 +93,24 @@ Creation operator for the `NetworkObservable` that emits messages from the serve
 
 See also: [`NetworkObservable`](@ref), [`subscribe!`](@ref)
 """
-network(::Type{D}, port::Int)             where D                  = network(D, Sockets.localhost, port)
-network(::Type{D}, address::A, port::Int) where { D, A <: IPAddr } = NetworkObservable{D, address, port, 0}()
+network(::Type{D}, port::Int) where {D} = network(D, Sockets.localhost, port)
+network(::Type{D}, address::A, port::Int) where {D,A<:IPAddr} =
+    NetworkObservable{D,address,port,0}()
 
-network(::Type{Vector{D}}, port::Int)             where D                  = error("Specify maximum buffer size for input data")
-network(::Type{Vector{D}}, address::A, port::Int) where { D, A <: IPAddr } = error("Specify maximum buffer size for input data")
+network(::Type{Vector{D}}, port::Int) where {D} =
+    error("Specify maximum buffer size for input data")
+network(::Type{Vector{D}}, address::A, port::Int) where {D,A<:IPAddr} =
+    error("Specify maximum buffer size for input data")
 
-network(::Type{Vector{D}}, port::Int, buffer_size::Int)             where D                  = network(Vector{D}, Sockets.localhost, port, buffer_size)
-network(::Type{Vector{D}}, address::A, port::Int, buffer_size::Int) where { D, A <: IPAddr } = NetworkObservable{Vector{D}, address, port, buffer_size}()
+network(::Type{Vector{D}}, port::Int, buffer_size::Int) where {D} =
+    network(Vector{D}, Sockets.localhost, port, buffer_size)
+network(::Type{Vector{D}}, address::A, port::Int, buffer_size::Int) where {D,A<:IPAddr} =
+    NetworkObservable{Vector{D},address,port,buffer_size}()
 
-Base.:(==)(::NetworkObservable{D1, A1, P1}, ::NetworkObservable{D2, A2, P2}) where { D1, A1, P1 } where { D2, A2, P2 } = D1 == D2 && A1 == A2 && P1 == P2
+Base.:(==)(
+    ::NetworkObservable{D1,A1,P1},
+    ::NetworkObservable{D2,A2,P2},
+) where {D1,A1,P1} where {D2,A2,P2} = D1 == D2 && A1 == A2 && P1 == P2
 
-Base.show(io::IO, observable::NetworkObservable{D, A, P}) where { D, A, P } = print(io, "NetworkObservable($D, address = $A, port = $P)")
+Base.show(io::IO, observable::NetworkObservable{D,A,P}) where {D,A,P} =
+    print(io, "NetworkObservable($D, address = $A, port = $P)")

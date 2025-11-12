@@ -12,22 +12,10 @@ include("../test_helpers.jl")
     run_proxyshowcheck("SkipError", skip_error())
 
     run_testset([
-        (
-            source = from(1:5) |> skip_error(),
-            values = @ts([ 1:5, c ])
-        ),
-        (
-            source = completed() |> skip_error(),
-            values = @ts(c)
-        ),
-        (
-            source = faulted(1) |> skip_error(),
-            values = @ts()
-        ),
-        (
-            source = never() |> skip_error(),
-            values = @ts()
-        )
+        (source = from(1:5) |> skip_error(), values = @ts([1:5, c])),
+        (source = completed() |> skip_error(), values = @ts(c)),
+        (source = faulted(1) |> skip_error(), values = @ts()),
+        (source = never() |> skip_error(), values = @ts()),
     ])
 
 end

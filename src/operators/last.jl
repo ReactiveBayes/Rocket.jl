@@ -62,31 +62,32 @@ subscribe!(source |> last(default = 1), logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-last(; default::D = nothing) where D = LastOperator{D}(default)
+last(; default::D = nothing) where {D} = LastOperator{D}(default)
 
 struct LastOperator{D} <: InferableOperator
-    default :: D
+    default::D
 end
 
-function on_call!(::Type{L}, ::Type{R}, operator::LastOperator, source) where { L, R }
+function on_call!(::Type{L}, ::Type{R}, operator::LastOperator, source) where {L,R}
     return proxy(R, source, LastProxy{R}(operator.default))
 end
 
-operator_right(operator::LastOperator{Nothing}, ::Type{L}) where L        = L
-operator_right(operator::LastOperator{D},       ::Type{L}) where { L, D } = Union{L, D}
+operator_right(operator::LastOperator{Nothing}, ::Type{L}) where {L} = L
+operator_right(operator::LastOperator{D}, ::Type{L}) where {L,D} = Union{L,D}
 
 struct LastProxy{L} <: ActorProxy
-    default :: Union{L, Nothing}
+    default::Union{L,Nothing}
 end
 
-actor_proxy!(::Type, proxy::LastProxy{L}, actor::A) where { L, A } = LastActor{L, A}(proxy.default, actor)
+actor_proxy!(::Type, proxy::LastProxy{L}, actor::A) where {L,A} =
+    LastActor{L,A}(proxy.default, actor)
 
-mutable struct LastActor{L, A} <: Actor{L}
-    last   :: Union{L, Nothing}
-    actor  :: A
+mutable struct LastActor{L,A} <: Actor{L}
+    last::Union{L,Nothing}
+    actor::A
 end
 
-function on_next!(actor::LastActor{L}, data::L) where L
+function on_next!(actor::LastActor{L}, data::L) where {L}
     actor.last = data
 end
 
@@ -103,6 +104,6 @@ function on_complete!(actor::LastActor)
     end
 end
 
-Base.show(io::IO, ::LastOperator)         = print(io, "LastOperator()")
-Base.show(io::IO, ::LastProxy{L}) where L = print(io, "LastProxy($L)")
-Base.show(io::IO, ::LastActor{L}) where L = print(io, "LastActor($L)")
+Base.show(io::IO, ::LastOperator) = print(io, "LastOperator()")
+Base.show(io::IO, ::LastProxy{L}) where {L} = print(io, "LastProxy($L)")
+Base.show(io::IO, ::LastActor{L}) where {L} = print(io, "LastActor($L)")

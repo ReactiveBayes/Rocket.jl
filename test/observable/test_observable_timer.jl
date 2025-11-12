@@ -39,13 +39,10 @@ include("../test_helpers.jl")
 
     run_testset([
         (
-            source=timer(100, 30) |> take(3),
-            values=@ts(100 ~ [0] ~ 30 ~ [1] ~ 30 ~ [2, c])
+            source = timer(100, 30) |> take(3),
+            values = @ts(100 ~ [0] ~ 30 ~ [1] ~ 30 ~ [2, c])
         ),
-        (
-            source=timer(100),
-            values=@ts(100 ~ [0, c])
-        )
+        (source = timer(100), values = @ts(100 ~ [0, c])),
     ])
 
 end

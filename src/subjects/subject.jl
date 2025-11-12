@@ -5,8 +5,8 @@ import Base: show, similar
 ##
 
 struct SubjectListener{I}
-    schedulerinstance :: I
-    actor
+    schedulerinstance::I
+    actor::Any
 end
 
 Base.show(io::IO, ::SubjectListener) = print(io, "SubjectListener()")
@@ -24,40 +24,42 @@ Doing so would lead to undefined behaviour. Use `safe()` operator to bypass this
 
 See also: [`SubjectFactory`](@ref), [`ReplaySubject`](@ref), [`BehaviorSubject`](@ref), [`safe`](@ref)
 """
-mutable struct Subject{D, H, I} <: AbstractSubject{D}
-    listeners   :: List{SubjectListener{I}}
-    scheduler   :: H
-    isactive    :: Bool
-    iscompleted :: Bool
-    isfailed    :: Bool
-    lasterror   :: Any
+mutable struct Subject{D,H,I} <: AbstractSubject{D}
+    listeners::List{SubjectListener{I}}
+    scheduler::H
+    isactive::Bool
+    iscompleted::Bool
+    isfailed::Bool
+    lasterror::Any
 
-    Subject{D, H, I}(scheduler::H) where { D, H <: AbstractScheduler, I } = new(List(SubjectListener{I}), scheduler, true, false, false, nothing)
+    Subject{D,H,I}(scheduler::H) where {D,H<:AbstractScheduler,I} =
+        new(List(SubjectListener{I}), scheduler, true, false, false, nothing)
 end
 
-function Subject(::Type{D}; scheduler::H = AsapScheduler()) where { D, H <: AbstractScheduler }
-    return Subject{D, H, instancetype(D, H)}(scheduler)
+function Subject(::Type{D}; scheduler::H = AsapScheduler()) where {D,H<:AbstractScheduler}
+    return Subject{D,H,instancetype(D, H)}(scheduler)
 end
 
-Base.show(io::IO, ::Subject{D, H}) where { D, H } = print(io, "Subject($D, $H)")
+Base.show(io::IO, ::Subject{D,H}) where {D,H} = print(io, "Subject($D, $H)")
 
-Base.similar(subject::Subject{D, H}) where { D, H } = Subject(D; scheduler = similar(subject.scheduler))
+Base.similar(subject::Subject{D,H}) where {D,H} =
+    Subject(D; scheduler = similar(subject.scheduler))
 
 ##
 
-isactive(subject::Subject)    = subject.isactive
+isactive(subject::Subject) = subject.isactive
 iscompleted(subject::Subject) = subject.iscompleted
-isfailed(subject::Subject)    = subject.isfailed
-lasterror(subject::Subject)   = subject.lasterror
+isfailed(subject::Subject) = subject.isfailed
+lasterror(subject::Subject) = subject.lasterror
 
-setinactive!(subject::Subject)       = subject.isactive    = false
-setcompleted!(subject::Subject)      = subject.iscompleted = true
-setfailed!(subject::Subject)         = subject.isfailed    = true
-setlasterror!(subject::Subject, err) = subject.lasterror   = err
+setinactive!(subject::Subject) = subject.isactive = false
+setcompleted!(subject::Subject) = subject.iscompleted = true
+setfailed!(subject::Subject) = subject.isfailed = true
+setlasterror!(subject::Subject, err) = subject.lasterror = err
 
 ##
 
-function on_next!(subject::Subject{D, H, I}, data::D) where { D, H, I }
+function on_next!(subject::Subject{D,H,I}, data::D) where {D,H,I}
     for listener in subject.listeners
         scheduled_next!(listener.actor, data, listener.schedulerinstance)
     end
@@ -88,7 +90,7 @@ end
 
 ##
 
-function on_subscribe!(subject::Subject{D}, actor) where { D }
+function on_subscribe!(subject::Subject{D}, actor) where {D}
     if isfailed(subject)
         error!(actor, lasterror(subject))
         return SubjectSubscription(nothing)
@@ -102,7 +104,7 @@ function on_subscribe!(subject::Subject{D}, actor) where { D }
 end
 
 function on_subscribe!(subject::Subject, actor, instance)
-    listener      = SubjectListener(instance, actor)
+    listener = SubjectListener(instance, actor)
     listener_node = pushnode!(subject.listeners, listener)
     return SubjectSubscription(listener_node)
 end
@@ -110,10 +112,10 @@ end
 ##
 
 mutable struct SubjectSubscription <: Teardown
-    listener_node :: Union{Nothing, ListNode}
+    listener_node::Union{Nothing,ListNode}
 end
 
-as_teardown(::Type{ <: SubjectSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: SubjectSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::SubjectSubscription)
     if subscription.listener_node !== nothing
@@ -134,10 +136,11 @@ A base subject factory that creates an instance of Subject with specified schedu
 
 See also: [`AbstractSubjectFactory`](@ref), [`Subject`](@ref)
 """
-struct SubjectFactory{ H <: AbstractScheduler } <: AbstractSubjectFactory
-    scheduler :: H
+struct SubjectFactory{H<:AbstractScheduler} <: AbstractSubjectFactory
+    scheduler::H
 end
 
-create_subject(::Type{L}, factory::SubjectFactory) where L = Subject(L, scheduler = similar(factory.scheduler))
+create_subject(::Type{L}, factory::SubjectFactory) where {L} =
+    Subject(L, scheduler = similar(factory.scheduler))
 
-Base.show(io::IO, ::SubjectFactory{H}) where H = print(io, "SubjectFactory($H)")
+Base.show(io::IO, ::SubjectFactory{H}) where {H} = print(io, "SubjectFactory($H)")

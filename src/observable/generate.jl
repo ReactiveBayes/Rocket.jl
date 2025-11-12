@@ -33,15 +33,20 @@ subscribe!(source, logger())
 
 See also: [`ScheduledSubscribable`](@ref), [`subscribe!`](@ref)
 """
-function generate(initial::D, condition::C, iterator::I; scheduler::H = AsapScheduler()) where { D, C, I, H <: AbstractScheduler }
-    return GenerateObservable{D, C, I, H}(initial, condition, iterator, scheduler)
+function generate(
+    initial::D,
+    condition::C,
+    iterator::I;
+    scheduler::H = AsapScheduler(),
+) where {D,C,I,H<:AbstractScheduler}
+    return GenerateObservable{D,C,I,H}(initial, condition, iterator, scheduler)
 end
 
-@subscribable struct GenerateObservable{D, C, I, H} <: ScheduledSubscribable{D}
-    initial   :: D
-    condition :: C
-    iterator  :: I
-    scheduler :: H
+@subscribable struct GenerateObservable{D,C,I,H} <: ScheduledSubscribable{D}
+    initial::D
+    condition::C
+    iterator::I
+    scheduler::H
 end
 
 getscheduler(observable::GenerateObservable) = observable.scheduler
@@ -56,4 +61,5 @@ function on_subscribe!(observable::GenerateObservable, actor, scheduler)
     return voidTeardown
 end
 
-Base.show(io::IO, observable::GenerateObservable{D}) where D = print(io, "GenerateObservable($D)")
+Base.show(io::IO, observable::GenerateObservable{D}) where {D} =
+    print(io, "GenerateObservable($D)")

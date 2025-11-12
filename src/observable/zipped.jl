@@ -58,37 +58,41 @@ subscribe!(source, logger())
 
 See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
-zipped()                                 = error("zipped operator expects at least one inner observable on input")
-zipped(args...)                          = zipped(args)
-zipped(sources::S) where { S <: Tuple }  = ZipObservable{combined_type(sources), S}(sources)
-zipped(sources::V) where { V <: Vector } = ZipObservable{combined_type(sources), V}(sources)
+zipped() = error("zipped operator expects at least one inner observable on input")
+zipped(args...) = zipped(args)
+zipped(sources::S) where {S<:Tuple} = ZipObservable{combined_type(sources),S}(sources)
+zipped(sources::V) where {V<:Vector} = ZipObservable{combined_type(sources),V}(sources)
 
 ##
 
-struct ZipInnerActor{L, W, I} <: Actor{L}
-    wrapper :: W
+struct ZipInnerActor{L,W,I} <: Actor{L}
+    wrapper::W
 end
 
-Base.show(io::IO, inner::ZipInnerActor{L, W, I}) where { L, W, I } = print(io, "ZipInnerActor($L, $I)")
+Base.show(io::IO, inner::ZipInnerActor{L,W,I}) where {L,W,I} =
+    print(io, "ZipInnerActor($L, $I)")
 
-on_next!(actor::ZipInnerActor{L, W, I}, data::L) where { L, W, I } = next_received!(actor.wrapper, data, Val{I}())
-on_error!(actor::ZipInnerActor{L, W, I}, err)    where { L, W, I } = error_received!(actor.wrapper, err, Val{I}())
-on_complete!(actor::ZipInnerActor{L, W, I})      where { L, W, I } = complete_received!(actor.wrapper, Val{I}())
+on_next!(actor::ZipInnerActor{L,W,I}, data::L) where {L,W,I} =
+    next_received!(actor.wrapper, data, Val{I}())
+on_error!(actor::ZipInnerActor{L,W,I}, err) where {L,W,I} =
+    error_received!(actor.wrapper, err, Val{I}())
+on_complete!(actor::ZipInnerActor{L,W,I}) where {L,W,I} =
+    complete_received!(actor.wrapper, Val{I}())
 
 ##
 
-struct ZipActorWrapper{S, A}
-    actor  :: A
-    values :: Deque{S}
+struct ZipActorWrapper{S,A}
+    actor::A
+    values::Deque{S}
 
-    nsize   :: Int
-    cstatus :: BitArray{1}
-    vstatus :: Deque{BitArray{1}}
+    nsize::Int
+    cstatus::BitArray{1}
+    vstatus::Deque{BitArray{1}}
 
-    subscriptions :: Vector{Teardown}
+    subscriptions::Vector{Teardown}
 
-    ZipActorWrapper{S, A}(nsize::Int, actor::A) where { S, A } = begin
-        values  = Deque{S}()
+    ZipActorWrapper{S,A}(nsize::Int, actor::A) where {S,A} = begin
+        values = Deque{S}()
         cstatus = falses(nsize)
         vstatus = Deque{BitArray{1}}()
 
@@ -100,18 +104,21 @@ struct ZipActorWrapper{S, A}
     end
 end
 
-cstatus(wrapper::ZipActorWrapper, index)       = wrapper.cstatus[index]
+cstatus(wrapper::ZipActorWrapper, index) = wrapper.cstatus[index]
 first_vstatus(wrapper::ZipActorWrapper, index) = first(wrapper.vstatus)[index]
-last_vstatus(wrapper::ZipActorWrapper, index)  = last(wrapper.vstatus)[index]
+last_vstatus(wrapper::ZipActorWrapper, index) = last(wrapper.vstatus)[index]
 
-dispose(wrapper::ZipActorWrapper) = begin fill!(wrapper.cstatus, true); foreach(s -> unsubscribe!(s), wrapper.subscriptions) end
+dispose(wrapper::ZipActorWrapper) = begin
+    fill!(wrapper.cstatus, true);
+    foreach(s -> unsubscribe!(s), wrapper.subscriptions)
+end
 
-function next_received!(wrapper::ZipActorWrapper{S}, data, index::Val{I}) where { S, I }
+function next_received!(wrapper::ZipActorWrapper{S}, data, index::Val{I}) where {S,I}
     cindex, cvstatus, cstorage = nothing, nothing, nothing # c - current
 
     for (counter, (vstatus, storage)) in enumerate(zip(wrapper.vstatus, wrapper.values))
         if vstatus[I] === false
-            cindex   = counter
+            cindex = counter
             cvstatus = vstatus
             cstorage = storage
             break
@@ -119,7 +126,7 @@ function next_received!(wrapper::ZipActorWrapper{S}, data, index::Val{I}) where 
     end
 
     if cindex === nothing || cvstatus === nothing || cstorage === nothing
-        cindex   = length(wrapper.values) + 1
+        cindex = length(wrapper.values) + 1
         cvstatus = falses(wrapper.nsize)
         cstorage = S()
         push!(wrapper.values, cstorage)
@@ -146,14 +153,14 @@ function next_received!(wrapper::ZipActorWrapper{S}, data, index::Val{I}) where 
     end
 end
 
-function error_received!(wrapper::ZipActorWrapper, err, index::Val{I}) where I
+function error_received!(wrapper::ZipActorWrapper, err, index::Val{I}) where {I}
     if !wrapper.cstatus[I]
         dispose(wrapper)
         error!(wrapper.actor, err)
     end
 end
 
-function complete_received!(wrapper::ZipActorWrapper, ::Val{I}) where I
+function complete_received!(wrapper::ZipActorWrapper, ::Val{I}) where {I}
     if !all(wrapper.cstatus)
         wrapper.cstatus[I] = true
         if all(wrapper.cstatus) || first_vstatus(wrapper, I) === false
@@ -167,18 +174,20 @@ end
 
 ##
 
-@subscribable struct ZipObservable{T, C} <: Subscribable{T}
-    sources  :: C
+@subscribable struct ZipObservable{T,C} <: Subscribable{T}
+    sources::C
 end
 
-function on_subscribe!(observable::ZipObservable{T, C}, actor::A) where { T, C, A }
-    S       = typeof(getmstorage(T))
-    nsize   = length(observable.sources)
-    wrapper = ZipActorWrapper{S, A}(nsize, actor)
+function on_subscribe!(observable::ZipObservable{T,C}, actor::A) where {T,C,A}
+    S = typeof(getmstorage(T))
+    nsize = length(observable.sources)
+    wrapper = ZipActorWrapper{S,A}(nsize, actor)
 
     for (index, source) in enumerate(observable.sources)
-        wrapper.subscriptions[index] = subscribe!(source, ZipInnerActor{eltype(source), typeof(wrapper), index}(wrapper))
-        if all(wrapper.cstatus) || (cstatus(wrapper, index) === true && first_vstatus(wrapper, index) === false)
+        wrapper.subscriptions[index] =
+            subscribe!(source, ZipInnerActor{eltype(source),typeof(wrapper),index}(wrapper))
+        if all(wrapper.cstatus) ||
+           (cstatus(wrapper, index) === true && first_vstatus(wrapper, index) === false)
             dispose(wrapper)
             break
         end
@@ -190,15 +199,15 @@ end
 ##
 
 struct ZipSubscription{W} <: Teardown
-    wrapper :: W
+    wrapper::W
 end
 
-as_teardown(::Type{ <: ZipSubscription }) = UnsubscribableTeardownLogic()
+as_teardown(::Type{<: ZipSubscription}) = UnsubscribableTeardownLogic()
 
 function on_unsubscribe!(subscription::ZipSubscription)
     dispose(subscription.wrapper)
     return nothing
 end
 
-Base.show(io::IO, ::ZipObservable{D}) where D = print(io, "ZipObservable($D)")
-Base.show(io::IO, ::ZipSubscription)          = print(io, "ZipSubscription()")
+Base.show(io::IO, ::ZipObservable{D}) where {D} = print(io, "ZipObservable($D)")
+Base.show(io::IO, ::ZipSubscription) = print(io, "ZipSubscription()")

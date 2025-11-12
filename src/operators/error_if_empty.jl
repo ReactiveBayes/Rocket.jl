@@ -24,28 +24,29 @@ See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`logger`](@r
 error_if_empty(err) = ErrorIfEmptyOperator(err)
 
 struct ErrorIfEmptyOperator <: InferableOperator
-    err
+    err::Any
 end
 
-operator_right(operator::ErrorIfEmptyOperator, ::Type{L}) where L = L
+operator_right(operator::ErrorIfEmptyOperator, ::Type{L}) where {L} = L
 
-function on_call!(::Type{L}, ::Type{L}, operator::ErrorIfEmptyOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::ErrorIfEmptyOperator, source) where {L}
     return proxy(L, source, ErrorIfEmptyProxy(operator.err))
 end
 
 struct ErrorIfEmptyProxy <: ActorProxy
-    err
+    err::Any
 end
 
-actor_proxy!(::Type{L}, proxy::ErrorIfEmptyProxy, actor::A) where { L, A } = ErrorIfEmptyActor{L, A}(actor, false, proxy.err)
+actor_proxy!(::Type{L}, proxy::ErrorIfEmptyProxy, actor::A) where {L,A} =
+    ErrorIfEmptyActor{L,A}(actor, false, proxy.err)
 
-mutable struct ErrorIfEmptyActor{L, A} <: Actor{L}
-    actor      :: A
-    is_emitted :: Bool
-    err
+mutable struct ErrorIfEmptyActor{L,A} <: Actor{L}
+    actor::A
+    is_emitted::Bool
+    err::Any
 end
 
-function on_next!(actor::ErrorIfEmptyActor{L}, data::L) where L
+function on_next!(actor::ErrorIfEmptyActor{L}, data::L) where {L}
     actor.is_emitted = true
     next!(actor.actor, data)
 end
@@ -63,6 +64,6 @@ function on_complete!(actor::ErrorIfEmptyActor)
     end
 end
 
-Base.show(io::IO, ::ErrorIfEmptyOperator)         = print(io, "ErrorIfEmptyOperator()")
-Base.show(io::IO, ::ErrorIfEmptyProxy)            = print(io, "ErrorIfEmptyProxy()")
-Base.show(io::IO, ::ErrorIfEmptyActor{L}) where L = print(io, "ErrorIfEmptyActor($L)")
+Base.show(io::IO, ::ErrorIfEmptyOperator) = print(io, "ErrorIfEmptyOperator()")
+Base.show(io::IO, ::ErrorIfEmptyProxy) = print(io, "ErrorIfEmptyProxy()")
+Base.show(io::IO, ::ErrorIfEmptyActor{L}) where {L} = print(io, "ErrorIfEmptyActor($L)")

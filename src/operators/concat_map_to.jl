@@ -39,8 +39,11 @@ subscribe!(source |> concat_map_to(from([ 1, 2, 3 ])), logger())
 
 See also: [`concat_map`](@ref), [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-concat_map_to(source::S) where S = as_concat_map_to(as_subscribable(S), source)
+concat_map_to(source::S) where {S} = as_concat_map_to(as_subscribable(S), source)
 
-as_concat_map_to(::InvalidSubscribableTrait,      source)         = throw(InvalidSubscribableTraitUsageError(source))
-as_concat_map_to(::SimpleSubscribableTrait{R},    source) where R = concat_map(R, (_) -> source)
-as_concat_map_to(::ScheduledSubscribableTrait{R}, source) where R = concat_map(R, (_) -> source)
+as_concat_map_to(::InvalidSubscribableTrait, source) =
+    throw(InvalidSubscribableTraitUsageError(source))
+as_concat_map_to(::SimpleSubscribableTrait{R}, source) where {R} =
+    concat_map(R, (_) -> source)
+as_concat_map_to(::ScheduledSubscribableTrait{R}, source) where {R} =
+    concat_map(R, (_) -> source)

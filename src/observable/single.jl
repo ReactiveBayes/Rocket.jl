@@ -14,9 +14,9 @@ SingleObservable wraps single value of type `D` into a observable.
 
 # See also: [`of`](@ref), [`Subscribable`](@ref)
 """
-@subscribable struct SingleObservable{D, H} <: ScheduledSubscribable{D}
-    value     :: D
-    scheduler :: H
+@subscribable struct SingleObservable{D,H} <: ScheduledSubscribable{D}
+    value::D
+    scheduler::H
 end
 
 getrecent(observable::SingleObservable) = observable.value
@@ -54,9 +54,12 @@ subscribe!(source, logger())
 
 See also: [`SingleObservable`](@ref), [`subscribe!`](@ref), [`logger`](@ref)
 """
-of(x::T; scheduler::H = AsapScheduler()) where { T, H <: AbstractScheduler } = SingleObservable{T, H}(x, scheduler)
+of(x::T; scheduler::H = AsapScheduler()) where {T,H<:AbstractScheduler} =
+    SingleObservable{T,H}(x, scheduler)
 
-Base.:(==)(left::SingleObservable{D, H},  right::SingleObservable{D, H}) where { D, H } = left.value == right.value
-Base.:(==)(left::SingleObservable,        right::SingleObservable)                      = false
+Base.:(==)(left::SingleObservable{D,H}, right::SingleObservable{D,H}) where {D,H} =
+    left.value == right.value
+Base.:(==)(left::SingleObservable, right::SingleObservable) = false
 
-Base.show(io::IO, ::SingleObservable{D, H}) where { D, H } = print(io, "SingleObservable($D, $H)")
+Base.show(io::IO, ::SingleObservable{D,H}) where {D,H} =
+    print(io, "SingleObservable($D, $H)")

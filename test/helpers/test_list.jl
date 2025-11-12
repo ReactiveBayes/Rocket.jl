@@ -16,7 +16,7 @@ import Rocket: List, pushnode!, remove
         push!(list, 2.0)
         push!(list, "Hello")
 
-        @test collect(list) == [ 1, 2.0, "Hello" ]
+        @test collect(list) == [1, 2.0, "Hello"]
     end
 
     @testset begin
@@ -57,7 +57,7 @@ import Rocket: List, pushnode!, remove
         n2 = pushnode!(list, 2)
         n3 = pushnode!(list, 3)
 
-        nodes = [ n1, n2, n3 ] 
+        nodes = [n1, n2, n3]
 
         i = 1
         for item in list
@@ -78,19 +78,19 @@ import Rocket: List, pushnode!, remove
         n2 = pushnode!(list, 2)
         n3 = pushnode!(list, 3)
 
-        @test collect(list) == [ 1, 2, 3 ]
+        @test collect(list) == [1, 2, 3]
 
         remove(n1)
-        
-        @test collect(list) == [ 2, 3 ]
+
+        @test collect(list) == [2, 3]
 
         remove(n2)
-        
-        @test collect(list) == [ 3 ]
+
+        @test collect(list) == [3]
 
         remove(n3)
-        
-        @test collect(list) == [ ]
+
+        @test collect(list) == []
     end
 
     @testset begin
@@ -100,19 +100,19 @@ import Rocket: List, pushnode!, remove
         n2 = pushnode!(list, 2)
         n3 = pushnode!(list, 3)
 
-        @test collect(list) == [ 1, 2, 3 ]
+        @test collect(list) == [1, 2, 3]
 
         remove(n3)
-        
-        @test collect(list) == [ 1, 2 ]
+
+        @test collect(list) == [1, 2]
 
         remove(n2)
-        
-        @test collect(list) == [ 1 ]
+
+        @test collect(list) == [1]
 
         remove(n1)
-        
-        @test collect(list) == [ ]
+
+        @test collect(list) == []
     end
 
     @testset begin
@@ -122,19 +122,19 @@ import Rocket: List, pushnode!, remove
         n2 = pushnode!(list, 2)
         n3 = pushnode!(list, 3)
 
-        @test collect(list) == [ 1, 2, 3 ]
+        @test collect(list) == [1, 2, 3]
 
         remove(n2)
-        
-        @test collect(list) == [ 1, 3 ]
+
+        @test collect(list) == [1, 3]
 
         remove(n1)
-        
-        @test collect(list) == [ 3 ]
+
+        @test collect(list) == [3]
 
         remove(n3)
-        
-        @test collect(list) == [ ]
+
+        @test collect(list) == []
     end
 
     @testset begin
@@ -144,21 +144,21 @@ import Rocket: List, pushnode!, remove
         n2 = pushnode!(list, 2)
         n3 = pushnode!(list, 3)
 
-        @test collect(list) == [ 1, 2, 3 ]
+        @test collect(list) == [1, 2, 3]
 
         remove(n2)
-        
-        @test collect(list) == [ 1, 3 ]
+
+        @test collect(list) == [1, 3]
 
         remove(n3)
-        
-        @test collect(list) == [ 1 ]
+
+        @test collect(list) == [1]
 
         remove(n1)
-        
-        @test collect(list) == [ ]
+
+        @test collect(list) == []
     end
-    
+
 end
 
 end

@@ -10,38 +10,25 @@ include("../test_helpers.jl")
     println("Testing: operator first()")
 
     run_testset([
-
+        (source = from(1:42) |> first(), values = @ts([1, c])),
+        (source = timer(50) |> first(), values = @ts(50 ~ [0, c])),
+        (source = completed() |> first(), values = @ts(e(FirstNotFoundException()))),
         (
-            source = from(1:42) |> first(),
-            values = @ts([ 1, c ])
+            source = completed(Int) |> first(default = "String"),
+            values = @ts(["String", c]),
+            source_type = Union{Int,String},
         ),
         (
-            source = timer(50) |> first(),
-            values = @ts(50 ~ [ 0, c ])
+            source = faulted(Int, "e") |> first(),
+            values = @ts(e("e")),
+            source_type = Union{Int},
         ),
         (
-            source = completed() |> first(),
-            values = @ts(e(FirstNotFoundException()))
+            source = faulted(Int, "e") |> first(default = "String"),
+            values = @ts(e("e")),
+            source_type = Union{Int,String},
         ),
-        (
-            source      = completed(Int) |> first(default = "String"),
-            values      = @ts([ "String", c ]),
-            source_type = Union{Int, String}
-        ),
-        (
-            source      = faulted(Int, "e") |> first(),
-            values      = @ts(e("e")),
-            source_type = Union{Int}
-        ),
-        (
-            source      = faulted(Int, "e") |> first(default = "String"),
-            values      = @ts(e("e")),
-            source_type = Union{Int, String}
-        ),
-        (
-            source = never() |> first(),
-            values = @ts()
-        )
+        (source = never() |> first(), values = @ts()),
     ])
 
 end

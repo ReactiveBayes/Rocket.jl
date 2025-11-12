@@ -41,26 +41,46 @@ This function checks subject trait behavior specification. Should be used explic
 
 See also: [`SubjectTrait`](@ref)
 """
-as_subject(::Type)                                  = InvalidSubjectTrait()
-as_subject(::Type{ <: AbstractSubject{D} }) where D = ValidSubjectTrait{D}()
-as_subject(::O)                             where O = as_subject(O)
+as_subject(::Type) = InvalidSubjectTrait()
+as_subject(::Type{<: AbstractSubject{D}}) where {D} = ValidSubjectTrait{D}()
+as_subject(::O) where {O} = as_subject(O)
 
-as_actor(::Type{ <: AbstractSubject{D} }) where D = BaseActorTrait{D}()
+as_actor(::Type{<: AbstractSubject{D}}) where {D} = BaseActorTrait{D}()
 
-as_subscribable(::Type{ <: AbstractSubject{D} }) where D = SimpleSubscribableTrait{D}()
+as_subscribable(::Type{<: AbstractSubject{D}}) where {D} = SimpleSubscribableTrait{D}()
 
 # Specialised methods for built-in default subject and actor types
-@inline subscribe!(subject::AbstractSubject{T1}, actor::Actor{T2}) where { T2, T1 <: T2 } = on_subscribe!(subject, actor)
-@inline subscribe!(subject::AbstractSubject{T},  actor::Actor{T})  where { T }            = on_subscribe!(subject, actor)
+@inline subscribe!(subject::AbstractSubject{T1}, actor::Actor{T2}) where {T2,T1<:T2} =
+    on_subscribe!(subject, actor)
+@inline subscribe!(subject::AbstractSubject{T}, actor::Actor{T}) where {T} =
+    on_subscribe!(subject, actor)
 
-@inline subscribe!(subscribable::Subscribable{T1},          actor::AbstractSubject{T2}) where { T2, T1 <: T2 } = on_subscribe!(subscribable, actor)
-@inline subscribe!(subscribable::ScheduledSubscribable{T1}, actor::AbstractSubject{T2}) where { T2, T1 <: T2 } = scheduled_subscription!(subscribable, actor, makeinstance(T1, getscheduler(subscribable)))
+@inline subscribe!(
+    subscribable::Subscribable{T1},
+    actor::AbstractSubject{T2},
+) where {T2,T1<:T2} = on_subscribe!(subscribable, actor)
+@inline subscribe!(
+    subscribable::ScheduledSubscribable{T1},
+    actor::AbstractSubject{T2},
+) where {T2,T1<:T2} = scheduled_subscription!(
+    subscribable,
+    actor,
+    makeinstance(T1, getscheduler(subscribable)),
+)
 
-@inline subscribe!(subscribable::Subscribable{T},          actor::AbstractSubject{T}) where { T } = on_subscribe!(subscribable, actor)
-@inline subscribe!(subscribable::ScheduledSubscribable{T}, actor::AbstractSubject{T}) where { T } = scheduled_subscription!(subscribable, actor, makeinstance(T, getscheduler(subscribable)))
+@inline subscribe!(subscribable::Subscribable{T}, actor::AbstractSubject{T}) where {T} =
+    on_subscribe!(subscribable, actor)
+@inline subscribe!(
+    subscribable::ScheduledSubscribable{T},
+    actor::AbstractSubject{T},
+) where {T} = scheduled_subscription!(
+    subscribable,
+    actor,
+    makeinstance(T, getscheduler(subscribable)),
+)
 
-Base.eltype(::AbstractSubject{D})            where D = D
-Base.eltype(::Type{ <: AbstractSubject{D} }) where D = D
+Base.eltype(::AbstractSubject{D}) where {D} = D
+Base.eltype(::Type{<: AbstractSubject{D}}) where {D} = D
 
 # -------------------------------- #
 # Subject factory                  #
@@ -92,11 +112,14 @@ function create_subject end
 See also: [`as_subject`](@ref)
 """
 struct InvalidSubjectTraitUsageError <: Exception
-    subject
+    subject::Any
 end
 
 function Base.showerror(io::IO, err::InvalidSubjectTraitUsageError)
-    print(io, "Type $(typeof(err.subject)) is not a valid subject type. \nConsider implement as_subject(::Type{<:$(typeof(err.subject))}).")
+    print(
+        io,
+        "Type $(typeof(err.subject)) is not a valid subject type. \nConsider implement as_subject(::Type{<:$(typeof(err.subject))}).",
+    )
 end
 
 """
@@ -104,11 +127,17 @@ end
 
 See also: [`as_subject`](@ref)
 """
-struct InconsistentSubjectDataTypesError{T1, T2} <: Exception
-    subject
+struct InconsistentSubjectDataTypesError{T1,T2} <: Exception
+    subject::Any
 end
 
-function Base.showerror(io::IO, err::InconsistentSubjectDataTypesError{T1, T2}) where T1 where T2
+function Base.showerror(
+    io::IO,
+    err::InconsistentSubjectDataTypesError{T1,T2},
+) where {T1} where {T2}
     # TODO: better error message
-    print(io, "Subject of type $(typeof(err.subject)) operates on data of type $(T2), while context requires subject to operate on data of type $(T1).")
+    print(
+        io,
+        "Subject of type $(typeof(err.subject)) operates on data of type $(T2), while context requires subject to operate on data of type $(T1).",
+    )
 end

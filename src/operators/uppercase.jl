@@ -33,24 +33,25 @@ uppercase() = UppercaseOperator()
 
 struct UppercaseOperator <: InferableOperator end
 
-function on_call!(::Type{L}, ::Type{L}, operator::UppercaseOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::UppercaseOperator, source) where {L}
     return proxy(L, source, UppercaseProxy())
 end
 
-operator_right(::UppercaseOperator, ::Type{L}) where L = L
+operator_right(::UppercaseOperator, ::Type{L}) where {L} = L
 
 struct UppercaseProxy <: ActorProxy end
 
-actor_proxy!(::Type{L}, proxy::UppercaseProxy, actor::A) where { L, A } = UppercaseActor{L, A}(actor)
+actor_proxy!(::Type{L}, proxy::UppercaseProxy, actor::A) where {L,A} =
+    UppercaseActor{L,A}(actor)
 
-struct UppercaseActor{L, A} <: Actor{L}
-    actor :: A
+struct UppercaseActor{L,A} <: Actor{L}
+    actor::A
 end
 
-on_next!(actor::UppercaseActor{L}, data::L) where L = next!(actor.actor, uppercase(data))
-on_error!(actor::UppercaseActor, err)               = error!(actor.actor, err)
-on_complete!(actor::UppercaseActor)                 = complete!(actor.actor)
+on_next!(actor::UppercaseActor{L}, data::L) where {L} = next!(actor.actor, uppercase(data))
+on_error!(actor::UppercaseActor, err) = error!(actor.actor, err)
+on_complete!(actor::UppercaseActor) = complete!(actor.actor)
 
-Base.show(io::IO, ::UppercaseOperator)         = print(io, "UppercaseOperator()")
-Base.show(io::IO, ::UppercaseProxy)            = print(io, "UppercaseProxy()")
-Base.show(io::IO, ::UppercaseActor{L}) where L = print(io, "UppercaseActor($L)")
+Base.show(io::IO, ::UppercaseOperator) = print(io, "UppercaseOperator()")
+Base.show(io::IO, ::UppercaseProxy) = print(io, "UppercaseProxy()")
+Base.show(io::IO, ::UppercaseActor{L}) where {L} = print(io, "UppercaseActor($L)")

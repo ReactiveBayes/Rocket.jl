@@ -37,68 +37,80 @@ Error: CustomError
 
 See also: [`error_if_not`](@ref), [`error_if_empty`](@ref), [`default_if_empty`](@ref), [`lambda`](@ref)
 """
-error_if(checkFn::F, errorFn::E = nothing) where { F, E } = ErrorIfOperator{F, E}(checkFn, errorFn)
+error_if(checkFn::F, errorFn::E = nothing) where {F,E} =
+    ErrorIfOperator{F,E}(checkFn, errorFn)
 
-struct ErrorIfOperator{F, E} <: InferableOperator
-    checkFn :: F
-    errorFn :: E
+struct ErrorIfOperator{F,E} <: InferableOperator
+    checkFn::F
+    errorFn::E
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::ErrorIfOperator{F, E}, source) where { L, F, E }
-    return proxy(L, source, ErrorIfProxy{F, E}(operator.checkFn, operator.errorFn))
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::ErrorIfOperator{F,E},
+    source,
+) where {L,F,E}
+    return proxy(L, source, ErrorIfProxy{F,E}(operator.checkFn, operator.errorFn))
 end
 
-operator_right(::ErrorIfOperator, ::Type{L}) where L = L
+operator_right(::ErrorIfOperator, ::Type{L}) where {L} = L
 
-struct ErrorIfProxy{F, E} <: ActorSourceProxy
-    checkFn :: F
-    errorFn :: E
+struct ErrorIfProxy{F,E} <: ActorSourceProxy
+    checkFn::F
+    errorFn::E
 end
 
-actor_proxy!(::Type{L}, proxy::ErrorIfProxy{F, E}, actor::A) where { L, A, F, E } = ErrorIfActor{L, A, F, E}(proxy.checkFn, proxy.errorFn, actor, false, voidTeardown)
-source_proxy!(::Type{L}, proxy::ErrorIfProxy, source::S) where { L, S } = ErrorIfSource{L, S}(source)
+actor_proxy!(::Type{L}, proxy::ErrorIfProxy{F,E}, actor::A) where {L,A,F,E} =
+    ErrorIfActor{L,A,F,E}(proxy.checkFn, proxy.errorFn, actor, false, voidTeardown)
+source_proxy!(::Type{L}, proxy::ErrorIfProxy, source::S) where {L,S} =
+    ErrorIfSource{L,S}(source)
 
-mutable struct ErrorIfActor{L, A, F, E} <: Actor{L}
-    checkFn :: F
-    errorFn :: E
-    actor :: A
+mutable struct ErrorIfActor{L,A,F,E} <: Actor{L}
+    checkFn::F
+    errorFn::E
+    actor::A
     completed::Bool
-    subscription
+    subscription::Any
 end
 
 error_msg(actor::ErrorIfActor, data) = error_msg(actor, actor.errorFn, data)
 
-error_msg(::ErrorIfActor, ::Nothing, data) = "`error_if` operator check failed for data $(data)"
-error_msg(::ErrorIfActor, callback, data)  = callback(data)
+error_msg(
+    ::ErrorIfActor,
+    ::Nothing,
+    data,
+) = "`error_if` operator check failed for data $(data)"
+error_msg(::ErrorIfActor, callback, data) = callback(data)
 
-function on_next!(actor::ErrorIfActor{L}, data::L) where L 
+function on_next!(actor::ErrorIfActor{L}, data::L) where {L}
     if !actor.completed
         check = actor.checkFn(data)
-        if check 
+        if check
             error!(actor, error_msg(actor, data))
-        else 
+        else
             next!(actor.actor, data)
         end
     end
 end
 
-function on_error!(actor::ErrorIfActor, err) 
-    if !actor.completed 
+function on_error!(actor::ErrorIfActor, err)
+    if !actor.completed
         actor.completed = true
         unsubscribe!(actor.subscription)
         error!(actor.actor, err)
     end
 end
 
-function on_complete!(actor::ErrorIfActor) 
-    if !actor.completed 
+function on_complete!(actor::ErrorIfActor)
+    if !actor.completed
         actor.completed = true
         complete!(actor.actor)
     end
 end
 
-@subscribable struct ErrorIfSource{L, S} <: Subscribable{L}
-    source :: S
+@subscribable struct ErrorIfSource{L,S} <: Subscribable{L}
+    source::S
 end
 
 function on_subscribe!(source::ErrorIfSource, actor::ErrorIfActor)
@@ -109,7 +121,7 @@ function on_subscribe!(source::ErrorIfSource, actor::ErrorIfActor)
     return subscription
 end
 
-Base.show(io::IO, ::ErrorIfOperator)          = print(io, "ErrorIfOperator()")
-Base.show(io::IO, ::ErrorIfProxy)             = print(io, "ErrorIfProxy()")
-Base.show(io::IO, ::ErrorIfActor{L}) where L  = print(io, "ErrorIfActor($L)")
-Base.show(io::IO, ::ErrorIfSource{L}) where L = print(io, "ErrorIfSource($L)")
+Base.show(io::IO, ::ErrorIfOperator) = print(io, "ErrorIfOperator()")
+Base.show(io::IO, ::ErrorIfProxy) = print(io, "ErrorIfProxy()")
+Base.show(io::IO, ::ErrorIfActor{L}) where {L} = print(io, "ErrorIfActor($L)")
+Base.show(io::IO, ::ErrorIfSource{L}) where {L} = print(io, "ErrorIfSource($L)")

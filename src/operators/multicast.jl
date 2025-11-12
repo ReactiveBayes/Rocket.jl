@@ -47,31 +47,39 @@ unsubscribe!(subscription2)
 
 See also: [`ConnectableObservable`](@ref), [`Subject`](@ref), [`share`](@ref), [`publish`](@ref)
 """
-multicast(subject::S) where S                               = as_multicast(as_subject(S), subject)
-multicast(factory::F) where { F <: AbstractSubjectFactory } = MulticastWithFactoryOperator{F}(factory)
+multicast(subject::S) where {S} = as_multicast(as_subject(S), subject)
+multicast(factory::F) where {F<:AbstractSubjectFactory} =
+    MulticastWithFactoryOperator{F}(factory)
 
-as_multicast(::ValidSubjectTrait{D}, subject::S) where { D, S } = MulticastOperator{S}(subject)
-as_multicast(::InvalidSubjectTrait,  subject::S) where {    S } = throw(InvalidSubjectTraitUsageError(subject))
+as_multicast(::ValidSubjectTrait{D}, subject::S) where {D,S} = MulticastOperator{S}(subject)
+as_multicast(::InvalidSubjectTrait, subject::S) where {S} =
+    throw(InvalidSubjectTraitUsageError(subject))
 
 struct MulticastOperator{S} <: InferableOperator
-    subject :: S
+    subject::S
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::MulticastOperator, source) where L
+function on_call!(::Type{L}, ::Type{L}, operator::MulticastOperator, source) where {L}
     return connectable(operator.subject, source)
 end
 
-operator_right(operator::MulticastOperator, ::Type{L}) where L = L
+operator_right(operator::MulticastOperator, ::Type{L}) where {L} = L
 
 struct MulticastWithFactoryOperator{F} <: InferableOperator
-    subject_factory :: F
+    subject_factory::F
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::MulticastWithFactoryOperator, source) where L
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::MulticastWithFactoryOperator,
+    source,
+) where {L}
     return connectable(create_subject(L, operator.subject_factory), source)
 end
 
-operator_right(operator::MulticastWithFactoryOperator, ::Type{L}) where L = L
+operator_right(operator::MulticastWithFactoryOperator, ::Type{L}) where {L} = L
 
-Base.show(io::IO, ::MulticastOperator)            = print(io, "MulticastOperator()")
-Base.show(io::IO, ::MulticastWithFactoryOperator) = print(io, "MulticastWithFactoryOperator()")
+Base.show(io::IO, ::MulticastOperator) = print(io, "MulticastOperator()")
+Base.show(io::IO, ::MulticastWithFactoryOperator) =
+    print(io, "MulticastWithFactoryOperator()")

@@ -3,11 +3,19 @@ module RocketTeardownTest
 using Test
 
 import Rocket
-import Rocket: TeardownLogic, UnsubscribableTeardownLogic, CallableTeardownLogic, VoidTeardownLogic, InvalidTeardownLogic
+import Rocket:
+    TeardownLogic,
+    UnsubscribableTeardownLogic,
+    CallableTeardownLogic,
+    VoidTeardownLogic,
+    InvalidTeardownLogic
 import Rocket: Teardown, as_teardown
 import Rocket: unsubscribe!, teardown!, on_unsubscribe!
 
-import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogicTraitUsageError, MissingOnUnsubscribeImplementationError
+import Rocket:
+    InvalidTeardownLogicTraitUsageError,
+    InvalidMultipleTeardownLogicTraitUsageError,
+    MissingOnUnsubscribeImplementationError
 
 @testset "Teardown" begin
 
@@ -21,7 +29,7 @@ import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogic
 
     struct ImplementedSubscription end
     Rocket.as_teardown(::Type{<:ImplementedSubscription}) = UnsubscribableTeardownLogic()
-    Rocket.on_unsubscribe!(::ImplementedSubscription)     = "unsubscribed"
+    Rocket.on_unsubscribe!(::ImplementedSubscription) = "unsubscribed"
 
     @testset "as_teardown" begin
         # Check if arbitrary dummy type has undefined teardown logic
@@ -47,7 +55,9 @@ import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogic
         @test unsubscribe!(() -> return 1) === 1
 
         #Check if dummy subscription throws an error in unusubscribe!
-        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!(DummySubscription())
+        @test_throws MissingOnUnsubscribeImplementationError unsubscribe!(
+            DummySubscription(),
+        )
 
         #Check if implemented subscription calls on_unsubscribe!
         @test unsubscribe!(ImplementedSubscription()) === "unsubscribed"
@@ -55,21 +65,35 @@ import Rocket: InvalidTeardownLogicTraitUsageError, InvalidMultipleTeardownLogic
 
     @testset "multiple unsubscribe!" begin
         # Check if arbitrary dummy type throws an error in unsubscribe!
-        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((DummyType(), ImplementedSubscription()))
-        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((ImplementedSubscription(), DummyType()))
-        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([ DummyType(), ImplementedSubscription() ])
-        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([ ImplementedSubscription(), DummyType() ])
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((
+            DummyType(),
+            ImplementedSubscription(),
+        ))
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!((
+            ImplementedSubscription(),
+            DummyType(),
+        ))
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([
+            DummyType(),
+            ImplementedSubscription(),
+        ])
+        @test_throws InvalidMultipleTeardownLogicTraitUsageError unsubscribe!([
+            ImplementedSubscription(),
+            DummyType(),
+        ])
 
         #Check if implemented subscription calls on_unsubscribe!
-        @test unsubscribe!((ImplementedSubscription(), ImplementedSubscription())) === nothing
+        @test unsubscribe!((ImplementedSubscription(), ImplementedSubscription())) ===
+              nothing
         @test unsubscribe!((ImplementedSubscription(), AnotherDummyType())) === nothing
         @test unsubscribe!((AnotherDummyType(), ImplementedSubscription())) === nothing
         @test unsubscribe!((AnotherDummyType(), AnotherDummyType())) === nothing
 
-        @test unsubscribe!([ ImplementedSubscription(), ImplementedSubscription() ]) === nothing
-        @test unsubscribe!([ ImplementedSubscription(), AnotherDummyType() ]) === nothing
-        @test unsubscribe!([ AnotherDummyType(), ImplementedSubscription() ]) === nothing
-        @test unsubscribe!([ AnotherDummyType(), AnotherDummyType() ]) === nothing
+        @test unsubscribe!([ImplementedSubscription(), ImplementedSubscription()]) ===
+              nothing
+        @test unsubscribe!([ImplementedSubscription(), AnotherDummyType()]) === nothing
+        @test unsubscribe!([AnotherDummyType(), ImplementedSubscription()]) === nothing
+        @test unsubscribe!([AnotherDummyType(), AnotherDummyType()]) === nothing
     end
 
 end

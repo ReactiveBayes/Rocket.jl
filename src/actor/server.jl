@@ -10,11 +10,11 @@ with specified `Address` and `Port` parameters via `TCPSocket`.
 
 See also: [`Actor`](@ref), [`server`](@ref)
 """
-struct ServerActor{D, A, P} <: Actor{D}
-    server  :: Sockets.TCPServer
-    sockets :: Vector{Sockets.TCPSocket}
+struct ServerActor{D,A,P} <: Actor{D}
+    server::Sockets.TCPServer
+    sockets::Vector{Sockets.TCPSocket}
 
-    ServerActor{D, A, P}() where { D, A, P } = begin
+    ServerActor{D,A,P}() where {D,A,P} = begin
         self = new(listen(A, P), Vector{Sockets.TCPSocket}())
 
         @async begin
@@ -43,7 +43,7 @@ function on_complete!(actor::ServerActor)
     close(actor.server)
 end
 
-function __send_next(socket, data::D) where D
+function __send_next(socket, data::D) where {D}
     if isopen(socket)
         try
             return write(socket, 1) !== 0 && write(socket, data) !== 0
@@ -54,7 +54,7 @@ function __send_next(socket, data::D) where D
     return false
 end
 
-function __send_next(socket, data::Vector{D}) where D
+function __send_next(socket, data::Vector{D}) where {D}
     if isopen(socket)
         try
             size = length(data)
@@ -88,9 +88,10 @@ function __send_complete(socket)
     return false
 end
 
-struct ServerActorFactory{Address, Port} <: AbstractActorFactory end
+struct ServerActorFactory{Address,Port} <: AbstractActorFactory end
 
-create_actor(::Type{L}, factory::ServerActorFactory{Address, Port}) where { L, Address, Port } = server(L, Address, Port)
+create_actor(::Type{L}, factory::ServerActorFactory{Address,Port}) where {L,Address,Port} =
+    server(L, Address, Port)
 
 """
     server(port::Int)
@@ -102,19 +103,19 @@ Creation operator for the `ServerActor` actor.
 
 See also: [`AbstractActor`](@ref)
 """
-server(port::Int)                                   = server(Sockets.localhost, port)
-server(address::A, port::Int) where { A <: IPAddr } = ServerActorFactory{address, port}()
+server(port::Int) = server(Sockets.localhost, port)
+server(address::A, port::Int) where {A<:IPAddr} = ServerActorFactory{address,port}()
 
-function server(::Type{D}, port::Int) where D
+function server(::Type{D}, port::Int) where {D}
     return server(D, Sockets.localhost, port)
 end
 
-function server(::Type{D}, address::A, port::Int) where { D, A <: IPAddr }
+function server(::Type{D}, address::A, port::Int) where {D,A<:IPAddr}
     @assert isbits(zero(D)) "Network server actor supports only primitive data types"
-    return ServerActor{D, address, port}()
+    return ServerActor{D,address,port}()
 end
 
-function server(::Type{Vector{D}}, address::A, port::Int) where { D, A <: IPAddr }
+function server(::Type{Vector{D}}, address::A, port::Int) where {D,A<:IPAddr}
     @assert isbits(zero(D)) "Network server actor supports only primitive data types"
-    return ServerActor{Vector{D}, address, port}()
+    return ServerActor{Vector{D},address,port}()
 end

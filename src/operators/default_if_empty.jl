@@ -38,42 +38,59 @@ subscribe!(source, logger())
 
 See also: [`AbstractOperator`](@ref), [`InferableOperator`](@ref), [`logger`](@ref), [`map`](@ref)
 """
-default_if_empty(value_or_callback::T) where T = DefaultIfEmptyOperator{T}(value_or_callback)
+default_if_empty(value_or_callback::T) where {T} =
+    DefaultIfEmptyOperator{T}(value_or_callback)
 
 struct DefaultIfEmptyOperator{T} <: InferableOperator
-    value_or_callback :: T
+    value_or_callback::T
 end
 
-operator_right(::DefaultIfEmptyOperator{T}, ::Type{L}) where { L, T }             = Union{L, T}
-operator_right(::DefaultIfEmptyOperator{T}, ::Type{L}) where { L, T <: Function } = L
+operator_right(::DefaultIfEmptyOperator{T}, ::Type{L}) where {L,T} = Union{L,T}
+operator_right(::DefaultIfEmptyOperator{T}, ::Type{L}) where {L,T<:Function} = L
 
-function on_call!(::Type{L}, ::Type{Union{L, T}}, operator::DefaultIfEmptyOperator{T}, source) where { L, T }
-    return proxy(Union{L, T}, source, DefaultIfEmptyProxy{Union{L, T}, T}(convert(Union{L, T}, operator.value_or_callback)))
+function on_call!(
+    ::Type{L},
+    ::Type{Union{L,T}},
+    operator::DefaultIfEmptyOperator{T},
+    source,
+) where {L,T}
+    return proxy(
+        Union{L,T},
+        source,
+        DefaultIfEmptyProxy{Union{L,T},T}(convert(Union{L,T}, operator.value_or_callback)),
+    )
 end
 
-function on_call!(::Type{L}, ::Type{L}, operator::DefaultIfEmptyOperator{T}, source) where { L, T <: Function }
-    return proxy(L, source, DefaultIfEmptyProxy{L, T}(operator.value_or_callback))
+function on_call!(
+    ::Type{L},
+    ::Type{L},
+    operator::DefaultIfEmptyOperator{T},
+    source,
+) where {L,T<:Function}
+    return proxy(L, source, DefaultIfEmptyProxy{L,T}(operator.value_or_callback))
 end
 
-struct DefaultIfEmptyProxy{L, T} <: ActorProxy
-    default_or_callback :: T
+struct DefaultIfEmptyProxy{L,T} <: ActorProxy
+    default_or_callback::T
 end
 
-actor_proxy!(::Type, proxy::DefaultIfEmptyProxy{L, T}, actor::A) where { L, A, T } = DefaultIfEmptyActor{L, A, T}(actor, false, proxy.default_or_callback)
+actor_proxy!(::Type, proxy::DefaultIfEmptyProxy{L,T}, actor::A) where {L,A,T} =
+    DefaultIfEmptyActor{L,A,T}(actor, false, proxy.default_or_callback)
 
-mutable struct DefaultIfEmptyActor{L, A, T} <: Actor{L}
-    actor               :: A
-    is_emitted          :: Bool
-    default_or_callback :: T
+mutable struct DefaultIfEmptyActor{L,A,T} <: Actor{L}
+    actor::A
+    is_emitted::Bool
+    default_or_callback::T
 end
 
-is_emmited(actor::DefaultIfEmptyActor)   = actor.is_emitted
+is_emmited(actor::DefaultIfEmptyActor) = actor.is_emitted
 set_emmited!(actor::DefaultIfEmptyActor) = actor.is_emitted = true
 
-release!(::DefaultIfEmptyActor{L}, callback::Function, actor) where { L } = next!(actor, convert(L, callback()))
-release!(::DefaultIfEmptyActor{L}, default::L, actor) where { L }         = next!(actor, default)
+release!(::DefaultIfEmptyActor{L}, callback::Function, actor) where {L} =
+    next!(actor, convert(L, callback()))
+release!(::DefaultIfEmptyActor{L}, default::L, actor) where {L} = next!(actor, default)
 
-function on_next!(actor::DefaultIfEmptyActor{L}, data::L) where L
+function on_next!(actor::DefaultIfEmptyActor{L}, data::L) where {L}
     set_emmited!(actor)
     next!(actor.actor, data)
 end
@@ -91,6 +108,7 @@ function on_complete!(actor::DefaultIfEmptyActor)
     complete!(actor.actor)
 end
 
-Base.show(io::IO, ::DefaultIfEmptyOperator{T}) where T = print(io, "DefaultIfEmptyOperator($T)")
-Base.show(io::IO, ::DefaultIfEmptyProxy{L})    where L = print(io, "DefaultIfEmptyProxy($L)")
-Base.show(io::IO, ::DefaultIfEmptyActor{L})    where L = print(io, "DefaultIfEmptyActor($L)")
+Base.show(io::IO, ::DefaultIfEmptyOperator{T}) where {T} =
+    print(io, "DefaultIfEmptyOperator($T)")
+Base.show(io::IO, ::DefaultIfEmptyProxy{L}) where {L} = print(io, "DefaultIfEmptyProxy($L)")
+Base.show(io::IO, ::DefaultIfEmptyActor{L}) where {L} = print(io, "DefaultIfEmptyActor($L)")

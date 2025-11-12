@@ -16,19 +16,13 @@ include("../test_helpers.jl")
             source = from("Hello, world") |> uppercase(),
             values = @ts(['H', 'E', 'L', 'L', 'O', ',', ' ', 'W', 'O', 'R', 'L', 'D', c])
         ),
+        (source = completed() |> uppercase(), values = @ts(c)),
         (
-            source = completed() |> uppercase(),
-            values = @ts(c)
+            source = faulted(String, "e") |> uppercase(),
+            values = @ts(e("e")),
+            source_type = String,
         ),
-        (
-            source      = faulted(String, "e") |> uppercase(),
-            values      = @ts(e("e")),
-            source_type = String
-        ),
-        (
-            source = never() |> uppercase(),
-            values = @ts()
-        )
+        (source = never() |> uppercase(), values = @ts()),
     ])
 
 end

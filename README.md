@@ -154,7 +154,7 @@ subscribe!(squared_int_values, lambda(
 
 Rocket.jl has been designed with a focus on efficiency, scalability and maximum performance. Below is a benchmark comparison between Rocket.jl, [Signals.jl](https://github.com/TsurHerman/Signals.jl), [Reactive.jl](https://github.com/JuliaGizmos/Reactive.jl) and [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) in Julia v1.11.3 (see `versioninfo` below). 
 
-We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/reactivebayes/Rocket.jl/tree/master/demo).
+We test map and filter operators latency in application to a finite stream of integers. Code is available in [demo folder](https://github.com/reactivebayes/Rocket.jl/tree/main/demo).
 
 Rocket.jl outperforms Observables.jl, Reactive.jl and Signals.jl significantly in terms of execution times and memory consumption both in synchronous and asynchronous modes. 
 

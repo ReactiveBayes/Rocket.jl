@@ -26,39 +26,44 @@ function PendingSubjectFactory end
 
 ##
 
-mutable struct PendingSubjectInstance{D, S} <: AbstractSubject{D}
-    subject :: S
-    last    :: Union{Nothing, D}
+mutable struct PendingSubjectInstance{D,S} <: AbstractSubject{D}
+    subject::S
+    last::Union{Nothing,D}
 end
 
-Base.show(io::IO, ::PendingSubjectInstance{D, S}) where { D, S } = print(io, "PendingSubject($D, $S)")
+Base.show(io::IO, ::PendingSubjectInstance{D,S}) where {D,S} =
+    print(io, "PendingSubject($D, $S)")
 
-Base.similar(subject::PendingSubjectInstance{D, S}) where { D, S } = PendingSubject(D, similar(subject.subject))
+Base.similar(subject::PendingSubjectInstance{D,S}) where {D,S} =
+    PendingSubject(D, similar(subject.subject))
 
-function PendingSubject(::Type{D}) where D
+function PendingSubject(::Type{D}) where {D}
     return PendingSubject(D, SubjectFactory(AsapScheduler()))
 end
 
-function PendingSubject(::Type{D}, factory::F) where { D, F <: AbstractSubjectFactory }
+function PendingSubject(::Type{D}, factory::F) where {D,F<:AbstractSubjectFactory}
     return PendingSubject(D, create_subject(D, factory))
 end
 
-function PendingSubject(::Type{D}, subject::S) where { D, S }
+function PendingSubject(::Type{D}, subject::S) where {D,S}
     return as_pending_subject(D, as_subject(S), subject)
 end
 
-as_pending_subject(::Type{D},  ::InvalidSubjectTrait,    subject)    where D          = throw(InvalidSubjectTraitUsageError(subject))
-as_pending_subject(::Type{D1}, ::ValidSubjectTrait{D2},  subject)    where { D1, D2 } = throw(InconsistentSubjectDataTypesError{D1, D2}(subject))
-as_pending_subject(::Type{D},  ::ValidSubjectTrait{D},   subject::S) where { D, S }   = PendingSubjectInstance{D, S}(subject, nothing)
+as_pending_subject(::Type{D}, ::InvalidSubjectTrait, subject) where {D} =
+    throw(InvalidSubjectTraitUsageError(subject))
+as_pending_subject(::Type{D1}, ::ValidSubjectTrait{D2}, subject) where {D1,D2} =
+    throw(InconsistentSubjectDataTypesError{D1,D2}(subject))
+as_pending_subject(::Type{D}, ::ValidSubjectTrait{D}, subject::S) where {D,S} =
+    PendingSubjectInstance{D,S}(subject, nothing)
 
 ##
 
-getlast(subject::PendingSubjectInstance)         = subject.last
+getlast(subject::PendingSubjectInstance) = subject.last
 setlast!(subject::PendingSubjectInstance, value) = subject.last = value
 
 ##
 
-function on_next!(subject::PendingSubjectInstance{D}, data::D) where D
+function on_next!(subject::PendingSubjectInstance{D}, data::D) where {D}
     if isactive(subject.subject)
         setlast!(subject, data)
     end
@@ -97,18 +102,22 @@ end
 
 ##
 
-struct PendingSubjectFactoryInstance{ F <: AbstractSubjectFactory } <: AbstractSubjectFactory
-    factory :: F
+struct PendingSubjectFactoryInstance{F<:AbstractSubjectFactory} <: AbstractSubjectFactory
+    factory::F
 end
 
-Base.show(io::IO, subject::PendingSubjectFactoryInstance{F}) where F = print(io, "PendingSubjectFactoryInstance($F)")
+Base.show(io::IO, subject::PendingSubjectFactoryInstance{F}) where {F} =
+    print(io, "PendingSubjectFactoryInstance($F)")
 
-create_subject(::Type{L}, factory::PendingSubjectFactoryInstance) where L = PendingSubject(L, factory.factory)
+create_subject(::Type{L}, factory::PendingSubjectFactoryInstance) where {L} =
+    PendingSubject(L, factory.factory)
 
-function PendingSubjectFactory(factory::F) where { F <: AbstractSubjectFactory }
+function PendingSubjectFactory(factory::F) where {F<:AbstractSubjectFactory}
     return PendingSubjectFactoryInstance(factory)
 end
 
-function PendingSubjectFactory(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
+function PendingSubjectFactory(;
+    scheduler::H = AsapScheduler(),
+) where {H<:AbstractScheduler}
     return PendingSubjectFactoryInstance(SubjectFactory{H}(scheduler))
 end

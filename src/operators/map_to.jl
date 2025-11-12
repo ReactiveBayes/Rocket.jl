@@ -30,4 +30,4 @@ subscribe!(source |> map_to('a'), logger())
 
 See also: [`map`](@ref), [`AbstractOperator`](@ref), [`RightTypedOperator`](@ref), [`ProxyObservable`](@ref), [`logger`](@ref)
 """
-map_to(value::T) where T = map(T, _ -> value)
+map_to(value::T) where {T} = map(T, _ -> value)

@@ -12,12 +12,13 @@ include("../test_helpers.jl")
     struct DummyScheduler <: Rocket.AbstractScheduler end
 
     @testset begin
-        @test completed()    == CompletedObservable{Any, AsapScheduler}(AsapScheduler())
-        @test completed(Int) == CompletedObservable{Int, AsapScheduler}(AsapScheduler())
+        @test completed() == CompletedObservable{Any,AsapScheduler}(AsapScheduler())
+        @test completed(Int) == CompletedObservable{Int,AsapScheduler}(AsapScheduler())
         @test completed(Int) == completed(Int)
         @test completed(Int) != completed(Float64)
 
-        @test completed(Int; scheduler = DummyScheduler()) == CompletedObservable{Int, DummyScheduler}(DummyScheduler())
+        @test completed(Int; scheduler = DummyScheduler()) ==
+              CompletedObservable{Int,DummyScheduler}(DummyScheduler())
     end
 
     @testset begin
@@ -32,12 +33,7 @@ include("../test_helpers.jl")
         @test occursin(string(eltype(source)), printed)
     end
 
-    run_testset([
-        (
-            source = completed(),
-            values = @ts(c)
-        )
-    ])
+    run_testset([(source = completed(), values = @ts(c))])
 
 end
 

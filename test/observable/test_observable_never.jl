@@ -10,7 +10,7 @@ include("../test_helpers.jl")
     println("Testing: never")
 
     @testset begin
-        @test never()    == NeverObservable{Any}()
+        @test never() == NeverObservable{Any}()
         @test never(Int) == NeverObservable{Int}()
         @test never(Int) == never(Int)
         @test never(Int) != never(Float64)
@@ -28,12 +28,7 @@ include("../test_helpers.jl")
         @test occursin(string(eltype(source)), printed)
     end
 
-    run_testset([
-        (
-            source = never(),
-            values = @ts()
-        )
-    ])
+    run_testset([(source = never(), values = @ts())])
 
 end
 

@@ -18,25 +18,34 @@ include("../test_helpers.jl")
 
     run_testset([
         (
-            source = from(1:5) |> tap_on_subscribe(() -> sideeffects1 = []) |> tap((d) -> push!(sideeffects1, d)),
-            values = @ts([ 1:5, c ])
+            source = from(1:5) |>
+                     tap_on_subscribe(() -> sideeffects1 = []) |>
+                     tap((d) -> push!(sideeffects1, d)),
+            values = @ts([1:5, c])
         ),
         (
-            source = from(1:5) |> tap_on_subscribe(() -> sideeffects2 = []) |> tap((d) -> push!(sideeffects2, d)) |> skip_next(),
+            source = from(1:5) |>
+                     tap_on_subscribe(() -> sideeffects2 = []) |>
+                     tap((d) -> push!(sideeffects2, d)) |>
+                     skip_next(),
             values = @ts(c)
         ),
         (
-            source = faulted(1) |> tap_on_subscribe(() -> sideeffects3 = []) |> tap((d) -> push!(sideeffects3, d)),
+            source = faulted(1) |>
+                     tap_on_subscribe(() -> sideeffects3 = []) |>
+                     tap((d) -> push!(sideeffects3, d)),
             values = @ts(e(1))
         ),
         (
-            source = never() |> tap_on_subscribe(() -> sideeffects4 = []) |> tap((d) -> push!(sideeffects4, d)),
+            source = never() |>
+                     tap_on_subscribe(() -> sideeffects4 = []) |>
+                     tap((d) -> push!(sideeffects4, d)),
             values = @ts()
-        )
+        ),
     ])
 
-    @test sideeffects1 == [ 1, 2, 3, 4, 5 ]
-    @test sideeffects2 == [ 1, 2, 3, 4, 5 ]
+    @test sideeffects1 == [1, 2, 3, 4, 5]
+    @test sideeffects2 == [1, 2, 3, 4, 5]
     @test sideeffects3 == []
     @test sideeffects4 == []
 

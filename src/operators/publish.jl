@@ -10,7 +10,8 @@ export publish_recent
 
 See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`SubjectFactory`](@ref)
 """
-publish(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(SubjectFactory(scheduler))
+publish(; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler} =
+    multicast(SubjectFactory(scheduler))
 
 """
     publish_behavior(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
@@ -19,7 +20,8 @@ publish(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = mul
 
 See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`BehaviorSubjectFactory`](@ref)
 """
-publish_behavior(default; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(BehaviorSubjectFactory(default, scheduler = scheduler))
+publish_behavior(default; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler} =
+    multicast(BehaviorSubjectFactory(default, scheduler = scheduler))
 
 """
     publish_replay(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
@@ -28,7 +30,8 @@ publish_behavior(default; scheduler::H = AsapScheduler()) where { H <: AbstractS
 
 See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`ReplaySubjectFactory`](@ref)
 """
-publish_replay(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(ReplaySubjectFactory(size, scheduler = scheduler))
+publish_replay(size::Int; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler} =
+    multicast(ReplaySubjectFactory(size, scheduler = scheduler))
 
 """
     publish_recent(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler }
@@ -37,4 +40,5 @@ publish_replay(size::Int; scheduler::H = AsapScheduler()) where { H <: AbstractS
 
 See also: [`AbstractOperator`](@ref), [`multicast`](@ref), [`RecentSubjectFactory`](@ref)
 """
-publish_recent(; scheduler::H = AsapScheduler()) where { H <: AbstractScheduler } = multicast(RecentSubjectFactory(scheduler = scheduler))
+publish_recent(; scheduler::H = AsapScheduler()) where {H<:AbstractScheduler} =
+    multicast(RecentSubjectFactory(scheduler = scheduler))
