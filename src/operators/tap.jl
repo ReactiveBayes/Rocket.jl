@@ -8,6 +8,12 @@ import Base: show
 Creates a tap operator, which performs a side effect
 for every emission on the source Observable, but return an Observable that is identical to the source.
 
+!!! note
+    Julia 1.14 introduced `Base.tap`, which has the same name but a different
+    return type (a closure rather than an operator). When using Rocket on
+    Julia 1.14+, either qualify the call as `Rocket.tap(...)` or add
+    `using Rocket: tap` after `using Rocket` to disambiguate.
+
 # Arguments
 - `tapFn::Function`: side-effect tap function with `(data) -> Nothing` signature
 
@@ -18,6 +24,7 @@ Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
 # Examples
 ```jldoctest
 using Rocket
+using Rocket: tap
 
 source = from([ 1, 2, 3 ])
 subscribe!(source |> tap((d) -> println("In tap: \$d")), logger())
