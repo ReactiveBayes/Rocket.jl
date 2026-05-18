@@ -2,6 +2,7 @@ module RocketRecentSubjectTest
 
 using Test
 using Rocket
+using Rocket: tap
 
 @testset "RecentSubject" begin
 
