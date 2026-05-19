@@ -2,6 +2,7 @@ module RocketReplaySubjectTest
 
 using Test
 using Rocket
+using Rocket: tap
 
 @testset "ReplaySubject" begin
 

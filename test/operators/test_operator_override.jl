@@ -2,6 +2,7 @@ module RocketOverrideOperatorTest
 
 using Test
 using Rocket
+using Rocket: tap
 
 include("../test_helpers.jl")
 

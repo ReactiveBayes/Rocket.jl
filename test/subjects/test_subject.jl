@@ -2,6 +2,7 @@ module RocketSubjectInstanceTest
 
 using Test
 using Rocket
+using Rocket: tap
 
 @testset "Subject" begin
 

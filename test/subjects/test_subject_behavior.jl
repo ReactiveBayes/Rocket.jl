@@ -2,6 +2,7 @@ module RocketBehaviorSubjectTest
 
 using Test
 using Rocket
+using Rocket: tap
 
 @testset "BehaviorSubject" begin
 

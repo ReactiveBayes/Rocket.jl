@@ -2,6 +2,7 @@ module RocketPendingSubjectTest
 
 using Test
 using Rocket
+using Rocket: tap
 
 @testset "PendingSubject" begin
 
