@@ -56,7 +56,6 @@ Pages = [
     "subjects/about.md",
     "operators/about.md",
     "operators/all.md",
-    "todo.md",
     "contributing.md",
     "utils.md"
 ]

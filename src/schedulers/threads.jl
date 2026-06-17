@@ -8,6 +8,9 @@ import Base: show, similar
 
 `ThreadsScheduler` executes scheduled actions on a separate thread.
 
+!!! warning
+    `ThreadsScheduler` is experimental. Its behavior and API may change or be removed in a future release.
+
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 struct ThreadsScheduler <: AbstractScheduler end
