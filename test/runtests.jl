@@ -113,6 +113,12 @@ doctest(Rocket)
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0
     end
+
+    # Package extensions require Julia >= 1.9. Loading `Observables` here activates
+    # `RocketObservablesExt`, so this include must run after the ambiguity check above.
+    if VERSION >= v"1.9"
+        include("./ext/observables.jl")
+    end
 end
 
 end

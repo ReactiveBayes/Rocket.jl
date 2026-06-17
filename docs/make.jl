@@ -8,6 +8,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Getting started" => "getting-started.md",
+        "Makie & Observables.jl" => "integrations/observables.md",
         "Manual" => [
             "Observable" => "observables/about.md",
             "Actor" => "actors/about.md",

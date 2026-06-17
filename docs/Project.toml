@@ -1,7 +1,11 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 LiveServer = "16fef848-5104-11e9-1b77-fb7a48bbb589"
+Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
 Rocket = "df971d30-c9d6-4b37-b8ff-e965b2cb3a40"
 
 [compat]
+CairoMakie = "0.12, 0.13, 0.14, 0.15"
 Documenter = "1.0.0"
+Observables = "0.5"
