@@ -234,7 +234,7 @@ function subscribe!(args::Union{Tuple,AbstractVector})
         try
             return subscribe!(first(arg), last(arg))
         catch error
-            @error "Error occured during multiple subscription. Return `voidTeardown` for '$arg' argument."
+            @error "Error occurred during multiple subscription. Return `voidTeardown` for '$arg' argument."
             @error error
             return voidTeardown
         end

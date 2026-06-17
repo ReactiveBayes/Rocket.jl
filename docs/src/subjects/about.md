@@ -107,8 +107,8 @@ next!(subject, 3)
 
 ## Asynchronous Scheduler
 
-An `AsyncScheduler` is similar to a [`AsapScheduler`](@ref). Both allows for Subject to scheduler their messages for multiple listeners,
-but a `AsyncScheduler` delivers all messages asynchronously (but still ordered) using a Julia's built-in `Task` object.
+An `AsyncScheduler` is similar to an [`AsapScheduler`](@ref). Both allow a Subject to schedule its messages for multiple listeners,
+but an `AsyncScheduler` delivers all messages asynchronously (still in order) using Julia's built-in `Task` object.
 
 ```@docs
 AsyncScheduler

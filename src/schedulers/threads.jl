@@ -6,7 +6,10 @@ import Base: show, similar
 """
     ThreadsScheduler
 
-`ThreadsScheduler` executes scheduled actions in a different threads
+`ThreadsScheduler` executes scheduled actions on a separate thread.
+
+!!! warning
+    `ThreadsScheduler` is experimental. Its behavior and API may change or be removed in a future release.
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """

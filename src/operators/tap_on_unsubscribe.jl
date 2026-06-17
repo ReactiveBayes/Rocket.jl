@@ -31,7 +31,7 @@ Creates a tap operator, which performs a side effect on the unsubscription on th
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

@@ -5,12 +5,12 @@ import Base: show
 """
     skip_next()
 
-Creates a `skip_next` operator, which filters out all `next` messages by the source Observable by emitting only
+Creates a `skip_next` operator, which filters out all `next` messages from the source Observable, emitting only
 `error` and `complete` messages.
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

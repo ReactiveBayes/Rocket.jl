@@ -8,7 +8,7 @@ const NANOSECONDS_IN_MILLISECOND = 1_000_000.0::Float64
 """
     setTimeout(f::Function, timeout::Int)
 
-Creates a `Task` which will asynchornously invoke fucntion `f` after specified `timeout` time in milliseconds.
+Creates a `Task` that asynchronously invokes the function `f` after the specified `timeout` time in milliseconds.
 
 # Arguments
 - `f`::Function, function to be invoked asynchronously

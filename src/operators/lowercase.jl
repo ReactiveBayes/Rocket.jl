@@ -6,11 +6,11 @@ import Base: show
 """
     lowercase()
 
-Creates an lowercase operator, which forces each value to be in lower case
+Creates a lowercase operator, which converts each value to lower case.
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where L referes to type of data of input Observable
+Stream of type `<: Subscribable{L}` where `L` refers to the type of data of the input Observable.
 
 # Examples
 

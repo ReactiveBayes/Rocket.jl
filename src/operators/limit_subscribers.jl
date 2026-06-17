@@ -6,14 +6,14 @@ import DataStructures: isfull
 """
     LimitSubscribersGuard(limit::Int = 1, exclusive = true)
 
-Guard structure used in `limit_subscribers` operator.
+Guard structure used in the `limit_subscribers` operator.
 
 # Arguments
 - `limit`: number of concurrent subscribers
-- `exclusive`: boolean flag, which indicates whenever this guard can be shared with other observables in other `limit_subscribers` operator. If set to `true`, reusing this guard in a different `limit_subscribers` operator for other observable will result in automatic unsubscription of all present actors.
+- `exclusive`: boolean flag that indicates whether this guard can be shared with other observables in another `limit_subscribers` operator. If set to `true`, reusing this guard in a different `limit_subscribers` operator for another observable results in automatic unsubscription of all present actors.
 
 # Note
-This structure is useful in Pluto.jl notebooks in particular, allowing for automatic subscription/unsubscription of observables.
+This structure is useful in Pluto.jl notebooks in particular, allowing for automatic subscription and unsubscription of observables.
 
 # Example 
 
@@ -84,14 +84,14 @@ end
     limit_subscribers(limit::Int = 1, exclusive::Bool = true)
     limit_subscribers(guard::LimitSubscribersGuard)
 
-Creates an operator that limits number of concurrent actors to the given observable. On new subscription, if limit is exceeded, oldest actor is automatically unsubscribed and receives a completion event.
+Creates an operator that limits the number of concurrent actors subscribed to the given observable. On a new subscription, if the limit is exceeded, the oldest actor is automatically unsubscribed and receives a completion event.
 
 # Arguments
 - `limit`: number of concurrent subscribers
-- `exclusive`: boolean flag, which indicates whenever this guard can be shared with other observables in other `limit_subscribers` operator. If set to `true`, reusing this guard in a different `limit_subscribers` operator for other observable will result in automatic unsubscription of all present actors.
+- `exclusive`: boolean flag that indicates whether this guard can be shared with other observables in another `limit_subscribers` operator. If set to `true`, reusing this guard in a different `limit_subscribers` operator for another observable results in automatic unsubscription of all present actors.
 
 # Note
-This structure is useful in Pluto.jl notebooks in particular, allowing for automatic subscription/unsubscription of observables.
+This structure is useful in Pluto.jl notebooks in particular, allowing for automatic subscription and unsubscription of observables.
 
 # Example 
 

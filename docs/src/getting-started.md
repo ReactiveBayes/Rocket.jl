@@ -8,7 +8,7 @@ In order to combine good performance with a convenient API, Rocket.jl employs [O
 
 Install Rocket.jl through the Julia package manager:
 
-```Julia
+```julia
 ] add Rocket
 ```
 
@@ -19,7 +19,7 @@ Rocket.jl has been designed with a focus on performance and modularity.
 The essential concepts in Rocket.jl are:
 
 - [__Observable__](@ref section_observables): represents a collection of future messages (data or/and events).
-- [__Actor__](@ref section_actors): is an object that knows how to react on incoming messages delivered by the __Observable__.
+- [__Actor__](@ref section_actors): is an object that knows how to react to incoming messages delivered by the __Observable__.
 - [__Subscription__](@ref section_subscription): represents a teardown logic that is useful for cancelling the execution of an __Observable__.
 - [__Operator__](@ref section_operators): an object that deals with collection operations, such as [`map`](@ref operator_map), [`filter`](@ref operator_filter), [`reduce`](@ref operator_reduce), etc.
 - [__Subject__](@ref section_subjects): the way of multicasting a message to multiple Observers.
@@ -28,7 +28,7 @@ The essential concepts in Rocket.jl are:
 
 Conventionally, arrays are used for processing data.
 
-```Julia
+```julia
 for value in array_of_values
     doSomethingWithMyData(value)
 end
@@ -36,7 +36,7 @@ end
 
 In contrast, Rocket.jl uses observables.
 
-```Julia
+```julia
 subscription = subscribe!(source_of_values, lambda(
     on_next     = (data)  -> doSomethingWithMyData(data),
     on_error    = (error) -> doSomethingWithAnError(error),
@@ -46,7 +46,7 @@ subscription = subscribe!(source_of_values, lambda(
 
 At some point in time you may decide to stop listening for new messages.
 
-```Julia
+```julia
 unsubscribe!(subscription)
 ```
 
@@ -54,7 +54,7 @@ unsubscribe!(subscription)
 
 In order to process messages from an observable you will need to define an Actor that knows how to react to incoming messages.
 
-```Julia
+```julia
 struct MyActor <: Rocket.Actor{Int} end
 
 Rocket.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
@@ -64,7 +64,7 @@ Rocket.on_complete!(actor::MyActor)        = println("Completed!")
 
 An actor can also have its own local state.
 
-```Julia
+```julia
 struct StoreActor{D} <: Rocket.Actor{D}
     values :: Vector{D}
 
@@ -76,13 +76,13 @@ Rocket.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(
 Rocket.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
 ```
 
-For debugging purposes you can use a general [`LambdaActor`](@ref) actor or just pass a function object as an actor in `subscribe!` function..
+For debugging purposes you can use a general [`LambdaActor`](@ref) actor, or just pass a function object as an actor in the `subscribe!` function.
 
 ## Operators
 
-What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages that flow through your observables, using [__Operators__](@ref section_operators).
+What makes Rocket.jl powerful is its ability to help you process, transform, and modify the messages that flow through your observables using [__Operators__](@ref section_operators).
 
-```Julia
+```julia
 subscribe!(squared_int_values |> map(Int, (d) -> d ^ 2), lambda(
     on_next = (data) -> println(data)
 ))

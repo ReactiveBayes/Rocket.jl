@@ -13,7 +13,7 @@ that emits the values emitted by the source Observable until a `notifier` Observ
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 

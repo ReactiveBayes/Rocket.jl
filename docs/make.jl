@@ -2,14 +2,7 @@ using Documenter, Rocket
 
 makedocs(
     modules = [Rocket],
-    warnonly = Documenter.except(
-        :doctest,
-        :eval_block,
-        :example_block,
-        :meta_block,
-        :parse_error,
-        :setup_block,
-    ),
+    warnonly = false,
     clean = true,
     sitename = "Rocket.jl",
     pages = [
@@ -141,6 +134,7 @@ makedocs(
                     "skip_complete" => "operators/utility/skip_complete.md",
                     "discontinue" => "operators/utility/discontinue.md",
                     "limit_subscribers" => "operators/utility/limit_subscribers.md",
+                    "parallel" => "operators/utility/parallel.md",
                 ],
             ],
             "Subjects" => [
@@ -157,8 +151,8 @@ makedocs(
             "Teardown" => "api/teardown.md",
             "Operators" => "api/operators.md",
             "Subjects" => "api/subjects.md",
+            "Schedulers" => "api/schedulers.md",
         ],
-        "TODO" => "todo.md",
         "Contributing" => "contributing.md",
         "Utils" => "utils.md",
     ],

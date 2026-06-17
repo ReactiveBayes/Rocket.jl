@@ -13,11 +13,11 @@ given an optional initial value.
 The `sum` operator is similar to `reduce(T, T, +)` (see [`reduce`](@ref)).
 
 # Arguments
-- `from`: optional initial accumulation value, if nothing first value will be used instead
+- `from`: optional initial accumulation value. If `nothing`, the first value from the source is used instead.
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

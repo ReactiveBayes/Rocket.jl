@@ -32,9 +32,9 @@ release!(handler::SubstituteHandler) = foreach(release!, handler.list)
 """
     substitute(::Type{T}, mapFn::F, handler::SubstituteHandler) where { T, F <: Function }
 
-This operator forces observable to substitute each emmited value with the latest computed value with the corresponding `handler` and `release!` function.
-After `release!` on `handler` `substitute` operator computes new value with `mapFn` but does not emit it until next emission from source observable. 
-Always calls `mapFn` on first value from source observable.
+This operator makes an observable substitute each emitted value with the latest value computed by the corresponding `handler` and `release!` function.
+After `release!` is called on `handler`, the `substitute` operator computes a new value with `mapFn`, but does not emit it until the next emission from the source observable.
+It always calls `mapFn` on the first value from the source observable.
 
 # Producing
 

@@ -23,13 +23,13 @@ getvalue(handler::OverrideHandler) = handler.value
 """
     override(handler::OverrideHandler)
 
-Creates an override operator that overrides each emission from source observable with value 
-provided in `handler`. If handler contains `nothing` source observable emits as usual.
-For constant override see [`map_to`](@ref). Use `Rocket.setvalue!` to set new value for `handler`.
+Creates an override operator that overrides each emission from the source observable with the value
+provided in `handler`. If `handler` contains `nothing`, the source observable emits as usual.
+For a constant override see [`map_to`](@ref). Use `Rocket.setvalue!` to set a new value for `handler`.
 
 # Producing 
 
-Stream of type `<: Subscribable{Union{L, T}}` where `L` refers to the type of source stream and `T` referes to the type of handler's value
+Stream of type `<: Subscribable{Union{L, T}}` where `L` refers to the type of the source stream and `T` refers to the type of the handler's value
 
 # Examples 
 

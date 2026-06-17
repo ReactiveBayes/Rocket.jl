@@ -14,7 +14,7 @@ resubscriptions (given as a number parameter) rather than propagating the error 
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

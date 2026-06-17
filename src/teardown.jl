@@ -113,7 +113,7 @@ function unsubscribe!(subscriptions::Union{Tuple,AbstractVector})
         try
             unsubscribe!(subscription)
         catch error
-            @error "Error occured during multiple unsubscription."
+            @error "Error occurred during multiple unsubscription."
             @error error
         end
     end

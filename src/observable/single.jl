@@ -6,7 +6,7 @@ import Base: show
 """
     SingleObservable{D, H}(value::D, scheduler::H)
 
-SingleObservable wraps single value of type `D` into a observable.
+A `SingleObservable` wraps a single value of type `D` into an observable.
 
 # Constructor arguments
 - `value`: a single value to emit
@@ -34,7 +34,7 @@ end
 Creation operator for the `SingleObservable` that emits a single value x and then completes.
 
 # Arguments
-- `x`: value to be emmited before completion
+- `x`: value to be emitted before completion
 
 # Examples
 

@@ -26,8 +26,8 @@ end
 ```
 
 To invoke the Observable and inspect these values, we need to subscribe to it.
-It is important to note that observables are lazy collections which means they don't emit anything until someone subscribes to it.
-Every subscription spawns its own independent execution of observable. There are some exceptions to this rule, e.g. `Subjects` and some operators (`share()`, etc..) which may change this behaviour
+It is important to note that observables are lazy collections, which means they do not emit anything until someone subscribes to them.
+Every subscription spawns its own independent execution of the observable. There are some exceptions to this rule, for example `Subjects` and some operators (such as `share()`), which may change this behaviour.
 
 ```julia
 using Rocket
@@ -163,7 +163,7 @@ This example shows how subscribe calls are not shared among multiple Actors of t
     Subscribing to an Observable is like calling a function, providing callbacks where the data will be delivered to.
 
 
-The `subscribe!` function also supports multiple subscriptions at once. If the input argument to the `subscribe!` function is a tuple or a vector, it will first check that all of the arguments are valid source objects and actors and if its true will subscribe from each of them individually.
+The `subscribe!` function also supports multiple subscriptions at once. If the input argument to the `subscribe!` function is a tuple or a vector, it first checks that all of the arguments are valid source objects and actors, and if so subscribes to each of them individually.
 
 ```julia
 
@@ -190,7 +190,7 @@ An Observable Execution can deliver three types of notifications:
 - __Error__: sends any error as a value;
 - __Complete__: does not send a value.
 
-"Next" notifications are the most important and most common type: they represent actual data being delivered to an subscriber. "Error" and "Complete" notifications terminate the Observable Execution.
+"Next" notifications are the most important and most common type: they represent actual data being delivered to a subscriber. "Error" and "Complete" notifications terminate the Observable Execution.
 
 !!! note
     In an Observable Execution, any number of Next notifications may be delivered. However, once a single Error or Complete notification is delivered, nothing else can be delivered afterwards.
@@ -212,7 +212,7 @@ end
 source = from([ 1, 2, 3 ])
 ```
 
-It is advised to wrap any code in subscribe by a try/catch block that delivers an Error notification upon an exception:
+It is advised to wrap any code in `subscribe!` in a try/catch block that delivers an Error notification when an exception occurs:
 
 ```julia
 using Rocket
@@ -240,7 +240,7 @@ When `subscribe!` is called, the Actor gets attached to the newly created Observ
 subscription = subscribe!(source, actor)
 ```
 
-The Subscription represents the ongoing execution, and has a minimal API that allows you to cancel the execution. Read more about [`Subscription type here`](@ref section_subscription).
+The Subscription represents the ongoing execution and has a minimal API that allows you to cancel the execution. Read more about the [Subscription type here](@ref section_subscription).
 
 With
 
