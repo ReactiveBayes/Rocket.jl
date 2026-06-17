@@ -9,7 +9,7 @@ Creates a `to_array` operator, which reduces all values into a single array and 
 
 # Producing
 
-Stream of type `<: Subscribable{Vector{L}}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{Vector{L}}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

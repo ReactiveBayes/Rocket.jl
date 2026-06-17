@@ -6,9 +6,9 @@ import Base: show
 """
     map(::Type{R}, mappingFn::F) where { F <: Function }
 
-Creates a map operator, which applies a given `mappingFn` to each value emmited by the source
-Observable, and emits the resulting values as an Observable. You have to specify output R type after
-`mappingFn` projection.
+Creates a map operator, which applies a given `mappingFn` to each value emitted by the source
+Observable and emits the resulting values as an Observable. You have to specify the output type `R`
+after the `mappingFn` projection.
 
 # Arguments
 - `::Type{R}`: the type of data of transformed value, may be or may not be the same as source type

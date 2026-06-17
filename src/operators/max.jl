@@ -9,11 +9,11 @@ import Base: show
 Creates a max operator, which emits a single item: the item with the largest value.
 
 # Arguments
-- `from`: optional initial maximum value, if `nothing` first item from the source will be used as initial instead
+- `from`: optional initial maximum value. If `nothing`, the first item from the source is used instead.
 
 # Producing
 
-Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{Union{L, Nothing}}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

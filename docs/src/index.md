@@ -53,10 +53,9 @@ Pages = [
     "observables/about.md",
     "actors/about.md",
     "teardown/about.md",
+    "subjects/about.md",
     "operators/about.md",
-    "operators/piping.md",
-    "operators/create-new-operator.md",
-    "operators/high-order.md",
+    "operators/all.md",
     "todo.md",
     "contributing.md",
     "utils.md"

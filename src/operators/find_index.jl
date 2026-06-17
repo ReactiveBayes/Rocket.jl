@@ -10,7 +10,7 @@ Indices are 1-based.
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Arguments
 - `conditionFn::F`: condition function with `(data::T) -> Bool` signature

@@ -16,7 +16,7 @@ Sends `FirstNotFoundException` error message if a given source completes without
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

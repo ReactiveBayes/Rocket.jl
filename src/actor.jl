@@ -56,7 +56,7 @@ See also: [`CompletionActor`](@ref)
 struct CompletionActorTrait{T} <: ActorTrait end
 
 """
-Default actor trait behavior for any object. Actor with such a trait specificaion cannot be used as a valid actor in `subscribe!` function.
+Default actor trait behavior for any object. An actor with such a trait specification cannot be used as a valid actor in the `subscribe!` function.
 Doing so will raise an error. `InvalidActorTrait` is a subtype of `ActorTrait`.
 
 See also: [`ActorTrait`](@ref)

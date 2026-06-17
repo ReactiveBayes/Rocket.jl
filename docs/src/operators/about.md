@@ -23,10 +23,10 @@ subscribe!(source |> map(Int, (d) -> d ^ 2), lambda(
     on_next = (d) -> println(d)
 ))
 
-// Logs:
-// 1
-// 4
-// 9
+# Logs:
+# 1
+# 4
+# 9
 ```
 
 Another useful operator is [`first()`](@ref):
@@ -38,9 +38,9 @@ subscribe!(source |> first(), lambda(
     on_complete = ()  -> "Completed"
 ))
 
-// Logs:
-// 1
-// Completed
+# Logs:
+# 1
+# Completed
 ```
 
 ## Creation operators
@@ -51,15 +51,15 @@ Distinct from pipeable operators, creation operators are functions that can be u
 source = from([ 1, 2, 3 ])
 subscribe!(source, lambda(
     on_next     = (d) -> println("Value: $d"),
-    on_error    = (e) -> println("Oh no, error: $e")
+    on_error    = (e) -> println("Oh no, error: $e"),
     on_complete = ()  -> println("Completed")
 ))
 
-// Logs:
-// Value: 1
-// Value: 2
-// Value: 3
-// Completed
+# Logs:
+# Value: 1
+# Value: 2
+# Value: 3
+# Completed
 ```
 
 ## Operators piping
@@ -74,9 +74,9 @@ source = from(1:100) |> filter((d) -> d % 2 === 0) |> map(Int, (d) -> d ^ 2) |> 
 
 subscribe!(source, logger())
 
-// Logs
-// [LogActor] Data: 171700
-// [LogActor] Completed
+# Logs
+# [LogActor] Data: 171700
+# [LogActor] Completed
 ```
 
 It is also possible to create an operator composition with `+` or `|>`. It might be useful to create an alias for some often used operator chain
@@ -84,16 +84,16 @@ It is also possible to create an operator composition with `+` or `|>`. It might
 ```julia
 using Rocket
 
-mapAndFilter = map(Int, d -> d ^ 2) + filter(d -> d % 2 == 0) 
+mapAndFilter = map(Int, d -> d ^ 2) + filter(d -> d % 2 == 0)
 
 source = from(1:5) |> mapAndFilter
 
 subscribe!(source, logger())
 
-// Logs
-// [LogActor] Data: 4
-// [LogActor] Data: 16
-// [LogActor] Completed
+# Logs
+# [LogActor] Data: 4
+# [LogActor] Data: 16
+# [LogActor] Completed
 
 mapAndFilterAndSum = mapAndFilter + sum()
 
@@ -101,9 +101,9 @@ source = from(1:5) |> mapAndFilterAndSum
 
 subscribe!(source, logger())
 
-// Logs
-// [LogActor] Data: 20
-// [LogActor] Completed
+# Logs
+# [LogActor] Data: 20
+# [LogActor] Completed
 ```
 
 For stylistic reasons, `on_call!(operator, source)` is never used in practice - even if there is only one operator. Instead, `source |> operator()` is generally preferred.

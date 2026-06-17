@@ -85,17 +85,17 @@ in the `docs/` directory to build a local version of the documentation.
 
 ## First example
 
-Normally you use an arrays for processing some data.
+Normally you use arrays to process data.
 
-```Julia
+```julia
 for value in array_of_values
     doSomethingWithMyData(value)
 end
 ```
 
-In Rocket.jl you will use an observable.
+In Rocket.jl you use an observable instead.
 
-```Julia
+```julia
 subscription = subscribe!(source_of_values, lambda(
     on_next     = (data)  -> doSomethingWithMyData(data),
     on_error    = (error) -> doSomethingWithAnError(error),
@@ -103,17 +103,17 @@ subscription = subscribe!(source_of_values, lambda(
 ))
 ```
 
-At some point of time you may decide to stop listening for new messages.
+At some point you may decide to stop listening for new messages.
 
-```Julia
+```julia
 unsubscribe!(subscription)
 ```
 
 ## Actors
 
-To process messages from an observable you have to define an Actor that know how to react on incoming messages.
+To process messages from an observable you define an Actor that knows how to react to incoming messages.
 
-```Julia
+```julia
 struct MyActor <: Rocket.Actor{Int} end
 
 Rocket.on_next!(actor::MyActor, data::Int) = doSomethingWithMyData(data)
@@ -121,9 +121,9 @@ Rocket.on_error!(actor::MyActor, error)    = doSomethingWithAnError(error)
 Rocket.on_complete!(actor::MyActor)        = println("Completed!")
 ```
 
-Actor can also have its own local state
+An actor can also have its own local state.
 
-```Julia
+```julia
 struct StoreActor{D} <: Rocket.Actor{D}
     values :: Vector{D}
 
@@ -135,15 +135,15 @@ Rocket.on_error!(actor::StoreActor, error)             = doSomethingWithAnError(
 Rocket.on_complete!(actor::StoreActor)                 = println("Completed: $(actor.values)")
 ```
 
-For debugging purposes you can use a general `LambdaActor` actor or just pass a function object as an actor in `subscribe!` function.
+For debugging purposes you can use a general `LambdaActor` actor, or just pass a function object as an actor in the `subscribe!` function.
 
 ## Operators
 
-What makes Rocket.jl powerful is its ability to help you process, transform and modify the messages flow through your observables using __Operators__.
+What makes Rocket.jl powerful is its ability to help you process, transform, and modify the messages that flow through your observables using __Operators__.
 
-List of all available operators can be found in the documentation ([link](https://reactivebayes.github.io/Rocket.jl/stable/operators/all/)).
+A list of all available operators can be found in the documentation ([link](https://reactivebayes.github.io/Rocket.jl/stable/operators/all/)).
 
-```Julia
+```julia
 squared_int_values = source_of_int_values |> map(Int, (d) -> d ^ 2)
 subscribe!(squared_int_values, lambda(
     on_next = (data) -> println(data)

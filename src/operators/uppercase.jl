@@ -6,11 +6,11 @@ import Base: show
 """
     uppercase()
 
-Creates an uppercase operator, which forces each value to be in upper case
+Creates an uppercase operator, which converts each value to upper case.
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where L referes to type of data of input Observable
+Stream of type `<: Subscribable{L}` where `L` refers to the type of data of the input Observable.
 
 # Examples
 

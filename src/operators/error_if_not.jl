@@ -14,7 +14,7 @@ Note: `error_if_not` is an alias for `error_if` operator with inverted `checkFn`
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

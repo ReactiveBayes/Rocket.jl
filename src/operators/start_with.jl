@@ -7,7 +7,7 @@ Creates a `start_with` operator, which forces an observable to emit given `objec
 
 # Producing
 
-Stream of type `<: Subscribable{Union{L, O}}` where `L` refers to type of source stream `<: Subscribable{L}`
+Stream of type `<: Subscribable{Union{L, O}}` where `L` refers to the type of the source stream `<: Subscribable{L}`
 
 # Examples
 ```jldoctest

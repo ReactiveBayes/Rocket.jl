@@ -5,12 +5,12 @@ import Base: show
 """
     some()
 
-Creates a some operator, which filters out `nothing` items by the source Observable by emitting only
-those that not equal to `nothing`.
+Creates a some operator, which filters out `nothing` items from the source Observable, emitting only
+those that are not equal to `nothing`.
 
 # Producing
 
-Stream of type `<: Subscribable{L}` where `L` refers to type of source stream `<: Subscribable{Union{L, Nothing}}`
+Stream of type `<: Subscribable{L}` where `L` refers to the type of the source stream `<: Subscribable{Union{L, Nothing}}`
 
 # Examples
 ```jldoctest

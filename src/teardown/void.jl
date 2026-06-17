@@ -5,8 +5,8 @@ import Base: ==
 """
     VoidTeardown()
 
-VoidTeardown object does nothing on unsubscription.
-It is usefull for synchronous observables and observables which cannot be cancelled after execution.
+A `VoidTeardown` object does nothing on unsubscription.
+It is useful for synchronous observables and for observables that cannot be cancelled after execution.
 
 See also: [`Teardown`](@ref), [`VoidTeardownLogic`](@ref)
 """

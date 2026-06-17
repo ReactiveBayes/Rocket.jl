@@ -2,7 +2,7 @@
 
 An __Actor__ is the most primitive unit of computation: it receives a message and performs a computation.
 
-An actor is analogous to an object in an object-oriented languages. An object receives a message (a method call) and does something depending on which message it receives (the method we are calling). The main difference is that actors are completely isolated from each other, and they will never share memory. It’s also worth mentioning that an actor can maintain a private state that should never be changed directly by another actor.
+An actor is analogous to an object in object-oriented languages. An object receives a message (a method call) and does something depending on which message it receives (the method we are calling). The main difference is that actors are completely isolated from each other and never share memory. It is also worth mentioning that an actor can maintain a private state that should never be changed directly by another actor.
 
 For a quick introduction to Actor models, see [this article](https://www.brianstorti.com/the-actor-model/).
 
@@ -38,7 +38,7 @@ println(keep_actor.values)
 # [1, 2, 3]
 ```
 
-An actor may be not interested in the values itself, but merely the completion of an event. In this case, Rocket.jl provides a [`CompletionActor`](@ref) abstract type.
+An actor may not be interested in the values themselves, but only in the completion event. In this case, Rocket.jl provides a [`CompletionActor`](@ref) abstract type.
 See also [`NextActor`](@ref) and [`ErrorActor`](@ref).
 
 ```julia
@@ -55,7 +55,7 @@ subscribe!(source, CompletionNotificationActor());
 # Completed
 ```
 
-It is also possible to use Julia's multiple dispatch feature and dispatch on type of the event
+It is also possible to use Julia's multiple dispatch feature and dispatch on the type of the event.
 
 ```julia
 using Rocket
@@ -78,8 +78,8 @@ subscribe!(source, MyCustomActor());
 
 ## Lambda actor
 
-For debugging purposes it may be convenient to work with a [`LambdaActor`](@ref). This provides an interface that defines callbacks for "next", "error" and "complete" events.
-But this generic actor does not allow to dispatch on the type of the event.
+For debugging purposes it may be convenient to work with a [`LambdaActor`](@ref). This provides an interface that defines callbacks for "next", "error", and "complete" events.
+This generic actor does not allow you to dispatch on the type of the event.
 
 ```julia
 using Rocket
@@ -101,7 +101,7 @@ subscribe!(source, lambda(
 
 ## Function actor
 
-Sometimes it is convenient to pass only `on_next` callback. Rocket.jl provides a `FunctionActor` which automatically converts any function object passed in the `subscribe!` function to a proper actor which listens only for data events, throws an exception on error event and ignores completion message.
+Sometimes it is convenient to pass only an `on_next` callback. Rocket.jl provides a `FunctionActor`, which automatically converts any function object passed to the `subscribe!` function into a proper actor. This actor listens only for data events, throws an exception on an error event, and ignores the completion message.
 
 ```julia
 using Rocket

@@ -13,7 +13,7 @@ The enumerate operator is similar to `scan(Tuple{Int, Int}, (d, c) -> (d, c[2] +
 
 # Producing
 
-Stream of type `<: Subscribable{Tuple{Int, L}}` where `L` refers to type of source stream
+Stream of type `<: Subscribable{Tuple{Int, L}}` where `L` refers to the type of the source stream
 
 # Examples
 ```jldoctest

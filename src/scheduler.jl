@@ -2,71 +2,78 @@
 """
     AbstractScheduler
 
-Documentation placeholder for AbstractScheduler
+Abstract supertype for all schedulers. A scheduler controls how and when an observable
+delivers its actions: the initial subscription and each `next`, `error`, and `complete`
+event. The default scheduler for almost all observables is [`AsapScheduler`](@ref), which
+runs every action as soon as possible.
 
-See also: [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
+See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 abstract type AbstractScheduler end
 
 """
-    getscheduler
+    getscheduler(scheduler)
 
-Documentation placeholder for getscheduler
+Returns the scheduler instance associated with the given object. Most schedulers simply
+return themselves.
 
-See also: [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
+See also: [`AbstractScheduler`](@ref)
 """
 function getscheduler end
 
 """
-    scheduled_subscription!
+    scheduled_subscription!(source, actor, instance)
 
-Documentation placeholder for scheduled_subscription!
+Performs the subscription of `actor` to `source` according to the scheduler `instance`.
+This is the entry point that a scheduler uses to control when and how a subscription happens.
 
 See also: [`getscheduler`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 function scheduled_subscription! end
 
 """
-    scheduled_next!
+    scheduled_next!(actor, value, instance)
 
-Documentation placeholder for scheduled_next!
+Delivers a `next` event with the given `value` to `actor` according to the scheduler `instance`.
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_error!`](@ref), [`scheduled_complete!`](@ref)
 """
 function scheduled_next! end
 
 """
-    scheduled_error!
+    scheduled_error!(actor, err, instance)
 
-Documentation placeholder for scheduled_error!
+Delivers an `error` event with the given `err` to `actor` according to the scheduler `instance`.
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_complete!`](@ref)
 """
 function scheduled_error! end
 
 """
-    scheduled_complete!
+    scheduled_complete!(actor, instance)
 
-Documentation placeholder for scheduled_complete!
+Delivers a `complete` event to `actor` according to the scheduler `instance`.
 
 See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
 """
 function scheduled_complete! end
 
 """
-    makeinstance
+    makeinstance(::Type{L}, scheduler)
 
-Documentation placeholder for makeinstance
+Creates a per-subscription scheduler instance for the data type `L`. Stateless schedulers
+usually return themselves, while stateful ones return a fresh instance for each subscription.
 
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
+See also: [`instancetype`](@ref), [`getscheduler`](@ref)
 """
 function makeinstance end
 
 """
-    instancetype
+    instancetype(::Type{L}, ::Type{S})
 
-Documentation placeholder for makeinstance
+Returns the type of the scheduler instance produced by [`makeinstance`](@ref) for the data
+type `L` and the scheduler type `S`.
 
-See also: [`getscheduler`](@ref), [`scheduled_subscription!`](@ref), [`scheduled_next!`](@ref), [`scheduled_error!`](@ref)
+See also: [`makeinstance`](@ref), [`getscheduler`](@ref)
 """
 function instancetype end

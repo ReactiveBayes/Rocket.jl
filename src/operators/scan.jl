@@ -6,9 +6,9 @@ import Base: show
     scan(::Type{R}, scanFn::F, seed::R) where { R, F <: Function }
     scan(scanFn::F) where { F <: Function }
 
-Creates a scan operator, which applies a given accumulator `scanFn` function to each value emmited by the source
-Observable, and returns each intermediate result with an optional seed value. If a seed value is specified,
-then that value will be used as the initial value for the accumulator.
+Creates a scan operator, which applies a given accumulator `scanFn` function to each value emitted by the source
+Observable and returns each intermediate result together with an optional seed value. If a seed value is specified,
+then that value is used as the initial value for the accumulator.
 If no seed value is specified, the first item of the source is used as the seed.
 
 # Arguments
