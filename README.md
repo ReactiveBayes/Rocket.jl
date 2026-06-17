@@ -83,6 +83,10 @@ $ julia make.jl
 
 in the `docs/` directory to build a local version of the documentation.
 
+## Integration with Makie & Observables.jl
+
+Rocket.jl ships a package extension that, when [Observables.jl](https://github.com/JuliaGizmos/Observables.jl) is loaded, provides a bidirectional compatibility layer with the reactive primitive behind the [Makie](https://docs.makie.org/) ecosystem. A Rocket source (subject or operator pipeline) can be converted into an `Observable` that drives a Makie plot, and any Makie `Observable` can be consumed directly by Rocket's `subscribe!` and operators — letting you build rich, RxJS-inspired reactive logic on top of Makie widgets. See the [Makie & Observables.jl guide](https://reactivebayes.github.io/Rocket.jl/stable/integrations/observables/) for runnable examples.
+
 ## First example
 
 Normally you use arrays to process data.
