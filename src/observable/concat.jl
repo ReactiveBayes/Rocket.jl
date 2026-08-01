@@ -97,7 +97,7 @@ function on_complete!(actor::ConcatInnerActor)
     else
         set_current_index!(actor, cindex + 1)
         subscription = subscribe!(actor.sources[cindex+1], actor)
-        if get_current_index(actor) === cindex
+        if get_current_index(actor) === cindex + 1
             set_subscription!(actor, subscription)
         end
     end
