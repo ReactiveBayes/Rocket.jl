@@ -69,7 +69,7 @@ end
 
 on_next!(actor::AccumulatedActor{L}, data::L) where {L} = begin
     push!(actor.values, data);
-    next!(actor.actor, actor.values)
+    next!(actor.actor, copy(actor.values))
 end
 on_error!(actor::AccumulatedActor, err) = error!(actor.actor, err)
 on_complete!(actor::AccumulatedActor) = complete!(actor.actor)
