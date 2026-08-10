@@ -13,15 +13,20 @@ See also: [`Actor`](@ref), [`server`](@ref)
 struct ServerActor{D,A,P} <: Actor{D}
     server::Sockets.TCPServer
     sockets::Vector{Sockets.TCPSocket}
+    # Guards `sockets`: the background accept task and the broadcasting callbacks
+    # structurally mutate this vector from separate tasks (issue #75).
+    sockets_lock::ReentrantLock
 
     ServerActor{D,A,P}() where {D,A,P} = begin
-        self = new(listen(A, P), Vector{Sockets.TCPSocket}())
+        self = new(listen(A, P), Vector{Sockets.TCPSocket}(), ReentrantLock())
 
         @async begin
             while true
                 listener = accept(self.server)
-                push!(self.sockets, listener)
-                filter!(socket -> isopen(socket), self.sockets)
+                lock(self.sockets_lock) do
+                    push!(self.sockets, listener)
+                    filter!(socket -> isopen(socket), self.sockets)
+                end
             end
         end
 
@@ -30,16 +35,22 @@ struct ServerActor{D,A,P} <: Actor{D}
 end
 
 function on_next!(actor::ServerActor, data)
-    filter!(socket -> __send_next(socket, data), actor.sockets)
+    lock(actor.sockets_lock) do
+        filter!(socket -> __send_next(socket, data), actor.sockets)
+    end
 end
 
 function on_error!(actor::ServerActor, err)
-    foreach(socket -> __send_error(socket, err), actor.sockets)
+    lock(actor.sockets_lock) do
+        foreach(socket -> __send_error(socket, err), actor.sockets)
+    end
     close(actor.server)
 end
 
 function on_complete!(actor::ServerActor)
-    foreach(socket -> __send_complete(socket), actor.sockets)
+    lock(actor.sockets_lock) do
+        foreach(socket -> __send_complete(socket), actor.sockets)
+    end
     close(actor.server)
 end
 
