@@ -7,6 +7,10 @@ mutable struct SubstituteActor{L,R,F,A} <: Actor{L}
     actor::A
     pending::Union{Nothing,L}
     current::Union{Nothing,R}
+    # explicit "has value" flags instead of using `nothing` as a sentinel, so that a
+    # legitimate `nothing` payload/result is not treated as "no value yet" (issue #77)
+    haspending::Bool
+    hascurrent::Bool
     handler::Any
 end
 
@@ -101,21 +105,23 @@ struct SubstituteProxy{L,R,F} <: ActorSourceProxy
 end
 
 actor_proxy!(::Type{R}, proxy::SubstituteProxy{L,R,F}, actor::A) where {L,R,F,A} =
-    SubstituteActor{L,R,F,A}(proxy.mapFn, actor, nothing, nothing, nothing)
+    SubstituteActor{L,R,F,A}(proxy.mapFn, actor, nothing, nothing, false, false, nothing)
 
 function release!(actor::SubstituteActor)
-    if actor.pending !== nothing
+    if actor.haspending
         actor.current = actor.mapFn(actor.pending)
+        actor.hascurrent = true
     end
     return nothing
 end
 
 function on_next!(actor::SubstituteActor{L}, data::L) where {L}
     actor.pending = data
-    if actor.current === nothing
+    actor.haspending = true
+    if !actor.hascurrent
         release!(actor)
     end
-    if actor.current !== nothing
+    if actor.hascurrent
         next!(actor.actor, actor.current)
     end
 end

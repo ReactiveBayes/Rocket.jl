@@ -47,6 +47,7 @@ doctest(Rocket)
     include("./observable/test_observable_defer.jl")
     include("./observable/test_observable_zipped.jl")
     include("./observable/test_observable_network.jl")
+    include("./observable/test_observable_file.jl")
 
     include("./test_subject.jl")
     include("./subjects/test_subject.jl")
@@ -110,6 +111,7 @@ doctest(Rocket)
     include("./operators/test_operator_pairwise.jl")
     include("./operators/test_operator_substitute.jl")
     include("./operators/test_operator_override.jl")
+    include("./operators/test_operator_debounce_time.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0

@@ -46,7 +46,11 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
 concat() = error("concat operator expects at least one inner observable on input")
 concat(args...) = concat(args)
-concat(sources::S) where {S<:Tuple} = ConcatObservable{union_type(sources),S}(sources)
+function concat(sources::S) where {S<:Tuple}
+    isempty(sources) &&
+        error("concat operator expects at least one inner observable on input")
+    return ConcatObservable{union_type(sources),S}(sources)
+end
 
 ##
 
@@ -97,7 +101,7 @@ function on_complete!(actor::ConcatInnerActor)
     else
         set_current_index!(actor, cindex + 1)
         subscription = subscribe!(actor.sources[cindex+1], actor)
-        if get_current_index(actor) === cindex
+        if get_current_index(actor) === cindex + 1
             set_subscription!(actor, subscription)
         end
     end

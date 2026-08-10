@@ -59,19 +59,22 @@ end
 struct PairwiseProxy{L} <: ActorProxy end
 
 actor_proxy!(::Type{Tuple{L,L}}, ::PairwiseProxy{L}, actor::A) where {L,A} =
-    PairwiseActor{L,A}(actor, nothing)
+    PairwiseActor{L,A}(actor, nothing, false)
 
 mutable struct PairwiseActor{L,A} <: Actor{L}
     actor::A
     previous::Union{Nothing,L}
+    # explicit "has a previous value" flag instead of using `nothing` as a sentinel,
+    # so that a legitimate `nothing` payload is not mistaken for "no value yet" (issue #77)
+    hasprevious::Bool
 end
 
 function on_next!(actor::PairwiseActor{L}, data::L) where {L}
-    previous = actor.previous
-    actor.previous = data
-    if !isnothing(previous)
-        next!(actor.actor, (previous, data))
+    if actor.hasprevious
+        next!(actor.actor, (actor.previous, data))
     end
+    actor.previous = data
+    actor.hasprevious = true
 end
 
 on_error!(actor::PairwiseActor, err) = error!(actor.actor, err)
