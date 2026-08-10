@@ -124,6 +124,7 @@ makedocs(
                     "`tap_on_unsubscribe`" => "operators/utility/tap_on_unsubscribe.md",
                     "`tap_on_complete`" => "operators/utility/tap_on_complete.md",
                     "delay" => "operators/utility/delay.md",
+                    "debounce_time" => "operators/utility/debounce_time.md",
                     "safe" => "operators/utility/safe.md",
                     "noop" => "operators/utility/noop.md",
                     "ref_count" => "operators/utility/ref_count.md",
