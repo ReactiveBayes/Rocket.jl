@@ -169,6 +169,26 @@ include("../test_helpers.jl")
         @test values == []
     end
 
+    @testset "Issue #71: unsubscribe tears down the active (second) source" begin
+        s1 = Subject(Int)
+        s2 = Subject(Int)
+
+        source = concat(s1, s2)
+        values = Int[]
+        subscription = subscribe!(source, lambda(on_next = (d) -> push!(values, d)))
+
+        next!(s1, 1)
+        complete!(s1)   # concat advances to the second source
+
+        next!(s2, 2)
+        @test values == [1, 2]
+
+        unsubscribe!(subscription)   # must detach the currently active second source
+
+        next!(s2, 3)   # dropped: previously leaked through as [1, 2, 3]
+        @test values == [1, 2]
+    end
+
 end
 
 end
