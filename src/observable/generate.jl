@@ -16,6 +16,12 @@ Generates an observable sequence by running a state-driven loop producing the se
 # Note
 `iterator` object should return objects of the same type as `initial`.
 
+!!! note
+    `condition` must eventually return `false`. Generation runs synchronously while
+    subscribing under the default `AsapScheduler`, so `subscribe!` does not return until the
+    loop terminates; a `condition` that never returns `false` blocks indefinitely and cannot
+    be unsubscribed. Use [`timer`](@ref)/[`interval`](@ref) for genuinely infinite streams.
+
 # Examples
 
 ```jldoctest
