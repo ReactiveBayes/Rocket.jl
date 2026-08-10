@@ -58,9 +58,22 @@ function on_subscribe!(
                 elseif count === -1
                     error!(actor, ErrorException("NetworkObservableError"))
                     return nothing
+                elseif count < 0 || count > S
+                    # Reject a peer-supplied length outside the receive buffer instead of
+                    # reading it unchecked into a fixed-size buffer (issue #73).
+                    error!(
+                        actor,
+                        ErrorException(
+                            "NetworkObservable received an out-of-range length prefix $count (allowed range is 1:$S)",
+                        ),
+                    )
+                    return nothing
                 else
                     unsafe_read(clientside, pointer(buffer), count * sizeof(D))
-                    next!(actor, unsafe_wrap(Vector{D}, pointer(buffer), count))
+                    # Emit an independent copy: the receive buffer is reused for every
+                    # message, so emitting a view into it would alias/overwrite previously
+                    # emitted arrays (issue #72).
+                    next!(actor, copyto!(Vector{D}(undef, count), 1, buffer, 1, count))
                 end
             end
         catch err

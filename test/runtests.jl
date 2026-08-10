@@ -46,6 +46,7 @@ doctest(Rocket)
     include("./observable/test_observable_generate.jl")
     include("./observable/test_observable_defer.jl")
     include("./observable/test_observable_zipped.jl")
+    include("./observable/test_observable_network.jl")
     include("./observable/test_observable_file.jl")
 
     include("./test_subject.jl")
