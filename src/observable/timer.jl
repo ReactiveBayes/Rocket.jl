@@ -133,7 +133,7 @@ end
 
 
 Base.:(==)(t1::TimerObservable, t2::TimerObservable) =
-    getdelay_ms(t1) == getdelay_ms(t1) && getperiod_ms(t1) == getperiod_ms(t2)
+    getdelay_ms(t1) == getdelay_ms(t2) && getperiod_ms(t1) == getperiod_ms(t2)
 
 Base.show(io::IO, observable::TimerObservable) =
     print(io, "TimerObservable($(getdelay_ms(observable)), $(getperiod_ms(observable)))")
