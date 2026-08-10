@@ -11,6 +11,7 @@ include("../test_helpers.jl")
 
     @testset begin
         @test_throws ErrorException concat()
+        @test_throws ErrorException concat(())   # issue #78: explicit empty tuple
     end
 
     run_testset([

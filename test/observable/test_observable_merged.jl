@@ -50,6 +50,28 @@ include("../test_helpers.jl")
         ),
     ])
 
+    @testset "Issue #70: no emissions from siblings after an inner source errors" begin
+        sub_a = Subject(Int)
+        sub_b = Subject(Int)
+
+        out = Any[]
+        subscription = subscribe!(
+            merged((sub_a, sub_b)),
+            lambda(
+                on_next = v -> push!(out, (:next, v)),
+                on_error = e -> push!(out, (:error, e)),
+            ),
+        )
+
+        error!(sub_a, ErrorException("boomA"))
+        next!(sub_b, 123)   # must be dropped: the stream is already terminated
+
+        @test count(x -> x[1] === :next, out) == 0
+        @test count(x -> x[1] === :error, out) == 1
+
+        unsubscribe!(subscription)
+    end
+
 end
 
 end

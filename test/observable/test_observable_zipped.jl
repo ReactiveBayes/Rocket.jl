@@ -11,6 +11,8 @@ include("../test_helpers.jl")
 
     @testset begin
         @test_throws ErrorException zipped()
+        @test_throws ErrorException zipped(())          # issue #78: explicit empty tuple
+        @test_throws ErrorException zipped(Vector{Any}())  # issue #78: explicit empty vector
     end
 
     @testset begin

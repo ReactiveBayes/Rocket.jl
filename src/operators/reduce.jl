@@ -128,23 +128,26 @@ struct ReduceNoSeedProxy{F} <: ActorProxy
 end
 
 actor_proxy!(::Type{L}, proxy::ReduceNoSeedProxy{F}, actor::A) where {L,A,F} =
-    ReduceNoSeedActor{L,A,F}(proxy.reduceFn, actor, nothing)
+    ReduceNoSeedActor{L,A,F}(proxy.reduceFn, actor, nothing, false)
 
 mutable struct ReduceNoSeedActor{L,A,F} <: Actor{L}
     reduceFn::F
     actor::A
     current::Union{L,Nothing}
+    # explicit "has a current value" flag instead of using `nothing` as a sentinel,
+    # so that a legitimate `nothing` payload is not dropped as "no value yet" (issue #77)
+    hascurrent::Bool
 end
 
 getcurrent(actor::ReduceNoSeedActor) = actor.current
 setcurrent!(actor::ReduceNoSeedActor, value) = actor.current = value
 
 function on_next!(actor::ReduceNoSeedActor{L}, data::L) where {L}
-    current = getcurrent(actor)
-    if current === nothing
+    if !actor.hascurrent
         setcurrent!(actor, data)
+        actor.hascurrent = true
     else
-        setcurrent!(actor, actor.reduceFn(data, current))
+        setcurrent!(actor, actor.reduceFn(data, getcurrent(actor)))
     end
 end
 
@@ -153,9 +156,8 @@ function on_error!(actor::ReduceNoSeedActor, err)
 end
 
 function on_complete!(actor::ReduceNoSeedActor)
-    current = getcurrent(actor)
-    if current !== nothing
-        next!(actor.actor, current)
+    if actor.hascurrent
+        next!(actor.actor, getcurrent(actor))
     end
     complete!(actor.actor)
 end

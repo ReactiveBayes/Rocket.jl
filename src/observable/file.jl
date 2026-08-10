@@ -15,12 +15,25 @@ struct SyncFileObservable <: Subscribable{String}
 end
 
 function on_subscribe!(observable::SyncFileObservable, actor)
-    f = open(observable.path, "r")
-    for line in eachline(f)
-        next!(actor, line)
+    # Deliver an open failure (missing file / permissions) via `error!` instead of letting
+    # it propagate raw out of `on_subscribe!`, and always close the handle (issue #79).
+    local f
+    try
+        f = open(observable.path, "r")
+    catch err
+        error!(actor, err)
+        return voidTeardown
     end
-    complete!(actor)
-    close(f)
+    try
+        for line in eachline(f)
+            next!(actor, line)
+        end
+        complete!(actor)
+    catch err
+        error!(actor, err)
+    finally
+        close(f)
+    end
     return voidTeardown
 end
 

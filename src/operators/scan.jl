@@ -121,23 +121,26 @@ struct ScanNoSeedProxy{F} <: ActorProxy
 end
 
 actor_proxy!(::Type{L}, proxy::ScanNoSeedProxy{F}, actor::A) where {L,A,F} =
-    ScanNoSeedActor{L,A,F}(proxy.scanFn, actor, nothing)
+    ScanNoSeedActor{L,A,F}(proxy.scanFn, actor, nothing, false)
 
 mutable struct ScanNoSeedActor{L,A,F} <: Actor{L}
     scanFn::F
     actor::A
     current::Union{L,Nothing}
+    # explicit "has a current value" flag instead of using `nothing` as a sentinel,
+    # so that a legitimate `nothing` payload is not dropped as "no value yet" (issue #77)
+    hascurrent::Bool
 end
 
 getcurrent(actor::ScanNoSeedActor) = actor.current
 setcurrent!(actor::ScanNoSeedActor, value) = actor.current = value
 
 function on_next!(actor::ScanNoSeedActor{L}, data::L) where {L}
-    current = getcurrent(actor)
-    if current === nothing
+    if !actor.hascurrent
         setcurrent!(actor, data)
+        actor.hascurrent = true
     else
-        setcurrent!(actor, actor.scanFn(data, current))
+        setcurrent!(actor, actor.scanFn(data, getcurrent(actor)))
     end
     next!(actor.actor, getcurrent(actor))
 end
