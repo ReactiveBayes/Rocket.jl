@@ -109,6 +109,7 @@ doctest(Rocket)
     include("./operators/test_operator_pairwise.jl")
     include("./operators/test_operator_substitute.jl")
     include("./operators/test_operator_override.jl")
+    include("./operators/test_operator_debounce_time.jl")
 
     @testset "Detect ambiguities" begin
         @test length(Test.detect_ambiguities(Rocket)) == 0
