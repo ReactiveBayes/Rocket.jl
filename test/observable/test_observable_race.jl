@@ -11,6 +11,8 @@ include("../test_helpers.jl")
 
     @testset begin
         @test_throws ErrorException race()
+        @test_throws ErrorException race(())          # issue #78: explicit empty tuple
+        @test_throws ErrorException race(Vector{Any}())  # issue #78: explicit empty vector
     end
 
     run_testset([

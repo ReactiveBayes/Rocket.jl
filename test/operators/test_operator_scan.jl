@@ -34,6 +34,17 @@ include("../test_helpers.jl")
         (source = never() |> scan(+), values = @ts()),
     ])
 
+    @testset "Issue #77: no-seed scan does not treat a real `nothing` as a missing seed" begin
+        values = Any[]
+        subscribe!(
+            from(Any[nothing, 1, 2]) |> scan((d, c) -> (d, c)),
+            lambda(on_next = v -> push!(values, v)),
+        )
+        # previously the leading `nothing` was mistaken for "no seed yet", so `1` was
+        # re-used as the seed and the (1, nothing) accumulation step was lost
+        @test values == [nothing, (1, nothing), (2, (1, nothing))]
+    end
+
 end
 
 end

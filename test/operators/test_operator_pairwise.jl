@@ -65,4 +65,14 @@ end
           [(1, 2), (2, 3), (3, 4), (4, 5), (5, 6), (6, 7), (7, 8), (8, 9), (9, 10)]
 end
 
+@testset "Issue #77: real `nothing` payloads are not treated as 'no value yet'" begin
+    values = Any[]
+    subscribe!(
+        from(Any[1, nothing, 2]) |> pairwise(),
+        lambda(on_next = v -> push!(values, v)),
+    )
+    # previously the `(nothing, 2)` pair was silently dropped
+    @test values == [(1, nothing), (nothing, 2)]
+end
+
 end

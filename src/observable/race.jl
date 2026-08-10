@@ -44,8 +44,16 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
 race() = error("race operator expects at least one inner observable on input")
 race(args...) = race(args)
-race(sources::S) where {S<:Tuple} = RaceObservable{union_type(sources),S}(sources)
-race(sources::V) where {V<:Vector} = RaceObservable{union_type(sources),V}(sources)
+function race(sources::S) where {S<:Tuple}
+    isempty(sources) &&
+        error("race operator expects at least one inner observable on input")
+    return RaceObservable{union_type(sources),S}(sources)
+end
+function race(sources::V) where {V<:Vector}
+    isempty(sources) &&
+        error("race operator expects at least one inner observable on input")
+    return RaceObservable{union_type(sources),V}(sources)
+end
 
 ##
 

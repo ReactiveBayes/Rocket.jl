@@ -29,6 +29,16 @@ include("../test_helpers.jl")
         (source = faulted("e") |> reduce(+), values = @ts(e("e"))),
         (source = never() |> reduce(+), values = @ts()),
     ])
+
+    @testset "Issue #77: no-seed reduce does not treat a real `nothing` as a missing seed" begin
+        values = Any[]
+        subscribe!(
+            from(Any[nothing, 1, 2]) |> reduce((d, c) -> (d, c)),
+            lambda(on_next = v -> push!(values, v)),
+        )
+        # previously the leading `nothing` was mistaken for "no seed yet"
+        @test values == [(2, (1, nothing))]
+    end
 end
 
 end

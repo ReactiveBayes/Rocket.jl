@@ -60,8 +60,16 @@ See also: [`Subscribable`](@ref), [`subscribe!`](@ref)
 """
 zipped() = error("zipped operator expects at least one inner observable on input")
 zipped(args...) = zipped(args)
-zipped(sources::S) where {S<:Tuple} = ZipObservable{combined_type(sources),S}(sources)
-zipped(sources::V) where {V<:Vector} = ZipObservable{combined_type(sources),V}(sources)
+function zipped(sources::S) where {S<:Tuple}
+    isempty(sources) &&
+        error("zipped operator expects at least one inner observable on input")
+    return ZipObservable{combined_type(sources),S}(sources)
+end
+function zipped(sources::V) where {V<:Vector}
+    isempty(sources) &&
+        error("zipped operator expects at least one inner observable on input")
+    return ZipObservable{combined_type(sources),V}(sources)
+end
 
 ##
 

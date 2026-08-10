@@ -5,19 +5,22 @@ import Base: show, similar
 mutable struct PendingActor{L,A} <: Actor{L}
     actor::A
     last::Union{Nothing,L}
+    # explicit "has a pending value" flag instead of using `nothing` as a sentinel, so
+    # that a legitimate `nothing` payload is not treated as "no value yet" (issue #77)
+    haslast::Bool
 end
 
-make_pending_actor(::Type{L}, actor::A) where {L,A} = PendingActor{L,A}(actor, nothing)
+make_pending_actor(::Type{L}, actor::A) where {L,A} = PendingActor{L,A}(actor, nothing, false)
 
 getlast(actor::PendingActor) = actor.last
-setlast!(actor::PendingActor, last) = actor.last = last
+setlast!(actor::PendingActor, last) = (actor.last = last; actor.haslast = true)
+resetlast!(actor::PendingActor) = (actor.last = nothing; actor.haslast = false)
 
 function release!(actor::PendingActor, reset::Bool)
-    last = getlast(actor)
-    if last !== nothing
+    if actor.haslast
         next!(actor.actor, getlast(actor))
         if reset
-            setlast!(actor, nothing)
+            resetlast!(actor)
         end
     end
 end

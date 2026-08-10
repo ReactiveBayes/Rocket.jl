@@ -13,29 +13,58 @@ end
 function on_subscribe!(observable::MergeObservable{D}, actor) where {D}
     merge_main = __make_merge_main_actor(D, actor, length(observable.sources))
 
-    subscriptions = map(enumerate(observable.sources)) do (index, source)
-        return subscribe!(source, __make_merge_child_actor_factory(index, merge_main))
+    for (index, source) in enumerate(observable.sources)
+        subscription =
+            subscribe!(source, __make_merge_child_actor_factory(index, merge_main))
+        push!(merge_main.subscriptions, subscription)
+        # a source may terminate the stream synchronously during `subscribe!`
+        # (e.g. an immediate error); stop subscribing the rest in that case
+        if merge_main.isdisposed
+            break
+        end
     end
 
-    return MergeSubscription(subscriptions)
+    return MergeSubscription(merge_main)
 end
 
 # -------------------- #
 # Merge main actor     #
 # -------------------- #
 
-struct MergeMainActor{D,A} <: Actor{D}
+mutable struct MergeMainActor{D,A} <: Actor{D}
     actor::A
     completion_status::BitArray{1}
+    subscriptions::Vector{Teardown}
+    isdisposed::Bool
 end
 
 __make_merge_main_actor(::Type{D}, actor::A, length::Int) where {D,A} =
-    MergeMainActor{D,A}(actor, falses(length))
+    MergeMainActor{D,A}(actor, falses(length), Vector{Teardown}(), false)
 
-on_next!(actor::MergeMainActor{D}, data::L) where {D,L<:D} = next!(actor.actor, data)
-on_error!(actor::MergeMainActor, err) = error!(actor.actor, err)
+# Dispose every child subscription and mark the stream terminated so that no further
+# child events are forwarded downstream after an error/completion (issue #70).
+function __dispose_merge(actor::MergeMainActor)
+    if !actor.isdisposed
+        actor.isdisposed = true
+        foreach(unsubscribe!, actor.subscriptions)
+    end
+    return nothing
+end
+
+on_next!(actor::MergeMainActor{D}, data::L) where {D,L<:D} = begin
+    if !actor.isdisposed
+        next!(actor.actor, data)
+    end
+end
+on_error!(actor::MergeMainActor, err) = begin
+    if !actor.isdisposed
+        __dispose_merge(actor)
+        error!(actor.actor, err)
+    end
+end
 on_complete!(actor::MergeMainActor) = begin
-    if all(actor.completion_status)
+    if !actor.isdisposed && all(actor.completion_status)
+        __dispose_merge(actor)
         complete!(actor.actor)
     end
 end
@@ -69,14 +98,13 @@ create_actor(::Type{L}, factory::MergeChildActorFactory{I,A}) where {L,I,A} =
 # Merge subscription   #
 # -------------------- #
 
-struct MergeSubscription{S} <: Teardown
-    subscriptions::S
+struct MergeSubscription{M} <: Teardown
+    main::M
 end
 
 as_teardown(::Type{<:MergeSubscription}) = UnsubscribableTeardownLogic()
 
-on_unsubscribe!(subscription::MergeSubscription) =
-    foreach(s -> unsubscribe!(s), subscription.subscriptions)
+on_unsubscribe!(subscription::MergeSubscription) = __dispose_merge(subscription.main)
 
 """
     merged(sources::T) where { T <: Tuple }
