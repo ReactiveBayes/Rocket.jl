@@ -35,6 +35,26 @@ include("../test_helpers.jl")
         (source = never(Int) |> accumulated(), values = @ts(), source_type = Vector{Int}),
     ])
 
+    @testset "Issue #74: copy keyword controls snapshot aliasing" begin
+        # copy = true (default): every retained emission is an independent snapshot
+        let retained = Vector{Vector{Int}}()
+            subscribe!(from(1:4) |> accumulated(), lambda(on_next = v -> push!(retained, v)))
+            @test retained == [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4]]
+            @test retained[1] == [1]                 # unchanged after later emissions
+            @test retained[1] !== retained[end]      # distinct objects
+        end
+
+        # copy = false: the live accumulator is forwarded by reference (documented gotcha)
+        let retained = Vector{Vector{Int}}()
+            subscribe!(
+                from(1:4) |> accumulated(copy = false),
+                lambda(on_next = v -> push!(retained, v)),
+            )
+            @test all(x -> x === retained[1], retained)  # all alias one growing vector
+            @test retained[1] == [1, 2, 3, 4]            # reflects final accumulated state
+        end
+    end
+
 end
 
 end
