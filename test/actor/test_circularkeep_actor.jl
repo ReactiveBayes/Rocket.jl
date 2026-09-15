@@ -1,4 +1,4 @@
-module RocketKeepActorTest
+module RocketCircularKeepActorTest
 
 using Test
 using Rocket
