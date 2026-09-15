@@ -49,12 +49,21 @@ jobs:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@v1
+      # `julia-actions/julia-runtest` always forwards `julia_args` to `Pkg.test`, which is
+      # unsupported (and emits a warning) before Julia 1.6, so older versions call `Pkg.test` directly
       - uses: julia-actions/julia-runtest@v1
+        if: ${{ !contains(fromJSON('["1.3", "1.4", "1.5"]'), matrix.version) }}
+        env:
+          USE_DEV: "false"
+          LOG_USING_RXINFER: "false"
+      - name: Run tests (Julia < 1.6)
+        if: ${{ contains(fromJSON('["1.3", "1.4", "1.5"]'), matrix.version) }}
+        run: julia --color=yes --project=@. -e 'using Pkg; Pkg.test(coverage=true)'
         env:
           USE_DEV: "false"
           LOG_USING_RXINFER: "false"
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v7
         with:
           files: lcov.info
         env:
