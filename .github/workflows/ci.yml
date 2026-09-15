@@ -8,7 +8,7 @@ on:
       - main
     tags: '*'
   schedule:
-    - cron: '44 9 16 * *' # run the cron job one time per month
+    - cron: '44 9 * * 1' # run the cron job one time per week, on Mondays
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -27,11 +27,21 @@ jobs:
           - '1.10'
           - '1.11'
           - '1.12'
-          - 'nightly'
+          - '1.13'
         os:
           - ubuntu-latest
         arch:
           - x64
+        experimental:
+          - false
+        include:
+          # `nightly` is informational only, it is allowed to fail without
+          # failing the whole run (and without blocking the `docs` job)
+          - version: 'nightly'
+            os: ubuntu-latest
+            arch: x64
+            experimental: true
+    continue-on-error: ${{ matrix.experimental }}
     steps:
       - uses: actions/checkout@v5
       - uses: julia-actions/setup-julia@v3
