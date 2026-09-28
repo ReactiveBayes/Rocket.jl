@@ -59,21 +59,22 @@ collectLatest(
 ## 
 
 # Mutable, so an actor holding it stays small: an emission into an abstractly typed actor boxes
-# the actor chain, and an immutable wrapper would be copied into every box.
+# the actor chain, and an immutable wrapper would be copied into every box. Only the counts
+# change after construction.
 mutable struct CollectLatestObservableWrapper{L,A,S,B,T,F,C}
-    const actor::A
-    const storage::S
+    actor::A
+    storage::S
     # the number of set bits in `cstatus` and `vstatus`, so the check on every event is O(1)
     # instead of a scan over every source
     ncompleted::Int
     nvalues::Int
 
-    const cstatus::B # Completion status
-    const vstatus::B # Values status
-    const ustatus::B # Updates status
-    const subscriptions::T
-    const mappingFn::F
-    const callbackFn::C
+    cstatus::B # Completion status
+    vstatus::B # Values status
+    ustatus::B # Updates status
+    subscriptions::T
+    mappingFn::F
+    callbackFn::C
 
     CollectLatestObservableWrapper{L,A,S,B,T,F,C}(
         actor::A,

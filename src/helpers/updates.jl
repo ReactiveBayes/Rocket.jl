@@ -53,11 +53,12 @@ getustorage(::Type{T}) where {T} = getustorage(T, _staticlength(T))
 
 # The number of set bits in `cstatus` and `vstatus` is kept alongside the bits, so `all_cstatus`
 # and `all_vstatus` are O(1) instead of a scan over every source on every event. The bits are
-# written only through the functions below, which keep the counts in step.
+# written only through the functions below, which keep the counts in step; only the counts
+# change after construction.
 mutable struct GenericUpdatesStatus
-    const cstatus::BitArray{1} # Completion status
-    const vstatus::BitArray{1} # Values status
-    const ustatus::BitArray{1} # Updates status
+    cstatus::BitArray{1} # Completion status
+    vstatus::BitArray{1} # Values status
+    ustatus::BitArray{1} # Updates status
     ncompleted::Int
     nvalues::Int
 

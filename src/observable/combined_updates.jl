@@ -51,14 +51,14 @@ on_complete!(actor::CombineLatestUpdatesInnerActor{L,W}) where {L,W} =
 
 # Mutable for the reason `CollectLatestObservableWrapper` is.
 mutable struct CombineLatestUpdatesActorWrapper{S,A,G,U,F,C}
-    const sources::S
-    const actor::A
-    const nsize::Int
-    const strategy::G # Push update strategy
-    const updates::U # Updates
-    const subscriptions::Vector{Teardown}
-    const mappingFn::F
-    const callbackFn::C
+    sources::S
+    actor::A
+    nsize::Int
+    strategy::G # Push update strategy
+    updates::U # Updates
+    subscriptions::Vector{Teardown}
+    mappingFn::F
+    callbackFn::C
 end
 
 function CombineLatestUpdatesActorWrapper(
