@@ -58,16 +58,22 @@ collectLatest(
 
 ## 
 
-struct CollectLatestObservableWrapper{L,A,S,B,T,F,C}
-    actor::A
-    storage::S
+# Mutable, so an actor holding it stays small: an emission into an abstractly typed actor boxes
+# the actor chain, and an immutable wrapper would be copied into every box.
+mutable struct CollectLatestObservableWrapper{L,A,S,B,T,F,C}
+    const actor::A
+    const storage::S
+    # the number of set bits in `cstatus` and `vstatus`, so the check on every event is O(1)
+    # instead of a scan over every source
+    ncompleted::Int
+    nvalues::Int
 
-    cstatus::B # Completion status
-    vstatus::B # Values status
-    ustatus::B # Updates status
-    subscriptions::T
-    mappingFn::F
-    callbackFn::C
+    const cstatus::B # Completion status
+    const vstatus::B # Values status
+    const ustatus::B # Updates status
+    const subscriptions::T
+    const mappingFn::F
+    const callbackFn::C
 
     CollectLatestObservableWrapper{L,A,S,B,T,F,C}(
         actor::A,
@@ -82,6 +88,8 @@ struct CollectLatestObservableWrapper{L,A,S,B,T,F,C}
         return new(
             actor,
             storage,
+            count(cstatus),
+            count(vstatus),
             cstatus,
             vstatus,
             ustatus,
@@ -123,15 +131,41 @@ vstatus(wrapper::CollectLatestObservableWrapper, index::CartesianIndex) =
 ustatus(wrapper::CollectLatestObservableWrapper, index::CartesianIndex) =
     @inbounds wrapper.ustatus[index]
 
-fill_cstatus!(wrapper::CollectLatestObservableWrapper, value) =
-    fill!(wrapper.cstatus, value)
-fill_vstatus!(wrapper::CollectLatestObservableWrapper, value) =
-    fill!(wrapper.vstatus, value)
+fill_cstatus!(wrapper::CollectLatestObservableWrapper, value) = (
+    fill!(wrapper.cstatus, value);
+    wrapper.ncompleted = value ? length(wrapper.cstatus) : 0;
+    wrapper.cstatus
+)
+fill_vstatus!(wrapper::CollectLatestObservableWrapper, value) = (
+    fill!(wrapper.vstatus, value);
+    wrapper.nvalues = value ? length(wrapper.vstatus) : 0;
+    wrapper.vstatus
+)
+
+all_cstatus(wrapper::CollectLatestObservableWrapper) =
+    wrapper.ncompleted === length(wrapper.cstatus)
+all_vstatus(wrapper::CollectLatestObservableWrapper) =
+    wrapper.nvalues === length(wrapper.vstatus)
+
+function set_cstatus!(wrapper::CollectLatestObservableWrapper, index, v::Bool)
+    if (@inbounds wrapper.cstatus[index]) !== v
+        wrapper.ncompleted += v ? 1 : -1
+        @inbounds wrapper.cstatus[index] = v
+    end
+    return v
+end
+function set_vstatus!(wrapper::CollectLatestObservableWrapper, index, v::Bool)
+    if (@inbounds wrapper.vstatus[index]) !== v
+        wrapper.nvalues += v ? 1 : -1
+        @inbounds wrapper.vstatus[index] = v
+    end
+    return v
+end
 fill_ustatus!(wrapper::CollectLatestObservableWrapper, value) =
     fill!(wrapper.ustatus, value)
 
 dispose(wrapper::CollectLatestObservableWrapper) = begin
-    fill!(wrapper.cstatus, true);
+    fill_cstatus!(wrapper, true)
     foreach(s -> unsubscribe!(s), wrapper.subscriptions)
 end
 
@@ -156,10 +190,11 @@ function next_received!(
     index::CartesianIndex,
 )
     @inbounds wrapper.storage[index] = data
-    @inbounds wrapper.vstatus[index] = true
+    set_vstatus!(wrapper, index, true)
     @inbounds wrapper.ustatus[index] = true
-    if all(wrapper.vstatus) && !all(wrapper.cstatus)
+    if all_vstatus(wrapper) && !all_cstatus(wrapper)
         unsafe_copyto!(wrapper.vstatus, 1, wrapper.cstatus, 1, length(wrapper.vstatus))
+        wrapper.nvalues = wrapper.ncompleted
         value = wrapper.mappingFn(wrapper.storage)
         next!(wrapper.actor, value)
         if !isnothing(wrapper.callbackFn)
@@ -180,12 +215,12 @@ function error_received!(
 end
 
 function complete_received!(wrapper::CollectLatestObservableWrapper, index::CartesianIndex)
-    if !all(wrapper.cstatus)
-        @inbounds wrapper.cstatus[index] = true
+    if !all_cstatus(wrapper)
+        set_cstatus!(wrapper, index, true)
         if ustatus(wrapper, index)
-            @inbounds wrapper.vstatus[index] = true
+            set_vstatus!(wrapper, index, true)
         end
-        if all(wrapper.cstatus) || (@inbounds wrapper.vstatus[index] === false)
+        if all_cstatus(wrapper) || (@inbounds wrapper.vstatus[index] === false)
             dispose(wrapper)
             complete!(wrapper.actor)
         end
@@ -227,7 +262,7 @@ function on_subscribe!(observable::CollectLatestObservable{L}, actor::A) where {
         complete!(actor)
     end
 
-    if all(wrapper.cstatus)
+    if all_cstatus(wrapper)
         dispose(wrapper)
     end
 

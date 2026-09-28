@@ -137,7 +137,7 @@ include("../test_helpers.jl")
 
         @test values == [[1, 2.0, "Hello", 5, 10]]
 
-        complete!(s1);
+        complete!(s1)
 
         next!(s2, 3.0)
 
@@ -217,6 +217,39 @@ include("../test_helpers.jl")
         next!(source2, 2)
         @test values == ["0", "2", "3", "4"]
         @test callbackCalled == [false, true, false, false]
+    end
+
+
+    @testset "a round waits for every source, however many there are" begin
+        # the wrapper counts the sources that have a value and those that have completed
+        subjects = [Subject(Int) for _ = 1:20]
+        values = Vector{Any}()
+        subscription = subscribe!(
+            collectLatest(Int, Int, subjects, sum),
+            lambda(
+                on_next = (d) -> push!(values, d),
+                on_complete = () -> push!(values, "completed"),
+            ),
+        )
+
+        for (k, s) in enumerate(subjects)
+            next!(s, k)
+            @test values == (k == 20 ? [210] : [])
+        end
+        # a source that emits twice before the others renew does not complete the round
+        next!(subjects[1], 1)
+        next!(subjects[1], 2)
+        @test values == [210]
+        for s in subjects[2:end]
+            next!(s, 1)
+        end
+        @test values == [210, 21]
+
+        foreach(complete!, subjects[1:19])
+        @test values == [210, 21]
+        complete!(subjects[20])
+        @test values == [210, 21, "completed"]
+        unsubscribe!(subscription)
     end
 
 end
