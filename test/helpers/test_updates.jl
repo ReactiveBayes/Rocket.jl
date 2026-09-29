@@ -7,6 +7,7 @@ import Rocket: GenericUpdatesStatus, UInt8UpdatesStatus, getustorage
 import Rocket: cstatus, vstatus, ustatus, cstatus!, vstatus!, ustatus!
 import Rocket:
     fill_cstatus!, fill_vstatus!, fill_ustatus!, all_cstatus, all_vstatus, all_ustatus
+import Rocket: push_update!
 
 @testset "Helpers Updates" begin
 
@@ -91,6 +92,37 @@ import Rocket:
             end
         end
 
+    end
+
+
+    @testset "the counts behind all_cstatus and all_vstatus stay in step with the bits" begin
+        for n in (9, 20)
+            u = getustorage(typeof(ntuple(_ -> 1, n)))
+            # setting a bit that is already set, or clearing one that is clear, counts nothing
+            for _ = 1:2, i = 1:(n-1)
+                vstatus!(u, i, true)
+                cstatus!(u, i, true)
+            end
+            @test all_vstatus(u) === false
+            @test all_cstatus(u) === false
+            vstatus!(u, n, true)
+            cstatus!(u, n, true)
+            @test all_vstatus(u) === true
+            @test all_cstatus(u) === true
+            vstatus!(u, 1, false)
+            vstatus!(u, 1, false)
+            @test all_vstatus(u) === false
+            vstatus!(u, 1, true)
+            @test all_vstatus(u) === true
+            # a new round copies the completed sources into the values
+            cstatus!(u, 2, false)
+            push_update!(n, u, PushNew())
+            @test all_vstatus(u) === false
+            @test count(i -> vstatus(u, i), 1:n) == n - 1
+            cstatus!(u, 2, true)
+            push_update!(n, u, PushNew())
+            @test all_vstatus(u) === true
+        end
     end
 
 end

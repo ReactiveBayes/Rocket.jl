@@ -51,12 +51,19 @@ getustorage(::Type{T}) where {T} = getustorage(T, _staticlength(T))
 
 ## Generic updates structure 
 
-struct GenericUpdatesStatus
+# The number of set bits in `cstatus` and `vstatus` is kept alongside the bits, so `all_cstatus`
+# and `all_vstatus` are O(1) instead of a scan over every source on every event. The bits are
+# written only through the functions below, which keep the counts in step; only the counts
+# change after construction.
+mutable struct GenericUpdatesStatus
     cstatus::BitArray{1} # Completion status
     vstatus::BitArray{1} # Values status
     ustatus::BitArray{1} # Updates status
+    ncompleted::Int
+    nvalues::Int
 
-    GenericUpdatesStatus(nsize::Int) = new(falses(nsize), falses(nsize), falses(nsize))
+    GenericUpdatesStatus(nsize::Int) =
+        new(falses(nsize), falses(nsize), falses(nsize), 0, 0)
 end
 
 getustorage(::Type{T}, ::Val{N}) where {T,N} = GenericUpdatesStatus(N)
@@ -65,16 +72,38 @@ cstatus(updates::GenericUpdatesStatus, index) = @inbounds updates.cstatus[index]
 vstatus(updates::GenericUpdatesStatus, index) = @inbounds updates.vstatus[index]
 ustatus(updates::GenericUpdatesStatus, index) = @inbounds updates.ustatus[index]
 
-cstatus!(updates::GenericUpdatesStatus, index, v) = @inbounds updates.cstatus[index] = v
-vstatus!(updates::GenericUpdatesStatus, index, v) = @inbounds updates.vstatus[index] = v
+function cstatus!(updates::GenericUpdatesStatus, index, v)
+    old = @inbounds updates.cstatus[index]
+    if old !== v
+        updates.ncompleted += v ? 1 : -1
+        @inbounds updates.cstatus[index] = v
+    end
+    return v
+end
+function vstatus!(updates::GenericUpdatesStatus, index, v)
+    old = @inbounds updates.vstatus[index]
+    if old !== v
+        updates.nvalues += v ? 1 : -1
+        @inbounds updates.vstatus[index] = v
+    end
+    return v
+end
 ustatus!(updates::GenericUpdatesStatus, index, v) = @inbounds updates.ustatus[index] = v
 
-all_cstatus(updates::GenericUpdatesStatus) = all(updates.cstatus)
-all_vstatus(updates::GenericUpdatesStatus) = all(updates.vstatus)
+all_cstatus(updates::GenericUpdatesStatus) = updates.ncompleted === length(updates.cstatus)
+all_vstatus(updates::GenericUpdatesStatus) = updates.nvalues === length(updates.vstatus)
 all_ustatus(updates::GenericUpdatesStatus) = all(updates.ustatus)
 
-fill_cstatus!(updates::GenericUpdatesStatus, v) = fill!(updates.cstatus, v)
-fill_vstatus!(updates::GenericUpdatesStatus, v) = fill!(updates.vstatus, v)
+fill_cstatus!(updates::GenericUpdatesStatus, v) = (
+    fill!(updates.cstatus, v);
+    updates.ncompleted = v ? length(updates.cstatus) : 0;
+    updates.cstatus
+)
+fill_vstatus!(updates::GenericUpdatesStatus, v) = (
+    fill!(updates.vstatus, v);
+    updates.nvalues = v ? length(updates.vstatus) : 0;
+    updates.vstatus
+)
 fill_ustatus!(updates::GenericUpdatesStatus, v) = fill!(updates.ustatus, v)
 
 function push_update!(::Int, ::GenericUpdatesStatus, ::PushEach)
@@ -88,6 +117,7 @@ end
 
 function push_update!(nsize::Int, updates::GenericUpdatesStatus, ::PushNew)
     unsafe_copyto!(updates.vstatus, 1, updates.cstatus, 1, nsize)
+    updates.nvalues = updates.ncompleted
     return nothing
 end
 
@@ -100,6 +130,7 @@ end
 function push_update!(nsize::Int, updates::GenericUpdatesStatus, strategy::PushStrategy)
     push_update!(nsize, updates, PushNew())
     map!(|, updates.vstatus, updates.vstatus, strategy.strategy)
+    updates.nvalues = count(updates.vstatus)
     return nothing
 end
 

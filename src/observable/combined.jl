@@ -78,7 +78,8 @@ on_complete!(actor::CombineLatestInnerActor{L,W}) where {L,W} =
 
 ##
 
-struct CombineLatestActorWrapper{S,A,G,U}
+# Mutable for the reason `CollectLatestObservableWrapper` is.
+mutable struct CombineLatestActorWrapper{S,A,G,U}
     storage::S
     actor::A
     nsize::Int
@@ -106,7 +107,7 @@ push_update!(wrapper::CombineLatestActorWrapper) =
     push_update!(wrapper.nsize, wrapper.updates, wrapper.strategy)
 
 dispose(wrapper::CombineLatestActorWrapper) = begin
-    fill_cstatus!(wrapper.updates, true);
+    fill_cstatus!(wrapper.updates, true)
     foreach(s -> unsubscribe!(s), wrapper.subscriptions)
 end
 
