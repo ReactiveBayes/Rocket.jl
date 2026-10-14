@@ -105,6 +105,14 @@ end
 function on_subscribe!(observable::TakeSource, actor::TakeActor)
     subscription = subscribe!(observable.source, actor)
     actor.subscription = subscription
+    # If the source emits synchronously during `subscribe!` above (e.g. a
+    # replaying source such as `RecentSubject`/`ReplaySubject`), the actor may
+    # already be disposed by the time we get here. In that case `__dispose`
+    # ran while `actor.subscription` was still `voidTeardown`, so the real
+    # subscription was never unsubscribed. Dispose it now to avoid a leak.
+    if actor.isdisposed
+        unsubscribe!(subscription)
+    end
     return subscription
 end
 
