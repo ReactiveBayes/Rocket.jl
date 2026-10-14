@@ -94,8 +94,13 @@ function on_complete!(actor::TakeActor)
 end
 
 function __dispose(actor::TakeActor)
-    actor.isdisposed = true
-    unsubscribe!(actor.subscription)
+    # Idempotent: tearing the upstream subscription down more than once (e.g.
+    # completion followed by the consumer unsubscribing) must be a no-op.
+    if !actor.isdisposed
+        actor.isdisposed = true
+        unsubscribe!(actor.subscription)
+    end
+    return nothing
 end
 
 @subscribable struct TakeSource{L,S} <: Subscribable{L}
@@ -103,20 +108,29 @@ end
 end
 
 function on_subscribe!(observable::TakeSource, actor::TakeActor)
-    subscription = subscribe!(observable.source, actor)
-    actor.subscription = subscription
+    actor.subscription = subscribe!(observable.source, actor)
     # If the source emits synchronously during `subscribe!` above (e.g. a
-    # replaying source such as `RecentSubject`/`ReplaySubject`), the actor may
-    # already be disposed by the time we get here. In that case `__dispose`
-    # ran while `actor.subscription` was still `voidTeardown`, so the real
-    # subscription was never unsubscribed. Dispose it now to avoid a leak.
+    # replaying source such as `RecentSubject`/`ReplaySubject`), the actor is
+    # already disposed by the time we get here: `__dispose` ran while
+    # `actor.subscription` was still `voidTeardown`, so the real subscription
+    # was never unsubscribed. Dispose it now to avoid a leak. `__dispose` is
+    # already guarded, so unsubscribe the stored subscription directly.
     if actor.isdisposed
-        unsubscribe!(subscription)
+        unsubscribe!(actor.subscription)
     end
-    return subscription
+    return TakeSubscription(actor)
 end
+
+struct TakeSubscription{A} <: Teardown
+    actor::A
+end
+
+as_teardown(::Type{<:TakeSubscription}) = UnsubscribableTeardownLogic()
+
+on_unsubscribe!(subscription::TakeSubscription) = __dispose(subscription.actor)
 
 Base.show(io::IO, ::TakeOperator) = print(io, "TakeOperator()")
 Base.show(io::IO, ::TakeProxy) = print(io, "TakeProxy()")
 Base.show(io::IO, ::TakeActor{L}) where {L} = print(io, "TakeActor($L)")
 Base.show(io::IO, ::TakeSource{L}) where {L} = print(io, "TakeSource($L)")
+Base.show(io::IO, ::TakeSubscription) = print(io, "TakeSubscription()")
