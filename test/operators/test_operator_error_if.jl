@@ -119,6 +119,15 @@ include("../test_helpers.jl")
         @test events == [1, 2]
     end
 
+    @testset "Upstream subscription is disposed on synchronous error" begin
+        # When the source emits synchronously during subscribe! and the first
+        # value trips the error check, `error_if` errors inside subscribe!; the
+        # upstream subscription must still be disposed rather than leaked.
+        @test count_live_subscriptions(
+            s -> s |> error_if(d -> true, d -> "err"); mode = :next
+        ) == 0
+    end
+
 end
 
 end

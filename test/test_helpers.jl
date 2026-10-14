@@ -1,11 +1,60 @@
 # Utility helpers for testing operators
 export run_testset, run_proxyshowcheck, @ts
+export LeakProbeSource, count_live_subscriptions
 
 using Rocket
 using Test
 
 import Rocket: test_on_source
 import Rocket: @ts
+import Rocket: on_subscribe!, on_unsubscribe!, as_teardown
+
+# ------------------------------------------------- #
+# A source that tracks how many of its subscriptions are still live (subscribed
+# but not yet unsubscribed). On subscribe it can synchronously emit a value and
+# complete/error, which is exactly the condition that used to leave operators'
+# upstream subscriptions undisposed. `count_live_subscriptions` runs a pipeline
+# and returns how many subscriptions the operator failed to tear down.
+# ------------------------------------------------- #
+mutable struct LeakProbeSource <: Subscribable{Int}
+    live::Base.RefValue{Int}
+    mode::Symbol   # :next_complete, :complete, :error, :next (stays open)
+end
+LeakProbeSource(mode::Symbol) = LeakProbeSource(Ref(0), mode)
+
+struct LeakProbeTeardown <: Teardown
+    live::Base.RefValue{Int}
+end
+as_teardown(::Type{<:LeakProbeTeardown}) = Rocket.UnsubscribableTeardownLogic()
+on_unsubscribe!(t::LeakProbeTeardown) = (t.live[] -= 1; nothing)
+
+function on_subscribe!(s::LeakProbeSource, actor)
+    s.live[] += 1
+    if s.mode === :next_complete
+        next!(actor, 1); complete!(actor)
+    elseif s.mode === :complete
+        complete!(actor)
+    elseif s.mode === :error
+        next!(actor, 1); error!(actor, "leak-probe")
+    elseif s.mode === :next
+        next!(actor, 1)
+    end
+    return LeakProbeTeardown(s.live)
+end
+
+function count_live_subscriptions(make_pipeline; mode::Symbol = :next_complete, double_unsubscribe::Bool = false)
+    src = LeakProbeSource(mode)
+    try
+        subscription = subscribe!(make_pipeline(src), void(Int))
+        if double_unsubscribe
+            unsubscribe!(subscription)
+            unsubscribe!(subscription) # must be an idempotent no-op
+        end
+    catch
+        # error-mode pipelines may rethrow; we still inspect the live count
+    end
+    return src.live[]
+end
 
 const TESTSET_MAXIMUM_TIMEOUT = 5000 # 5 sec
 const TESTSET_MAXIMUM_COMPILATION_TIMEOUT = 5000 # 5 sec

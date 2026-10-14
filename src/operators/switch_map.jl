@@ -134,9 +134,12 @@ function on_complete!(actor::SwitchMapActor)
 end
 
 function dispose!(actor::SwitchMapActor)
-    actor.isdisposed = true
-    unsubscribe!(actor.msubscription)
-    unsubscribe!(actor.isubscription)
+    # Idempotent: completion and a consumer `unsubscribe!` can both reach here.
+    if !actor.isdisposed
+        actor.isdisposed = true
+        unsubscribe!(actor.msubscription)
+        unsubscribe!(actor.isubscription)
+    end
     return nothing
 end
 
@@ -149,6 +152,12 @@ source_proxy!(::Type, proxy::SwitchMapProxy{L}, source::S) where {L,S} =
 
 function on_subscribe!(source::SwitchMapSource, actor::SwitchMapActor)
     actor.msubscription = subscribe!(source.source, actor)
+    # If the source completed synchronously during `subscribe!`, `dispose!` ran
+    # while `msubscription` was still `voidTeardown`; dispose it now so the
+    # upstream subscription is not leaked.
+    if isdisposed(actor)
+        unsubscribe!(actor.msubscription)
+    end
     return SwitchMapSubscription(actor)
 end
 

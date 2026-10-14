@@ -120,9 +120,13 @@ function on_complete!(actor::ExhaustMapActor)
 end
 
 function dispose!(actor::ExhaustMapActor)
-    actor.isdisposed = true
-    unsubscribe!(actor.msubscription)
-    unsubscribe!(actor.isubscription)
+    # Idempotent: completion and a consumer `unsubscribe!` can both reach here.
+    if !actor.isdisposed
+        actor.isdisposed = true
+        unsubscribe!(actor.msubscription)
+        unsubscribe!(actor.isubscription)
+    end
+    return nothing
 end
 
 @subscribable struct ExhaustMapSource{L,S} <: Subscribable{L}
@@ -134,6 +138,12 @@ source_proxy!(::Type{R}, proxy::ExhaustMapProxy{L,R,F}, source::S) where {L,R,F,
 
 function on_subscribe!(source::ExhaustMapSource, actor::ExhaustMapActor)
     actor.msubscription = subscribe!(source.source, actor)
+    # If the source completed synchronously during `subscribe!`, `dispose!` ran
+    # while `msubscription` was still `voidTeardown`; dispose it now so the
+    # upstream subscription is not leaked.
+    if isdisposed(actor)
+        unsubscribe!(actor.msubscription)
+    end
     return ExhaustMapSubscription(actor)
 end
 
