@@ -203,6 +203,15 @@ include("../test_helpers.jl")
 
     run_testset([(source = customsource4, values = @ts([0] ~ [1, c]))])
 
+    @testset "Upstream subscription is disposed exactly once" begin
+        # Source completes synchronously during subscribe!: the upstream must
+        # not be leaked, and unsubscribing afterwards must be an idempotent no-op.
+        @test count_live_subscriptions(s -> s |> switch_map(Int, d -> of(d))) == 0
+        @test count_live_subscriptions(
+            s -> s |> switch_map(Int, d -> of(d)); double_unsubscribe = true
+        ) == 0
+    end
+
 end
 
 end

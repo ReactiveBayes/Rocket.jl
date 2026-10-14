@@ -114,11 +114,14 @@ end
 end
 
 function on_subscribe!(source::ErrorIfSource, actor::ErrorIfActor)
-    subscription = subscribe!(source.source, actor)
-    if !actor.completed
-        actor.subscription = subscription
+    actor.subscription = subscribe!(source.source, actor)
+    # If the source errored synchronously during `subscribe!`, `on_error!` ran
+    # while `actor.subscription` was still `voidTeardown`, so the real upstream
+    # subscription was never unsubscribed. Dispose it now to avoid a leak.
+    if actor.completed
+        unsubscribe!(actor.subscription)
     end
-    return subscription
+    return actor.subscription
 end
 
 Base.show(io::IO, ::ErrorIfOperator) = print(io, "ErrorIfOperator()")

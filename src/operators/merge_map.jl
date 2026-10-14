@@ -162,13 +162,17 @@ function on_complete!(actor::MergeMapActor)
 end
 
 function dispose!(actor::MergeMapActor)
-    actor.isdisposed = true
-    unsubscribe!(actor.msubscription)
-    for listener in getactive(actor)
-        unsubscribe!(getsubscription(listener))
+    # Idempotent: completion and a consumer `unsubscribe!` can both reach here.
+    if !actor.isdisposed
+        actor.isdisposed = true
+        unsubscribe!(actor.msubscription)
+        for listener in getactive(actor)
+            unsubscribe!(getsubscription(listener))
+        end
+        empty!(getactive(actor))
+        empty!(getpending(actor))
     end
-    empty!(getactive(actor))
-    empty!(getpending(actor))
+    return nothing
 end
 
 @subscribable struct MergeMapSource{L,S} <: Subscribable{L}
@@ -180,6 +184,12 @@ source_proxy!(::Type{R}, proxy::MergeMapProxy{L,R,F}, source::S) where {L,R,F,S}
 
 function on_subscribe!(source::MergeMapSource, actor::MergeMapActor)
     actor.msubscription = subscribe!(source.source, actor)
+    # If the source completed synchronously during `subscribe!`, `dispose!` ran
+    # while `msubscription` was still `voidTeardown`; dispose it now so the
+    # upstream subscription is not leaked.
+    if isdisposed(actor)
+        unsubscribe!(actor.msubscription)
+    end
     return MergeMapSubscription(actor)
 end
 

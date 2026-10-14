@@ -147,14 +147,18 @@ function on_complete!(actor::ConcatMapActor)
 end
 
 function dispose!(actor::ConcatMapActor)
-    actor.isdisposed = true
-    unsubscribe!(actor.msubscription)
-    active = getactive(actor)
-    if active !== nothing
-        unsubscribe!(getsubscription(active))
+    # Idempotent: completion and a consumer `unsubscribe!` can both reach here.
+    if !actor.isdisposed
+        actor.isdisposed = true
+        unsubscribe!(actor.msubscription)
+        active = getactive(actor)
+        if active !== nothing
+            unsubscribe!(getsubscription(active))
+        end
+        setactive!(actor, nothing)
+        empty!(getpending(actor))
     end
-    setactive!(actor, nothing)
-    empty!(getpending(actor))
+    return nothing
 end
 
 @subscribable struct ConcatMapSource{L,S} <: Subscribable{L}
@@ -166,6 +170,12 @@ source_proxy!(::Type{R}, proxy::ConcatMapProxy{L,R,F}, source::S) where {L,R,F,S
 
 function on_subscribe!(source::ConcatMapSource, actor::ConcatMapActor)
     actor.msubscription = subscribe!(source.source, actor)
+    # If the source completed synchronously during `subscribe!`, `dispose!` ran
+    # while `msubscription` was still `voidTeardown`; dispose it now so the
+    # upstream subscription is not leaked.
+    if isdisposed(actor)
+        unsubscribe!(actor.msubscription)
+    end
     return ConcatMapSubscription(actor)
 end
 
