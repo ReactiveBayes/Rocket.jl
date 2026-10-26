@@ -23,7 +23,6 @@ jobs:
           - '1.6'
           - '1.7'
           - '1.8'
-          - '1.9'
           - '1.10'
           - '1.11'
           - '1.12'
@@ -35,6 +34,13 @@ jobs:
         experimental:
           - false
         include:
+          # Julia 1.9.4 ships a `libopenlibm` that requires an executable stack, which
+          # glibc on Ubuntu 26.04 (`ubuntu-latest` since Oct 2026) refuses to load,
+          # see https://github.com/JuliaLang/julia/issues/57250 (not backported to 1.9)
+          - version: '1.9'
+            os: ubuntu-24.04
+            arch: x64
+            experimental: false
           # `nightly` is informational only, it is allowed to fail without
           # failing the whole run (and without blocking the `docs` job)
           - version: 'nightly'
